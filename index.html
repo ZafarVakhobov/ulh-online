@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
@@ -138,15 +138,65 @@
             color: #334155;
             margin: 0;
         }
-        .copy-link {
-            font-size: 12px;
-            font-weight: 700;
-            color: #2AABEE;
-            cursor: pointer;
-            transition: opacity 0.15s;
+        /* Общая группа кнопок над текстовым полем */
+        .editor-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
         }
+
+        /* Кнопка Nusxa oliş */
+        .copy-link,
+        .clear-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 150px;
+            height: 44px;
+            padding: 0 20px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .copy-link {
+            background-color: #D9F0FC;
+            color: #2AABEE;
+        }
+
         .copy-link:hover {
-            opacity: 0.75;
+            background-color: #2AABEE;
+            color: #FFFFFF;
+        }
+
+        .copy-link.copied {
+            background-color: #D9F0FC;
+            color: #2AABEE;
+        }
+
+        /* Кнопка Öçiriş */
+        .clear-link {
+            background-color: #FDE0DB;
+            color: #F54927;
+        }
+
+        .clear-link:hover {
+            background-color: #F54927;
+            color: #FFFFFF;
+        }
+
+        .clear-link.cleared {
+            background-color: #FDE0DB;
+            color: #F54927;
         }
         .editor-wrapper {
             position: relative;
@@ -214,6 +264,21 @@
             opacity: 0.75;
         }
         @media (max-width: 760px) {
+            .section-header {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .editor-actions {
+                width: 100%;
+            }
+            .copy-link,
+            .clear-link {
+                flex: 1 1 0;
+                min-width: 0;
+                padding: 0 12px;
+                font-size: 14px;
+            }
             .container {
                 max-width: 480px;
             }
@@ -283,7 +348,10 @@
             <div class="editor-wrapper">
                 <div class="section-header">
                     <div class="section-title">Matnni kiriting:</div>
-                    <div class="copy-link" id="copyBtn" onclick="copyEditorText()">Nusxa oliş</div>
+                    <div class="editor-actions">
+                        <div class="clear-link" id="clearBtn" role="button" tabindex="0" onclick="clearEditorText()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); clearEditorText(); }">Öçiriş</div>
+                        <div class="copy-link" id="copyBtn" role="button" tabindex="0" onclick="copyEditorText()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); copyEditorText(); }">Nusxa oliş</div>
+                    </div>
                 </div>
                     <textarea id="editor" placeholder="Şahar, Özbekiston, Қўқон, Шаҳар..."></textarea>
             </div>
@@ -342,12 +410,39 @@
 
         function copyEditorText() {
             const editor = document.getElementById('editor');
+            const btn = document.getElementById('copyBtn');
             if (!editor.value) return;
+
             navigator.clipboard.writeText(editor.value).then(() => {
-                const btn = document.getElementById('copyBtn');
-                btn.innerText = "Nusxalandi ✓";
-                setTimeout(() => { btn.innerText = "Nusxa oliş"; }, 1800);
+                btn.innerText = 'Nusxalandi ✓';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerText = 'Nusxa oliş';
+                    btn.classList.remove('copied');
+                }, 1000);
+            }).catch(() => {
+                // Буфер обмена недоступен, например на странице без HTTPS.
+                btn.innerText = 'Nusxa olinmadi';
+                setTimeout(() => { btn.innerText = 'Nusxa oliş'; }, 1000);
             });
+        }
+
+        function clearEditorText() {
+            const editor = document.getElementById('editor');
+            const btn = document.getElementById('clearBtn');
+
+            // Если поле пустое, ничего не меняем.
+            if (editor.value.length === 0) return;
+
+            editor.value = '';
+            hideTooltip();
+
+            btn.innerText = 'Öçirildi';
+            btn.classList.add('cleared');
+            setTimeout(() => {
+                btn.innerText = 'Öçiriş';
+                btn.classList.remove('cleared');
+            }, 1000);
         }
 
         document.getElementById('currentYear').innerText = new Date().getFullYear();
