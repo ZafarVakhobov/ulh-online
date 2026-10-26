@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <title>Uzbek Latin Helper</title>
     <!-- Официальный SDK Telegram Mini Apps -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -11,6 +11,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Библиотека JSZip для работы конвертера в браузере -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Библиотеки для точного рендеринга DOCX/XLSX и мультиориентационной сборки PDF -->
+    <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.1.20/dist/docx-preview.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -118,7 +123,7 @@
         .status {
             font-size: 12px;
             font-weight: 600;
-			width:100%;
+            width: 100%;
             line-height: 1.45;
             color: #10B981;
             background: #ECFDF5;
@@ -221,7 +226,7 @@
         /* Блок конвертера: виден на сайте, но автоматически скрывается в Telegram App */
         .converter-box {
             background: #F8FAFC;
-            border: 1px dashed #CBD5E1;
+            border: 1.5px dashed #CBD5E1;
             border-radius: 14px;
             padding: 16px;
             text-align: center;
@@ -229,12 +234,23 @@
             flex-direction: column;
             gap: 10px;
             align-items: center;
+            transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+        }
+        .converter-box.drag-over {
+            border-color: #2AABEE;
+            background-color: #EFF6FF;
+            transform: scale(1.01);
         }
         .file-info {
             font-size: 12px;
             color: #64748B;
             word-break: break-word;
             line-height: 1.4;
+        }
+        .drop-hint {
+            font-size: 11px;
+            color: #94A3B8;
+            margin-top: -4px;
         }
         .btn-row {
             display: flex;
@@ -262,6 +278,10 @@
         }
         .pill-btn:hover {
             opacity: 0.75;
+        }
+        .pill-btn:disabled {
+            opacity: 0.6;
+            cursor: wait;
         }
         @media (max-width: 760px) {
             .section-header {
@@ -330,11 +350,71 @@
         #popup-tip:hover {
             opacity: 0.75;
         }
+
+        /* Скрытая сцена для рендеринга документов с сохранением индивидуальной ширины и ориентации каждого раздела */
+        #pdfRenderOverlay {
+            position: fixed;
+            left: -20000px;
+            top: 0;
+            width: auto;
+            height: auto;
+            overflow: visible;
+            pointer-events: none;
+            z-index: -9999;
+        }
+        #pdfRenderStage {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            background: transparent;
+            color: #000000;
+        }
+        #pdfRenderStage section.docx {
+            background: #FFFFFF;
+            box-shadow: none !important;
+            margin: 0 !important;
+        }
+        .xlsx-sheet-section table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .xlsx-sheet-section td,
+        .xlsx-sheet-section th {
+            border: 1px solid #CBD5E1;
+            padding: 6px 8px;
+            font-size: 12px;
+        }
+        .pptx-slide-card {
+            background: #FFFFFF;
+            padding: 36px 44px;
+            border: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .pptx-slide-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748B;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+        }
+        .pptx-slide-p {
+            font-size: 15px;
+            line-height: 1.55;
+            margin: 6px 0;
+            color: #0F172A;
+        }
     </style>
 </head>
 <body>
 
     <div id="popup-tip" onmousedown="event.preventDefault(); revertText();">Sh</div>
+
+    <!-- Скрытая сцена для генерации PDF с сохранением оригинального оформления и ориентации страниц -->
+    <div id="pdfRenderOverlay" aria-hidden="true">
+        <div id="pdfRenderStage"></div>
+    </div>
 
     <div class="container">
         <a class="hero-banner" href="/" aria-label="Uzbek Latin Helper homepage">
@@ -360,15 +440,20 @@
             <div class="converter-box" id="converterBox">
             <div class="section-title" style="margin:0;">Office formatidagi fayllar konverteri</div>
             <div class="file-info" id="fileInfo">Yuklab bölaydigan fayllar formati: .docx, .xlsx, .pptx, .txt</div>
+            <div class="drop-hint">Faylni tanlang yoki şu yerga tortib taşlang (Drop file)</div>
             <input type="file" id="fileInput" style="display: none;" accept=".docx,.xlsx,.pptx,.txt" onchange="processFile(event)">
             <div class="btn-row">
                 <button class="pill-btn" onclick="document.getElementById('fileInput').click()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     Faylni yuklaş
                 </button>
-                <button id="saveBtn" class="pill-btn" style="display:none; background-color: #10B981;" onclick="downloadFile()">
+                <button id="saveBtn" class="pill-btn" style="display:none; background-color: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);" onclick="downloadFile()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     Saqlaş
+                </button>
+                <button id="savePdfBtn" class="pill-btn" style="display:none; background-color: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);" onclick="downloadPdfFile()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+                    PDF saqlaş
                 </button>
             </div>
             </div>
@@ -421,7 +506,6 @@
                     btn.classList.remove('copied');
                 }, 1000);
             }).catch(() => {
-                // Буфер обмена недоступен, например на странице без HTTPS.
                 btn.innerText = 'Nusxa olinmadi';
                 setTimeout(() => { btn.innerText = 'Nusxa oliş'; }, 1000);
             });
@@ -431,7 +515,6 @@
             const editor = document.getElementById('editor');
             const btn = document.getElementById('clearBtn');
 
-            // Если поле пустое, ничего не меняем.
             if (editor.value.length === 0) return;
 
             editor.value = '';
@@ -454,7 +537,6 @@
         let originalPairValue = "";
         let tipTimeout = null;
 
-        // Исконно русские нарицательные слова, которые не транслитерируются при вставке/конвертации
         const russianCommonWords = new Set([
             "моя", "мой", "мои", "моё", "книга", "школа", "машина", "человек",
             "город", "дом", "работа", "земля", "вода", "солнце", "время",
@@ -468,13 +550,11 @@
             return russianCommonWords.has(word.toLowerCase());
         }
 
-        // Проверка на гласную букву (как кириллическую, так и латинскую — для живого набора!)
         function isAnyVowel(ch) {
             if (!ch) return false;
             return "аеёиоуўэюяАЕЁИОУЎЭЮЯaeiouöAEIOUÖ".indexOf(ch) !== -1;
         }
 
-        // Полная кириллическая транслитерация целых слов/текстов
         function cyrillicToLatin(text) {
             if (!text) return "";
 
@@ -560,16 +640,13 @@
             });
         }
 
-        // Умная функция ЖИВОЙ транслитерации при посимвольном вводе с клавиатуры
         function transliterateLiveSegment(beforeCursorText) {
-            // Выделяем текущее набираемое слово (включая уже переведенные латинские буквы слева и новые кириллические справа)
             const wordMatch = beforeCursorText.match(/([A-Za-zÇŞĞÖçşğö’'`\u02BB\u02BCА-Яа-яЁёҒғҚқЎўҲҳЪъЬь]+)$/);
             if (!wordMatch) return beforeCursorText;
 
             const fullWord = wordMatch[1];
             const prefixText = beforeCursorText.substring(0, beforeCursorText.length - fullWord.length);
 
-            // Если всё слово целиком кириллическое (например, голосовой ввод или быстрый буфер) — используем основную функцию
             if (/^[А-Яа-яЁёҒғҚқЎўҲҳЪъЬь]+$/.test(fullWord)) {
                 return prefixText + cyrillicToLatin(fullWord);
             }
@@ -578,31 +655,23 @@
             for (let i = 0; i < fullWord.length; i++) {
                 let ch = fullWord[i];
 
-                // Если символ уже латинский — оставляем как есть
                 if (!/[А-Яа-яЁёҒғҚқЎўҲҳЪъЬь]/.test(ch)) {
                     out += ch;
                     continue;
                 }
 
-                // Предыдущий символ в уже собранном слове (может быть латинским!)
                 let prevChar = out.length > 0 ? out[out.length - 1] : "";
                 let isWordStart = (out.length === 0);
 
-                // 1. Мягкий знак Ь/ь при живом наборе просто игнорируется
                 if (ch === 'Ь' || ch === 'ь') {
                     continue;
                 }
 
-                // 2. Твердый знак Ъ/ъ ставит ’
                 if (ch === 'Ъ' || ch === 'ъ') {
                     out += '’';
                     continue;
                 }
 
-                // 3. Буква Е / е при живом наборе:
-                // - Если перед ней был поставлен ’ в словах Sub’ + е -> превращаем ’ в ye (Subyekt, Obyekt)
-                // - Если в начале слова (isWordStart) или после любой гласной (a, e, i, o, u, ö) -> Ye / ye
-                // - После согласной -> строго E / e
                 if (ch === 'Е' || ch === 'е') {
                     if (prevChar === '’' && /(?:sub|ob)’$/i.test(out)) {
                         out = out.slice(0, -1) + (ch === 'Е' ? 'Ye' : 'ye');
@@ -614,13 +683,11 @@
                     continue;
                 }
 
-                // 4. Буква Ц / ц при живом наборе: в начале слова S/s, внутри слова ts
                 if (ch === 'Ц' || ch === 'ц') {
                     out += isWordStart ? (ch === 'Ц' ? 'S' : 's') : (ch === 'Ц' ? 'Ts' : 'ts');
                     continue;
                 }
 
-                // 5. Остальные кириллические буквы
                 if (ch === 'Ю' || ch === 'ю') { out += (ch === 'Ю' ? 'Yu' : 'yu'); continue; }
                 if (ch === 'Я' || ch === 'я') { out += (ch === 'Я' ? 'Ya' : 'ya'); continue; }
                 if (ch === 'Ё' || ch === 'ё') { out += (ch === 'Ё' ? 'Yo' : 'yo'); continue; }
@@ -658,7 +725,6 @@
                 }
             }
 
-            // Автовыравнивание слова "oktyabr" -> "oktabr" при живом наборе
             out = out.replace(/^oktyabr/i, function(m) {
                 return m[0] === 'O' ? 'Oktabr' : 'oktabr';
             });
@@ -769,14 +835,13 @@
             let beforeCursor = val.substring(0, pos);
             let afterCursor = val.substring(pos);
 
-            // 1. ЖИВОЙ РЕЖИМ ДЛЯ КИРИЛЛИЦЫ: если введен кириллический символ
+            // 1. ЖИВОЙ РЕЖИМ ДЛЯ КИРИЛЛИЦЫ
             if (/[А-Яа-яЁёҒғҚқЎўҲҳЪъЬь]/.test(beforeCursor)) {
                 let lastTypedChar = beforeCursor.charAt(beforeCursor.length - 1);
                 let convertedBefore = transliterateLiveSegment(beforeCursor);
                 this.value = convertedBefore + afterCursor;
                 this.selectionStart = this.selectionEnd = convertedBefore.length;
 
-                // Если ввели Ш/ш или Ч/ч, показываем тултип возврата Sh/Ch
                 if (lastTypedChar === 'Ш' || lastTypedChar === 'ш') {
                     showTooltip(lastTypedChar === 'Ш' ? 'Sh' : 'sh', convertedBefore.length - 1);
                 } else if (lastTypedChar === 'Ч' || lastTypedChar === 'ч') {
@@ -862,24 +927,66 @@
             hideTooltip();
         }
 
-        // Конвертер файлов для сайта (в браузере)
+        // === DRAG & DROP (ПЕРЕТАСКИВАНИЕ ФАЙЛА В ПОЛЕ КОНВЕРТЕРА) ===
+        const converterBox = document.getElementById('converterBox');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            converterBox.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            converterBox.addEventListener(eventName, function() {
+                converterBox.classList.add('drag-over');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            converterBox.addEventListener(eventName, function() {
+                converterBox.classList.remove('drag-over');
+            }, false);
+        });
+
+        converterBox.addEventListener('drop', function(e) {
+            const dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length > 0) {
+                handleSelectedFile(dt.files[0]);
+            }
+        }, false);
+
+        // === КОНВЕРТЕР ФАЙЛОВ + ГЕНЕРАТОР PDF С СОХРАНЕНИЕМ СТИЛЕЙ И ОРИЕНТАЦИИ СТРАНИЦ ===
         let processedBlob = null;
         let processedOutName = "";
+        let processedPdfName = "";
         let processedMimeType = "application/octet-stream";
 
-        async function processFile(e) {
+        function processFile(e) {
             const file = e.target.files[0];
-            if (!file) return;
+            if (file) {
+                handleSelectedFile(file);
+            }
+            e.target.value = "";
+        }
 
+        async function handleSelectedFile(file) {
             const fileInfo = document.getElementById('fileInfo');
             const saveBtn = document.getElementById('saveBtn');
+            const savePdfBtn = document.getElementById('savePdfBtn');
+            const pdfStage = document.getElementById('pdfRenderStage');
+
             saveBtn.style.display = 'none';
+            savePdfBtn.style.display = 'none';
             processedBlob = null;
+            pdfStage.innerHTML = "";
 
             const dotIndex = file.name.lastIndexOf('.');
+            const baseName = (dotIndex !== -1) ? file.name.substring(0, dotIndex) : file.name;
             processedOutName = (dotIndex !== -1)
-                ? file.name.substring(0, dotIndex) + "_yangi" + file.name.substring(dotIndex)
+                ? baseName + "_yangi" + file.name.substring(dotIndex)
                 : "yangi_" + file.name;
+            processedPdfName = baseName + "_yangi.pdf";
 
             const ext = file.name.split('.').pop().toLowerCase();
             fileInfo.style.color = "#3B82F6";
@@ -891,6 +998,15 @@
                     const converted = applyReplacements(text);
                     processedMimeType = "text/plain;charset=utf-8";
                     processedBlob = new Blob([converted], { type: processedMimeType });
+
+                    // Макет для PDF (Книжная ориентация A4)
+                    const txtDiv = document.createElement('div');
+                    txtDiv.className = "pdf-page-section";
+                    txtDiv.dataset.orientation = "portrait";
+                    txtDiv.style.cssText = "width: 595.3pt; min-height: 841.9pt; padding: 42pt 48pt; background: #FFFFFF; white-space: pre-wrap; font-family: 'Manrope', Arial, sans-serif; font-size: 12pt; line-height: 1.6; color: #0F172A;";
+                    txtDiv.textContent = converted;
+                    pdfStage.appendChild(txtDiv);
+
                 } else if (ext === 'docx' || ext === 'xlsx' || ext === 'pptx') {
                     const arrayBuffer = await file.arrayBuffer();
                     const zip = await JSZip.loadAsync(arrayBuffer);
@@ -900,7 +1016,12 @@
                         if (relativePath.endsWith('.xml') && !relativePath.startsWith('word/embeddings/') && !relativePath.startsWith('ppt/embeddings/')) {
                             tasks.push(
                                 zipEntry.async("string").then(xmlContent => {
-                                    const updatedXml = xmlContent.replace(/>([^<]+)</g, function(match, textContent) {
+                                    // Склеиваем разорванные тегами сочетания Sh, Ch, O', G' перед заменой
+                                    let normalizedXml = xmlContent
+                                        .replace(/(<[a-zA-Z0-9]+:t[^>]*>[^<]*?[SsCc])(<\/[a-zA-Z0-9]+:t>[\s\S]*?<[a-zA-Z0-9]+:t[^>]*>)([Hh])/g, "$1$3$2")
+                                        .replace(/(<[a-zA-Z0-9]+:t[^>]*>[^<]*?[OoGg])(<\/[a-zA-Z0-9]+:t>[\s\S]*?<[a-zA-Z0-9]+:t[^>]*>)(['`\u02BB\u2018\u2019\u02BC])/g, "$1$3$2");
+
+                                    const updatedXml = normalizedXml.replace(/>([^<]+)</g, function(match, textContent) {
                                         return '>' + applyReplacements(textContent) + '<';
                                     });
                                     zip.file(relativePath, updatedXml);
@@ -921,6 +1042,9 @@
                         mimeType: processedMimeType,
                         compression: "DEFLATE"
                     });
+
+                    // Подготавливаем точный визуальный макет с сохранением ориентации каждого раздела
+                    await prepareOfficePdfStage(ext, processedBlob, zip, pdfStage);
                 } else {
                     fileInfo.style.color = "#E11D48";
                     fileInfo.innerText = "Faqat .docx, .xlsx, .pptx yoki .txt fayllarni tanlang";
@@ -930,12 +1054,199 @@
                 fileInfo.style.color = "#10B981";
                 fileInfo.innerText = "Tayyor: " + processedOutName;
                 saveBtn.style.display = 'inline-flex';
+                savePdfBtn.style.display = 'inline-flex';
             } catch (err) {
                 fileInfo.style.color = "#E11D48";
                 fileInfo.innerText = "Xatolik yuz berdi: " + err.message;
             }
+        }
 
-            e.target.value = "";
+        // Извлечение ориентации и размеров разделов напрямую из XML документа Word
+        async function extractDocxSectionSpecs(zip) {
+            const specs = [];
+            try {
+                const docXmlFile = zip.file("word/document.xml");
+                if (!docXmlFile) return specs;
+                const xmlStr = await docXmlFile.async("string");
+                const xmlDoc = new DOMParser().parseFromString(xmlStr, "application/xml");
+                const sectPrList = xmlDoc.getElementsByTagName("w:sectPr");
+
+                for (let i = 0; i < sectPrList.length; i++) {
+                    const sect = sectPrList[i];
+                    const pgSz = sect.getElementsByTagName("w:pgSz")[0];
+                    let wPt = 595.3;
+                    let hPt = 841.9;
+                    let isLandscape = false;
+
+                    if (pgSz) {
+                        const wAttr = parseInt(pgSz.getAttribute("w:w") || "11906", 10);
+                        const hAttr = parseInt(pgSz.getAttribute("w:h") || "16838", 10);
+                        const orientAttr = (pgSz.getAttribute("w:orient") || "").toLowerCase();
+
+                        wPt = wAttr / 20;
+                        hPt = hAttr / 20;
+
+                        if (orientAttr === "landscape" || wPt > hPt) {
+                            isLandscape = true;
+                            if (wPt < hPt) {
+                                const tmp = wPt;
+                                wPt = hPt;
+                                hPt = tmp;
+                            }
+                        }
+                    }
+                    specs.push({ wPt, hPt, isLandscape });
+                }
+            } catch (_) {}
+            return specs;
+        }
+
+        async function prepareOfficePdfStage(ext, blob, zip, stage) {
+            stage.innerHTML = "";
+            if (ext === 'docx' && window.docx) {
+                const xmlSpecs = await extractDocxSectionSpecs(zip);
+
+                await window.docx.renderAsync(blob, stage, null, {
+                    className: "docx",
+                    inWrapper: false,
+                    ignoreWidth: false,
+                    ignoreHeight: false,
+                    ignoreFonts: false,
+                    breakPages: true,
+                    useBase64URL: true
+                });
+
+                // Проверяем все отрендеренные секции и синхронизируем их ориентацию (Книжная / Альбомная)
+                const renderedSections = stage.querySelectorAll("section.docx");
+                renderedSections.forEach((sec, idx) => {
+                    let styleW = parseFloat(sec.style.width) || 0;
+                    let styleH = parseFloat(sec.style.minHeight || sec.style.height) || 0;
+                    const spec = xmlSpecs[Math.min(idx, xmlSpecs.length - 1)];
+
+                    if ((!styleW || !styleH) && spec) {
+                        styleW = spec.wPt;
+                        styleH = spec.hPt;
+                        sec.style.width = styleW + "pt";
+                        sec.style.minHeight = styleH + "pt";
+                    } else if (spec && spec.isLandscape && styleW < styleH) {
+                        // Если в XML указана альбомная ориентация, но ширина и высота не были переставлены
+                        styleW = spec.wPt;
+                        styleH = spec.hPt;
+                        sec.style.width = styleW + "pt";
+                        sec.style.minHeight = styleH + "pt";
+                    }
+
+                    const isLand = (styleW > styleH) || (spec && spec.isLandscape && styleW === styleH);
+                    sec.dataset.orientation = isLand ? "landscape" : "portrait";
+                    sec.dataset.widthPt = String(styleW || (isLand ? 841.9 : 595.3));
+                    sec.dataset.heightPt = String(styleH || (isLand ? 595.3 : 841.9));
+                });
+
+            } else if (ext === 'xlsx' && window.XLSX) {
+                const ab = await blob.arrayBuffer();
+                const wb = XLSX.read(ab, { type: 'array' });
+
+                for (let idx = 0; idx < wb.SheetNames.length; idx++) {
+                    const sheetName = wb.SheetNames[idx];
+                    let isSheetLandscape = false;
+
+                    // Проверяем настройки ориентации листа в XML книги Excel
+                    const sheetXmlFile = zip.file("xl/worksheets/sheet" + (idx + 1) + ".xml");
+                    if (sheetXmlFile) {
+                        const sheetXml = await sheetXmlFile.async("string");
+                        if (/orientation="landscape"/i.test(sheetXml)) {
+                            isSheetLandscape = true;
+                        }
+                    }
+
+                    const sheetSec = document.createElement('div');
+                    sheetSec.className = "pdf-page-section xlsx-sheet-section";
+                    sheetSec.style.cssText = "padding: 28pt 32pt; background: #FFFFFF; font-family: 'Manrope', Arial, sans-serif;";
+
+                    const title = document.createElement('h3');
+                    title.style.cssText = "margin: 0 0 10px; font-size: 14pt; color: #0F172A;";
+                    title.textContent = sheetName;
+                    sheetSec.appendChild(title);
+
+                    const tableHolder = document.createElement('div');
+                    tableHolder.innerHTML = XLSX.utils.sheet_to_html(wb.Sheets[sheetName]);
+                    sheetSec.appendChild(tableHolder);
+
+                    stage.appendChild(sheetSec);
+
+                    // Если таблица широкая, автоматически переключаем лист в альбомную ориентацию
+                    const tbl = tableHolder.querySelector('table');
+                    if (tbl && tbl.scrollWidth > 720) {
+                        isSheetLandscape = true;
+                    }
+
+                    const wPt = isSheetLandscape ? 841.9 : 595.3;
+                    const hPt = isSheetLandscape ? 595.3 : 841.9;
+                    sheetSec.style.width = wPt + "pt";
+                    sheetSec.style.minHeight = hPt + "pt";
+                    sheetSec.dataset.orientation = isSheetLandscape ? "landscape" : "portrait";
+                    sheetSec.dataset.widthPt = String(wPt);
+                    sheetSec.dataset.heightPt = String(hPt);
+                }
+
+            } else if (ext === 'pptx') {
+                // Определяем пропорции слайдов из ppt/presentation.xml
+                let slideIsLandscape = true;
+                const presXmlFile = zip.file("ppt/presentation.xml");
+                if (presXmlFile) {
+                    const presXml = await presXmlFile.async("string");
+                    const sldSzMatch = presXml.match(/<p:sldSz[^>]*cx="(\d+)"[^>]*cy="(\d+)"/i);
+                    if (sldSzMatch) {
+                        const cx = parseInt(sldSzMatch[1], 10);
+                        const cy = parseInt(sldSzMatch[2], 10);
+                        slideIsLandscape = (cx >= cy);
+                    }
+                }
+
+                const slideFiles = Object.keys(zip.files)
+                    .filter(p => /^ppt\/slides\/slide\d+\.xml$/i.test(p))
+                    .sort((a, b) => {
+                        const na = parseInt(a.match(/\d+/)[0], 10);
+                        const nb = parseInt(b.match(/\d+/)[0], 10);
+                        return na - nb;
+                    });
+
+                const wPt = slideIsLandscape ? 841.9 : 595.3;
+                const hPt = slideIsLandscape ? 595.3 : 841.9;
+
+                for (let i = 0; i < slideFiles.length; i++) {
+                    const xmlStr = await zip.file(slideFiles[i]).async("string");
+                    const xmlDoc = new DOMParser().parseFromString(xmlStr, "application/xml");
+                    const slideCard = document.createElement('div');
+                    slideCard.className = "pdf-page-section pptx-slide-card";
+                    slideCard.style.width = wPt + "pt";
+                    slideCard.style.minHeight = hPt + "pt";
+                    slideCard.dataset.orientation = slideIsLandscape ? "landscape" : "portrait";
+                    slideCard.dataset.widthPt = String(wPt);
+                    slideCard.dataset.heightPt = String(hPt);
+
+                    const slideHeader = document.createElement('div');
+                    slideHeader.className = "pptx-slide-title";
+                    slideHeader.textContent = "Slayd " + (i + 1);
+                    slideCard.appendChild(slideHeader);
+
+                    const paragraphs = xmlDoc.getElementsByTagName("a:p");
+                    for (let p = 0; p < paragraphs.length; p++) {
+                        const texts = paragraphs[p].getElementsByTagName("a:t");
+                        let line = "";
+                        for (let t = 0; t < texts.length; t++) {
+                            line += texts[t].textContent;
+                        }
+                        if (line.trim()) {
+                            const pEl = document.createElement('p');
+                            pEl.className = "pptx-slide-p";
+                            pEl.textContent = line;
+                            slideCard.appendChild(pEl);
+                        }
+                    }
+                    stage.appendChild(slideCard);
+                }
+            }
         }
 
         function downloadFile() {
@@ -948,6 +1259,171 @@
             link.click();
             document.body.removeChild(link);
             setTimeout(() => URL.revokeObjectURL(url), 2000);
+        }
+
+        // Поиск безопасной белой горизонтальной линии на холсте, чтобы не разрезать строку текста пополам
+        function findSafeSliceY(ctx, canvasWidth, targetY, minSearchY) {
+            const scanHeight = Math.max(10, targetY - minSearchY);
+            try {
+                const imgData = ctx.getImageData(0, minSearchY, canvasWidth, scanHeight).data;
+                for (let row = scanHeight - 1; row >= 0; row--) {
+                    let isRowBlank = true;
+                    const rowOffset = row * canvasWidth * 4;
+                    // Проверяем пиксели с шагом 4px для высокой скорости
+                    for (let x = 16; x < canvasWidth - 16; x += 4) {
+                        const idx = rowOffset + x * 4;
+                        const r = imgData[idx];
+                        const g = imgData[idx + 1];
+                        const b = imgData[idx + 2];
+                        const a = imgData[idx + 3];
+                        if (a > 10 && (r < 245 || g < 245 || b < 245)) {
+                            isRowBlank = false;
+                            break;
+                        }
+                    }
+                    if (isRowBlank) {
+                        return minSearchY + row;
+                    }
+                }
+            } catch (_) {}
+            return targetY;
+        }
+
+        async function downloadPdfFile() {
+            const stage = document.getElementById('pdfRenderStage');
+            const savePdfBtn = document.getElementById('savePdfBtn');
+            const fileInfo = document.getElementById('fileInfo');
+            if (!stage || !stage.innerHTML.trim()) return;
+
+            const originalBtnHtml = savePdfBtn.innerHTML;
+            savePdfBtn.disabled = true;
+            fileInfo.style.color = "#3B82F6";
+            fileInfo.innerText = "PDF tayyorlanmoqda: " + processedPdfName + "...";
+
+            try {
+                const { jsPDF } = window.jspdf;
+                let sectionNodes = Array.from(stage.querySelectorAll("section.docx, .pdf-page-section"));
+                if (sectionNodes.length === 0) {
+                    sectionNodes = [stage];
+                }
+
+                let pdf = null;
+                const PT_TO_MM = 25.4 / 72;
+
+                for (let i = 0; i < sectionNodes.length; i++) {
+                    const sec = sectionNodes[i];
+
+                    // Определяем точные размеры страницы и ориентацию для текущего раздела
+                    let wPt = parseFloat(sec.dataset.widthPt) || parseFloat(sec.style.width) || 0;
+                    let hPt = parseFloat(sec.dataset.heightPt) || parseFloat(sec.style.minHeight || sec.style.height) || 0;
+
+                    if (!wPt || !hPt) {
+                        const isLandFallback = sec.offsetWidth > sec.offsetHeight;
+                        wPt = isLandFallback ? 841.9 : 595.3;
+                        hPt = isLandFallback ? 595.3 : 841.9;
+                    }
+
+                    const isLandscape = (sec.dataset.orientation === "landscape") || (wPt > hPt);
+                    const pageOrient = isLandscape ? "l" : "p";
+                    const pageWidthMm = +(wPt * PT_TO_MM).toFixed(2);
+                    const pageHeightMm = +(hPt * PT_TO_MM).toFixed(2);
+
+                    // Рендерим текущий раздел в высоком разрешении
+                    const canvas = await html2canvas(sec, {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: "#FFFFFF",
+                        logging: false
+                    });
+
+                    const onePageCanvasHeight = Math.round(canvas.width * (pageHeightMm / pageWidthMm));
+
+                    // Если раздел помещается на одну страницу (с допуском 4% на округление)
+                    if (canvas.height <= onePageCanvasHeight * 1.04) {
+                        if (!pdf) {
+                            pdf = new jsPDF({
+                                orientation: pageOrient,
+                                unit: "mm",
+                                format: [pageWidthMm, pageHeightMm],
+                                compress: true
+                            });
+                        } else {
+                            pdf.addPage([pageWidthMm, pageHeightMm], pageOrient);
+                        }
+
+                        const imgData = canvas.toDataURL("image/jpeg", 0.96);
+                        const renderedHeightMm = Math.min(pageHeightMm, (canvas.height / canvas.width) * pageWidthMm);
+                        pdf.addImage(imgData, "JPEG", 0, 0, pageWidthMm, renderedHeightMm, undefined, "FAST");
+                    } else {
+                        // Если один раздел занимает несколько страниц одинаковой ориентации
+                        const ctx = canvas.getContext("2d");
+                        const topMarginMm = 12;
+                        const bottomMarginMm = 12;
+                        const marginCanvasPx = Math.round((topMarginMm / pageHeightMm) * onePageCanvasHeight);
+
+                        let currentY = 0;
+                        let isFirstSliceOfSec = true;
+
+                        while (currentY < canvas.height - 16) {
+                            const maxSliceHeight = isFirstSliceOfSec
+                                ? (onePageCanvasHeight - marginCanvasPx)
+                                : (onePageCanvasHeight - marginCanvasPx * 2);
+
+                            let targetEndY = currentY + maxSliceHeight;
+
+                            if (targetEndY >= canvas.height - 16) {
+                                targetEndY = canvas.height;
+                            } else {
+                                const minSearchY = Math.max(currentY + Math.floor(maxSliceHeight * 0.75), targetEndY - 140);
+                                targetEndY = findSafeSliceY(ctx, canvas.width, targetEndY, minSearchY);
+                            }
+
+                            const sliceHeight = targetEndY - currentY;
+                            if (sliceHeight <= 0) break;
+
+                            const sliceCanvas = document.createElement("canvas");
+                            sliceCanvas.width = canvas.width;
+                            sliceCanvas.height = sliceHeight;
+                            const sliceCtx = sliceCanvas.getContext("2d");
+                            sliceCtx.fillStyle = "#FFFFFF";
+                            sliceCtx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+                            sliceCtx.drawImage(canvas, 0, currentY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+
+                            if (!pdf) {
+                                pdf = new jsPDF({
+                                    orientation: pageOrient,
+                                    unit: "mm",
+                                    format: [pageWidthMm, pageHeightMm],
+                                    compress: true
+                                });
+                            } else {
+                                pdf.addPage([pageWidthMm, pageHeightMm], pageOrient);
+                            }
+
+                            const sliceImg = sliceCanvas.toDataURL("image/jpeg", 0.96);
+                            const sliceHeightMm = (sliceHeight / canvas.width) * pageWidthMm;
+                            const offsetTopMm = isFirstSliceOfSec ? 0 : topMarginMm;
+
+                            pdf.addImage(sliceImg, "JPEG", 0, offsetTopMm, pageWidthMm, sliceHeightMm, undefined, "FAST");
+
+                            currentY = targetEndY;
+                            isFirstSliceOfSec = false;
+                        }
+                    }
+                }
+
+                if (pdf) {
+                    pdf.save(processedPdfName);
+                    fileInfo.style.color = "#10B981";
+                    fileInfo.innerText = "Tayyor: " + processedPdfName;
+                }
+            } catch (err) {
+                fileInfo.style.color = "#E11D48";
+                fileInfo.innerText = "PDF xatolik: " + err.message;
+            } finally {
+                savePdfBtn.disabled = false;
+                savePdfBtn.innerHTML = originalBtnHtml;
+            }
         }
     </script>
 </body>
