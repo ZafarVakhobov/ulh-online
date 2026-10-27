@@ -315,6 +315,123 @@
             text-decoration: underline;
         }
 
+/* === БЛОК КУРСОВ ВАЛЮТ (NBU) ПОД БЛОКОМ ПОГОДЫ === */
+        .currency-Block-divider {
+            margin: 10px 4px 8px;
+            border: 0;
+            border-top: 1px dashed #E2E8F0;
+        }
+        .currency-mini-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: linear-gradient(135deg, #FFFDF9 0%, #FBF3E4 55%, #F5E6C8 100%);
+            border: 1px solid #EFE2C6;
+            border-radius: 20px;
+            padding: 15px 16px;
+            text-decoration: none;
+            color: #0F172A;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+            cursor: pointer;
+        }
+        .currency-mini-card:hover {
+            transform: translateY(-2px);
+            border-color: #E2CEAA;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+        .currency-mini-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .currency-badge-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #64748B;
+            text-transform: uppercase;
+        }
+        .currency-badge-label svg {
+            color: #0284C7;
+        }
+        .currency-nbu-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #FFFFFF;
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            border-radius: 999px;
+            padding: 4px 11px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #0F172A;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+        }
+        .currency-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+        .currency-item {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            border-radius: 14px;
+            padding: 9px 11px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+        }
+        .currency-item-left {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-width: 0;
+        }
+        .currency-symbol-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            background: #F1F5F9;
+            color: #0284C7;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        .currency-code-wrap {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+        .currency-code {
+            font-size: 12.5px;
+            font-weight: 800;
+            color: #0F172A;
+        }
+        .currency-sub {
+            font-size: 9.5px;
+            font-weight: 600;
+            color: #64748B;
+            white-space: nowrap;
+        }
+        .currency-rate-val {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #0F172A;
+            white-space: nowrap;
+            letter-spacing: -0.02em;
+        }
+        
+
         /* === МОДАЛЬНОЕ ПОП-АП ОКНО ВЫБОРА ГОРОДА ПОГОДЫ === */
         .weather-modal-backdrop {
             position: fixed;
@@ -972,6 +1089,74 @@
                         <span>Manba: AccuWeather</span>
                         <a href="https://www.accuweather.com/uz/uz/samarkand/355776/weather-forecast/355776" target="_blank" rel="noopener" id="miniAccuLink" class="weather-accu-link">Batafsil →</a>
                     </div>
+
+<hr class="currency-Block-divider">
+
+                    <!-- Блок курсов валют (клик по всему блоку открывает NBU.uz) -->
+                    <a href="https://nbu.uz/jismoniy-shaxslar-valyutalar-kursi" target="_blank" rel="noopener" class="currency-mini-card" aria-label="NBU valyuta kurslari">
+                        <div class="currency-mini-top">
+                            <div class="currency-badge-label">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                <span>VALYUTA KURSLARI</span>
+                            </div>
+                            <span class="currency-nbu-pill">
+                                <span>NBU</span>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                            </span>
+                        </div>
+
+                        <div class="currency-grid">
+                            <div class="currency-item">
+                                <div class="currency-item-left">
+                                    <span class="currency-symbol-icon">$</span>
+                                    <div class="currency-code-wrap">
+                                        <span class="currency-code">USD</span>
+                                        <span class="currency-sub">Dollar</span>
+                                    </div>
+                                </div>
+                                <span class="currency-rate-val" id="rateUSD">11 910</span>
+                            </div>
+
+                            <div class="currency-item">
+                                <div class="currency-item-left">
+                                    <span class="currency-symbol-icon">€</span>
+                                    <div class="currency-code-wrap">
+                                        <span class="currency-code">EUR</span>
+                                        <span class="currency-sub">Yevro</span>
+                                    </div>
+                                </div>
+                                <span class="currency-rate-val" id="rateEUR">13 330</span>
+                            </div>
+
+                            <div class="currency-item">
+                                <div class="currency-item-left">
+                                    <span class="currency-symbol-icon">₽</span>
+                                    <div class="currency-code-wrap">
+                                        <span class="currency-code">RUB</span>
+                                        <span class="currency-sub">Rubl</span>
+                                    </div>
+                                </div>
+                                <span class="currency-rate-val" id="rateRUB">150</span>
+                            </div>
+
+                            <div class="currency-item">
+                                <div class="currency-item-left">
+                                    <span class="currency-symbol-icon">¥</span>
+                                    <div class="currency-code-wrap">
+                                        <span class="currency-code">CNY</span>
+                                        <span class="currency-sub">Yuan</span>
+                                    </div>
+                                </div>
+                                <span class="currency-rate-val" id="rateCNY">1 780</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <div class="weather-accu-footer">
+                        <span id="currencyUpdateLabel">Manba: NBU (sömda)</span>
+                        <a href="https://nbu.uz/jismoniy-shaxslar-valyutalar-kursi" target="_blank" rel="noopener" class="weather-accu-link">Batafsil →</a>
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -1285,6 +1470,108 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
 
         renderWeatherUI();
         fetchAllRegionsWeather();
+
+    /* === ПОЛУЧЕНИЕ КУРСОВ ВАЛЮТ С NBU (USD, EUR, RUB, CNY) === */
+        const CURRENCY_RATES = {
+            USD: "11 910",
+            EUR: "13 330",
+            RUB: "150",
+            CNY: "1 780"
+        };
+
+        function formatUzPrice(num) {
+            const val = parseFloat(String(num).replace(/[^\d.,]/g, "").replace(",", "."));
+            if (isNaN(val) || val <= 0) return null;
+            return Math.round(val).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        }
+
+        function updateCurrencyDOM() {
+            ["USD", "EUR", "RUB", "CNY"].forEach(code => {
+                const el = document.getElementById("rate" + code);
+                if (el && CURRENCY_RATES[code]) {
+                    el.textContent = CURRENCY_RATES[code];
+                }
+            });
+        }
+
+        async function fetchNbuCurrencyRates() {
+            const targetCodes = ["USD", "EUR", "RUB", "CNY"];
+
+            // 1. Попытка получить данные напрямую со страницы NBU и JSON-шлюза NBU
+            const nbuUrls = [
+                "https://nbu.uz/uz/exchange-rates/json/",
+                "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://nbu.uz/uz/exchange-rates/json/"),
+                "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://nbu.uz/jismoniy-shaxslar-valyutalar-kursi")
+            ];
+
+            for (const url of nbuUrls) {
+                try {
+                    const res = await fetch(url);
+                    if (!res.ok) continue;
+                    const text = await res.text();
+
+                    // Если пришел JSON массив от NBU
+                    if (text.trim().startsWith("[")) {
+                        const data = JSON.parse(text);
+                        let updatedCount = 0;
+                        data.forEach(item => {
+                            if (targetCodes.includes(item.code)) {
+                                const rawRate = item.nbu_cell_price || item.nbu_buy_price || item.cb_price;
+                                const formatted = formatUzPrice(rawRate);
+                                if (formatted) {
+                                    CURRENCY_RATES[item.code] = formatted;
+                                    updatedCount++;
+                                }
+                            }
+                        });
+                        if (updatedCount > 0) {
+                            updateCurrencyDOM();
+                            return;
+                        }
+                    } else {
+                        // Парсинг HTML-таблицы со страницы https://nbu.uz/jismoniy-shaxslar-valyutalar-kursi
+                        let updatedCount = 0;
+                        targetCodes.forEach(code => {
+                            const regex = new RegExp(code + "[\\s\\S]{0,220}?(\\d[\\d\\s]{1,7}(?:[.,]\\d+)?)", "i");
+                            const match = text.match(regex);
+                            if (match && match[1]) {
+                                const formatted = formatUzPrice(match[1]);
+                                if (formatted) {
+                                    CURRENCY_RATES[code] = formatted;
+                                    updatedCount++;
+                                }
+                            }
+                        });
+                        if (updatedCount >= 2) {
+                            updateCurrencyDOM();
+                            return;
+                        }
+                    }
+                } catch (_) {}
+            }
+
+            // 2. Резервный прямой источник с открытым CORS (JSON ЦБ РУз), если прокси NBU недоступен в браузере
+            try {
+                const cbuRes = await fetch("https://cbu.uz/uz/arkhiv-kursov-valyut/json/");
+                if (cbuRes.ok) {
+                    const cbuData = await cbuRes.json();
+                    cbuData.forEach(item => {
+                        if (targetCodes.includes(item.Ccy)) {
+                            const formatted = formatUzPrice(item.Rate);
+                            if (formatted) {
+                                CURRENCY_RATES[item.Ccy] = formatted;
+                            }
+                        }
+                    });
+                    updateCurrencyDOM();
+                }
+            } catch (_) {
+                updateCurrencyDOM();
+            }
+        }
+
+        updateCurrencyDOM();
+        fetchNbuCurrencyRates();
 
         function copyEditorText() {
             const editor = document.getElementById('editor');
