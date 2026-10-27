@@ -37,6 +37,465 @@
             align-items: center;
             min-height: 100vh;
         }
+
+        /* === СТИЛИ ВЕРХНЕГО МЕНЮ (NAVBAR) === */
+        .top-navbar {
+            width: 100%;
+            max-width: 1120px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 999px;
+            padding: 10px 18px 10px 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            position: relative;
+            z-index: 1000;
+        }
+        .nav-brand {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        .nav-brand img {
+            height: 38px;
+            width: auto;
+            display: block;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .nav-item {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+        .nav-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 40px;
+            padding: 0 18px;
+            border-radius: 999px;
+            border: none;
+            background: transparent;
+            color: #0F172A;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            white-space: nowrap;
+        }
+        .nav-link-btn:hover {
+            background-color: #F1F5F9;
+        }
+        .nav-link-btn.active {
+            background-color: #E8F5FE;
+            color: #0284C7;
+        }
+        .nav-chevron {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #F1F5F9;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.25s ease, background-color 0.2s ease;
+            color: #64748B;
+        }
+        .nav-item.open .nav-chevron,
+        .nav-item:hover .nav-chevron {
+            background: #E2E8F0;
+            color: #0F172A;
+        }
+        .nav-item.open .nav-chevron {
+            transform: rotate(180deg);
+        }
+        .nav-tg-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            padding: 0 22px;
+            border-radius: 999px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            color: #0F172A;
+            font-size: 14px;
+            font-weight: 800;
+            text-decoration: none;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+            flex-shrink: 0;
+        }
+        .nav-tg-btn:hover {
+            background: #F1F5F9;
+            border-color: #CBD5E1;
+        }
+
+        /* Выпадающие подменю с плавной анимацией */
+        .nav-dropdown {
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 50%;
+            transform: translateX(-50%) translateY(8px);
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 18px;
+            padding: 10px;
+            min-width: 265px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
+            z-index: 1100;
+        }
+        .nav-item.open .nav-dropdown {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0);
+        }
+        .dropdown-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            color: #0F172A;
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background-color 0.18s ease, color 0.18s ease;
+            white-space: nowrap;
+        }
+        .dropdown-link:hover {
+            background: #F1F5F9;
+            color: #0284C7;
+        }
+        .dropdown-link svg {
+            flex-shrink: 0;
+        }
+        .dropdown-divider {
+            margin: 8px 6px 6px;
+            border: 0;
+            border-top: 1px dashed #CBD5E1;
+            opacity: 0.75;
+        }
+        .dropdown-version {
+            padding: 2px 12px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #94A3B8;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* === ВИДЖЕТ ПОГОДЫ ВНУТРИ ПОДМЕНЮ "FOYDALI RESURSLAR" === */
+        .weather-dropdown-box {
+            padding: 8px;
+            min-width: 300px;
+        }
+        .weather-mini-card {
+            background: linear-gradient(135deg, #FFFDF9 0%, #FBF3E4 55%, #F5E6C8 100%);
+            border: 1px solid #EFE2C6;
+            border-radius: 20px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+        .weather-mini-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .weather-badge-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #64748B;
+            text-transform: uppercase;
+        }
+        .weather-badge-label svg {
+            color: #0284C7;
+        }
+        .weather-city-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #FFFFFF;
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            border-radius: 999px;
+            padding: 5px 12px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #0F172A;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .weather-city-trigger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.09);
+        }
+        .weather-mini-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .weather-temp-wrap {
+            display: flex;
+            flex-direction: column;
+        }
+        .weather-temp-main {
+            display: flex;
+            align-items: flex-start;
+            line-height: 1;
+            font-size: 44px;
+            font-weight: 800;
+            color: #0F172A;
+            letter-spacing: -0.03em;
+        }
+        .weather-temp-unit {
+            font-size: 14px;
+            font-weight: 800;
+            color: #64748B;
+            margin-left: 3px;
+            margin-top: 5px;
+        }
+        .weather-cond-text {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #64748B;
+            margin-top: 4px;
+        }
+        .weather-icon-box {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            background: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+            flex-shrink: 0;
+        }
+        .weather-accu-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 6px 2px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #94A3B8;
+        }
+        .weather-accu-link {
+            color: #0284C7;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .weather-accu-link:hover {
+            text-decoration: underline;
+        }
+
+        /* === МОДАЛЬНОЕ ПОП-АП ОКНО ВЫБОРА ГОРОДА ПОГОДЫ === */
+        .weather-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.22s ease, visibility 0.22s ease;
+            z-index: 2000;
+        }
+        .weather-modal-backdrop.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        .weather-modal-card {
+            width: 100%;
+            max-width: 440px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 16px;
+            box-shadow: 0 24px 48px rgba(15, 23, 42, 0.22);
+            transform: scale(0.96) translateY(8px);
+            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .weather-modal-backdrop.open .weather-modal-card {
+            transform: scale(1) translateY(0);
+        }
+        .weather-selected-banner {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #F2F8FD 0%, #E6F1FB 60%, #DCEBFA 100%);
+            border-radius: 18px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            border: 1px solid #D5E6F7;
+        }
+        .weather-selected-left {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .weather-selected-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #475569;
+            text-transform: uppercase;
+        }
+        .weather-selected-tag svg {
+            color: #0284C7;
+        }
+        .weather-selected-city {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0F172A;
+            margin-top: 2px;
+        }
+        .weather-selected-cond {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-top: 2px;
+        }
+        .weather-selected-temp {
+            position: relative;
+            z-index: 2;
+            font-size: 46px;
+            font-weight: 800;
+            color: #0F172A;
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+        .weather-banner-decor {
+            position: absolute;
+            right: -12px;
+            top: -12px;
+            width: 120px;
+            height: 120px;
+            opacity: 0.35;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .weather-other-title {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #64748B;
+            text-transform: uppercase;
+            margin: 4px 4px 10px;
+        }
+        .weather-cities-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+        .weather-city-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 12px 14px;
+            background: #F8FAFC;
+            border: 1px solid #F1F5F9;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+        }
+        .weather-city-item:hover {
+            background: #EFF6FF;
+            border-color: #BFDBFE;
+            transform: translateY(-1px);
+        }
+        .weather-city-item.active-city {
+            background: #E8F5FE;
+            border-color: #7DD3FC;
+        }
+        .weather-city-item-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+        .weather-city-item-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1E293B;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .weather-city-item-temp {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0F172A;
+            flex-shrink: 0;
+        }
+        .weather-modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid #F1F5F9;
+            font-size: 11.5px;
+            color: #64748B;
+        }
+        .weather-modal-close {
+            background: #F1F5F9;
+            border: none;
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+        }
+        .weather-modal-close:hover {
+            background: #E2E8F0;
+        }
+
         .container {
             width: 100%;
             max-width: 1120px;
@@ -285,6 +744,31 @@
             cursor: wait;
         }
         @media (max-width: 760px) {
+            .top-navbar {
+                border-radius: 20px;
+                padding: 12px 16px;
+                flex-wrap: wrap;
+                justify-content: center;
+                max-width: 480px;
+            }
+            .nav-links {
+                width: 100%;
+                order: 3;
+                justify-content: center;
+                gap: 4px;
+            }
+            .nav-link-btn {
+                padding: 0 12px;
+                font-size: 13px;
+                height: 36px;
+            }
+            .nav-dropdown {
+                left: 50%;
+                transform: translateX(-50%) translateY(8px);
+            }
+            .weather-cities-grid {
+                grid-template-columns: 1fr;
+            }
             .section-header {
                 align-items: flex-start;
                 flex-direction: column;
@@ -417,6 +901,114 @@
         <div id="pdfRenderStage"></div>
     </div>
 
+    <!-- === ВЕРХНЕЕ МЕНЮ САЙТА (TOP NAVBAR) === -->
+    <nav class="top-navbar" id="topNavbar" aria-label="Asosiy menyu">
+        <!-- Логотип слева -->
+        <a href="https://ulh-online.uz/" class="nav-brand" aria-label="ULH Online bosh sahifa">
+            <img src="/logo.svg" alt="Uzbek Latin Helper">
+        </a>
+
+        <!-- Центральные пункты меню -->
+        <div class="nav-links">
+            <!-- 1. ULH Online (активна по умолчанию) -->
+            <div class="nav-item">
+                <a href="https://ulh-online.uz/" class="nav-link-btn active">ULH Online</a>
+            </div>
+
+            <!-- 2. Ilovani yuklab oliş (с выпадающим меню) -->
+            <div class="nav-item has-dropdown" id="navDownloadItem">
+                <button type="button" class="nav-link-btn" onclick="toggleNavDropdown('navDownloadItem', event)" aria-expanded="false">
+                    <span>Ilovani yuklab oliş</span>
+                    <span class="nav-chevron">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </span>
+                </button>
+                <div class="nav-dropdown" role="menu">
+                    <a href="https://t.me/ulh_releases/10" target="_blank" rel="noopener" class="dropdown-link" onclick="openTgCustomLink(event, 'https://t.me/ulh_releases/10')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21.928 2.502a1.15 1.15 0 0 0-1.178-.127L2.126 10.33a1.132 1.132 0 0 0 .08 2.115l4.762 1.563 1.842 5.79a1.13 1.13 0 0 0 1.923.419l2.725-2.853 4.864 3.59a1.136 1.136 0 0 0 1.787-.678l2.24-16.634a1.148 1.148 0 0 0-.421-1.14z" fill="#2AABEE"/></svg>
+                        <span>Telegram'dan yuklab oliş</span>
+                    </a>
+                    <a href="https://drive.google.com/drive/folders/1k8OT2JzUvF8h78ekRXlti2CnOYXgzstf?usp=sharing" target="_blank" rel="noopener" class="dropdown-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                        <span>Google Drive'dan yuklab oliş</span>
+                    </a>
+                    <hr class="dropdown-divider">
+                    <div class="dropdown-version">Uzbek Latin Helper v. 1.0.0 - aktual versiya</div>
+                </div>
+            </div>
+
+            <!-- 3. Foydali resurslar (с виджетом погоды внутри подменю) -->
+            <div class="nav-item has-dropdown" id="navResourcesItem">
+                <button type="button" class="nav-link-btn" onclick="toggleNavDropdown('navResourcesItem', event)" aria-expanded="false">
+                    <span>Foydali resurslar</span>
+                    <span class="nav-chevron">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </span>
+                </button>
+                <div class="nav-dropdown weather-dropdown-box" onclick="event.stopPropagation()">
+                    <div class="weather-mini-card">
+                        <div class="weather-mini-top">
+                            <div class="weather-badge-label">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                <span>OB-HAVO</span>
+                            </div>
+                            <button type="button" class="weather-city-trigger" id="miniCityBtn" onclick="openWeatherModal(event)">
+                                <span id="miniCityName">Samarqand</span>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                        </div>
+                        <div class="weather-mini-bottom">
+                            <div class="weather-temp-wrap">
+                                <div class="weather-temp-main">
+                                    <span id="miniTempVal">18°</span>
+                                    <span class="weather-temp-unit">C</span>
+                                </div>
+                                <div class="weather-cond-text" id="miniCondText">Bulutli</div>
+                            </div>
+                            <div class="weather-icon-box" id="miniWeatherIcon"></div>
+                        </div>
+                    </div>
+                    <div class="weather-accu-footer">
+                        <span>Manba: AccuWeather</span>
+                        <a href="https://www.accuweather.com/uz/uz/samarkand/355776/weather-forecast/355776" target="_blank" rel="noopener" id="miniAccuLink" class="weather-accu-link">Batafsil →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кнопка Telegram справа -->
+        <a href="https://t.me/ulh_releases" target="_blank" rel="noopener" class="nav-tg-btn" onclick="openTgLink(event)">Telegram</a>
+    </nav>
+
+    <!-- === МОДАЛЬНОЕ ПОП-АП ОКНО ВЫБОРА ГОРОДА ПОГОДЫ === -->
+    <div class="weather-modal-backdrop" id="weatherModalBackdrop" onclick="closeWeatherModal(event)">
+        <div class="weather-modal-card" onclick="event.stopPropagation()">
+            <div class="weather-selected-banner">
+                <div class="weather-selected-left">
+                    <div class="weather-selected-tag">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <span>TANLANGAN HUDUD</span>
+                    </div>
+                    <div class="weather-selected-city" id="modalSelectedCity">Samarqand</div>
+                    <div class="weather-selected-cond">
+                        <span id="modalSelectedIcon" style="display:inline-flex;width:20px;height:20px;"></span>
+                        <span id="modalSelectedCondText">Bulutli</span>
+                    </div>
+                </div>
+                <div class="weather-selected-temp" id="modalSelectedTemp">18°</div>
+                <div class="weather-banner-decor" id="modalBannerDecor"></div>
+            </div>
+
+            <div class="weather-other-title">BOŞQA HUDUDLAR</div>
+            <div class="weather-cities-grid" id="weatherCitiesGrid"></div>
+
+            <div class="weather-modal-footer">
+                <a href="https://www.accuweather.com/uz/uz/samarkand/355776/weather-forecast/355776" target="_blank" rel="noopener" id="modalAccuLink" class="weather-accu-link">AccuWeather sahifasini oçiş ↗</a>
+                <button type="button" class="weather-modal-close" onclick="closeWeatherModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <a class="hero-banner" href="/" aria-label="Uzbek Latin Helper homepage">
             <img src="./header.png" alt="Uzbek Latin Helper by Zafar Vakhobov Softwares">
@@ -519,6 +1111,185 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                 tg.openTelegramLink("https://t.me/ulh_releases");
             }
         }
+
+        function openTgCustomLink(e, url) {
+            if (tg && tg.openTelegramLink) {
+                e.preventDefault();
+                tg.openTelegramLink(url);
+            }
+        }
+
+        /* === СКРИПТ ВЕРХНЕГО МЕНЮ И ПОГОДЫ (ACCUWEATHER + LIVE METEO) === */
+        const ACCUWEATHER_API_KEY = ""; // При наличии ключа AccuWeather API можно вписать сюда
+
+        const UZ_REGIONS = [
+            { id: "samarqand", name: "Samarqand", lat: 39.6542, lon: 66.9597, accuKey: "355776", accuSlug: "samarkand", temp: 18, type: "partly", cond: "Bulutli" },
+            { id: "toshkent_sh", name: "Toşkent ş.", lat: 41.2995, lon: 69.2401, accuKey: "351199", accuSlug: "tashkent", temp: 19, type: "cloudy", cond: "Bulutli" },
+            { id: "qoraqalpogiston", name: "Qoraqalpoğiston", lat: 42.4619, lon: 59.6166, accuKey: "354251", accuSlug: "nukus", temp: 7, type: "sunny", cond: "Oçiq" },
+            { id: "andijon", name: "Andijon", lat: 40.7821, lon: 72.3442, accuKey: "351842", accuSlug: "andijan", temp: 17, type: "sunny", cond: "Oçiq" },
+            { id: "fargona", name: "Farğona", lat: 40.3842, lon: 71.7843, accuKey: "353008", accuSlug: "fergana", temp: 18, type: "sunny", cond: "Oçiq" },
+            { id: "namangan", name: "Namangan", lat: 40.9983, lon: 71.6726, accuKey: "355091", accuSlug: "namangan", temp: 16, type: "sunny", cond: "Oçiq" },
+            { id: "buxoro", name: "Buxoro", lat: 39.7747, lon: 64.4286, accuKey: "352479", accuSlug: "bukhara", temp: 18, type: "sunny", cond: "Oçiq" },
+            { id: "xorazm", name: "Xorazm", lat: 41.5500, lon: 60.6333, accuKey: "356372", accuSlug: "urgench", temp: 10, type: "sunny", cond: "Oçiq" },
+            { id: "surxondaryo", name: "Surxondaryo", lat: 37.2242, lon: 67.2783, accuKey: "355956", accuSlug: "termez", temp: 19, type: "cloudy", cond: "Bulutli" },
+            { id: "qashqadaryo", name: "Qaşqadaryo", lat: 38.8606, lon: 65.7891, accuKey: "355666", accuSlug: "karshi", temp: 18, type: "cloudy", cond: "Bulutli" },
+            { id: "jizzax", name: "Jizzax", lat: 40.1158, lon: 67.8422, accuKey: "353199", accuSlug: "jizzakh", temp: 17, type: "sunny", cond: "Oçiq" },
+            { id: "sirdaryo", name: "Sirdaryo", lat: 40.4897, lon: 68.7842, accuKey: "355913", accuSlug: "gulistan", temp: 19, type: "sunny", cond: "Oçiq" },
+            { id: "toshkent_vil", name: "Toşkent viloyati", lat: 41.0422, lon: 69.3567, accuKey: "351199", accuSlug: "tashkent", temp: 19, type: "cloudy", cond: "Bulutli" },
+            { id: "navoiy", name: "Navoiy", lat: 40.0844, lon: 65.3792, accuKey: "355129", accuSlug: "navoiy", temp: 19, type: "sunny", cond: "Oçiq" }
+        ];
+
+        let selectedRegionId = "samarqand";
+
+        function getWeatherSvg(type, size = 34) {
+            if (type === "sunny") {
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`;
+            }
+            if (type === "cloudy") {
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>`;
+            }
+            if (type === "rain") {
+                return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 13v8"/><path d="M8 13v8"/><path d="M12 15v8"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/></svg>`;
+            }
+            // partly (солнце за облаком, как на скриншоте)
+            return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/></svg>`;
+        }
+
+        function mapWmoCodeToUzbek(code) {
+            if (code === 0) return { type: "sunny", cond: "Oçiq" };
+            if (code === 1 || code === 2) return { type: "partly", cond: "Bulutli" };
+            if (code === 3 || code === 45 || code === 48) return { type: "cloudy", cond: "Bulutli" };
+            if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return { type: "rain", cond: "Yomğirli" };
+            if (code >= 71 && code <= 77) return { type: "cloudy", cond: "Qorli" };
+            if (code >= 95) return { type: "rain", cond: "Momaqaldiroq" };
+            return { type: "partly", cond: "Bulutli" };
+        }
+
+        function getAccuWeatherUrl(reg) {
+            return `https://www.accuweather.com/uz/uz/${reg.accuSlug}/${reg.accuKey}/weather-forecast/${reg.accuKey}`;
+        }
+
+        function renderWeatherUI() {
+            const current = UZ_REGIONS.find(r => r.id === selectedRegionId) || UZ_REGIONS[0];
+            const accuUrl = getAccuWeatherUrl(current);
+
+            // Обновляем мини-карточку в подменю Foydali resurslar
+            document.getElementById('miniCityName').textContent = current.name;
+            document.getElementById('miniTempVal').textContent = current.temp + "°";
+            document.getElementById('miniCondText').textContent = current.cond;
+            document.getElementById('miniWeatherIcon').innerHTML = getWeatherSvg(current.type, 34);
+            document.getElementById('miniAccuLink').href = accuUrl;
+
+            // Обновляем верхний баннер в модальном окне
+            document.getElementById('modalSelectedCity').textContent = current.name;
+            document.getElementById('modalSelectedTemp').textContent = current.temp + "°";
+            document.getElementById('modalSelectedCondText').textContent = current.cond;
+            document.getElementById('modalSelectedIcon').innerHTML = getWeatherSvg(current.type, 18);
+            document.getElementById('modalBannerDecor').innerHTML = getWeatherSvg(current.type, 110);
+            document.getElementById('modalAccuLink').href = accuUrl;
+
+            // Обновляем сетку остальных регионов
+            const grid = document.getElementById('weatherCitiesGrid');
+            grid.innerHTML = "";
+            UZ_REGIONS.filter(r => r.id !== selectedRegionId).forEach(reg => {
+                const btn = document.createElement('div');
+                btn.className = "weather-city-item";
+                btn.onclick = () => selectWeatherRegion(reg.id);
+                btn.innerHTML = `
+                    <div class="weather-city-item-left">
+                        ${getWeatherSvg(reg.type, 20)}
+                        <span class="weather-city-item-name">${reg.name}</span>
+                    </div>
+                    <div class="weather-city-item-temp">${reg.temp}°</div>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectWeatherRegion(regionId) {
+            selectedRegionId = regionId;
+            renderWeatherUI();
+            closeWeatherModal();
+        }
+
+        async function fetchAllRegionsWeather() {
+            try {
+                if (ACCUWEATHER_API_KEY) {
+                    const current = UZ_REGIONS.find(r => r.id === selectedRegionId) || UZ_REGIONS[0];
+                    const res = await fetch(`https://dataservice.accuweather.com/currentconditions/v1/${current.accuKey}?apikey=${ACCUWEATHER_API_KEY}&language=uz&metric=true`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data[0]) {
+                            current.temp = Math.round(data[0].Temperature.Metric.Value);
+                            renderWeatherUI();
+                        }
+                    }
+                }
+                // Пакетное получение актуальной погоды для всех 14 регионов Узбекистана
+                const lats = UZ_REGIONS.map(r => r.lat).join(",");
+                const lons = UZ_REGIONS.map(r => r.lon).join(",");
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,weather_code&timezone=auto`;
+                const response = await fetch(url);
+                if (!response.ok) return;
+                const json = await response.json();
+                const results = Array.isArray(json) ? json : [json];
+
+                results.forEach((item, idx) => {
+                    if (item && item.current && UZ_REGIONS[idx]) {
+                        UZ_REGIONS[idx].temp = Math.round(item.current.temperature_2m);
+                        const mapped = mapWmoCodeToUzbek(item.current.weather_code);
+                        UZ_REGIONS[idx].type = mapped.type;
+                        UZ_REGIONS[idx].cond = mapped.cond;
+                    }
+                });
+                renderWeatherUI();
+            } catch (_) {
+                renderWeatherUI();
+            }
+        }
+
+        function toggleNavDropdown(itemId, event) {
+            if (event) event.stopPropagation();
+            const target = document.getElementById(itemId);
+            const isOpen = target.classList.contains('open');
+
+            document.querySelectorAll('.nav-item.has-dropdown').forEach(el => {
+                el.classList.remove('open');
+                const btn = el.querySelector('.nav-link-btn');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            });
+
+            if (!isOpen) {
+                target.classList.add('open');
+                const btn = target.querySelector('.nav-link-btn');
+                if (btn) btn.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        function openWeatherModal(event) {
+            if (event) event.stopPropagation();
+            document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+            document.getElementById('weatherModalBackdrop').classList.add('open');
+        }
+
+        function closeWeatherModal(event) {
+            if (event && event.target && event.target !== document.getElementById('weatherModalBackdrop')) return;
+            document.getElementById('weatherModalBackdrop').classList.remove('open');
+        }
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeWeatherModal();
+                document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+            }
+        });
+
+        renderWeatherUI();
+        fetchAllRegionsWeather();
 
         function copyEditorText() {
             const editor = document.getElementById('editor');
