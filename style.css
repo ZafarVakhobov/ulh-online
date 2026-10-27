@@ -1,0 +1,1097 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Manrope', sans-serif;
+    user-select: none;
+}
+
+body {
+    margin: 0;
+    padding: 16px;
+    background-color: #F8FAFC;
+    background-image: url("./back.png");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    color: #0F172A;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* === СТИЛИ ВЕРХНЕГО МЕНЮ (NAVBAR) === */
+.top-navbar {
+    width: 100%;
+    max-width: 1120px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 999px;
+    padding: 10px 18px 10px 22px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: relative;
+    z-index: 1000;
+}
+
+.nav-brand {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.nav-brand img {
+    height: 38px;
+    width: auto;
+    display: block;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.nav-item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.nav-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: #0F172A;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+}
+
+.nav-link-btn:hover {
+    background-color: #F1F5F9;
+}
+
+.nav-link-btn.active {
+    background-color: #E8F5FE;
+    color: #0284C7;
+}
+
+.nav-chevron {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #F1F5F9;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s ease, background-color 0.2s ease;
+    color: #64748B;
+}
+
+.nav-item.open .nav-chevron,
+.nav-item:hover .nav-chevron {
+    background: #E2E8F0;
+    color: #0F172A;
+}
+
+.nav-item.open .nav-chevron {
+    transform: rotate(180deg);
+}
+
+.nav-tg-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 22px;
+    border-radius: 999px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    color: #0F172A;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+    flex-shrink: 0;
+}
+
+.nav-tg-btn:hover {
+    background: #F1F5F9;
+    border-color: #CBD5E1;
+}
+
+/* Выпадающие подменю с плавной анимацией */
+.nav-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 18px;
+    padding: 10px;
+    min-width: 265px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
+    z-index: 1100;
+}
+
+.nav-item.open .nav-dropdown {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+
+.dropdown-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    color: #0F172A;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.18s ease, color 0.18s ease;
+    white-space: nowrap;
+}
+
+.dropdown-link:hover {
+    background: #F1F5F9;
+    color: #0284C7;
+}
+
+.dropdown-link svg {
+    flex-shrink: 0;
+}
+
+.dropdown-divider {
+    margin: 8px 6px 6px;
+    border: 0;
+    border-top: 1px dashed #CBD5E1;
+    opacity: 0.75;
+}
+
+.dropdown-version {
+    padding: 2px 12px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94A3B8;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* === ВИДЖЕТ ПОГОДЫ ВНУТРИ ПОДМЕНЮ "FOYDALI RESURSLAR" === */
+.weather-dropdown-box {
+    padding: 10px;
+    min-width: 320px;
+}
+
+.weather-mini-card {
+    background: linear-gradient(135deg, #FFFDF9 0%, #FBF3E4 55%, #F5E6C8 100%);
+    border: 1px solid #EFE2C6;
+    border-radius: 20px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.weather-mini-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.weather-badge-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #64748B;
+    text-transform: uppercase;
+}
+
+.weather-badge-label svg {
+    color: #0284C7;
+}
+
+.weather-city-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #FFFFFF;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #0F172A;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.weather-city-trigger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.09);
+}
+
+.weather-mini-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.weather-temp-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.weather-temp-main {
+    display: flex;
+    align-items: flex-start;
+    line-height: 1;
+    font-size: 44px;
+    font-weight: 800;
+    color: #0F172A;
+    letter-spacing: -0.03em;
+}
+
+.weather-temp-unit {
+    font-size: 14px;
+    font-weight: 800;
+    color: #64748B;
+    margin-left: 3px;
+    margin-top: 5px;
+}
+
+.weather-cond-text {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #64748B;
+    margin-top: 4px;
+}
+
+.weather-icon-box {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+    flex-shrink: 0;
+}
+
+.weather-accu-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 6px 2px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94A3B8;
+}
+
+.weather-accu-link {
+    color: #0284C7;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.weather-accu-link:hover {
+    text-decoration: underline;
+}
+
+/* === БЛОК КУРСОВ ВАЛЮТ (NBU) ПОД БЛОКОМ ПОГОДЫ === */
+.currency-Block-divider {
+    margin: 10px 4px 8px;
+    border: 0;
+    border-top: 1px dashed #E2E8F0;
+}
+
+.currency-mini-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: linear-gradient(135deg, #FFFDF9 0%, #FBF3E4 55%, #F5E6C8 100%);
+    border: 1px solid #EFE2C6;
+    border-radius: 20px;
+    padding: 15px 16px;
+    text-decoration: none;
+    color: #0F172A;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    cursor: pointer;
+}
+
+.currency-mini-card:hover {
+    transform: translateY(-2px);
+    border-color: #E2CEAA;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.currency-mini-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.currency-badge-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #64748B;
+    text-transform: uppercase;
+}
+
+.currency-badge-label svg {
+    color: #0284C7;
+}
+
+.currency-nbu-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #FFFFFF;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 999px;
+    padding: 4px 11px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #0F172A;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+}
+
+.currency-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.currency-item {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    border-radius: 14px;
+    padding: 9px 11px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+}
+
+.currency-item-left {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+.currency-symbol-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    background: #F1F5F9;
+    color: #0284C7;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.currency-code-wrap {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.currency-code {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #0F172A;
+}
+
+.currency-sub {
+    font-size: 9.5px;
+    font-weight: 600;
+    color: #64748B;
+    white-space: nowrap;
+}
+
+.currency-rate-val {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #0F172A;
+    white-space: nowrap;
+    letter-spacing: -0.02em;
+}
+
+/* === МОДАЛЬНОЕ ПОП-АП ОКНО ВЫБОРА ГОРОДА ПОГОДЫ === */
+.weather-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s ease, visibility 0.22s ease;
+    z-index: 2000;
+}
+
+.weather-modal-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.weather-modal-card {
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.22);
+    transform: scale(0.96) translateY(8px);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.weather-modal-backdrop.open .weather-modal-card {
+    transform: scale(1) translateY(0);
+}
+
+.weather-selected-banner {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #F2F8FD 0%, #E6F1FB 60%, #DCEBFA 100%);
+    border-radius: 18px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    border: 1px solid #D5E6F7;
+}
+
+.weather-selected-left {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.weather-selected-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #475569;
+    text-transform: uppercase;
+}
+
+.weather-selected-tag svg {
+    color: #0284C7;
+}
+
+.weather-selected-city {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0F172A;
+    margin-top: 2px;
+}
+
+.weather-selected-cond {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    margin-top: 2px;
+}
+
+.weather-selected-temp {
+    position: relative;
+    z-index: 2;
+    font-size: 46px;
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.weather-banner-decor {
+    position: absolute;
+    right: -12px;
+    top: -12px;
+    width: 120px;
+    height: 120px;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.weather-other-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #64748B;
+    text-transform: uppercase;
+    margin: 4px 4px 10px;
+}
+
+.weather-cities-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.weather-city-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px 14px;
+    background: #F8FAFC;
+    border: 1px solid #F1F5F9;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.weather-city-item:hover {
+    background: #EFF6FF;
+    border-color: #BFDBFE;
+    transform: translateY(-1px);
+}
+
+.weather-city-item.active-city {
+    background: #E8F5FE;
+    border-color: #7DD3FC;
+}
+
+.weather-city-item-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.weather-city-item-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E293B;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.weather-city-item-temp {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0F172A;
+    flex-shrink: 0;
+}
+
+.weather-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid #F1F5F9;
+    font-size: 11.5px;
+    color: #64748B;
+}
+
+.weather-modal-close {
+    background: #F1F5F9;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+}
+
+.weather-modal-close:hover {
+    background: #E2E8F0;
+}
+
+/* === ОСНОВНОЙ КОНТЕЙНЕР И РАБОЧАЯ ОБЛАСТЬ === */
+.container {
+    width: 100%;
+    max-width: 1120px;
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.workspace {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    width: 100%;
+    align-items: stretch;
+}
+
+.editor-wrapper,
+.converter-box {
+    min-width: 0;
+    height: 260px;
+}
+
+.editor-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-wrapper textarea {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+}
+
+.converter-box {
+    justify-content: center;
+}
+
+.hero-banner {
+    display: block;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    line-height: 0;
+    background: #2458D3;
+}
+
+.hero-banner img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.35s ease;
+    transform: scale(1);
+}
+
+.hero-banner:hover img,
+.hero-banner:focus-visible img {
+    transform: scale(1.03);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-banner img {
+        transition: none;
+    }
+}
+
+.header {
+    text-align: center;
+}
+
+.footer-legal {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-width: 0;
+}
+
+.footer-author {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #94A3B8;
+    white-space: nowrap;
+}
+
+.copyright-icon {
+    font-size: 13px;
+    line-height: 1;
+    font-weight: 700;
+}
+
+.status {
+    font-size: 12px;
+    font-weight: 600;
+    width: 100%;
+    line-height: 1.45;
+    color: #10B981;
+    background: #ECFDF5;
+    padding: 8px 14px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    margin: 0;
+}
+
+/* Общая группа кнопок над текстовым полем */
+.editor-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Кнопка Nusxa oliş и Öçiriş */
+.copy-link,
+.clear-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    height: 32px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.copy-link {
+    background-color: #D9F0FC;
+    color: #2AABEE;
+}
+
+.copy-link:hover {
+    background-color: #2AABEE;
+    color: #FFFFFF;
+}
+
+.copy-link.copied {
+    background-color: #D9F0FC;
+    color: #2AABEE;
+}
+
+.clear-link {
+    background-color: #FDE0DB;
+    color: #F54927;
+}
+
+.clear-link:hover {
+    background-color: #F54927;
+    color: #FFFFFF;
+}
+
+.clear-link.cleared {
+    background-color: #FDE0DB;
+    color: #F54927;
+}
+
+textarea {
+    width: 100%;
+    height: 150px;
+    padding: 12px;
+    border: 1px solid #CBD5E1;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+    user-select: text;
+}
+
+textarea:focus {
+    border-color: #2AABEE;
+}
+
+/* Блок конвертера: виден на сайте, но автоматически скрывается в Telegram App */
+.converter-box {
+    background: #F8FAFC url(/file-upload.svg) no-repeat 50% 0%;
+    background-size: 110%;
+    border: 1.5px dashed #CBD5E1;
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+}
+
+.converter-box.drag-over {
+    border-color: #2AABEE;
+    background-color: #EFF6FF;
+    transform: scale(1.01);
+}
+
+.file-info {
+    font-size: 12px;
+    color: #64748B;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+.drop-hint {
+    font-size: 11px;
+    color: #94A3B8;
+    margin-top: -4px;
+}
+
+.btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.pill-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 18px;
+    background-color: #2AABEE;
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 18px;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s ease;
+    box-shadow: 0 4px 12px rgba(42, 171, 238, 0.28);
+}
+
+.pill-btn:hover {
+    opacity: 0.75;
+}
+
+.pill-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+@media (max-width: 760px) {
+    .top-navbar {
+        border-radius: 20px;
+        padding: 12px 16px;
+        flex-wrap: wrap;
+        justify-content: center;
+        max-width: 480px;
+    }
+    .nav-links {
+        width: 100%;
+        order: 3;
+        justify-content: center;
+        gap: 4px;
+    }
+    .nav-link-btn {
+        padding: 0 12px;
+        font-size: 13px;
+        height: 36px;
+    }
+    .nav-dropdown {
+        left: 50%;
+        transform: translateX(-50%) translateY(8px);
+    }
+    .weather-cities-grid {
+        grid-template-columns: 1fr;
+    }
+    .section-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .editor-actions {
+        width: 100%;
+    }
+    .copy-link,
+    .clear-link {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 0 12px;
+        font-size: 14px;
+    }
+    .container {
+        max-width: 480px;
+    }
+    .workspace {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .editor-wrapper,
+    .converter-box {
+        height: auto;
+        min-height: 0;
+    }
+    .editor-wrapper textarea {
+        flex: none;
+        height: 150px;
+    }
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px solid #E2E8F0;
+    gap: 8px;
+}
+
+.footer-left {
+    font-size: 11px;
+    font-weight: 500;
+    color: #94A3B8;
+}
+
+#popup-tip {
+    position: fixed;
+    display: none;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #F8FAFC;
+    background: rgba(28, 35, 51, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-top: 2px solid #88C0D0;
+    padding: 5px 15px;
+    border-radius: 9px;
+    cursor: pointer;
+    z-index: 9999;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    transition: opacity 0.15s ease;
+}
+
+#popup-tip:hover {
+    opacity: 0.75;
+}
+
+/* Скрытая сцена для рендеринга документов с сохранением индивидуальной ширины и ориентации каждого раздела */
+#pdfRenderOverlay {
+    position: fixed;
+    left: -20000px;
+    top: 0;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    pointer-events: none;
+    z-index: -9999;
+}
+
+#pdfRenderStage {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background: transparent;
+    color: #000000;
+}
+
+#pdfRenderStage section.docx {
+    background: #FFFFFF;
+    box-shadow: none !important;
+    margin: 0 !important;
+}
+
+.xlsx-sheet-section table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.xlsx-sheet-section td,
+.xlsx-sheet-section th {
+    border: 1px solid #CBD5E1;
+    padding: 6px 8px;
+    font-size: 12px;
+}
+
+.pptx-slide-card {
+    background: #FFFFFF;
+    padding: 36px 44px;
+    border: 1px solid #E2E8F0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.pptx-slide-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748B;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+}
+
+.pptx-slide-p {
+    font-size: 15px;
+    line-height: 1.55;
+    margin: 6px 0;
+    color: #0F172A;
+}
