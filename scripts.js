@@ -1135,18 +1135,53 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// === 5. ПОЛУЧЕНИЕ КУРСОВ ВАЛЮТ С NBU (USD, EUR, RUB, CNY) ===
+// === 5. КУРСЫ ВАЛЮТ С NBU И ИНТЕРАКТИВНЫЙ КАЛЬКУЛЯТОР ВАЛЮТ ===
 const CURRENCY_RATES = {
-    USD: "11 910",
-    EUR: "13 330",
+    USD: "12 100",
+    EUR: "14 200",
     RUB: "150",
     CNY: "1 780"
 };
 
+// Числовые курсы по отношению к суму (UZS) для точных расчетов калькулятора
+const CURRENCY_NUMERIC = {
+    UZS: 1,
+    USD: 12100,
+    EUR: 14200,
+    RUB: 150,
+    CNY: 1780
+};
+
+const CURRENCY_META = [
+    { code: "UZS", symbol: "Söm", name: "Özbek sömi" },
+    { code: "USD", symbol: "$", name: "AQŞ dollari" },
+    { code: "EUR", symbol: "€", name: "Yevro" },
+    { code: "RUB", symbol: "₽", name: "Rossiya rubli" },
+    { code: "CNY", symbol: "¥", name: "Xitoy yuani" }
+];
+
+let calcBaseCurrency = "USD";
+
+function parseRateNumber(raw) {
+    const val = parseFloat(String(raw).replace(/[^\d.,]/g, "").replace(",", "."));
+    return (!isNaN(val) && val > 0) ? val : null;
+}
+
 function formatUzPrice(num) {
-    const val = parseFloat(String(num).replace(/[^\d.,]/g, "").replace(",", "."));
-    if (isNaN(val) || val <= 0) return null;
+    const val = parseRateNumber(num);
+    if (!val) return null;
     return Math.round(val).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
+function formatCalcResultNumber(val, code) {
+    if (!isFinite(val) || val === 0) return "0";
+    if (code === "UZS") {
+        return Math.round(val).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    }
+    if (val >= 100) {
+        return val.toFixed(2).replace(/\.00$/, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    }
+    return val.toFixed(2).replace(/\.00$/, "");
 }
 
 function updateCurrencyDOM() {
@@ -1156,12 +1191,197 @@ function updateCurrencyDOM() {
             el.textContent = CURRENCY_RATES[code];
         }
     });
+    renderCurrencyCalculator();
 }
+
+function renderQuickChips() {
+    const chipsBox = document.getElementById("calcQuickChips");
+    if (!chipsBox) return;
+
+    const presets = (calcBaseCurrency === "UZS")
+        ? [
+            { label: "100 ming", val: 100000 },
+            { label: "500 ming", val: 500000 },
+            { label: "1 mln", val: 1000000 },
+            { label: "5 mln", val: 5000000 },
+            { label: "10 mln", val: 10000000 }
+        ]
+        : [
+            { label: "10", val: 10 },
+            { label: "50", val: 50 },
+            { label: "100", val: 100 },
+            { label: "150", val: 150 },
+            { label: "500", val: 500 },
+            { label: "1 000", val: 1000 }
+        ];
+
+    chipsBox.innerHTML = "";
+    presets.forEach(item => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "calc-chip-btn";
+        btn.textContent = item.label;
+        btn.onclick = () => setCalcQuickAmount(item.val);
+        chipsBox.appendChild(btn);
+    });
+}
+
+function setCalcQuickAmount(amount) {
+    const input = document.getElementById("calcAmountInput");
+    if (!input) return;
+    input.value = amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    renderCurrencyCalculator();
+}
+
+function selectCalcBaseCurrency(code) {
+    calcBaseCurrency = code;
+    const selectEl = document.getElementById("calcBaseSelect");
+    if (selectEl && selectEl.value !== code) {
+        selectEl.value = code;
+    }
+
+    document.querySelectorAll(".calc-curr-tab").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-curr") === code);
+    });
+
+    const input = document.getElementById("calcAmountInput");
+    if (input) {
+        const rawVal = parseRateNumber(input.value) || 0;
+        if (code === "UZS" && rawVal <= 1000) {
+            input.value = "1 000 000";
+        } else if (code !== "UZS" && rawVal >= 100000) {
+            input.value = "100";
+        }
+    }
+
+    renderQuickChips();
+    renderCurrencyCalculator();
+}
+
+function renderCurrencyCalculator() {
+    const input = document.getElementById("calcAmountInput");
+    const grid = document.getElementById("calcResultsGrid");
+    if (!input || !grid) return;
+
+    const cleanStr = input.value.replace(/\s+/g, "").replace(",", ".");
+    const amount = parseFloat(cleanStr) || 0;
+    const baseRateToUzs = CURRENCY_NUMERIC[calcBaseCurrency] || 1;
+    const totalInUzs = amount * baseRateToUzs;
+
+    grid.innerHTML = "";
+
+    // Сортируем так, чтобы UZS всегда был главной широкой карточкой сверху
+    const orderedMeta = [
+        CURRENCY_META[0], // UZS
+        ...CURRENCY_META.slice(1)
+    ];
+
+    orderedMeta.forEach(item => {
+        const targetRate = CURRENCY_NUMERIC[item.code] || 1;
+        const convertedVal = totalInUzs / targetRate;
+        const formattedVal = formatCalcResultNumber(convertedVal, item.code);
+        const displayWithUnit = item.code === "UZS"
+            ? `${formattedVal} söm`
+            : `${formattedVal} ${item.symbol}`;
+
+        const card = document.createElement("div");
+        card.className = "calc-result-card" + (item.code === "UZS" ? " uzs-main-card" : "");
+        card.onclick = () => copyCalcValue(formattedVal, card, displayWithUnit);
+
+        const subRateHint = item.code === "UZS"
+            ? `1 ${calcBaseCurrency} = ${formatUzPrice(baseRateToUzs) || 1} söm`
+            : `${item.name} (1 ${item.code} = ${CURRENCY_RATES[item.code]} söm)`;
+
+        card.innerHTML = `
+            <div class="calc-result-left">
+                <span class="calc-result-icon">${item.symbol}</span>
+                <div class="calc-result-meta">
+                    <span class="calc-result-code">${item.code}</span>
+                    <span class="calc-result-name">${subRateHint}</span>
+                </div>
+            </div>
+            <div class="calc-result-value" data-orig="${displayWithUnit}">${displayWithUnit}</div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function copyCalcValue(valToCopy, cardEl, originalText) {
+    const valNode = cardEl.querySelector(".calc-result-value");
+    if (!navigator.clipboard || !valNode) return;
+
+    navigator.clipboard.writeText(valToCopy).then(() => {
+        valNode.textContent = "Nusxalandi ✓";
+        valNode.style.color = "#10B981";
+        setTimeout(() => {
+            valNode.textContent = originalText;
+            valNode.style.color = "";
+        }, 900);
+    }).catch(() => {});
+}
+
+function openCurrencyModal(event) {
+    if (event) event.stopPropagation();
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    const modal = document.getElementById('currencyModalBackdrop');
+    if (modal) {
+        modal.classList.add('open');
+        renderQuickChips();
+        renderCurrencyCalculator();
+    }
+}
+
+function closeCurrencyModal(event) {
+    const modal = document.getElementById('currencyModalBackdrop');
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove('open');
+}
+
+// Привязка событий к полю ввода и селекту внутри калькулятора
+const calcInputEl = document.getElementById("calcAmountInput");
+if (calcInputEl) {
+    calcInputEl.addEventListener("input", function() {
+        renderCurrencyCalculator();
+    });
+}
+
+const calcSelectEl = document.getElementById("calcBaseSelect");
+if (calcSelectEl) {
+    calcSelectEl.addEventListener("change", function() {
+        selectCalcBaseCurrency(this.value);
+    });
+}
+
+// Закрытие калькулятора по клавише Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeCurrencyModal();
+    }
+});
 
 async function fetchNbuCurrencyRates() {
     const targetCodes = ["USD", "EUR", "RUB", "CNY"];
 
-    // 1. Попытка получить данные напрямую со страницы NBU и JSON-шлюза NBU
+    // 1. Быстрая загрузка актуальных курсов по прямому каналу с поддержкой CORS
+    try {
+        const cbuRes = await fetch("https://cbu.uz/uz/arkhiv-kursov-valyut/json/");
+        if (cbuRes.ok) {
+            const cbuData = await cbuRes.json();
+            cbuData.forEach(item => {
+                if (targetCodes.includes(item.Ccy)) {
+                    const num = parseRateNumber(item.Rate);
+                    if (num) {
+                        CURRENCY_NUMERIC[item.Ccy] = num;
+                        CURRENCY_RATES[item.Ccy] = formatUzPrice(num);
+                    }
+                }
+            });
+            updateCurrencyDOM();
+        }
+    } catch (_) {}
+
+    // 2. Уточнение коммерческих курсов с NBU.uz
     const nbuUrls = [
         "https://nbu.uz/uz/exchange-rates/json/",
         "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://nbu.uz/uz/exchange-rates/json/"),
@@ -1180,9 +1400,10 @@ async function fetchNbuCurrencyRates() {
                 data.forEach(item => {
                     if (targetCodes.includes(item.code)) {
                         const rawRate = item.nbu_cell_price || item.nbu_buy_price || item.cb_price;
-                        const formatted = formatUzPrice(rawRate);
-                        if (formatted) {
-                            CURRENCY_RATES[item.code] = formatted;
+                        const num = parseRateNumber(rawRate);
+                        if (num) {
+                            CURRENCY_NUMERIC[item.code] = num;
+                            CURRENCY_RATES[item.code] = formatUzPrice(num);
                             updatedCount++;
                         }
                     }
@@ -1197,9 +1418,10 @@ async function fetchNbuCurrencyRates() {
                     const regex = new RegExp(code + "[\\s\\S]{0,220}?(\\d[\\d\\s]{1,7}(?:[.,]\\d+)?)", "i");
                     const match = text.match(regex);
                     if (match && match[1]) {
-                        const formatted = formatUzPrice(match[1]);
-                        if (formatted) {
-                            CURRENCY_RATES[code] = formatted;
+                        const num = parseRateNumber(match[1]);
+                        if (num) {
+                            CURRENCY_NUMERIC[code] = num;
+                            CURRENCY_RATES[code] = formatUzPrice(num);
                             updatedCount++;
                         }
                     }
@@ -1211,28 +1433,10 @@ async function fetchNbuCurrencyRates() {
             }
         } catch (_) {}
     }
-
-    // 2. Резервный прямой источник с открытым CORS (JSON ЦБ РУз)
-    try {
-        const cbuRes = await fetch("https://cbu.uz/uz/arkhiv-kursov-valyut/json/");
-        if (cbuRes.ok) {
-            const cbuData = await cbuRes.json();
-            cbuData.forEach(item => {
-                if (targetCodes.includes(item.Ccy)) {
-                    const formatted = formatUzPrice(item.Rate);
-                    if (formatted) {
-                        CURRENCY_RATES[item.Ccy] = formatted;
-                    }
-                }
-            });
-            updateCurrencyDOM();
-        }
-    } catch (_) {
-        updateCurrencyDOM();
-    }
 }
 
 renderWeatherUI();
 fetchAllRegionsWeather();
+renderQuickChips();
 updateCurrencyDOM();
 fetchNbuCurrencyRates();
