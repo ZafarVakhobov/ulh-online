@@ -18,7 +18,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Основные стили сайта -->
     <link rel="stylesheet" href="style.css">
-    
 </head>
 <body>
 
@@ -65,7 +64,7 @@
                 </div>
             </div>
 
-            <!-- 3. Foydali resurslar (с виджетом погоды внутри подменю) -->
+            <!-- 3. Foydali resurslar (с виджетом погоды и курсами валют внутри подменю) -->
             <div class="nav-item has-dropdown" id="navResourcesItem">
                 <button type="button" class="nav-link-btn" onclick="toggleNavDropdown('navResourcesItem', event)" aria-expanded="false">
                     <span>Foydali resurslar</span>
@@ -91,7 +90,7 @@
                                     <span id="miniTempVal">18°</span>
                                     <span class="weather-temp-unit">C</span>
                                 </div>
-                                <div class="weather-cond-text" id="miniCondText"><input type="time"></div>
+                                <div class="weather-cond-text" id="miniCondText">Bulutli</div>
                             </div>
                             <div class="weather-icon-box" id="miniWeatherIcon"></div>
                         </div>
@@ -101,18 +100,18 @@
                         <a href="https://www.accuweather.com/uz/uz/samarkand/355776/weather-forecast/355776" target="_blank" rel="noopener" id="miniAccuLink" class="weather-accu-link">Batafsil</a>
                     </div>
 
-<hr class="currency-Block-divider">
+                    <hr class="currency-Block-divider">
 
-                    <!-- Блок курсов валют (клик по всему блоку открывает NBU.uz) -->
-                    <a href="https://nbu.uz/jismoniy-shaxslar-valyutalar-kursi" target="_blank" rel="noopener" class="currency-mini-card" aria-label="NBU valyuta kurslari">
+                    <!-- Блок курсов валют (клик по блоку открывает поп-ап калькулятор) -->
+                    <div class="currency-mini-card" role="button" tabindex="0" onclick="openCurrencyModal(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCurrencyModal(event);}" aria-label="Valyuta kalkulyatorini oçiş">
                         <div class="currency-mini-top">
                             <div class="currency-badge-label">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                                 <span>VALYUTA KURSLARI</span>
                             </div>
                             <span class="currency-nbu-pill">
-                                <span>NBU</span>
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                                <span>Kalkulyator</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
                             </span>
                         </div>
 
@@ -161,13 +160,12 @@
                                 <span class="currency-rate-val" id="rateCNY">1 780</span>
                             </div>
                         </div>
-                    </a>
+                    </div>
 
                     <div class="weather-accu-footer">
                         <span id="currencyUpdateLabel">Manba: NBU (sömda)</span>
                         <a href="https://nbu.uz/jismoniy-shaxslar-valyutalar-kursi" target="_blank" rel="noopener" class="weather-accu-link">Batafsil</a>
                     </div>
-                    
                 </div>
             </div>
         </div>
@@ -205,6 +203,56 @@
         </div>
     </div>
 
+    <!-- === МОДАЛЬНОЕ ПОП-АП ОКНО КАЛЬКУЛЯТОРА ВАЛЮТ (NBU) === -->
+    <div class="weather-modal-backdrop" id="currencyModalBackdrop" onclick="closeCurrencyModal(event)">
+        <div class="weather-modal-card" onclick="event.stopPropagation()">
+            <!-- Верхний блок ввода суммы и выбора валюты -->
+            <div class="calc-input-banner">
+                <div class="calc-banner-top">
+                    <div class="weather-selected-tag">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+                        <span>VALYUTA KALKULYATORI (NBU)</span>
+                    </div>
+                </div>
+
+                <!-- Поле ввода суммы + выпадающий выбор валюты -->
+                <div class="calc-input-row">
+                    <input type="text" id="calcAmountInput" class="calc-amount-input" value="100" inputmode="decimal" placeholder="0" aria-label="Miqdorni kiriting">
+                    <select id="calcBaseSelect" class="calc-currency-select" aria-label="Valyutani tanlang">
+                        <option value="USD">USD ($)</option>
+                        <option value="UZS">UZS (Söm)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="RUB">RUB (₽)</option>
+                        <option value="CNY">CNY (¥)</option>
+                    </select>
+                </div>
+
+                <!-- Быстрые кнопки выбора валюты -->
+                <div class="calc-curr-tabs" id="calcCurrTabs">
+                    <button type="button" class="calc-curr-tab active" data-curr="USD" onclick="selectCalcBaseCurrency('USD')">$ USD</button>
+                    <button type="button" class="calc-curr-tab" data-curr="UZS" onclick="selectCalcBaseCurrency('UZS')">Söm UZS</button>
+                    <button type="button" class="calc-curr-tab" data-curr="EUR" onclick="selectCalcBaseCurrency('EUR')">€ EUR</button>
+                    <button type="button" class="calc-curr-tab" data-curr="RUB" onclick="selectCalcBaseCurrency('RUB')">₽ RUB</button>
+                    <button type="button" class="calc-curr-tab" data-curr="CNY" onclick="selectCalcBaseCurrency('CNY')">¥ CNY</button>
+                </div>
+
+                <!-- Быстрые суммы (меняются автоматически для валюты и сумов) -->
+                <div class="calc-quick-chips" id="calcQuickChips"></div>
+            </div>
+
+            <div class="weather-other-title">KONVERTATSIYA NATIJASI (NUSXA OLIŞ UÇUN BOSING)</div>
+
+            <!-- Сетка пересчитанных результатов -->
+            <div class="calc-results-grid" id="calcResultsGrid"></div>
+
+            <!-- Нижняя панель со ссылкой на NBU.uz и кнопкой закрытия -->
+            <div class="weather-modal-footer">
+                <a href="https://nbu.uz/jismoniy-shaxslar-valyutalar-kursi" target="_blank" rel="noopener" class="weather-accu-link">NBU sahifasini oçiş ↗</a>
+                <button type="button" class="weather-modal-close" onclick="closeCurrencyModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <a class="hero-banner" href="/" aria-label="Uzbek Latin Helper homepage">
             <img src="./header.png" alt="Uzbek Latin Helper by Zafar Vakhobov Softwares">
@@ -222,29 +270,29 @@
                         <div class="copy-link" id="copyBtn" role="button" tabindex="0" onclick="copyEditorText()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); copyEditorText(); }">Nusxa oliş</div>
                     </div>
                 </div>
-                    <textarea id="editor" placeholder="Şahar, Özbekiston, Қўқон, Шаҳар..."></textarea>
+                <textarea id="editor" placeholder="Şahar, Özbekiston, Қўқон, Шаҳар..."></textarea>
             </div>
 
             <!-- Блок конвертера: виден на сайте, но автоматически скрывается в Telegram App -->
             <div class="converter-box" id="converterBox">
-            <div class="section-title" style="margin:0;">Office formatidagi fayllar konverteri</div>
-            <div class="file-info" id="fileInfo">Yuklab bölaydigan fayllar formati: .docx, .xlsx, .pptx, .txt</div>
-            <div class="drop-hint">Faylni tanlang yoki şu yerga tortib taşlang (Drop file)</div>
-            <input type="file" id="fileInput" style="display: none;" accept=".docx,.xlsx,.pptx,.txt" onchange="processFile(event)">
-            <div class="btn-row">
-                <button class="pill-btn" onclick="document.getElementById('fileInput').click()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Faylni yuklaş
-                </button>
-                <button id="saveBtn" class="pill-btn" style="display:none; background-color: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);" onclick="downloadFile()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Saqlaş
-                </button>
-                <button id="savePdfBtn" class="pill-btn" style="display:none; background-color: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);" onclick="downloadPdfFile()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
-                    PDF saqlaş
-                </button>
-            </div>
+                <div class="section-title" style="margin:0;">Office formatidagi fayllar konverteri</div>
+                <div class="file-info" id="fileInfo">Yuklab bölaydigan fayllar formati: .docx, .xlsx, .pptx, .txt</div>
+                <div class="drop-hint">Faylni tanlang yoki şu yerga tortib taşlang (Drop file)</div>
+                <input type="file" id="fileInput" style="display: none;" accept=".docx,.xlsx,.pptx,.txt" onchange="processFile(event)">
+                <div class="btn-row">
+                    <button class="pill-btn" onclick="document.getElementById('fileInput').click()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        Faylni yuklaş
+                    </button>
+                    <button id="saveBtn" class="pill-btn" style="display:none; background-color: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);" onclick="downloadFile()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Saqlaş
+                    </button>
+                    <button id="savePdfBtn" class="pill-btn" style="display:none; background-color: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);" onclick="downloadPdfFile()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+                        PDF saqlaş
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -253,7 +301,6 @@
                 <div class="footer-left">All rights reserved</div>
                 <div class="footer-author"><span class="copyright-icon" aria-hidden="true">©</span><span>Zafar Vakhobov Softwares, <span id="currentYear"></span></span></div>
             </div>
-           
         </div>
     </div>
 
@@ -281,9 +328,8 @@ top_js="1.3";
 <SCRIPT language="JavaScript" type="text/javascript">
 <!--
 top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('<img src="http://cnt0.www.uz/counter/collect?'+top_r+top_rat+'" width=0 height=0 border=0 />')//-->
-</SCRIPT><NOSCRIPT><IMG height=0 src="http://cnt0.www.uz/counter/collect?id=48162&pg=http%3A//uzinfocom.uz&col=340F6E&t=ffffff&p=BD6F6F" width=0 border=0 /></NOSCRIPT><!-- FINISH WWW.UZ TOP-RATING -->  
-    
-<script src="./scripts.js" defer></script>
-    
+</SCRIPT><NOSCRIPT><IMG height=0 src="http://cnt0.www.uz/counter/collect?id=48162&pg=http%3A//uzinfocom.uz&col=340F6E&t=ffffff&p=BD6F6F" width=0 border=0 /></NOSCRIPT><!-- FINISH WWW.UZ TOP-RATING -->
+
+    <script src="./scripts.js" defer></script>
 </body>
 </html>
