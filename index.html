@@ -16,6 +16,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Библиотека для векторной и растровой генерации QR-кодов в браузере -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    
     <!-- Основные стили сайта -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -166,6 +170,26 @@
                         <span id="currencyUpdateLabel">Manba: NBU (sömda)</span>
                         <a href="https://nbu.uz/jismoniy-shaxslar-valyutalar-kursi" target="_blank" rel="noopener" class="weather-accu-link">Batafsil</a>
                     </div>
+
+                    <hr class="currency-Block-divider">
+
+                    <!-- Компактная кнопка-карточка QR-генератора -->
+                    <div class="qr-mini-card" role="button" tabindex="0" onclick="openQrModal(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openQrModal(event);}" aria-label="QR-kod generatorini oçiş">
+                        <div class="qr-mini-left">
+                            <div class="qr-mini-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M7 7h.01"/><path d="M17 7h.01"/><path d="M7 17h.01"/><path d="M17 17h.01"/></svg>
+                            </div>
+                            <div class="qr-mini-text">
+                                <span class="qr-mini-title">QR-KOD GENERATORI</span>
+                                <span class="qr-mini-sub">Hujjatlar va afişalar uçun</span>
+                            </div>
+                        </div>
+                        <span class="currency-nbu-pill">
+                            <span>PNG / SVG</span>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -253,6 +277,59 @@
         </div>
     </div>
 
+<!-- === МОДАЛЬНОЕ ПОП-АП ОКНО ГЕНЕРАТОРА QR-КОДОВ === -->
+    <div class="weather-modal-backdrop" id="qrModalBackdrop" onclick="closeQrModal(event)">
+        <div class="weather-modal-card" onclick="event.stopPropagation()">
+            <!-- Верхняя панель ввода ссылки или текста -->
+            <div class="calc-input-banner">
+                <div class="calc-banner-top">
+                    <div class="weather-selected-tag">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        <span>QR-KOD GENERATORI</span>
+                    </div>
+                </div>
+
+                <div class="qr-input-row">
+                    <input type="text" id="qrTextInput" class="qr-text-input" value="https://ulh-online.uz/" placeholder="Havola yoki matnni kiriting (https://...)" aria-label="QR-kod uçun havola yoki matn">
+                    <button type="button" class="qr-clear-btn" onclick="clearQrInput()" title="Tozalaş" aria-label="Tozalaş">✕</button>
+                </div>
+
+                <!-- Выбор цвета QR-кода для дизайна и документов -->
+                <div class="qr-color-row">
+                    <span class="qr-color-label">Rang:</span>
+                    <button type="button" class="qr-color-dot active" data-color="#0F172A" style="background:#0F172A;" onclick="selectQrColor('#0F172A')" title="Toq kök (Asosiy)"></button>
+                    <button type="button" class="qr-color-dot" data-color="#000000" style="background:#000000;" onclick="selectQrColor('#000000')" title="Qora (Klassik)"></button>
+                    <button type="button" class="qr-color-dot" data-color="#0284C7" style="background:#0284C7;" onclick="selectQrColor('#0284C7')" title="Moviy (ULH)"></button>
+                    <button type="button" class="qr-color-dot" data-color="#10B981" style="background:#10B981;" onclick="selectQrColor('#10B981')" title="Yaşil"></button>
+                </div>
+            </div>
+
+            <!-- Превью QR-кода -->
+            <div class="qr-preview-stage">
+                <div class="qr-preview-box" id="qrPreviewBox"></div>
+                <div class="qr-preview-caption" id="qrStatusCaption">Yuqori sifatli: 1024×1024 px (PNG) va vektorli (SVG)</div>
+            </div>
+
+            <!-- Кнопки скачивания PNG и SVG -->
+            <div class="qr-download-actions">
+                <button type="button" class="pill-btn qr-dl-btn qr-dl-png" onclick="downloadQrPng()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>PNG yuklab oliş</span>
+                </button>
+                <button type="button" class="pill-btn qr-dl-btn qr-dl-svg" onclick="downloadQrSvg()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                    <span>SVG yuklab oliş</span>
+                </button>
+            </div>
+
+            <!-- Нижняя панель -->
+            <div class="weather-modal-footer">
+                <span>Bepul va çeksiz foydalaniş</span>
+                <button type="button" class="weather-modal-close" onclick="closeQrModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="container">
         <a class="hero-banner" href="/" aria-label="Uzbek Latin Helper homepage">
             <img src="./header.png" alt="Uzbek Latin Helper by Zafar Vakhobov Softwares">
