@@ -1442,7 +1442,7 @@ updateCurrencyDOM();
 fetchNbuCurrencyRates();
 
 // === 6. ГЕНЕРАТОР QR-КОДОВ (PNG 1024x1024 + ВЕКТОРНЫЙ SVG) ===
-let currentQrColor = "#0F172A";
+let currentQrColor = "#3f51b5";
 let currentQrMatrix = null;
 
 function buildQrMatrix(text) {
