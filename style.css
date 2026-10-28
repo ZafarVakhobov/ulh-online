@@ -663,6 +663,194 @@ body {
     background: #E2E8F0;
 }
 
+/* === СТИЛИ МОДАЛЬНОГО КАЛЬКУЛЯТОРА ВАЛЮТ === */
+        .calc-input-banner {
+            background: linear-gradient(135deg, #FFFDF9 0%, #FBF3E4 55%, #F5E6C8 100%);
+            border: 1px solid #EFE2C6;
+            border-radius: 18px;
+            padding: 16px 18px;
+            margin-bottom: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+        }
+        .calc-banner-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .calc-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #FFFFFF;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 6px 8px 6px 14px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .calc-input-row:focus-within {
+            border-color: #0284C7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+        }
+        .calc-amount-input {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 24px;
+            font-weight: 800;
+            color: #0F172A;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+        .calc-currency-select {
+            border: 1px solid #E2E8F0;
+            background: #F8FAFC;
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #0F172A;
+            cursor: pointer;
+            outline: none;
+            flex-shrink: 0;
+        }
+        .calc-currency-select:hover {
+            background: #F1F5F9;
+        }
+        .calc-curr-tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .calc-curr-tab {
+            flex: 1 1 auto;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: rgba(255, 255, 255, 0.75);
+            color: #334155;
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 11.5px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .calc-curr-tab:hover {
+            background: #FFFFFF;
+        }
+        .calc-curr-tab.active {
+            background: #0284C7;
+            color: #FFFFFF;
+            border-color: #0284C7;
+        }
+        .calc-quick-chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .calc-chip-btn {
+            border: 1px dashed #CBD5E1;
+            background: rgba(255, 255, 255, 0.65);
+            color: #475569;
+            border-radius: 8px;
+            padding: 4px 9px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+        .calc-chip-btn:hover {
+            background: #FFFFFF;
+            color: #0284C7;
+            border-color: #0284C7;
+        }
+        .calc-results-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+        .calc-result-card {
+            background: #F8FAFC;
+            border: 1px solid #F1F5F9;
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            cursor: pointer;
+            transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+        }
+        .calc-result-card:hover {
+            background: #EFF6FF;
+            border-color: #BFDBFE;
+            transform: translateY(-1px);
+        }
+        .calc-result-card.uzs-main-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #F2F8FD 0%, #E6F1FB 100%);
+            border-color: #D5E6F7;
+            padding: 14px 16px;
+        }
+        .calc-result-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .calc-result-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            background: #FFFFFF;
+            color: #0284C7;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+            flex-shrink: 0;
+        }
+        .calc-result-meta {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .calc-result-code {
+            font-size: 13px;
+            font-weight: 800;
+            color: #0F172A;
+        }
+        .calc-result-name {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #64748B;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .calc-result-value {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0F172A;
+            text-align: right;
+            white-space: nowrap;
+        }
+        .calc-result-card.uzs-main-card .calc-result-value {
+            font-size: 19px;
+            color: #0284C7;
+        }
+        @media (max-width: 520px) {
+            .calc-results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
 /* === ОСНОВНОЙ КОНТЕЙНЕР И РАБОЧАЯ ОБЛАСТЬ === */
 .container {
     width: 100%;
