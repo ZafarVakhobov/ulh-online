@@ -1633,3 +1633,70 @@ document.addEventListener('keydown', (e) => {
 });
 
 renderQrCodePreview();
+
+
+// === 7. ПАМЯТКА-ШПАРГАЛКА ПО НОВОМУ АЛФАВИТУ И БЫСТРОЕ КОПИРОВАНИЕ БУКВ ===
+function copySpecialChar(charStr, btnEl, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    if (!navigator.clipboard || !btnEl) return;
+
+    navigator.clipboard.writeText(charStr).then(() => {
+        const origText = btnEl.getAttribute("data-orig") || btnEl.textContent;
+        btnEl.setAttribute("data-orig", origText);
+        btnEl.textContent = "✓";
+        btnEl.classList.add("copied-letter");
+
+        const miniHint = document.getElementById("alphaMiniCopyHint");
+        const modalHint = document.getElementById("alphaModalCopyHint");
+
+        if (miniHint) {
+            miniHint.style.color = "#10B981";
+            miniHint.textContent = "«" + charStr + "» harfi nusxalandi ✓";
+        }
+        if (modalHint) {
+            modalHint.style.color = "#10B981";
+            modalHint.textContent = "«" + charStr + "» harfi buferga nusxalandi ✓";
+        }
+
+        setTimeout(() => {
+            btnEl.textContent = origText;
+            btnEl.classList.remove("copied-letter");
+            if (miniHint) {
+                miniHint.style.color = "";
+                miniHint.textContent = "Harfni nusxalaş uçun ustiga bosing";
+            }
+            if (modalHint) {
+                modalHint.style.color = "";
+                modalHint.textContent = "Harfni nusxalaş uçun yuqoridagi tugmani bosing";
+            }
+        }, 900);
+    }).catch(() => {});
+}
+
+function openAlphabetModal(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    const modal = document.getElementById('alphabetModalBackdrop');
+    if (modal) {
+        modal.classList.add('open');
+    }
+}
+
+function closeAlphabetModal(event) {
+    const modal = document.getElementById('alphabetModalBackdrop');
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove('open');
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeAlphabetModal();
+    }
+});
