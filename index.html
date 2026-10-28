@@ -550,11 +550,120 @@
             </div>
         </div>
     </div>
+
+
+<!-- === МОДАЛЬНОЕ ПОП-АП ОКНО РЕКЛАМНЫХ ТАРИФОВ === -->
+    <div class="weather-modal-backdrop" id="adsModalBackdrop" onclick="closeAdsModal(event)">
+        <div class="weather-modal-card ads-modal-card" onclick="event.stopPropagation()">
+            <!-- Верхняя шапка окна рекламы -->
+            <div class="calc-input-banner">
+                <div class="calc-banner-top">
+                    <div class="weather-selected-tag">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                        <span>REKLAMA JOYLAŞTIRIŞ</span>
+                    </div>
+                </div>
+                <div class="ads-banner-title">Saytning asosiy bannerida reklama beriş</div>
+                <div class="ads-banner-sub">Sizning reklamangiz har kuni minglab faol foydalanuvçilarga körinadi</div>
+            </div>
+
+            <div class="weather-other-title">REKLAMA TARIFLARI (MUDDAT VA NARXLAR)</div>
+
+            <!-- Сетка из 5 тарифов -->
+            <div class="ads-tariffs-grid">
+                <!-- 2.1. 1 неделя -->
+                <div class="ads-tariff-card">
+                    <div class="ads-tariff-period">1 haftalik muddat</div>
+                    <div class="ads-tariff-desc">Haftalik reklama joyi</div>
+                    <div class="ads-tariff-price">120 000 <span>söm</span></div>
+                </div>
+
+                <!-- 2.2. 1 месяц -->
+                <div class="ads-tariff-card">
+                    <div class="ads-tariff-period">1 oylik muddat</div>
+                    <div class="ads-tariff-desc">Oylik reklama joyi</div>
+                    <div class="ads-tariff-price">250 000 <span>söm</span></div>
+                </div>
+
+                <!-- 2.3. 3 месяца -->
+                <div class="ads-tariff-card">
+                    <div class="ads-tariff-period">3 oylik muddat</div>
+                    <div class="ads-tariff-desc">3 oyga reklama joyi</div>
+                    <div class="ads-tariff-price">500 000 <span>söm</span></div>
+                </div>
+
+                <!-- 2.4. 6 месяцев -->
+                <div class="ads-tariff-card">
+                    <div class="ads-tariff-period">6 oylik muddat</div>
+                    <div class="ads-tariff-desc">Yarim yillik reklama joyi</div>
+                    <div class="ads-tariff-price">800 000 <span>söm</span></div>
+                </div>
+
+                <!-- 2.5. 1 год (выделенный выгодный тариф на всю ширину) -->
+                <div class="ads-tariff-card ads-tariff-featured">
+                    <div class="ads-featured-left">
+                        <span class="ads-featured-badge">ENG FOYDALI TARIF</span>
+                        <div class="ads-tariff-period">1 yillik muddatga reklama joyi</div>
+                        <div class="ads-tariff-desc">365 kun davomida uzluksiz namoyiş</div>
+                    </div>
+                    <div class="ads-tariff-price">1 200 000 <span>söm</span></div>
+                </div>
+            </div>
+
+            <!-- Технические требования к баннеру -->
+            <div class="ads-req-box">
+                <div class="ads-req-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </div>
+                <div class="ads-req-content">
+                    <div class="ads-req-title">Bannerga qöyiladigan texnik talablar:</div>
+                    <div class="ads-req-specs">
+                        <span>Formatlar: <b>PNG / JPG / GIF</b></span>
+                        <span class="ads-req-dot">•</span>
+                        <span>Ölçami: <b>2560 × 844 px</b></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопка заказа рекламы в Telegram с hover-эффектом -->
+            <a href="https://t.me/lanigiromusic" target="_blank" rel="noopener" class="ads-tg-order-btn" onclick="openTgCustomLink(event, 'https://t.me/lanigiromusic')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21.928 2.502a1.15 1.15 0 0 0-1.178-.127L2.126 10.33a1.132 1.132 0 0 0 .08 2.115l4.762 1.563 1.842 5.79a1.13 1.13 0 0 0 1.923.419l2.725-2.853 4.864 3.59a1.136 1.136 0 0 0 1.787-.678l2.24-16.634a1.148 1.148 0 0 0-.421-1.14zm-3.663 3.633-8.798 7.822-.99 3.495-1.352-4.252 11.14-7.065z" fill="currentColor"/>
+                </svg>
+                <span>Reklama buyurtma qiliş (Telegram)</span>
+            </a>
+
+            <!-- Нижняя панель -->
+            <div class="weather-modal-footer">
+                <span>Boğlaniş: @lanigiromusic</span>
+                <button type="button" class="weather-modal-close" onclick="closeAdsModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
     
     <div class="container">
-        <a class="hero-banner" href="/" aria-label="Uzbek Latin Helper homepage">
-            <img src="./header.png" alt="Uzbek Latin Helper by Zafar Vakhobov Softwares">
-        </a>
+        
+<!-- === УМНЫЙ СЛАЙДЕР БАННЕРОВ (UTC+5 ТАШКЕНТ) === -->
+        <div class="hero-slider" id="heroSlider" aria-label="Asosiy bannerlar slayderi">
+            <div class="hero-slider-track" id="heroSliderTrack">
+                <!-- Слайды формируются автоматически скриптом по расписанию UTC+5 -->
+                <a class="hero-slide" href="https://ulh-online.uz/" aria-label="Uzbek Latin Helper homepage">
+                    <img src="./header.png" alt="Uzbek Latin Helper by Zafar Vakhobov Softwares">
+                </a>
+            </div>
+
+            <!-- Стрелки влево / вправо -->
+            <button type="button" class="hero-nav-btn prev" id="heroPrevBtn" onclick="changeHeroSlide(-1, event)" aria-label="Oldingi banner">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" class="hero-nav-btn next" id="heroNextBtn" onclick="changeHeroSlide(1, event)" aria-label="Keyingi banner">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
+            <!-- Индикаторы слайдов (точки) -->
+            <div class="hero-slider-dots" id="heroSliderDots"></div>
+        </div>
+        
 
         <div class="header">
             <div class="status">Özbek lotin alifbosidagi yangi standartlarga moslaşiş hamda matnlar bilan işlaş jarayonini maksimal darajada tezlaştirişga möljallangan Uzbek Latin Helper online ilovasi</div>
