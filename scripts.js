@@ -1700,3 +1700,113 @@ document.addEventListener('keydown', (e) => {
         closeAlphabetModal();
     }
 });
+
+// === 8. СЧЕТЧИК СИМВОЛОВ И МОДАЛЬНОЕ ОКНО СТАТИСТИКИ ТЕКСТА (MATN STATISTIKASI) ===
+function formatStatNumber(num) {
+    return Number(num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
+function calculateAndRenderTextStats() {
+    const editorEl = document.getElementById("editor");
+    const text = editorEl ? editorEl.value : "";
+
+    // 1. Belgilar (с пробелами и без пробелов)
+    const charsWithSpaces = text.length;
+    const charsNoSpaces = text.replace(/\s/g, "").length;
+
+    // 2. Sözlar (количество слов)
+    const trimmed = text.trim();
+    const wordsCount = trimmed.length > 0 ? trimmed.split(/\s+/).length : 0;
+
+    // 3. Satrlar va Abzatslar (строки и непустые абзацы)
+    const linesCount = text.length > 0 ? text.split(/\r\n|\r|\n/).length : 0;
+    const paragraphsCount = trimmed.length > 0
+        ? trimmed.split(/(?:\r\n|\r|\n)+/).filter(line => line.trim().length > 0).length
+        : 0;
+
+    // 4. Öqiş vaqti (примерное время чтения из расчета ~180 слов в минуту)
+    let readingTimeStr = "0 soniya";
+    if (wordsCount > 0) {
+        const totalSeconds = Math.max(1, Math.ceil((wordsCount / 180) * 60));
+        if (totalSeconds < 60) {
+            readingTimeStr = "~" + totalSeconds + " soniya";
+        } else {
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+            readingTimeStr = secs > 0
+                ? "~" + mins + " daq " + secs + " son."
+                : "~" + mins + " daqiqa";
+        }
+    }
+
+    // Обновляем счетчик на самой кнопке рядом с "Nusxa oliş"
+    const liveBtnCount = document.getElementById("liveCharCount");
+    if (liveBtnCount) {
+        liveBtnCount.textContent = formatStatNumber(charsWithSpaces);
+    }
+
+    // Обновляем значения внутри модального окна
+    const elWithSpaces = document.getElementById("statCharsWithSpaces");
+    const elNoSpaces = document.getElementById("statCharsNoSpaces");
+    const elCardChars = document.getElementById("statCardChars");
+    const elWords = document.getElementById("statWords");
+    const elLinesParas = document.getElementById("statLinesAndParas");
+    const elReadTime = document.getElementById("statReadingTime");
+
+    if (elWithSpaces) elWithSpaces.textContent = formatStatNumber(charsWithSpaces);
+    if (elNoSpaces) elNoSpaces.textContent = formatStatNumber(charsNoSpaces);
+    if (elCardChars) elCardChars.textContent = formatStatNumber(charsWithSpaces) + " / " + formatStatNumber(charsNoSpaces);
+    if (elWords) elWords.textContent = formatStatNumber(wordsCount);
+    if (elLinesParas) elLinesParas.textContent = formatStatNumber(linesCount) + " / " + formatStatNumber(paragraphsCount);
+    if (elReadTime) elReadTime.textContent = readingTimeStr;
+}
+
+function openStatsModal(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    calculateAndRenderTextStats();
+    const modal = document.getElementById('statsModalBackdrop');
+    if (modal) {
+        modal.classList.add('open');
+    }
+}
+
+function closeStatsModal(event) {
+    const modal = document.getElementById('statsModalBackdrop');
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove('open');
+}
+
+// Автоматическое обновление счетчика при наборе, вставке, очистке и возврате букв
+if (editor) {
+    editor.addEventListener("input", calculateAndRenderTextStats);
+    editor.addEventListener("keyup", calculateAndRenderTextStats);
+    editor.addEventListener("paste", function() {
+        setTimeout(calculateAndRenderTextStats, 0);
+    });
+}
+
+const clearBtnForStats = document.getElementById("clearBtn");
+if (clearBtnForStats) {
+    clearBtnForStats.addEventListener("click", function() {
+        setTimeout(calculateAndRenderTextStats, 0);
+    });
+}
+
+if (tip) {
+    tip.addEventListener("mousedown", function() {
+        setTimeout(calculateAndRenderTextStats, 0);
+    });
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeStatsModal();
+    }
+});
+
+calculateAndRenderTextStats();
