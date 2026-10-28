@@ -1440,3 +1440,196 @@ fetchAllRegionsWeather();
 renderQuickChips();
 updateCurrencyDOM();
 fetchNbuCurrencyRates();
+
+// === 6. ГЕНЕРАТОР QR-КОДОВ (PNG 1024x1024 + ВЕКТОРНЫЙ SVG) ===
+let currentQrColor = "#0F172A";
+let currentQrMatrix = null;
+
+function buildQrMatrix(text) {
+    if (typeof qrcode !== "function") return null;
+    try {
+        // Поддержка UTF-8 для узбекского и кириллического текста
+        const utf8Text = unescape(encodeURIComponent(text));
+        const qr = qrcode(0, "M");
+        qr.addData(utf8Text);
+        qr.make();
+        return qr;
+    } catch (_) {
+        return null;
+    }
+}
+
+function generateQrSvgMarkup(qr, fgColor, sizePx) {
+    const count = qr.getModuleCount();
+    const margin = 2; // Белая рамка вокруг QR-кода по стандарту
+    const total = count + margin * 2;
+    let pathData = "";
+
+    for (let r = 0; r < count; r++) {
+        for (let c = 0; c < count; c++) {
+            if (qr.isDark(r, c)) {
+                pathData += `M${c + margin},${r + margin}h1v1h-1z `;
+            }
+        }
+    }
+
+    const sizeAttr = sizePx ? `width="${sizePx}" height="${sizePx}"` : `width="100%" height="100%"`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" ${sizeAttr} viewBox="0 0 ${total} ${total}" shape-rendering="crispEdges">
+        <rect width="${total}" height="${total}" fill="#FFFFFF" rx="1.5"/>
+        <path d="${pathData.trim()}" fill="${fgColor}"/>
+    </svg>`;
+}
+
+function renderQrCodePreview() {
+    const input = document.getElementById("qrTextInput");
+    const box = document.getElementById("qrPreviewBox");
+    const caption = document.getElementById("qrStatusCaption");
+    if (!input || !box) return;
+
+    const rawText = input.value.trim() || "https://ulh-online.uz/";
+    const qr = buildQrMatrix(rawText);
+    currentQrMatrix = qr;
+
+    if (!qr) {
+        box.innerHTML = `<span style="font-size:12px;color:#E11D48;text-align:center;">Matn juda uzun yoki xatolik yuz berdi</span>`;
+        return;
+    }
+
+    box.innerHTML = generateQrSvgMarkup(qr, currentQrColor, null);
+    if (caption) {
+        caption.style.color = "#64748B";
+        caption.textContent = "Yuqori sifatli: 1024×1024 px (PNG) va vektorli (SVG)";
+    }
+}
+
+function selectQrColor(colorHex) {
+    currentQrColor = colorHex;
+    document.querySelectorAll(".qr-color-dot").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-color") === colorHex);
+    });
+    renderQrCodePreview();
+}
+
+function clearQrInput() {
+    const input = document.getElementById("qrTextInput");
+    if (!input) return;
+    input.value = "";
+    input.focus();
+    renderQrCodePreview();
+}
+
+function getSafeQrFileName(ext) {
+    const input = document.getElementById("qrTextInput");
+    let raw = (input && input.value.trim()) ? input.value.trim() : "ulh-online";
+    raw = raw.replace(/^https?:\/\//i, "").replace(/[^a-zA-Z0-9_-]/g, "_").substring(0, 24);
+    return `qr_${raw || "code"}.${ext}`;
+}
+
+function downloadQrSvg() {
+    if (!currentQrMatrix) renderQrCodePreview();
+    if (!currentQrMatrix) return;
+
+    const svgString = generateQrSvgMarkup(currentQrMatrix, currentQrColor, 1024);
+    const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = getSafeQrFileName("svg");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+
+    const caption = document.getElementById("qrStatusCaption");
+    if (caption) {
+        caption.style.color = "#10B981";
+        caption.textContent = "SVG vektorli fayl yuklab olindi ✓";
+    }
+}
+
+function downloadQrPng() {
+    if (!currentQrMatrix) renderQrCodePreview();
+    if (!currentQrMatrix) return;
+
+    const count = currentQrMatrix.getModuleCount();
+    const margin = 2;
+    const totalModules = count + margin * 2;
+    const canvasSize = 1024;
+    const scale = canvasSize / totalModules;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+    const ctx = canvas.getContext("2d");
+
+    // Белый фон
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+    // Четкая отрисовка каждого модуля QR-кода
+    ctx.fillStyle = currentQrColor;
+    for (let r = 0; r < count; r++) {
+        for (let c = 0; c < count; c++) {
+            if (currentQrMatrix.isDark(r, c)) {
+                const x = Math.round((c + margin) * scale);
+                const y = Math.round((r + margin) * scale);
+                const w = Math.ceil((c + margin + 1) * scale) - x;
+                const h = Math.ceil((r + margin + 1) * scale) - y;
+                ctx.fillRect(x, y, w, h);
+            }
+        }
+    }
+
+    canvas.toBlob(blob => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = getSafeQrFileName("png");
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+
+        const caption = document.getElementById("qrStatusCaption");
+        if (caption) {
+            caption.style.color = "#10B981";
+            caption.textContent = "PNG (1024×1024 px) yuklab olindi ✓";
+        }
+    }, "image/png");
+}
+
+function openQrModal(event) {
+    if (event) event.stopPropagation();
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    const modal = document.getElementById('qrModalBackdrop');
+    if (modal) {
+        modal.classList.add('open');
+        renderQrCodePreview();
+        setTimeout(() => {
+            const input = document.getElementById("qrTextInput");
+            if (input) input.focus();
+        }, 120);
+    }
+}
+
+function closeQrModal(event) {
+    const modal = document.getElementById('qrModalBackdrop');
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove('open');
+}
+
+const qrInputEl = document.getElementById("qrTextInput");
+if (qrInputEl) {
+    qrInputEl.addEventListener("input", renderQrCodePreview);
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeQrModal();
+    }
+});
+
+renderQrCodePreview();
