@@ -189,6 +189,35 @@
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </span>
                     </div>
+
+<hr class="currency-Block-divider">
+
+                    <!-- Плашка нового алфавита: 4 кнопки быстрого копирования Ö, Ğ, Ş, Ç + кнопка правил -->
+                    <div class="alpha-mini-card">
+                        <div class="alpha-mini-top">
+                            <div class="currency-badge-label">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="m9 10 2 2 4-4"/></svg>
+                                <span>YANGI ALIFBO</span>
+                            </div>
+                            <button type="button" class="alpha-rules-trigger" onclick="openAlphabetModal(event)">
+                                <span>Qisqa qoidalar</span>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                            </button>
+                        </div>
+
+                        <!-- 4 кнопки мгновенного копирования букв Ö, Ğ, Ş, Ç -->
+                        <div class="alpha-mini-letters">
+                            <button type="button" class="alpha-letter-pill" onclick="copySpecialChar('Ö', this, event)" title="Ö harfini nusxalaş">Ö</button>
+                            <button type="button" class="alpha-letter-pill" onclick="copySpecialChar('Ğ', this, event)" title="Ğ harfini nusxalaş">Ğ</button>
+                            <button type="button" class="alpha-letter-pill" onclick="copySpecialChar('Ş', this, event)" title="Ş harfini nusxalaş">Ş</button>
+                            <button type="button" class="alpha-letter-pill" onclick="copySpecialChar('Ç', this, event)" title="Ç harfini nusxalaş">Ç</button>
+                        </div>
+                    </div>
+
+                    <div class="weather-accu-footer">
+                        <span id="alphaMiniCopyHint">Harfni nusxalaş uçun ustiga bosing</span>
+                        <a href="#alphabet-rules" class="weather-accu-link" onclick="openAlphabetModal(event)">Jadval →</a>
+                    </div>
                     
                 </div>
             </div>
@@ -326,6 +355,109 @@
             <div class="weather-modal-footer">
                 <span>Bepul va çeksiz foydalaniş</span>
                 <button type="button" class="weather-modal-close" onclick="closeQrModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
+
+<!-- === МОДАЛЬНОЕ ПОП-АП ОКНО ПАМЯТКИ ПО НОВОМУ АЛФАВИТУ === -->
+    <div class="weather-modal-backdrop" id="alphabetModalBackdrop" onclick="closeAlphabetModal(event)">
+        <div class="weather-modal-card alphabet-modal-card" onclick="event.stopPropagation()">
+            <!-- Верхняя панель с кнопками копирования всех заглавных и строчных букв -->
+            <div class="calc-input-banner">
+                <div class="calc-banner-top">
+                    <div class="weather-selected-tag">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                        <span>YANGI ALIFBO HARFLARI (NUSXA OLIŞ)</span>
+                    </div>
+                </div>
+
+                <div class="alpha-modal-sub">
+                    Kerakli harf ustiga bosing — u darhol buferga nusxalanadi:
+                </div>
+
+                <div class="alpha-modal-letters-row">
+                    <button type="button" class="alpha-copy-btn" onclick="copySpecialChar('Ö', this, event)">Ö</button>
+                    <button type="button" class="alpha-copy-btn" onclick="copySpecialChar('ö', this, event)">ö</button>
+                    <button type="button" class="alpha-copy-btn" onclick="copySpecialChar('Ğ', this, event)">Ğ</button>
+                    <button type="button" class="alpha-copy-btn" onclick="copySpecialChar('ğ', this, event)">ğ</button>
+                    <button type="button" class="alpha-copy-btn" onclick="copySpecialChar('Ş', this, event)">Ş</button>
+                    <button type="button" class="alpha-copy-btn" onclick="copySpecialChar('ş', this, event)">ş</button>
+                    <button type="button" class="alpha-copy-btn" onclick="copySpecialChar('Ç', this, event)">Ç</button>
+                    <button type="button" class="alpha-copy-btn" onclick="copySpecialChar('ç', this, event)">ç</button>
+                    <button type="button" class="alpha-copy-btn" onclick="copySpecialChar('’', this, event)" title="Tutuq belgisi">’</button>
+                </div>
+            </div>
+
+            <div class="weather-other-title">YANGI HARFLAR VA IMLO QOIDALARI JADVALI</div>
+
+            <!-- Наглядная таблица букв и правил -->
+            <div class="alpha-table-wrap">
+                <table class="alpha-compare-table">
+                    <thead>
+                        <tr>
+                            <th>Yangi</th>
+                            <th>Eski lotin</th>
+                            <th>Kirill</th>
+                            <th>Misollar (Yangi standart)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="alpha-badge-new">Ö ö</span></td>
+                            <td class="alpha-td-old">O‘ o‘</td>
+                            <td class="alpha-td-cyr">Ў ў</td>
+                            <td><b>Özbekiston</b>, öquvçi, töğri</td>
+                        </tr>
+                        <tr>
+                            <td><span class="alpha-badge-new">Ğ ğ</span></td>
+                            <td class="alpha-td-old">G‘ g‘</td>
+                            <td class="alpha-td-cyr">Ғ ғ</td>
+                            <td><b>Ğalaba</b>, Farğona, boğ</td>
+                        </tr>
+                        <tr>
+                            <td><span class="alpha-badge-new">Ş ş</span></td>
+                            <td class="alpha-td-old">Sh sh</td>
+                            <td class="alpha-td-cyr">Ш ш</td>
+                            <td><b>Şahar</b>, Toşkent, yoşlar</td>
+                        </tr>
+                        <tr>
+                            <td><span class="alpha-badge-new">Ç ç</span></td>
+                            <td class="alpha-td-old">Ch ch</td>
+                            <td class="alpha-td-cyr">Ч ч</td>
+                            <td><b>Çiroyli</b>, Çirçiq, kuç</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Карточки ключевых орфографических правил -->
+                <div class="alpha-rules-list">
+                    <div class="alpha-rule-item">
+                        <span class="alpha-rule-tag">E va Ye qoidasi</span>
+                        <p class="alpha-rule-text">
+                            Söz boşida, unli hamda <b>’/ъ/ь</b> belgilaridan keyin <b>Ye/ye</b> yoziladi (<i>Yevropa, doimiy -> boyeva</i>), undoşdan keyin esa <b>E/e</b> yoziladi (<i>mehnat, telefon</i>). <b>Subyekt, obyekt</b> sözlarida tutuq belgisi tüşirilib <b>ye</b> yoziladi.
+                        </p>
+                    </div>
+
+                    <div class="alpha-rule-item">
+                        <span class="alpha-rule-tag">S va Ts qoidasi (Ц)</span>
+                        <p class="alpha-rule-text">
+                            Kirilldagi <b>Ц/ц</b> harfi söz boşida va undoşdan keyin <b>S/s</b> (<i>sirk, sement, konsert, aksiya</i>), unli harfdan keyin esa <b>ts</b> (<i>litsey, konstitutsiya</i>) tarzida yoziladi.
+                        </p>
+                    </div>
+
+                    <div class="alpha-rule-item">
+                        <span class="alpha-rule-tag">Oktabr va Sentabr</span>
+                        <p class="alpha-rule-text">
+                            Yangi imlo qoidalariga köra oy nomlari <b>sentabr, oktabr</b> (<i>«я»</i> harfisiz) hamda <b>noyabr, dekabr</b> şaklida yoziladi.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Нижняя панель -->
+            <div class="weather-modal-footer">
+                <span id="alphaModalCopyHint">Harfni nusxalaş uçun yuqoridagi tugmani bosing</span>
+                <button type="button" class="weather-modal-close" onclick="closeAlphabetModal()">Yopiş</button>
             </div>
         </div>
     </div>
