@@ -1674,3 +1674,151 @@ textarea:focus {
         grid-template-columns: repeat(5, minmax(0, 1fr));
     }
 }
+
+/* === КНОПКА СЧЕТЧИКА СИМВОЛОВ РЯДОМ С "ÖÇIRIŞ" И "NUSXA OLIŞ" === */
+.stats-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 120px;
+    height: 32px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 30px;
+    background-color: #ecfdf5;
+    color: #10b99f;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.stats-link:hover {
+    background-color: #10b99f;
+    color: #FFFFFF;
+}
+
+@media (max-width: 760px) {
+    .stats-link {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 0 12px;
+        font-size: 14px;
+    }
+}
+
+/* === СТИЛИ МОДАЛЬНОГО ОКНА СТАТИСТИКИ ТЕКСТА (MATN STATISTIKASI) === */
+.stats-modal-card {
+    max-width: 450px;
+}
+.stats-hero-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 4px;
+}
+.stats-hero-left {
+    display: flex;
+    flex-direction: column;
+}
+.stats-hero-num {
+    font-size: 38px;
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+}
+.stats-hero-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748B;
+    margin-top: 3px;
+}
+.stats-hero-badge {
+    background: #FFFFFF;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 14px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+.stats-hero-sub-num {
+    font-size: 20px;
+    font-weight: 800;
+    color: #10b99f;
+    line-height: 1.1;
+}
+.stats-hero-sub-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748B;
+    margin-top: 2px;
+}
+.stats-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+.stats-detail-card {
+    background: #F8FAFC;
+    border: 1px solid #F1F5F9;
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+.stats-detail-card:hover {
+    background: #ECFDF5;
+    border-color: #A7F3D0;
+    transform: translateY(-1px);
+}
+.stats-detail-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.stats-detail-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: #10b99f;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+    flex-shrink: 0;
+}
+.stats-detail-title {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #334155;
+}
+.stats-detail-val {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1.2;
+    margin-top: 2px;
+}
+.stats-detail-hint {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748B;
+}
+@media (max-width: 480px) {
+    .stats-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
