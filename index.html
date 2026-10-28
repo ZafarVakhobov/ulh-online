@@ -451,7 +451,7 @@
                         </p>
                     </div>
 
-                    <div class="alpha-rule-item" style="display="none">
+                    <div class="alpha-rule-item" style="display:none;">
                         <span class="alpha-rule-tag">Oktabr va Sentabr</span>
                         <p class="alpha-rule-text">
                             Yangi imlo qoidalariga köra oy nomlari <b>sentabr, oktabr</b> (<i>«я»</i> harfisiz) hamda <b>noyabr, dekabr</b> şaklida yoziladi.
@@ -464,6 +464,89 @@
             <div class="weather-modal-footer">
                 <span id="alphaModalCopyHint">Harfni nusxalaş uçun yuqoridagi tugmani bosing</span>
                 <button type="button" class="weather-modal-close" onclick="closeAlphabetModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
+
+<!-- === МОДАЛЬНОЕ ПОП-АП ОКНО СТАТИСТИКИ ТЕКСТА (MATN STATISTIKASI) === -->
+    <div class="weather-modal-backdrop" id="statsModalBackdrop" onclick="closeStatsModal(event)">
+        <div class="weather-modal-card stats-modal-card" onclick="event.stopPropagation()">
+            <!-- Верхний баннер с главным показателем символов -->
+            <div class="calc-input-banner">
+                <div class="calc-banner-top">
+                    <div class="weather-selected-tag">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                        <span>MATN STATISTIKASI</span>
+                    </div>
+                </div>
+
+                <div class="stats-hero-row">
+                    <div class="stats-hero-left">
+                        <span class="stats-hero-num" id="statCharsWithSpaces">0</span>
+                        <span class="stats-hero-label">Jami belgilar (böşliqlar bilan)</span>
+                    </div>
+                    <div class="stats-hero-badge">
+                        <span class="stats-hero-sub-num" id="statCharsNoSpaces">0</span>
+                        <span class="stats-hero-sub-label">Böşliqlarsiz</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="weather-other-title">BATAFSIL KÖRSATKIÇLAR</div>
+
+            <!-- Сетка показателей по разделам -->
+            <div class="stats-cards-grid">
+                <!-- 1. Belgilar -->
+                <div class="stats-detail-card">
+                    <div class="stats-detail-top">
+                        <span class="stats-detail-icon">Aa</span>
+                        <span class="stats-detail-title">Belgilar</span>
+                    </div>
+                    <div class="stats-detail-val" id="statCardChars">0 / 0</div>
+                    <div class="stats-detail-hint">Böşliqlar bilan / böşliqlarsiz</div>
+                </div>
+
+                <!-- 2. Sözlar -->
+                <div class="stats-detail-card">
+                    <div class="stats-detail-top">
+                        <span class="stats-detail-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+                        </span>
+                        <span class="stats-detail-title">Sözlar</span>
+                    </div>
+                    <div class="stats-detail-val" id="statWords">0</div>
+                    <div class="stats-detail-hint">Matndagi jami sözlar soni</div>
+                </div>
+
+                <!-- 3. Satrlar / Xatboşilar (Абзацы) -->
+                <div class="stats-detail-card">
+                    <div class="stats-detail-top">
+                        <span class="stats-detail-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+                        </span>
+                        <span class="stats-detail-title">Satrlar / Abzatslar</span>
+                    </div>
+                    <div class="stats-detail-val" id="statLinesAndParas">0 / 0</div>
+                    <div class="stats-detail-hint">Satrlar soni / xatboşilar (abzats)</div>
+                </div>
+
+                <!-- 4. Öqiş vaqti -->
+                <div class="stats-detail-card">
+                    <div class="stats-detail-top">
+                        <span class="stats-detail-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </span>
+                        <span class="stats-detail-title">Öqiş vaqti</span>
+                    </div>
+                    <div class="stats-detail-val" id="statReadingTime">0 soniya</div>
+                    <div class="stats-detail-hint">Örtaça tezlikda (~180 söz/daq)</div>
+                </div>
+            </div>
+
+            <!-- Нижняя панель -->
+            <div class="weather-modal-footer">
+                <span>Ma’lumotlar jonli ravishda yangilanadi</span>
+                <button type="button" class="weather-modal-close" onclick="closeStatsModal()">Yopiş</button>
             </div>
         </div>
     </div>
@@ -483,6 +566,10 @@
                     <div class="editor-actions">
                         <div class="clear-link" id="clearBtn" role="button" tabindex="0" onclick="clearEditorText()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); clearEditorText(); }">Öçiriş</div>
                         <div class="copy-link" id="copyBtn" role="button" tabindex="0" onclick="copyEditorText()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); copyEditorText(); }">Nusxa oliş</div>
+                        <div class="stats-link" id="statsBtn" role="button" tabindex="0" onclick="openStatsModal(event)" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openStatsModal(event); }" title="Matn statistikasini köriş">
+                            <span>Belgilar:</span>
+                            <span id="liveCharCount">0</span>
+                        </div>
                     </div>
                 </div>
                 <textarea id="editor" placeholder="Şahar, Özbekiston, Қўқон, Шаҳар..."></textarea>
