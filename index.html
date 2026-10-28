@@ -77,6 +77,34 @@
                     </span>
                 </button>
                 <div class="nav-dropdown weather-dropdown-box" onclick="event.stopPropagation()">
+
+    <!-- Плашка нового алфавита: 4 кнопки быстрого копирования Ö, Ğ, Ş, Ç + кнопка правил -->
+                    <div class="alpha-mini-card">
+                        <div class="alpha-mini-top">
+                            <div class="currency-badge-label">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="m9 10 2 2 4-4"/></svg>
+                                <span>YANGI ALIFBO</span>
+                            </div>
+                            <button type="button" class="alpha-rules-trigger" onclick="openAlphabetModal(event)">
+                                <span>Qisqa qoidalar</span>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                            </button>
+                        </div>
+
+                        <!-- 4 кнопки мгновенного копирования букв Ö, Ğ, Ş, Ç -->
+                        <div class="alpha-mini-letters">
+                            <button type="button" class="alpha-letter-pill" onclick="copySpecialChar('Ö', this, event)" title="Ö harfini nusxalaş">Ö</button>
+                            <button type="button" class="alpha-letter-pill" onclick="copySpecialChar('Ğ', this, event)" title="Ğ harfini nusxalaş">Ğ</button>
+                            <button type="button" class="alpha-letter-pill" onclick="copySpecialChar('Ş', this, event)" title="Ş harfini nusxalaş">Ş</button>
+                            <button type="button" class="alpha-letter-pill" onclick="copySpecialChar('Ç', this, event)" title="Ç harfini nusxalaş">Ç</button>
+                        </div>
+                    </div>
+                    <div class="weather-accu-footer">
+                        <span id="alphaMiniCopyHint">Harfni nusxalaş uçun ustiga bosing</span>
+                        <a href="#alphabet-rules" class="weather-accu-link" onclick="openAlphabetModal(event)">Jadval →</a>
+                    </div>
+<hr class="currency-Block-divider">
+                    
                     <div class="weather-mini-card">
                         <div class="weather-mini-top">
                             <div class="weather-badge-label">
@@ -190,34 +218,11 @@
                         </span>
                     </div>
 
-<hr class="currency-Block-divider">
 
-                    <!-- Плашка нового алфавита: 4 кнопки быстрого копирования Ö, Ğ, Ş, Ç + кнопка правил -->
-                    <div class="alpha-mini-card">
-                        <div class="alpha-mini-top">
-                            <div class="currency-badge-label">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="m9 10 2 2 4-4"/></svg>
-                                <span>YANGI ALIFBO</span>
-                            </div>
-                            <button type="button" class="alpha-rules-trigger" onclick="openAlphabetModal(event)">
-                                <span>Qisqa qoidalar</span>
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                            </button>
-                        </div>
 
-                        <!-- 4 кнопки мгновенного копирования букв Ö, Ğ, Ş, Ç -->
-                        <div class="alpha-mini-letters">
-                            <button type="button" class="alpha-letter-pill" onclick="copySpecialChar('Ö', this, event)" title="Ö harfini nusxalaş">Ö</button>
-                            <button type="button" class="alpha-letter-pill" onclick="copySpecialChar('Ğ', this, event)" title="Ğ harfini nusxalaş">Ğ</button>
-                            <button type="button" class="alpha-letter-pill" onclick="copySpecialChar('Ş', this, event)" title="Ş harfini nusxalaş">Ş</button>
-                            <button type="button" class="alpha-letter-pill" onclick="copySpecialChar('Ç', this, event)" title="Ç harfini nusxalaş">Ç</button>
-                        </div>
-                    </div>
+                
 
-                    <div class="weather-accu-footer">
-                        <span id="alphaMiniCopyHint">Harfni nusxalaş uçun ustiga bosing</span>
-                        <a href="#alphabet-rules" class="weather-accu-link" onclick="openAlphabetModal(event)">Jadval →</a>
-                    </div>
+                    
                     
                 </div>
             </div>
