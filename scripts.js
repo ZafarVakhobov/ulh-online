@@ -1810,3 +1810,303 @@ document.addEventListener('keydown', (e) => {
 });
 
 calculateAndRenderTextStats();
+
+// === 9. УМНЫЙ СЛАЙДЕР БАННЕРОВ ПО РАСПИСАНИЮ (UTC+5 ТАШКЕНТ) И МОДАЛЬНОЕ ОКНО РЕКЛАМЫ ===
+const BANNER_CONFIG = {
+    main: {
+        id: "main",
+        src: "./header.png",
+        alt: "Uzbek Latin Helper — Asosiy banner",
+        action: "link",
+        href: "https://ulh-online.uz/"
+    },
+    ads: {
+        id: "ads",
+        src: "./banner-ads.png",
+        alt: "Saytda reklama joylaştiriş — Tariflar bilan tanişing",
+        action: "modal"
+    },
+    holidays: [
+        {
+            id: "new_year",
+            name: "Yangi yil bayrami",
+            src: "./banner-newyear.png",
+            // С 24 декабря (00:00) по 13 января (23:59) любого года
+            check: (m, d) => (m === 12 && d >= 24) || (m === 1 && d <= 13)
+        },
+        {
+            id: "defenders_day",
+            name: "14-yanvar — Vatan himoyaçilari kuni",
+            src: "./banner-14jan.png",
+            // Только 14 января (00:00 - 23:59)
+            check: (m, d) => (m === 1 && d === 14)
+        },
+        {
+            id: "womens_day",
+            name: "8-mart — Xalqaro xotin-qizlar kuni",
+            src: "./banner-8march.png",
+            // Только 8 марта (00:00 - 23:59)
+            check: (m, d) => (m === 3 && d === 8)
+        },
+        {
+            id: "navruz",
+            name: "21-mart — Navröz bayrami",
+            src: "./banner-navruz.png",
+            // Только 21 марта (00:00 - 23:59)
+            check: (m, d) => (m === 3 && d === 21)
+        },
+        {
+            id: "memory_day",
+            name: "9-may — Xotira va qadrlaş kuni",
+            src: "./banner-9may.png",
+            // Только 9 мая (00:00 - 23:59)
+            check: (m, d) => (m === 5 && d === 9)
+        },
+        {
+            id: "independence_day",
+            name: "Mustaqillik bayrami",
+            src: "./banner-mustaqillik.png",
+            // С 30 августа (00:00) по 2 сентября (23:59) любого года
+            check: (m, d) => (m === 8 && d >= 30) || (m === 9 && d <= 2)
+        },
+        {
+            id: "teachers_day",
+            name: "1-oktabr — Öqituvçi va murabbiylar kuni",
+            src: "./banner-1oct.png",
+            // Только 1 октября (00:00 - 23:59)
+            check: (m, d) => (m === 10 && d === 1)
+        },
+        {
+            id: "constitution_day",
+            name: "8-dekabr — Özbekiston Respublikasi Konstitutsiyasi kuni",
+            src: "./banner-8dec.png",
+            // Только 8 декабря (00:00 - 23:59)
+            check: (m, d) => (m === 12 && d === 8)
+        }
+    ]
+};
+
+// Получение точной даты по часовому поясу Ташкента (UTC+5 / GMT+5)
+function getTashkentDateParts() {
+    const tashkentTimeMs = Date.now() + (5 * 60 * 60 * 1000);
+    const tzDate = new Date(tashkentTimeMs);
+    return {
+        year: tzDate.getUTCFullYear(),
+        month: tzDate.getUTCMonth() + 1, // 1..12
+        day: tzDate.getUTCDate(),        // 1..31
+        hours: tzDate.getUTCHours(),     // 0..23
+        minutes: tzDate.getUTCMinutes()  // 0..59
+    };
+}
+
+function getActiveSlidesList() {
+    const { month, day } = getTashkentDateParts();
+    const activeHoliday = BANNER_CONFIG.holidays.find(h => h.check(month, day));
+
+    if (activeHoliday) {
+        // В праздничный период: 1) Праздничный баннер, 2) Рекламный баннер, 3) Основной баннер
+        return [
+            {
+                id: activeHoliday.id,
+                src: activeHoliday.src,
+                alt: activeHoliday.name,
+                action: "link",
+                href: "https://ulh-online.uz/"
+            },
+            BANNER_CONFIG.ads,
+            BANNER_CONFIG.main
+        ];
+    }
+
+    // В обычные дни: 1) Основной баннер, 2) Рекламный баннер
+    return [
+        BANNER_CONFIG.main,
+        BANNER_CONFIG.ads
+    ];
+}
+
+let heroSlidesData = [];
+let currentHeroIndex = 0;
+let heroTimer = null;
+const HERO_INTERVAL_MS = 7000; // 7 секунд
+
+function initHeroSlider() {
+    const track = document.getElementById("heroSliderTrack");
+    const dotsBox = document.getElementById("heroSliderDots");
+    const prevBtn = document.getElementById("heroPrevBtn");
+    const nextBtn = document.getElementById("heroNextBtn");
+    if (!track || !dotsBox) return;
+
+    heroSlidesData = getActiveSlidesList();
+    currentHeroIndex = 0;
+    track.innerHTML = "";
+    dotsBox.innerHTML = "";
+
+    heroSlidesData.forEach((slide, idx) => {
+        const slideEl = document.createElement(slide.action === "link" ? "a" : "div");
+        slideEl.className = "hero-slide";
+        if (slide.action === "link") {
+            slideEl.href = slide.href || "/";
+            slideEl.setAttribute("aria-label", slide.alt);
+        } else if (slide.action === "modal") {
+            slideEl.setAttribute("role", "button");
+            slideEl.setAttribute("tabindex", "0");
+            slideEl.setAttribute("aria-label", slide.alt);
+            slideEl.onclick = (e) => openAdsModal(e);
+            slideEl.onkeydown = (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openAdsModal(e);
+                }
+            };
+        }
+
+        const img = document.createElement("img");
+        img.src = slide.src;
+        img.alt = slide.alt;
+        // Если картинка еще не загружена на хостинг, подставляем ./header.png, чтобы не было пустой рамки
+        img.onerror = function() {
+            if (this.src.indexOf("header.png") === -1) {
+                this.src = "./header.png";
+            }
+        };
+
+        slideEl.appendChild(img);
+        track.appendChild(slideEl);
+
+        const dot = document.createElement("button");
+        dot.type = "button";
+        dot.className = "hero-dot" + (idx === 0 ? " active" : "");
+        dot.setAttribute("aria-label", "Slayd " + (idx + 1));
+        dot.onclick = (e) => {
+            e.stopPropagation();
+            goToHeroSlide(idx);
+            restartHeroAutoPlay();
+        };
+        dotsBox.appendChild(dot);
+    });
+
+    const showControls = heroSlidesData.length > 1;
+    if (prevBtn) prevBtn.style.display = showControls ? "inline-flex" : "none";
+    if (nextBtn) nextBtn.style.display = showControls ? "inline-flex" : "none";
+    dotsBox.style.display = showControls ? "inline-flex" : "none";
+
+    updateHeroSliderPosition();
+    restartHeroAutoPlay();
+}
+
+function updateHeroSliderPosition() {
+    const track = document.getElementById("heroSliderTrack");
+    const dotsBox = document.getElementById("heroSliderDots");
+    if (!track) return;
+
+    track.style.transform = `translateX(-${currentHeroIndex * 100}%)`;
+
+    if (dotsBox) {
+        const dots = dotsBox.querySelectorAll(".hero-dot");
+        dots.forEach((d, idx) => {
+            d.classList.toggle("active", idx === currentHeroIndex);
+        });
+    }
+}
+
+function goToHeroSlide(index) {
+    if (!heroSlidesData.length) return;
+    currentHeroIndex = (index + heroSlidesData.length) % heroSlidesData.length;
+    updateHeroSliderPosition();
+}
+
+function changeHeroSlide(step, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    goToHeroSlide(currentHeroIndex + step);
+    restartHeroAutoPlay();
+}
+
+function startHeroAutoPlay() {
+    stopHeroAutoPlay();
+    if (heroSlidesData.length <= 1) return;
+    heroTimer = setInterval(() => {
+        goToHeroSlide(currentHeroIndex + 1);
+    }, HERO_INTERVAL_MS);
+}
+
+function stopHeroAutoPlay() {
+    if (heroTimer) {
+        clearInterval(heroTimer);
+        heroTimer = null;
+    }
+}
+
+function restartHeroAutoPlay() {
+    stopHeroAutoPlay();
+    startHeroAutoPlay();
+}
+
+// Пауза при наведении мыши и поддержка свайпов на мобильных экранах
+const heroSliderBox = document.getElementById("heroSlider");
+if (heroSliderBox) {
+    heroSliderBox.addEventListener("mouseenter", stopHeroAutoPlay);
+    heroSliderBox.addEventListener("mouseleave", startHeroAutoPlay);
+
+    let touchStartX = 0;
+    heroSliderBox.addEventListener("touchstart", (e) => {
+        if (e.touches && e.touches.length > 0) {
+            touchStartX = e.touches[0].clientX;
+        }
+        stopHeroAutoPlay();
+    }, { passive: true });
+
+    heroSliderBox.addEventListener("touchend", (e) => {
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            const diffX = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(diffX) > 40) {
+                goToHeroSlide(diffX < 0 ? currentHeroIndex + 1 : currentHeroIndex - 1);
+            }
+        }
+        startHeroAutoPlay();
+    }, { passive: true });
+}
+
+// Модальное окно рекламных тарифов
+function openAdsModal(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    const modal = document.getElementById('adsModalBackdrop');
+    if (modal) {
+        modal.classList.add('open');
+        stopHeroAutoPlay();
+    }
+}
+
+function closeAdsModal(event) {
+    const modal = document.getElementById('adsModalBackdrop');
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove('open');
+    startHeroAutoPlay();
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeAdsModal();
+    }
+});
+
+// Проверка смены суток по Ташкенту каждую минуту (чтобы в 00:00 баннеры переключились сами)
+let lastCheckedDayKey = "";
+setInterval(() => {
+    const { month, day } = getTashkentDateParts();
+    const key = `${month}-${day}`;
+    if (lastCheckedDayKey && lastCheckedDayKey !== key) {
+        initHeroSlider();
+    }
+    lastCheckedDayKey = key;
+}, 60000);
+
+initHeroSlider();
