@@ -756,21 +756,49 @@
                 </div>
                 
                 <!-- Панель визуального редактирования (Toolbar) -->
+                <!-- Панель визуального редактирования (Toolbar) -->
                 <div class="ai-rich-toolbar">
-                    <button type="button" class="ai-tool-btn" onclick="formatAiText('bold')" title="Qalin (Bold)"><b>B</b></button>
-                    <button type="button" class="ai-tool-btn" onclick="formatAiText('italic')" title="Qiya (Italic)"><i>I</i></button>
-                    <button type="button" class="ai-tool-btn" onclick="formatAiText('underline')" title="Tagiga chizilgan"><u>U</u></button>
-                    <button type="button" class="ai-tool-btn" onclick="formatAiText('strikeThrough')" title="Üstiga chizilgan"><s>S</s></button>
+                    <button type="button" class="ai-tool-btn" onclick="formatAiText('bold')">
+                        <b>B</b>
+                        <span class="custom-tooltip">Qalin</span>
+                    </button>
+                    <button type="button" class="ai-tool-btn" onclick="formatAiText('italic')">
+                        <i>I</i>
+                        <span class="custom-tooltip">Qiya</span>
+                    </button>
+                    <button type="button" class="ai-tool-btn" onclick="formatAiText('underline')">
+                        <u>U</u>
+                        <span class="custom-tooltip">Tagiga çizilgan</span>
+                    </button>
+                    <button type="button" class="ai-tool-btn" onclick="formatAiText('strikeThrough')">
+                        <s>S</s>
+                        <span class="custom-tooltip">Üstiga çizilgan</span>
+                    </button>
+                    
                     <div class="ai-tool-divider"></div>
-                    <button type="button" class="ai-tool-btn" onclick="formatAiText('justifyLeft')" title="Chapga to'g'rilash">
+                    
+                    <button type="button" class="ai-tool-btn" onclick="formatAiText('justifyLeft')">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                        <span class="custom-tooltip">Çapga töğrilaş</span>
                     </button>
-                    <button type="button" class="ai-tool-btn" onclick="formatAiText('justifyCenter')" title="Markazga to'g'rilash">
+                    <button type="button" class="ai-tool-btn" onclick="formatAiText('justifyCenter')">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                        <span class="custom-tooltip">Markazga töğrilaş</span>
                     </button>
+                    <button type="button" class="ai-tool-btn" onclick="formatAiText('justifyRight')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                        <span class="custom-tooltip">Öngga töğrilaş</span>
+                    </button>
+                    <button type="button" class="ai-tool-btn" onclick="formatAiText('justifyFull')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                        <span class="custom-tooltip">Kengligi böyiça</span>
+                    </button>
+                    
                     <div class="ai-tool-divider"></div>
-                    <button type="button" class="ai-tool-btn" onclick="addAiLink()" title="Havola (Link) qo'shish">
+                    
+                    <button type="button" class="ai-tool-btn" onclick="addAiLink()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        <span class="custom-tooltip">Havola qöşiş</span>
                     </button>
                 </div>
 
@@ -814,7 +842,7 @@
             </div>
 
             <div class="weather-modal-footer" style="margin-top: 10px;">
-                <span>Asosiy matn özgartirilmadi</span>
+                <span>OpenAI/GPT-OSS-120b modeli asosida işlaydi</span>
                 <button type="button" class="weather-modal-close" onclick="closeAiResultModal()">Yopiş</button>
             </div>
         </div>
