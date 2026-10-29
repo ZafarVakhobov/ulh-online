@@ -3062,6 +3062,65 @@ body.dark-mode .music-volume-fill {
 }
 
 /* === КНОПКА И МЕНЮ AI-РЕДАКТОРА (AI YORDAMÇI) === */
+
+/* Красивая овальная кнопка AI в один ряд со всеми иконками */
+.ai-icon-btn {
+    position: relative;
+    height: 32px;
+    padding: 0 14px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #E0F2FE 0%, #EDE9FE 100%);
+    color: #4F46E5;
+    font-size: 13px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+.ai-icon-btn:hover,
+.editor-ai-wrap.open .ai-icon-btn {
+    background: linear-gradient(135deg, #0284C7 0%, #6366F1 100%);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    transform: translateY(-1px);
+}
+/* Полностью убираем серую рамку фокуса и заменяем её аккуратной обводкой */
+.ai-icon-btn:focus,
+.ai-icon-btn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
+}
+.editor-ai-wrap.open .tools-chevron {
+    transform: rotate(180deg);
+}
+
+/* Состояние загрузки */
+.ai-icon-btn.loading {
+    background: linear-gradient(135deg, #0284C7 0%, #6366F1 100%);
+    color: #FFFFFF;
+    pointer-events: none;
+}
+.ai-icon-btn.loading .ai-sparkle-icon {
+    animation: aiSpinPulse 1.1s linear infinite;
+}
+
+/* Поддержка тёмной темы */
+body.dark-mode .ai-icon-btn {
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.24) 0%, rgba(99, 102, 241, 0.26) 100%);
+    color: #A5B4FC;
+}
+body.dark-mode .ai-icon-btn:hover,
+body.dark-mode .editor-ai-wrap.open .ai-icon-btn {
+    background: linear-gradient(135deg, #0284C7 0%, #6366F1 100%);
+    color: #FFFFFF;
+}
+
 .editor-ai-wrap {
     position: relative;
     display: inline-flex;
