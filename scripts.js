@@ -3002,6 +3002,23 @@ function addAiLink() {
     }
 }
 
+// Функция смены размера текста (кегля)
+function changeAiFontSize(sizeValue) {
+    if (!sizeValue) return;
+    
+    // Применяем стандартную команду браузера для изменения размера (от 1 до 7)
+    document.execCommand("fontSize", false, sizeValue);
+    
+    // Возвращаем фокус в редактор
+    const contentDiv = document.getElementById("aiResultContent");
+    if (contentDiv) contentDiv.focus();
+    
+    // Сбрасываем селект обратно на надпись "Ölçam", 
+    // чтобы при следующем выделении можно было снова выбрать тот же размер
+    const selectEl = document.querySelector(".ai-tool-select");
+    if (selectEl) selectEl.value = "";
+}
+
 // Открытие окна: ИИ выдает текст, мы парсим Markdown и вставляем HTML
 function openAiResultModal(rawText) {
     const modal = document.getElementById("aiResultModalBackdrop");
