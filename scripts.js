@@ -3103,12 +3103,26 @@ async function refineAiResult() {
     const refineBtnText = document.getElementById("aiRefineBtnText");
     const sparkleIcon = refineBtn ? refineBtn.querySelector(".ai-sparkle-icon") : null;
     
-    // ИИ читает текст прямо из визуального редактора (innerText отсекает HTML теги)
-    if (!contentDiv || !contentDiv.innerText.trim() || !refineInput || !refineInput.value.trim()) return;
+    // Надежное получение текста из визуального редактора (кроссбраузерно)
+    const sourceText = (contentDiv.innerText || contentDiv.textContent || "").trim();
+    const customInstruction = (refineInput.value || "").trim();
 
-    const sourceText = contentDiv.innerText.trim();
-    const customInstruction = refineInput.value.trim();
+    // Если поле с текстом пустое
+    if (!sourceText) {
+        alert("Tahrirlovchida matn yo'q!");
+        return;
+    }
 
+    // Если пользователь не ввел команду, подсвечиваем поле ввода красным
+    if (!customInstruction) {
+        if (refineInput) {
+            refineInput.style.border = "2px solid #E11D48";
+            setTimeout(() => refineInput.style.border = "", 1500);
+        }
+        return;
+    }
+
+    // Включаем анимацию загрузки на кнопке
     if (refineBtn) refineBtn.style.pointerEvents = "none";
     if (refineBtnText) refineBtnText.textContent = "Kuting...";
     if (sparkleIcon) sparkleIcon.style.animation = "aiSpinPulse 1.1s linear infinite";
@@ -3119,74 +3133,36 @@ async function refineAiResult() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ mode: "custom", text: sourceText, customPrompt: customInstruction })
         });
-        const data = await response.json();
-        if (!response.ok || !data || !data.result) throw new Error((data && data.error) ? data.error : "AI xatolik");
-
-        // Фильтруем новый алфавит и ПАРСИМ Markdown перед вставкой!
-        const cleanResult = enforceNewUzbekAlphabet(data.result);
-        contentDiv.innerHTML = parseMarkdownToHTML(cleanResult);
-        refineInput.value = ""; 
         
-    } catch (err) {
-        console.error("AI Refine Error:", err);
-    } finally {
-        if (refineBtn) refineBtn.style.pointerEvents = "auto";
-        if (refineBtnText) refineBtnText.textContent = "Qayta yozing";
-        if (sparkleIcon) sparkleIcon.style.animation = "";
-    }
-}
-
-// === НОВАЯ ФУНКЦИЯ ДЛЯ ДОРАБОТКИ ТЕКСТА ПРЯМО В ОКНЕ (MINI CHAT) ===
-async function refineAiResult() {
-    const resultTextarea = document.getElementById("aiResultTextarea");
-    const refineInput = document.getElementById("aiRefineInput");
-    const refineBtn = document.getElementById("aiRefineBtn");
-    const refineBtnText = document.getElementById("aiRefineBtnText");
-    const sparkleIcon = refineBtn ? refineBtn.querySelector(".ai-sparkle-icon") : null;
-    
-    // Если поле результата или строка команды пустые — ничего не делаем
-    if (!resultTextarea || !resultTextarea.value.trim() || !refineInput || !refineInput.value.trim()) return;
-
-    const sourceText = resultTextarea.value.trim();
-    const customInstruction = refineInput.value.trim();
-
-    // Визуальная анимация загрузки на кнопке внутри окна
-    if (refineBtn) refineBtn.style.pointerEvents = "none";
-    if (refineBtnText) refineBtnText.textContent = "Kuting...";
-    if (sparkleIcon) sparkleIcon.style.animation = "aiSpinPulse 1.1s linear infinite";
-
-    try {
-        const response = await fetch(AI_PROXY_ENDPOINT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                mode: "custom", // Всегда используем custom для правок
-                text: sourceText,
-                customPrompt: customInstruction
-            })
-        });
-
         const data = await response.json();
+        
         if (!response.ok || !data || !data.result) {
             throw new Error((data && data.error) ? data.error : "AI xatolik");
         }
 
-        // Применяем фильтр узбекской латиницы и обновляем текст в окне
+        // Применяем фильтр алфавита (только для узбекского) и парсим Markdown
         const cleanResult = enforceNewUzbekAlphabet(data.result);
-        resultTextarea.value = cleanResult;
+        contentDiv.innerHTML = parseMarkdownToHTML(cleanResult);
         
-        // Очищаем строку ввода после успешной отработки
-        refineInput.value = ""; 
+        // Очищаем строку ввода после успешного выполнения
+        if (refineInput) refineInput.value = ""; 
         
+        // Показываем сообщение об успехе на кнопке
+        if (refineBtnText) refineBtnText.textContent = "Tayyor ✓";
+        setTimeout(() => {
+            if (refineBtnText) refineBtnText.textContent = "Qayta yozing";
+        }, 2000);
+
     } catch (err) {
         console.error("AI Refine Error:", err);
-        if (typeof showAutosaveIndicator === "function") {
-            showAutosaveIndicator("Xatolik! Qayta urinib köring.");
-        }
+        // Если произошла ошибка (например, с интернетом), кнопка покажет "Xatolik!"
+        if (refineBtnText) refineBtnText.textContent = "Xatolik!";
+        setTimeout(() => {
+            if (refineBtnText) refineBtnText.textContent = "Qayta yozing";
+        }, 2000);
     } finally {
-        // Возвращаем кнопку в исходное состояние
+        // Обязательно возвращаем кнопку в рабочее состояние
         if (refineBtn) refineBtn.style.pointerEvents = "auto";
-        if (refineBtnText) refineBtnText.textContent = "Qayta yozing";
         if (sparkleIcon) sparkleIcon.style.animation = "";
     }
 }
