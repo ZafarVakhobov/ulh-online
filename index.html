@@ -847,21 +847,21 @@
                         </div>
 
         <!-- Кнопка и выпадающее меню AI-редактора (AI yordamçi) -->
+                        <!-- Кнопка и выпадающее меню AI-редактора (AI yordamçi) -->
                         <div class="editor-ai-wrap" id="editorAiWrap">
-                            <button type="button" class="ai-helper-btn" id="aiHelperBtn" onclick="toggleAiMenu(event)" aria-expanded="false" aria-label="AI yordamçi">
+                            <button type="button" class="action-icon-btn ai-icon-btn" id="aiHelperBtn" onclick="toggleAiMenu(event)" aria-expanded="false" aria-label="AI yordamçi">
                                 <svg class="ai-sparkle-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/>
-                                    <path d="M5 3v4"/><path d="M3 5h4"/><path d="M19 17v4"/><path d="M17 19h4"/>
                                 </svg>
-                                <span id="aiBtnLabel">AI yordamçi</span>
-                                <svg class="tools-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                <span class="ai-btn-text">AI</span>
+                                <svg class="tools-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                <span class="custom-tooltip">AI yordamçi</span>
                             </button>
 
-                            <!-- Выпадающий список готовых AI-функций -->
+                            <!-- Выпадающий список функций ИИ (остается без изменений) -->
                             <div class="editor-ai-dropdown" id="editorAiDropdown" onclick="event.stopPropagation()">
                                 <div class="tools-group-label">AI YORDAMÇI FUNKSIYALARI</div>
 
-                                <!-- 1. Исправление ошибок -->
                                 <button type="button" class="ai-menu-item" onclick="runAiPreset('fix_errors')">
                                     <span class="ai-item-icon">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
@@ -872,7 +872,6 @@
                                     </div>
                                 </button>
 
-                                <!-- 2. Подготовка поста для соцсетей -->
                                 <button type="button" class="ai-menu-item" onclick="runAiPreset('social_post')">
                                     <span class="ai-item-icon">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
@@ -883,7 +882,6 @@
                                     </div>
                                 </button>
 
-                                <!-- 3. Озаглавить статью -->
                                 <button type="button" class="ai-menu-item" onclick="runAiPreset('generate_titles')">
                                     <span class="ai-item-icon">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
@@ -896,7 +894,6 @@
 
                                 <hr class="dropdown-divider">
 
-                                <!-- 4. Своё задание (открывает модальное окно) -->
                                 <button type="button" class="ai-menu-item ai-custom-trigger" onclick="openAiCustomModal(event)">
                                     <span class="ai-item-icon">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -907,7 +904,6 @@
                                     </div>
                                 </button>
 
-                                <!-- Кнопка возврата исходного текста (появляется после ответа ИИ) -->
                                 <button type="button" class="ai-undo-btn" id="aiUndoBtn" style="display: none;" onclick="undoLastAiAction()">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
                                     <span>Oldingi matnni qaytariş</span>
