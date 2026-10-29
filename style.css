@@ -2840,3 +2840,16 @@ body.dark-mode .custom-tooltip {
 body.dark-mode .custom-tooltip::after {
     border-color: rgba(30, 41, 59, 0.96) transparent transparent transparent;
 }
+
+/* Убираем стандартную серую/черную обводку фокуса у кнопки Asboblar */
+.tools-icon-btn:focus,
+.tools-icon-btn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+/* Состояние успешной очистки для иконки корзинки (по аналогии с копированием) */
+.clear-icon-btn.cleared {
+    background-color: #FDE0DB;
+    color: #F54927;
+}
