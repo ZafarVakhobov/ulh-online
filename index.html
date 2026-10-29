@@ -692,8 +692,13 @@
         </div>
         <div class="workspace">
             <div class="editor-wrapper">
-                <div class="section-header">
-                    <div class="section-title">Matnni kiriting:</div>
+               
+<div class="section-header">
+                    <div class="section-title-wrap">
+                        <div class="section-title">Matnni kiriting:</div>
+                        <span class="autosave-badge" id="autosaveBadge" aria-live="polite">Avtosaqlandi ✓</span>
+                    </div>
+
                     <div class="editor-actions">
                         <div class="clear-link" id="clearBtn" role="button" tabindex="0" onclick="clearEditorText()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); clearEditorText(); }">Öçiriş</div>
                         <div class="copy-link" id="copyBtn" role="button" tabindex="0" onclick="copyEditorText()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); copyEditorText(); }">Nusxa oliş</div>
@@ -701,8 +706,57 @@
                             <span>Belgilar:</span>
                             <span id="liveCharCount">0</span>
                         </div>
+
+                        <!-- Кнопка-меню инструментов текста и быстрого скачивания (Asboblar) -->
+                        <div class="editor-tools-wrap" id="editorToolsWrap">
+                            <button type="button" class="tools-link" id="toolsBtn" onclick="toggleEditorToolsMenu(event)" aria-expanded="false" title="Matn asboblari va yuklab oliş">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                <span>Asboblar</span>
+                                <svg class="tools-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+
+                            <!-- Выпадающее меню чистки текста и сохранения файла -->
+                            <div class="editor-tools-dropdown" id="editorToolsDropdown" onclick="event.stopPropagation()">
+                                <div class="tools-group-label">MATNNI TAHRIRLAŞ</div>
+
+                                <button type="button" class="tools-menu-item" onclick="applyEditorTool('clean_spaces')">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+                                    <span>Ortiqça böşliqlarni tozalaş</span>
+                                </button>
+
+                                <button type="button" class="tools-menu-item" onclick="applyEditorTool('sentence_case')">
+                                    <span class="tools-text-badge">Aa</span>
+                                    <span>Gap boşidan katta harf</span>
+                                </button>
+
+                                <button type="button" class="tools-menu-item" onclick="applyEditorTool('upper_case')">
+                                    <span class="tools-text-badge">AA</span>
+                                    <span>HAMMASI KATTA HARF</span>
+                                </button>
+
+                                <button type="button" class="tools-menu-item" onclick="applyEditorTool('lower_case')">
+                                    <span class="tools-text-badge">aa</span>
+                                    <span>hammasi kiçik harf</span>
+                                </button>
+
+                                <hr class="dropdown-divider">
+                                <div class="tools-group-label">MATNNI FAYL SIFATIDA SAQLAŞ</div>
+
+                                <div class="tools-export-row">
+                                    <button type="button" class="tools-export-btn txt-btn" onclick="exportEditorAsTxt()">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                        <span>.TXT saqlaş</span>
+                                    </button>
+                                    <button type="button" class="tools-export-btn pdf-btn" id="editorPdfExportBtn" onclick="exportEditorAsPdf()">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>
+                                        <span>.PDF saqlaş</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
                 <textarea id="editor" placeholder="Şahar, Özbekiston, Қўқон, Шаҳар..."></textarea>
             </div>
 
