@@ -426,6 +426,26 @@
                 <span>Bepul va çeksiz foydalaniş</span>
                 <button type="button" class="weather-modal-close" onclick="closeQrModal()">Yopiş</button>
             </div>
+
+            <hr class="currency-Block-divider">
+
+                    <!-- НОВАЯ КНОПКА: ГОРЯЧИЕ КЛАВИШИ -->
+                    <div class="qr-mini-card" role="button" tabindex="0" onclick="openHotkeysModal(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openHotkeysModal(event);}" aria-label="Qaynoq tugmalar">
+                        <div class="qr-mini-left">
+                            <div class="qr-mini-icon" style="color: #7C3AED; background: #F3E8FF;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M8 12h.001"/><path d="M12 12h.001"/><path d="M16 12h.001"/><path d="M7 16h10"/></svg>
+                            </div>
+                            <div class="qr-mini-text">
+                                <span class="qr-mini-title">QAYNOQ TUGMALAR</span>
+                                <span class="qr-mini-sub">Tezkor klaviatura yorliqlari</span>
+                            </div>
+                        </div>
+                        <span class="currency-nbu-pill">
+                            <span>Tanişiş</span>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                    </div>
+            
         </div>
     </div>
 
@@ -889,6 +909,55 @@
             <div class="weather-modal-footer" style="margin-top: 14px;">
                 <button type="button" class="weather-modal-close" onclick="clearAllArchive()" style="color: #E11D48; background: #FFE4E6;">Barchasini öçiriş</button>
                 <button type="button" class="weather-modal-close" onclick="closeArchiveModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
+
+<!-- === МОДАЛЬНОЕ ОКНО ГОРЯЧИХ КЛАВИШ === -->
+    <div class="weather-modal-backdrop" id="hotkeysModalBackdrop" onclick="closeHotkeysModal(event)">
+        <div class="weather-modal-card alphabet-modal-card" onclick="event.stopPropagation()">
+            <div class="calc-input-banner">
+                <div class="calc-banner-top">
+                    <div class="weather-selected-tag">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><path d="M7 16h10"/></svg>
+                        <span>QAYNOQ TUGMALAR (HOTKEYS)</span>
+                    </div>
+                </div>
+                <div class="ads-banner-title">Klaviatura orqali tezkor boshqarish</div>
+                <div class="ads-banner-sub">Sichqonchadan foydalanmasdan saytning asosiy funksiyalarini bir zumda ishlating:</div>
+            </div>
+
+            <!-- Список горячих клавиш -->
+            <div class="alpha-rules-list" style="margin-top: 14px;">
+                <div class="alpha-rule-item" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                    <span class="alpha-rule-text" style="font-weight: 600; font-size: 13px;">Matnni .TXT formatida saqlaş</span>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <kbd class="hotkey-kbd">Ctrl</kbd><span style="color:#94A3B8; font-weight: 800;">+</span><kbd class="hotkey-kbd">S</kbd>
+                    </div>
+                </div>
+                <div class="alpha-rule-item" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                    <span class="alpha-rule-text" style="font-weight: 600; font-size: 13px;">Barça matnni nusxalaş</span>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <kbd class="hotkey-kbd">Ctrl</kbd><span style="color:#94A3B8; font-weight: 800;">+</span><kbd class="hotkey-kbd">Shift</kbd><span style="color:#94A3B8; font-weight: 800;">+</span><kbd class="hotkey-kbd">C</kbd>
+                    </div>
+                </div>
+                <div class="alpha-rule-item" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                    <span class="alpha-rule-text" style="font-weight: 600; font-size: 13px;">AI Yordamçini çaqiriş</span>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <kbd class="hotkey-kbd">Ctrl</kbd><span style="color:#94A3B8; font-weight: 800;">+</span><kbd class="hotkey-kbd">Enter</kbd>
+                    </div>
+                </div>
+                <div class="alpha-rule-item" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                    <span class="alpha-rule-text" style="font-weight: 600; font-size: 13px;">Oçiq turgan oynani yopiş</span>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <kbd class="hotkey-kbd">Esc</kbd>
+                    </div>
+                </div>
+            </div>
+
+            <div class="weather-modal-footer" style="margin-top: 14px;">
+                <span>* Mac foydalanuvçilari uçun: Ctrl örniga Cmd (⌘)</span>
+                <button type="button" class="weather-modal-close" onclick="closeHotkeysModal()">Yopiş</button>
             </div>
         </div>
     </div>
