@@ -2377,3 +2377,33 @@ async function exportEditorAsPdf() {
 }
 
 restoreEditorDraft();
+
+
+function clearEditorText() {
+    const editor = document.getElementById('editor');
+    const btn = document.getElementById('clearBtn');
+
+    if (!editor || editor.value.length === 0 || !btn) return;
+
+    editor.value = '';
+    if (typeof hideTooltip === 'function') hideTooltip();
+
+    // Заменяем текст в тултипе на "Öçirildi ✓" без удаления иконки
+    const tooltipNode = btn.querySelector('.custom-tooltip');
+    if (tooltipNode) tooltipNode.textContent = "Öçirildi ✓";
+    btn.classList.add('cleared');
+
+    // Если подключено автосохранение, удаляем черновик из localStorage
+    try {
+        localStorage.removeItem("ulh_editor_draft_v1");
+    } catch (_) {}
+
+    if (typeof calculateAndRenderTextStats === 'function') {
+        calculateAndRenderTextStats();
+    }
+
+    setTimeout(() => {
+        if (tooltipNode) tooltipNode.textContent = "Öçiriş";
+        btn.classList.remove('cleared');
+    }, 1200);
+}
