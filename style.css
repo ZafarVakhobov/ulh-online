@@ -2473,3 +2473,210 @@ body.dark-mode .weather-modal-close {
 body.dark-mode .weather-modal-close:hover {
     background: #334155;
 }
+
+/* === ИНДИКАТОР АВТОСОХРАНЕНИЯ И МИНИ-ПАНЕЛЬ ИНСТРУМЕНТОВ РЕДАКТОРА === */
+.section-title-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.autosave-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #10B981;
+    background: #ECFDF5;
+    padding: 3px 9px;
+    border-radius: 999px;
+    opacity: 0;
+    transform: translateY(2px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.autosave-badge.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Кнопка "Asboblar" в одном стиле с кнопками действий */
+.editor-tools-wrap {
+    position: relative;
+    display: inline-flex;
+}
+.tools-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 118px;
+    height: 32px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 30px;
+    background-color: #F3E8FF;
+    color: #7C3AED;
+    font-size: 13.5px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+.tools-link:hover,
+.editor-tools-wrap.open .tools-link {
+    background-color: #7C3AED;
+    color: #FFFFFF;
+}
+.tools-chevron {
+    transition: transform 0.22s ease;
+}
+.editor-tools-wrap.open .tools-chevron {
+    transform: rotate(180deg);
+}
+
+/* Выпадающее меню инструментов над редактором */
+.editor-tools-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 265px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 18px;
+    padding: 10px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(6px) scale(0.98);
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s;
+    z-index: 950;
+}
+.editor-tools-wrap.open .editor-tools-dropdown {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+.tools-group-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #94A3B8;
+    padding: 4px 10px 6px;
+    text-transform: uppercase;
+}
+.tools-menu-item {
+    width: 100%;
+    border: none;
+    background: transparent;
+    border-radius: 11px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E293B;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.tools-menu-item:hover {
+    background: #F5F3FF;
+    color: #7C3AED;
+}
+.tools-text-badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: #F3E8FF;
+    color: #7C3AED;
+    font-size: 11px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.tools-export-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 2px 4px 2px;
+}
+.tools-export-btn {
+    height: 34px;
+    border: none;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.tools-export-btn:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+.tools-export-btn.txt-btn {
+    background: #E0F2FE;
+    color: #0284C7;
+}
+.tools-export-btn.pdf-btn {
+    background: #ECFDF5;
+    color: #059669;
+}
+
+@media (max-width: 760px) {
+    .editor-tools-wrap {
+        flex: 1 1 0;
+    }
+    .tools-link {
+        width: 100%;
+        padding: 0 10px;
+    }
+}
+
+/* Поддержка тёмной темы для новых элементов */
+body.dark-mode .autosave-badge {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34D399;
+}
+body.dark-mode .tools-link {
+    background-color: rgba(139, 92, 246, 0.18);
+    color: #C4B5FD;
+}
+body.dark-mode .tools-link:hover,
+body.dark-mode .editor-tools-wrap.open .tools-link {
+    background-color: #7C3AED;
+    color: #FFFFFF;
+}
+body.dark-mode .editor-tools-dropdown {
+    background: #0F172A;
+    border-color: #1E293B;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65);
+}
+body.dark-mode .tools-menu-item {
+    color: #E2E8F0;
+}
+body.dark-mode .tools-menu-item:hover {
+    background: #1E293B;
+    color: #C4B5FD;
+}
+body.dark-mode .tools-text-badge {
+    background: rgba(139, 92, 246, 0.2);
+    color: #C4B5FD;
+}
+body.dark-mode .tools-export-btn.txt-btn {
+    background: rgba(2, 132, 199, 0.2);
+    color: #38BDF8;
+}
+body.dark-mode .tools-export-btn.pdf-btn {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34D399;
+}
