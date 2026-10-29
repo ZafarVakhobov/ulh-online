@@ -3518,3 +3518,92 @@ body.dark-mode .ai-toolbar-logo {
         display: none !important;
     }
 }
+
+/* === СТИЛИ КНОПКИ АРХИВА И КАРТОЧЕК === */
+
+/* Кнопка Архива (желтая) */
+.archive-icon-btn {
+    background-color: #FEF3C7;
+    color: #D97706;
+}
+.archive-icon-btn:hover {
+    background-color: #D97706;
+    color: #FFFFFF;
+}
+
+/* Карточка сохраненного текста */
+.archive-item-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.15s ease;
+}
+.archive-item-card:hover {
+    border-color: #94A3B8;
+    background: #FFFFFF;
+}
+.archive-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.archive-item-date {
+    font-size: 11px;
+    font-weight: 800;
+    color: #64748B;
+}
+.archive-item-snippet {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1E293B;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Обрезает длинный текст на 2-й строке */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.archive-item-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    margin-top: 2px;
+}
+.archive-btn-small {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+}
+.archive-btn-load { background: #E0F2FE; color: #0284C7; }
+.archive-btn-load:hover { background: #0284C7; color: #FFFFFF; }
+.archive-btn-del { background: #FEE2E2; color: #E11D48; }
+.archive-btn-del:hover { background: #E11D48; color: #FFFFFF; }
+
+/* Темная тема */
+body.dark-mode .archive-icon-btn {
+    background-color: rgba(217, 119, 6, 0.18);
+    color: #FBBF24;
+}
+body.dark-mode .archive-icon-btn:hover {
+    background-color: #D97706;
+    color: #FFFFFF;
+}
+body.dark-mode .archive-item-card { background: #1E293B; border-color: #334155; }
+body.dark-mode .archive-item-card:hover { background: #0F172A; border-color: #475569; }
+body.dark-mode .archive-item-date { color: #94A3B8; }
+body.dark-mode .archive-item-snippet { color: #E2E8F0; }
+body.dark-mode .archive-btn-load { background: rgba(2, 132, 199, 0.2); color: #38BDF8; }
+body.dark-mode .archive-btn-load:hover { background: #0284C7; color: #FFFFFF; }
+body.dark-mode .archive-btn-del { background: rgba(225, 29, 72, 0.2); color: #FB7185; }
+body.dark-mode .archive-btn-del:hover { background: #E11D48; color: #FFFFFF; }
+body.dark-mode .weather-modal-close[onclick="clearAllArchive()"] { background: rgba(225, 29, 72, 0.15) !important; color: #FB7185 !important; }
