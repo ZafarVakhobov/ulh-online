@@ -978,12 +978,30 @@ body {
 }
 
 /* Общая группа кнопок над текстовым полем */
+/* Фиксы для строки действий: кнопки всегда в один ряд, счетчик адаптируется */
 .editor-actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 6px;
+    flex-wrap: nowrap; /* Запрещаем перенос на новую строку */
+}
+
+/* Запрещаем иконкам сжиматься */
+.action-icon-btn,
+.editor-tools-wrap,
+.editor-ai-wrap {
+    flex-shrink: 0;
+}
+
+/* Счетчик аккуратно расширяется для длинных чисел без ломания строки */
+.stats-icon-btn {
+    min-width: 48px;
+    padding: 0 8px;
+    background-color: #ecfdf5;
+    color: #10b99f;
+    font-size: 13px;
+    font-weight: 800;
 }
 
 /* Кнопка Nusxa oliş и Öçiriş */
