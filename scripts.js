@@ -3308,3 +3308,46 @@ document.addEventListener("keydown", (e) => {
         closeArchiveModal();
     }
 });
+
+// === ФУНКЦИЯ СОХРАНЕНИЯ ТЕКСТА ИЗ ОКНА ИИ В АРХИВ ===
+function saveAiResultToArchive(event) {
+    const contentDiv = document.getElementById("aiResultContent");
+    
+    // Извлекаем чистый текст без HTML-тегов, чтобы он корректно работал при загрузке в основной редактор
+    const textToSave = (contentDiv.innerText || contentDiv.textContent || "").trim();
+    
+    if (!textToSave) return;
+
+    // Получаем текущий архив
+    const notes = getArchiveNotes();
+    
+    // Добавляем новую заметку
+    notes.unshift({
+        id: Date.now(),
+        date: new Date().toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        text: textToSave
+    });
+
+    try {
+        localStorage.setItem(ARCHIVE_STORAGE_KEY, JSON.stringify(notes));
+        renderArchiveList(); // Фоново обновляем список в модалке архива
+        
+        // Красивая визуальная реакция: меняем текст тултипа на зеленый "Saqlandi ✓"
+        if (event && event.currentTarget) {
+            const tooltip = event.currentTarget.querySelector('.custom-tooltip');
+            if (tooltip) {
+                const originalText = tooltip.textContent;
+                tooltip.textContent = "Saqlandi ✓";
+                tooltip.style.color = "#10B981"; // Зеленый цвет успеха
+                
+                // Возвращаем исходный текст через 1.5 секунды
+                setTimeout(() => {
+                    tooltip.textContent = originalText;
+                    tooltip.style.color = "";
+                }, 1500);
+            }
+        }
+    } catch (e) {
+        console.error("AI Archive Save Error:", e);
+    }
+}
