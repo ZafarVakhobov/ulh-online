@@ -2110,3 +2110,359 @@ textarea:focus {
         gap: 6px;
     }
 }
+
+/* === КНОПКА ПЕРЕКЛЮЧЕНИЯ ТЕМЫ В ВЕРХНЕМ МЕНЮ === */
+.nav-right-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.theme-toggle-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    color: #0F172A;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    padding: 0;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.18s ease, box-shadow 0.25s ease;
+}
+.theme-toggle-btn:hover {
+    background: #F1F5F9;
+    border-color: #CBD5E1;
+    transform: translateY(-1px);
+}
+.theme-icon {
+    position: absolute;
+    transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+}
+.sun-icon {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+    color: #F59E0B;
+}
+.moon-icon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+    color: #334155;
+}
+body.dark-mode .sun-icon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+body.dark-mode .moon-icon {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.5);
+}
+
+/* === ТЁМНАЯ ТЕМА («TUN REJIMI» / DARK MODE) === */
+body.dark-mode {
+    background-color: #0B1120;
+    background-image: linear-gradient(rgba(11, 17, 32, 0.78), rgba(11, 17, 32, 0.86)), url("./back.png");
+    color: #F1F5F9;
+}
+
+/* Верхняя панель и основная карточка */
+body.dark-mode .top-navbar,
+body.dark-mode .container {
+    background: #0F172A;
+    border-color: #1E293B;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+}
+
+/* Если логотип темный, слегка подсвечиваем его для контраста (опционально) */
+body.dark-mode .nav-brand img {
+    filter: brightness(1.15);
+}
+
+body.dark-mode .nav-link-btn {
+    color: #E2E8F0;
+}
+body.dark-mode .nav-link-btn:hover {
+    background-color: #1E293B;
+}
+body.dark-mode .nav-link-btn.active {
+    background-color: rgba(56, 189, 248, 0.15);
+    color: #38BDF8;
+}
+body.dark-mode .nav-chevron {
+    background: #1E293B;
+    color: #94A3B8;
+}
+body.dark-mode .nav-item.open .nav-chevron,
+body.dark-mode .nav-item:hover .nav-chevron {
+    background: #334155;
+    color: #F8FAFC;
+}
+body.dark-mode .nav-tg-btn,
+body.dark-mode .theme-toggle-btn {
+    background: #1E293B;
+    border-color: #334155;
+    color: #F1F5F9;
+}
+body.dark-mode .nav-tg-btn:hover,
+body.dark-mode .theme-toggle-btn:hover {
+    background: #334155;
+    border-color: #475569;
+}
+
+/* Выпадающие подменю */
+body.dark-mode .nav-dropdown {
+    background: #0F172A;
+    border-color: #1E293B;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65);
+}
+body.dark-mode .dropdown-link {
+    color: #E2E8F0;
+}
+body.dark-mode .dropdown-link:hover {
+    background: #1E293B;
+    color: #38BDF8;
+}
+body.dark-mode .dropdown-divider,
+body.dark-mode .currency-Block-divider {
+    border-top-color: #1E293B;
+}
+
+/* Поле редактора, заголовки и блок конвертера */
+body.dark-mode .status {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34D399;
+    border: 1px solid rgba(16, 185, 129, 0.24);
+}
+body.dark-mode .section-title {
+    color: #E2E8F0;
+}
+body.dark-mode textarea {
+    background: #1E293B;
+    border-color: #334155;
+    color: #F8FAFC;
+}
+body.dark-mode textarea::placeholder {
+    color: #64748B;
+}
+body.dark-mode textarea:focus {
+    border-color: #38BDF8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+/* Кнопки над редактором */
+body.dark-mode .copy-link {
+    background-color: rgba(42, 171, 238, 0.16);
+    color: #38BDF8;
+}
+body.dark-mode .copy-link:hover {
+    background-color: #2AABEE;
+    color: #FFFFFF;
+}
+body.dark-mode .clear-link {
+    background-color: rgba(245, 73, 39, 0.16);
+    color: #FB7185;
+}
+body.dark-mode .clear-link:hover {
+    background-color: #F54927;
+    color: #FFFFFF;
+}
+body.dark-mode .stats-link {
+    background-color: rgba(16, 185, 159, 0.16);
+    color: #34D399;
+}
+body.dark-mode .stats-link:hover {
+    background-color: #10b99f;
+    color: #FFFFFF;
+}
+
+/* Конвертер файлов и подвал */
+body.dark-mode .converter-box {
+    background-color: #1E293B;
+    border-color: #334155;
+}
+body.dark-mode .converter-box.drag-over {
+    background-color: rgba(42, 171, 238, 0.12);
+    border-color: #38BDF8;
+}
+body.dark-mode .file-info {
+    color: #94A3B8;
+}
+body.dark-mode .footer {
+    border-top-color: #1E293B;
+}
+
+/* Карточки внутри подменю Foydali resurslar и баннеры модальных окон */
+body.dark-mode .weather-mini-card,
+body.dark-mode .currency-mini-card,
+body.dark-mode .qr-mini-card,
+body.dark-mode .alpha-mini-card,
+body.dark-mode .calc-input-banner,
+body.dark-mode .weather-selected-banner {
+    background: linear-gradient(135deg, #1E293B 0%, #172033 100%);
+    border-color: #334155;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    color: #F8FAFC;
+}
+body.dark-mode .weather-temp-main,
+body.dark-mode .weather-selected-city,
+body.dark-mode .weather-selected-temp,
+body.dark-mode .qr-mini-title,
+body.dark-mode .stats-hero-num,
+body.dark-mode .ads-banner-title {
+    color: #F8FAFC;
+}
+body.dark-mode .weather-badge-label,
+body.dark-mode .currency-badge-label,
+body.dark-mode .weather-selected-tag,
+body.dark-mode .weather-cond-text,
+body.dark-mode .weather-selected-cond,
+body.dark-mode .qr-mini-sub,
+body.dark-mode .alpha-modal-sub,
+body.dark-mode .stats-hero-label,
+body.dark-mode .ads-banner-sub {
+    color: #94A3B8;
+}
+body.dark-mode .weather-city-trigger,
+body.dark-mode .currency-nbu-pill,
+body.dark-mode .alpha-rules-trigger,
+body.dark-mode .weather-icon-box,
+body.dark-mode .qr-mini-icon,
+body.dark-mode .stats-hero-badge {
+    background: #0F172A;
+    border-color: #334155;
+    color: #F8FAFC;
+}
+body.dark-mode .alpha-rules-trigger,
+body.dark-mode .weather-accu-link {
+    color: #38BDF8;
+}
+
+/* Мини-элементы валют и кнопок алфавита */
+body.dark-mode .currency-item,
+body.dark-mode .alpha-letter-pill,
+body.dark-mode .alpha-copy-btn {
+    background: #0F172A;
+    border-color: #334155;
+    color: #F8FAFC;
+}
+body.dark-mode .currency-symbol-icon,
+body.dark-mode .calc-result-icon,
+body.dark-mode .stats-detail-icon {
+    background: #1E293B;
+    color: #38BDF8;
+}
+body.dark-mode .currency-code,
+body.dark-mode .currency-rate-val {
+    color: #F8FAFC;
+}
+
+/* Модальные поп-ап окна */
+body.dark-mode .weather-modal-card {
+    background: #0F172A;
+    border: 1px solid #1E293B;
+    box-shadow: 0 24px 54px rgba(0, 0, 0, 0.7);
+}
+body.dark-mode .weather-city-item,
+body.dark-mode .calc-result-card,
+body.dark-mode .stats-detail-card,
+body.dark-mode .ads-tariff-card,
+body.dark-mode .alpha-rule-item {
+    background: #1E293B;
+    border-color: #334155;
+}
+body.dark-mode .weather-city-item:hover,
+body.dark-mode .calc-result-card:hover,
+body.dark-mode .stats-detail-card:hover,
+body.dark-mode .ads-tariff-card:hover {
+    background: #26354D;
+    border-color: #38BDF8;
+}
+body.dark-mode .calc-result-card.uzs-main-card,
+body.dark-mode .ads-tariff-featured {
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border-color: #0284C7;
+}
+body.dark-mode .weather-city-item-name,
+body.dark-mode .weather-city-item-temp,
+body.dark-mode .calc-result-code,
+body.dark-mode .calc-result-value,
+body.dark-mode .stats-detail-title,
+body.dark-mode .stats-detail-val,
+body.dark-mode .ads-tariff-period,
+body.dark-mode .alpha-rule-text {
+    color: #F8FAFC;
+}
+body.dark-mode .calc-input-row,
+body.dark-mode .qr-input-row {
+    background: #0F172A;
+    border-color: #334155;
+}
+body.dark-mode .calc-amount-input,
+body.dark-mode .qr-text-input {
+    color: #F8FAFC;
+}
+body.dark-mode .calc-currency-select {
+    background: #1E293B;
+    border-color: #334155;
+    color: #F8FAFC;
+}
+body.dark-mode .calc-curr-tab,
+body.dark-mode .calc-chip-btn {
+    background: #0F172A;
+    border-color: #334155;
+    color: #CBD5E1;
+}
+body.dark-mode .calc-curr-tab.active {
+    background: #0284C7;
+    border-color: #0284C7;
+    color: #FFFFFF;
+}
+body.dark-mode .qr-preview-stage {
+    background: #1E293B;
+    border-color: #334155;
+}
+body.dark-mode .alpha-compare-table {
+    background: #1E293B;
+    border-color: #334155;
+}
+body.dark-mode .alpha-compare-table th {
+    background: #0F172A;
+    color: #94A3B8;
+    border-bottom-color: #334155;
+}
+body.dark-mode .alpha-compare-table td {
+    color: #E2E8F0;
+    border-bottom-color: #334155;
+}
+body.dark-mode .ads-req-box {
+    background: rgba(217, 119, 6, 0.12);
+    border-color: rgba(252, 211, 77, 0.35);
+}
+body.dark-mode .ads-req-title {
+    color: #FCD34D;
+}
+body.dark-mode .ads-req-specs {
+    color: #FDE68A;
+}
+body.dark-mode .ads-tg-order-btn {
+    background-color: rgba(42, 171, 238, 0.18);
+    color: #38BDF8;
+}
+body.dark-mode .ads-tg-order-btn:hover {
+    background-color: #2AABEE;
+    color: #FFFFFF;
+}
+body.dark-mode .weather-modal-footer {
+    border-top-color: #1E293B;
+}
+body.dark-mode .weather-modal-close {
+    background: #1E293B;
+    color: #E2E8F0;
+}
+body.dark-mode .weather-modal-close:hover {
+    background: #334155;
+}
