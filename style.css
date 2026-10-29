@@ -3406,3 +3406,83 @@ body.dark-mode .ai-undo-btn {
     border-color: #334155;
     color: #CBD5E1;
 }
+
+/* === СТИЛИ ВИЗУАЛЬНОГО РЕДАКТОРА ИИ (WYSIWYG) === */
+.ai-rich-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+    margin-top: 10px;
+}
+.ai-tool-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    color: #475569;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.ai-tool-btn:hover {
+    background: #F1F5F9;
+    color: #0284C7;
+}
+.ai-tool-divider {
+    width: 1px;
+    height: 18px;
+    background: #E2E8F0;
+    margin: 0 4px;
+}
+.ai-rich-editor {
+    width: 100%;
+    height: 240px;
+    overflow-y: auto;
+    padding: 12px 14px;
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 0 0 12px 12px;
+    font-size: 14.5px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: #0F172A;
+    outline: none;
+}
+.ai-rich-editor:focus {
+    border-color: #6366F1;
+}
+/* Стили внутри редактора */
+.ai-rich-editor a { color: #2563EB; text-decoration: underline; cursor: pointer; }
+.ai-rich-editor h1, .ai-rich-editor h2, .ai-rich-editor h3 { margin: 10px 0 6px; color: #1E293B; }
+.ai-rich-editor ul, .ai-rich-editor ol { margin-top: 4px; margin-bottom: 4px; padding-left: 20px; }
+
+.ai-export-actions {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* Темная тема */
+body.dark-mode .ai-rich-toolbar, body.dark-mode .ai-rich-editor {
+    background: #0F172A;
+    border-color: #334155;
+}
+body.dark-mode .ai-tool-btn { color: #94A3B8; }
+body.dark-mode .ai-tool-btn:hover { background: #1E293B; color: #38BDF8; }
+body.dark-mode .ai-tool-divider { background: #334155; }
+body.dark-mode .ai-rich-editor { color: #F8FAFC; }
+body.dark-mode .ai-rich-editor a { color: #60A5FA; }
+body.dark-mode .ai-rich-editor h1, body.dark-mode .ai-rich-editor h2, body.dark-mode .ai-rich-editor h3 { color: #F8FAFC; }
+@media (max-width: 520px) {
+    .ai-export-actions { grid-template-columns: 1fr; }
+}
