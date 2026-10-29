@@ -978,24 +978,67 @@ body {
 }
 
 /* Общая группа кнопок над текстовым полем */
-/* Фиксы для строки действий: кнопки всегда в один ряд, счетчик адаптируется */
+/* Фиксы для идеального размещения всех кнопок в один ряд */
 .editor-actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 5px;
+    gap: 6px;
     flex-wrap: nowrap !important;
 }
+
 .action-icon-btn,
 .editor-tools-wrap,
 .editor-ai-wrap {
     flex-shrink: 0 !important;
 }
+
+/* Компактная кнопка счетчика с плавной адаптацией под любые числа */
 .stats-icon-btn {
-    min-width: 42px;
-    padding: 0 6px;
-    font-size: 12.5px;
-    letter-spacing: -0.02em;
+    position: relative;
+    height: 32px;
+    min-width: 44px;
+    padding: 0 10px;
+    border: none;
+    border-radius: 30px;
+    background-color: #ECFDF5;
+    color: #059669;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.stats-icon-btn:hover {
+    background-color: #D1FAE5;
+    transform: translateY(-1px);
+}
+
+.stats-icon-btn:focus,
+.stats-icon-btn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+}
+
+/* Число внутри счетчика (адаптивный размер, чтобы длинные цифры не переносились) */
+.stats-number-only {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+/* Поддержка темной темы для счетчика */
+body.dark-mode .stats-icon-btn {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34D399;
+}
+
+body.dark-mode .stats-icon-btn:hover {
+    background: rgba(16, 185, 129, 0.25);
 }
 
 /* Кнопка Nusxa oliş и Öçiriş */
