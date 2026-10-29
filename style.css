@@ -3495,3 +3495,26 @@ body.dark-mode .ai-rich-editor h1, body.dark-mode .ai-rich-editor h2, body.dark-
 @media (max-width: 520px) {
     .ai-export-actions { grid-template-columns: 1fr; }
 }
+
+/* Логотип в правой части панели AI-редактора */
+.ai-toolbar-logo {
+    margin-left: auto; /* Выталкивает логотип в крайнее правое положение */
+    margin-right: 6px; /* Аккуратный отступ от правой границы */
+    height: 20px;      /* Ограничиваем высоту, чтобы панель не увеличилась */
+    width: auto;
+    opacity: 0.55;     /* Слегка приглушаем яркость, чтобы не отвлекал от кнопок */
+    pointer-events: none; /* Делаем некликабельным */
+    user-select: none;
+}
+
+/* Яркость для темной темы */
+body.dark-mode .ai-toolbar-logo {
+    opacity: 0.85;
+}
+
+/* Строго скрываем логотип на мобильных устройствах (экраны до 760px) */
+@media (max-width: 760px) {
+    .ai-toolbar-logo {
+        display: none !important;
+    }
+}
