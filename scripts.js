@@ -3351,3 +3351,69 @@ function saveAiResultToArchive(event) {
         console.error("AI Archive Save Error:", e);
     }
 }
+
+// === ГОРЯЧИЕ КЛАВИШИ (HOTKEYS) ===
+
+// Функции управления окном справочника горячих клавиш
+function openHotkeysModal(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    const modal = document.getElementById('hotkeysModalBackdrop');
+    if (modal) modal.classList.add('open');
+}
+
+function closeHotkeysModal(event) {
+    const modal = document.getElementById('hotkeysModalBackdrop');
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove('open');
+}
+
+// Глобальный слушатель нажатий на клавиатуре
+document.addEventListener('keydown', function(e) {
+    // 1. Закрытие окон на ESC (Добавляем наше окно к существующим)
+    if (e.key === 'Escape') {
+        closeHotkeysModal();
+    }
+
+    // Проверяем, нажата ли Ctrl (Windows/Linux) или Cmd (Mac)
+    const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+
+    // 2. Ctrl + S: Сохранить в .TXT
+    if (isCtrlOrCmd && e.key.toLowerCase() === 's') {
+        e.preventDefault(); // Отключаем стандартное сохранение страницы браузером
+        
+        // Если открыто окно ИИ — сохраняем результат в DOCX, иначе — главный редактор в TXT
+        const aiModal = document.getElementById("aiResultModalBackdrop");
+        if (aiModal && aiModal.classList.contains("open")) {
+            exportAiToDocx();
+        } else {
+            exportEditorAsTxt();
+        }
+    }
+
+    // 3. Ctrl + Shift + C: Скопировать всё из редактора
+    if (isCtrlOrCmd && e.shiftKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        copyEditorText();
+    }
+
+    // 4. Ctrl + Enter: Вызов AI или отправка запроса
+    if (isCtrlOrCmd && e.key === 'Enter') {
+        e.preventDefault();
+        const activeEl = document.activeElement;
+        
+        // Умная логика: если мы уже ввели запрос в модалке - отправляем его
+        if (activeEl && activeEl.id === 'aiRefineInput') {
+            refineAiResult();
+        } else if (activeEl && activeEl.id === 'aiCustomPromptInput') {
+            submitAiCustomPrompt();
+        } else {
+            // Иначе - просто открываем меню с командами
+            openAiCustomModal();
+        }
+    }
+});
