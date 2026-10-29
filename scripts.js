@@ -2754,7 +2754,7 @@ function setAmbientVolumeRatio(ratio) {
 })();
 
 // === 13. AI YORDAMÇI (ИСПРАВЛЕНИЕ ОШИБОК, ПОСТЫ ДЛЯ СОЦСЕТЕЙ, ЗАГОЛОВКИ И СВОЁ ЗАДАНИЕ) ===
-const AI_PROXY_ENDPOINT = "https://ulh-ai-helper.lanigirodesigner.workers.dev/"; // Серверный прокси-файл в корне вашего сайта
+const AI_PROXY_ENDPOINT = "https://ulh-ai-helper.lanigirodesigner.workers.dev";
 let previousTextBeforeAi = "";
 
 // Нормализация ответа ИИ под стандарты нового узбекского латинского алфавита (Ö, Ğ, Ş, Ç)
@@ -2762,8 +2762,6 @@ function enforceNewUzbekAlphabet(rawText) {
     if (!rawText) return "";
     let res = String(rawText);
 
-    // Если на сайте уже есть функция транслитерации кириллицы/старой латиницы — используем её,
-    // а также гарантированно заменяем старые буквосочетания O', G', Sh, Ch на Ö, Ğ, Ş, Ç
     res = res
         .replace(/O['‘’`ʻʼ]/g, "Ö")
         .replace(/o['‘’`ʻʼ]/g, "ö")
@@ -2865,11 +2863,13 @@ function runAiPreset(presetType) {
 
 function setAiLoadingState(isLoading) {
     const btn = document.getElementById("aiHelperBtn");
-    const label = document.getElementById("aiBtnLabel");
-    if (!btn || !label) return;
+    if (!btn) return;
 
     btn.classList.toggle("loading", isLoading);
-    label.textContent = isLoading ? "AI öylamoqda..." : "AI yordamçi";
+    const spanText = btn.querySelector("span:not(.custom-tooltip)");
+    if (spanText) {
+        spanText.textContent = isLoading ? "..." : "AI";
+    }
 }
 
 function undoLastAiAction() {
@@ -2921,7 +2921,6 @@ async function executeAiRequest(mode, customInstruction) {
 
         const cleanResult = enforceNewUzbekAlphabet(data.result);
 
-        // Если выбрана генерация заголовков — добавляем их сверху над основным текстом
         if (mode === "generate_titles") {
             editor.value = cleanResult + "\n\n---\n\n" + sourceText;
         } else {
