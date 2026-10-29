@@ -3244,7 +3244,7 @@ function renderArchiveList() {
     container.innerHTML = "";
 
     if (notes.length === 0) {
-        container.innerHTML = `<div style="text-align:center; color:#64748B; font-size:13px; padding: 20px 0;">Arxiv bo'sh. Hali hech qanday matn saqlanmagan.</div>`;
+        container.innerHTML = `<div style="text-align:center; color:#64748B; font-size:13px; padding: 20px 0;">Arxiv böş. Hali heç qanday matn saqlanmagan.</div>`;
         return;
     }
 
@@ -3296,7 +3296,7 @@ function deleteArchiveNote(id) {
 
 // Очистить весь архив
 function clearAllArchive() {
-    if (confirm("Barcha saqlangan matnlarni o'chirib tashlamoqchimisiz?")) {
+    if (confirm("Barça saqlangan matnlarni öçirib taşlamoqçimisiz?")) {
         localStorage.removeItem(ARCHIVE_STORAGE_KEY);
         renderArchiveList();
     }
