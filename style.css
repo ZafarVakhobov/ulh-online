@@ -2990,7 +2990,7 @@ body.dark-mode .custom-tooltip::after {
     position: relative;
     width: 88px;
     height: 28px;
-    background: #DCDCDC;
+    background: #ecfdf5;
     border-radius: 999px;
     padding: 3px;
     cursor: pointer;
