@@ -2407,3 +2407,348 @@ function clearEditorText() {
         btn.classList.remove('cleared');
     }, 1200);
 }
+
+
+// === 12. ПРОЦЕДУРНЫЙ ГЕНЕРАТОР МУЗЫКИ (WEB AUDIO API) И МИНИ-ПЛЕЕР ===
+let ambientAudioCtx = null;
+let ambientMasterGain = null;
+let ambientReverbNode = null;
+let ambientIsPlaying = false;
+let ambientVolume = 0.70; // 70% по умолчанию
+let ambientChordTimer = null;
+let ambientMelodyTimer = null;
+let ambientHasStartedOnce = false;
+
+// Аккорды для мягкого фонового пэда (Fmaj9, Dm11, Bbmaj7, C6add9)
+const AMBIENT_CHORDS = [
+    [174.61, 220.00, 261.63, 329.63, 392.00], // Fmaj9
+    [146.83, 220.00, 261.63, 329.63, 349.23], // Dm11
+    [116.54, 174.61, 220.00, 261.63, 349.23], // Bbmaj9
+    [130.81, 196.00, 246.94, 293.66, 329.63]  // Cmaj9
+];
+
+// Пентатоника для мягких мелодических капель (Rhodes / Bell)
+const AMBIENT_SCALE = [
+    261.63, 293.66, 329.63, 349.23, 392.00, 440.00,
+    523.25, 587.33, 659.25, 698.46, 783.99, 880.00
+];
+
+let currentChordIdx = 0;
+
+// Создание мягкого пространственного ревербератора (Impulse Response)
+function createAmbientReverb(ctx) {
+    const sampleRate = ctx.sampleRate;
+    const length = sampleRate * 3.6; // 3.6 секунды хвоста реверберации
+    const impulse = ctx.createBuffer(2, length, sampleRate);
+
+    for (let ch = 0; ch < 2; ch++) {
+        const channelData = impulse.getChannelData(ch);
+        for (let i = 0; i < length; i++) {
+            const decay = Math.pow(1 - i / length, 2.4);
+            channelData[i] = (Math.random() * 2 - 1) * decay * 0.35;
+        }
+    }
+
+    const convolver = ctx.createConvolver();
+    convolver.buffer = impulse;
+    return convolver;
+}
+
+function initAmbientAudioEngine() {
+    if (ambientAudioCtx) return;
+
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    ambientAudioCtx = new AudioContextClass();
+
+    // Мастер-громкость
+    ambientMasterGain = ambientAudioCtx.createGain();
+    ambientMasterGain.gain.value = ambientVolume * 0.45;
+
+    // Мягкий сглаживающий фильтр на мастере
+    const masterFilter = ambientAudioCtx.createBiquadFilter();
+    masterFilter.type = "lowpass";
+    masterFilter.frequency.value = 1800;
+
+    // Ревербератор для глубокого эмбиент-пространства
+    ambientReverbNode = createAmbientReverb(ambientAudioCtx);
+    const wetGain = ambientAudioCtx.createGain();
+    wetGain.gain.value = 0.55;
+
+    const dryGain = ambientAudioCtx.createGain();
+    dryGain.gain.value = 0.65;
+
+    masterFilter.connect(dryGain);
+    masterFilter.connect(ambientReverbNode);
+    ambientReverbNode.connect(wetGain);
+
+    dryGain.connect(ambientMasterGain);
+    wetGain.connect(ambientMasterGain);
+    ambientMasterGain.connect(ambientAudioCtx.destination);
+
+    ambientAudioCtx._inputBus = masterFilter;
+}
+
+// Проигрывание тёплого обволакивающего аккорда (Pad)
+function triggerAmbientPadChord() {
+    if (!ambientIsPlaying || !ambientAudioCtx) return;
+
+    const now = ambientAudioCtx.currentTime;
+    const chord = AMBIENT_CHORDS[currentChordIdx % AMBIENT_CHORDS.length];
+    currentChordIdx++;
+
+    chord.forEach((freq, idx) => {
+        const osc = ambientAudioCtx.createOscillator();
+        const subOsc = ambientAudioCtx.createOscillator();
+        const noteGain = ambientAudioCtx.createGain();
+        const filter = ambientAudioCtx.createBiquadFilter();
+        const panner = ambientAudioCtx.createStereoPanner ? ambientAudioCtx.createStereoPanner() : null;
+
+        osc.type = "sine";
+        subOsc.type = "triangle";
+
+        // Легкий расстрой (detune) для теплоты аналогового синтезатора
+        osc.frequency.setValueAtTime(freq, now);
+        subOsc.frequency.setValueAtTime(freq * 0.9985, now);
+
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(520 + idx * 90, now);
+
+        const attack = 2.6;
+        const hold = 3.2;
+        const release = 4.2;
+        const peakGain = 0.048 / Math.sqrt(chord.length);
+
+        noteGain.gain.setValueAtTime(0.0001, now);
+        noteGain.gain.linearRampToValueAtTime(peakGain, now + attack);
+        noteGain.gain.setValueAtTime(peakGain, now + attack + hold);
+        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + attack + hold + release);
+
+        osc.connect(filter);
+        subOsc.connect(filter);
+        filter.connect(noteGain);
+
+        if (panner) {
+            panner.pan.setValueAtTime((idx % 2 === 0 ? -1 : 1) * 0.35, now);
+            noteGain.connect(panner);
+            panner.connect(ambientAudioCtx._inputBus);
+        } else {
+            noteGain.connect(ambientAudioCtx._inputBus);
+        }
+
+        osc.start(now);
+        subOsc.start(now);
+        osc.stop(now + attack + hold + release + 0.1);
+        subOsc.stop(now + attack + hold + release + 0.1);
+    });
+}
+
+// Проигрывание мягкой случайной ноты пентатоники (в стиле FigJam / Rhodes)
+function triggerAmbientMelodyNote() {
+    if (!ambientIsPlaying || !ambientAudioCtx) return;
+
+    const now = ambientAudioCtx.currentTime;
+    const freq = AMBIENT_SCALE[Math.floor(Math.random() * AMBIENT_SCALE.length)];
+
+    const osc = ambientAudioCtx.createOscillator();
+    const overtone = ambientAudioCtx.createOscillator();
+    const noteGain = ambientAudioCtx.createGain();
+    const overtoneGain = ambientAudioCtx.createGain();
+
+    osc.type = "sine";
+    overtone.type = "sine";
+
+    osc.frequency.setValueAtTime(freq, now);
+    overtone.frequency.setValueAtTime(freq * 2, now); // Мягкий обертон на октаву выше
+
+    noteGain.gain.setValueAtTime(0.0001, now);
+    noteGain.gain.linearRampToValueAtTime(0.042, now + 0.05);
+    noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.4);
+
+    overtoneGain.gain.setValueAtTime(0.0001, now);
+    overtoneGain.gain.linearRampToValueAtTime(0.008, now + 0.02);
+    overtoneGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+
+    osc.connect(noteGain);
+    overtone.connect(overtoneGain);
+    overtoneGain.connect(noteGain);
+    noteGain.connect(ambientAudioCtx._inputBus);
+
+    osc.start(now);
+    overtone.start(now);
+    osc.stop(now + 3.5);
+    overtone.stop(now + 1.0);
+
+    // Планируем следующую ноту через случайный органичный интервал (1.8 — 4.2 сек)
+    const nextDelay = 1800 + Math.random() * 2400;
+    ambientMelodyTimer = setTimeout(triggerAmbientMelodyNote, nextDelay);
+}
+
+function startAmbientMusic() {
+    initAmbientAudioEngine();
+    if (!ambientAudioCtx) return;
+
+    if (ambientAudioCtx.state === "suspended") {
+        ambientAudioCtx.resume();
+    }
+
+    ambientIsPlaying = true;
+    ambientHasStartedOnce = true;
+    updateMusicPlayerUI();
+
+    clearInterval(ambientChordTimer);
+    clearTimeout(ambientMelodyTimer);
+
+    triggerAmbientPadChord();
+    ambientChordTimer = setInterval(triggerAmbientPadChord, 7200);
+    ambientMelodyTimer = setTimeout(triggerAmbientMelodyNote, 1100);
+}
+
+function pauseAmbientMusic() {
+    ambientIsPlaying = false;
+    clearInterval(ambientChordTimer);
+    clearTimeout(ambientMelodyTimer);
+    updateMusicPlayerUI();
+}
+
+function toggleAmbientPlayback(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    if (ambientIsPlaying) {
+        pauseAmbientMusic();
+    } else {
+        startAmbientMusic();
+    }
+}
+
+function updateMusicPlayerUI() {
+    const navBtn = document.getElementById("musicToggleBtn");
+    const coverBtn = document.getElementById("musicPlayPauseBtn");
+
+    if (navBtn) {
+        navBtn.classList.toggle("is-playing", ambientIsPlaying);
+    }
+    if (coverBtn) {
+        coverBtn.classList.toggle("playing", ambientIsPlaying);
+    }
+}
+
+// Открытие / закрытие выпадающего окошка плеера по клику на ноту
+function toggleMusicDropdown(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    const wrap = document.getElementById("navMusicWrap");
+    const btn = document.getElementById("musicToggleBtn");
+    if (!wrap) return;
+
+    // Закрываем другие открытые подменю в шапке
+    document.querySelectorAll(".nav-item.has-dropdown").forEach(el => el.classList.remove("open"));
+
+    const isOpen = wrap.classList.toggle("open");
+    if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+
+    // При самом первом открытии плеера сразу мягко запускаем музыку
+    if (isOpen && !ambientHasStartedOnce) {
+        startAmbientMusic();
+    }
+}
+
+// Закрытие окошка плеера при клике вне его
+document.addEventListener("click", (e) => {
+    const wrap = document.getElementById("navMusicWrap");
+    if (wrap && !wrap.contains(e.target)) {
+        wrap.classList.remove("open");
+        const btn = document.getElementById("musicToggleBtn");
+        if (btn) btn.setAttribute("aria-expanded", "false");
+    }
+});
+
+// Управление капсульным ползунком громкости (клик, перетаскивание, колесико мыши)
+function setAmbientVolumeRatio(ratio) {
+    const clamped = Math.max(0, Math.min(1, ratio));
+    ambientVolume = clamped;
+    const percent = Math.round(clamped * 100);
+
+    const fillEl = document.getElementById("musicVolumeFill");
+    const tooltipEl = document.getElementById("musicVolumeTooltip");
+    const capsuleEl = document.getElementById("musicVolumeCapsule");
+
+    if (fillEl) fillEl.style.width = percent + "%";
+    if (tooltipEl) tooltipEl.textContent = percent + "%";
+    if (capsuleEl) capsuleEl.setAttribute("aria-valuenow", String(percent));
+
+    if (ambientMasterGain && ambientAudioCtx) {
+        ambientMasterGain.gain.setTargetAtTime(clamped * 0.45, ambientAudioCtx.currentTime, 0.04);
+    }
+
+    // Если пользователь прибавил громкость с 0, когда музыка еще не играла — запускаем
+    if (percent > 0 && !ambientIsPlaying && ambientHasStartedOnce) {
+        startAmbientMusic();
+    } else if (percent === 0 && ambientIsPlaying) {
+        pauseAmbientMusic();
+    }
+}
+
+(function initVolumeCapsuleControls() {
+    const capsule = document.getElementById("musicVolumeCapsule");
+    if (!capsule) return;
+
+    let isDragging = false;
+
+    function updateFromClientX(clientX) {
+        const rect = capsule.getBoundingClientRect();
+        const innerPad = 3;
+        const usableWidth = Math.max(1, rect.width - innerPad * 2);
+        const relX = clientX - (rect.left + innerPad);
+        setAmbientVolumeRatio(relX / usableWidth);
+    }
+
+    capsule.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        isDragging = true;
+        capsule.classList.add("dragging");
+        if (capsule.setPointerCapture) capsule.setPointerCapture(e.pointerId);
+        updateFromClientX(e.clientX);
+    });
+
+    capsule.addEventListener("pointermove", (e) => {
+        if (!isDragging) return;
+        updateFromClientX(e.clientX);
+    });
+
+    function endDrag(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        capsule.classList.remove("dragging");
+        if (e && e.pointerId !== undefined && capsule.releasePointerCapture) {
+            try { capsule.releasePointerCapture(e.pointerId); } catch (_) {}
+        }
+    }
+
+    capsule.addEventListener("pointerup", endDrag);
+    capsule.addEventListener("pointercancel", endDrag);
+
+    // Регулировка громкости колесиком мыши при наведении на капсулу
+    capsule.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.05 : -0.05;
+        setAmbientVolumeRatio(ambientVolume + delta);
+    }, { passive: false });
+
+    // Поддержка клавиш стрелок влево/вправо
+    capsule.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+            e.preventDefault();
+            setAmbientVolumeRatio(ambientVolume + 0.05);
+        } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+            e.preventDefault();
+            setAmbientVolumeRatio(ambientVolume - 0.05);
+        }
+    });
+})();
