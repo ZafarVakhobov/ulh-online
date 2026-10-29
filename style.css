@@ -3419,6 +3419,7 @@ body.dark-mode .ai-undo-btn {
     margin-top: 10px;
 }
 .ai-tool-btn {
+    position: relative; /* Обязательно для позиционирования тултипа */
     width: 28px;
     height: 28px;
     border: none;
@@ -3432,10 +3433,19 @@ body.dark-mode .ai-undo-btn {
     justify-content: center;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
+
 .ai-tool-btn:hover {
     background: #F1F5F9;
     color: #0284C7;
 }
+
+/* Анимация появления тултипа при наведении на кнопку панели */
+.ai-tool-btn:hover .custom-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0) scale(1);
+}
+
 .ai-tool-divider {
     width: 1px;
     height: 18px;
