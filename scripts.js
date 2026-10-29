@@ -2110,3 +2110,32 @@ setInterval(() => {
 }, 60000);
 
 initHeroSlider();
+
+// === 10. ПЕРЕКЛЮЧАТЕЛЬ ТЁМНОЙ ТЕМЫ («TUN REJIMI» / DARK MODE) ===
+const THEME_STORAGE_KEY = "ulh_theme_mode";
+
+function applySavedTheme() {
+    try {
+        const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+        const isDark = (savedTheme === "dark");
+        document.body.classList.toggle("dark-mode", isDark);
+        updateThemeButtonA11y(isDark);
+    } catch (_) {}
+}
+
+function updateThemeButtonA11y(isDark) {
+    const btn = document.getElementById("themeToggleBtn");
+    if (!btn) return;
+    btn.setAttribute("aria-label", isDark ? "Kun rejimini yoqiş" : "Tun rejimini yoqiş");
+    btn.setAttribute("title", isDark ? "Kun rejimi (Yoruğ)" : "Tun rejimi (Qoronği)");
+}
+
+function toggleDarkMode() {
+    const isDarkNow = document.body.classList.toggle("dark-mode");
+    updateThemeButtonA11y(isDarkNow);
+    try {
+        localStorage.setItem(THEME_STORAGE_KEY, isDarkNow ? "dark" : "light");
+    } catch (_) {}
+}
+
+applySavedTheme();
