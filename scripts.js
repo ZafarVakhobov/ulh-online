@@ -2886,6 +2886,7 @@ function undoLastAiAction() {
     closeAiMenu();
 }
 
+// === ПОЛНОСТЬЮ ЗАМЕНИТЕ ВАШУ ФУНКЦИЮ executeAiRequest НА ЭТУ ===
 async function executeAiRequest(mode, customInstruction) {
     if (!editor || !editor.value.trim()) {
         if (typeof showAutosaveIndicator === "function") {
@@ -2896,7 +2897,6 @@ async function executeAiRequest(mode, customInstruction) {
     }
 
     const sourceText = editor.value.trim();
-    previousTextBeforeAi = editor.value;
 
     setAiLoadingState(true);
     if (typeof showAutosaveIndicator === "function") {
@@ -2919,19 +2919,22 @@ async function executeAiRequest(mode, customInstruction) {
             throw new Error((data && data.error) ? data.error : "AI xatolik");
         }
 
+        // Фильтр нового алфавита применяется ТОЛЬКО к узбекскому тексту
+        // (на русский и английский он не повлияет, так как там нет O' и G')
         const cleanResult = enforceNewUzbekAlphabet(data.result);
 
+        let finalOutput = cleanResult;
         if (mode === "generate_titles") {
-            editor.value = cleanResult + "\n\n---\n\n" + sourceText;
-        } else {
-            editor.value = cleanResult;
+            finalOutput = cleanResult + "\n\n---\n\n" + sourceText;
         }
 
-        const undoBtn = document.getElementById("aiUndoBtn");
-        if (undoBtn) undoBtn.style.display = "inline-flex";
+        // ВМЕСТО ЗАМЕНЫ ГЛАВНОГО ТЕКСТА, ОТКРЫВАЕМ НОВОЕ ОКНО:
+        openAiResultModal(finalOutput);
 
-        if (typeof saveEditorDraft === "function") saveEditorDraft();
-        if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+        // Убираем кнопку "Oldingi matnni qaytarish", так как мы больше не стираем главный текст
+        const undoBtn = document.getElementById("aiUndoBtn");
+        if (undoBtn) undoBtn.style.display = "none";
+
         if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("AI vazifani bajardi ✓");
     } catch (err) {
         if (typeof showAutosaveIndicator === "function") {
@@ -2947,5 +2950,103 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
         closeAiCustomModal();
         closeAiMenu();
+    }
+});
+
+// === ДОБАВЬТЕ ЭТИ ФУНКЦИИ В РАЗДЕЛ 13 ===
+function openAiResultModal(text) {
+    const modal = document.getElementById("aiResultModalBackdrop");
+    const textarea = document.getElementById("aiResultTextarea");
+    const refineInput = document.getElementById("aiRefineInput");
+    
+    if (modal && textarea) {
+        textarea.value = text;
+        // Очищаем строку ввода правок при новом запуске
+        if (refineInput) refineInput.value = ""; 
+        modal.classList.add("open");
+    }
+}
+
+function closeAiResultModal(event) {
+    const modal = document.getElementById("aiResultModalBackdrop");
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove("open");
+}
+
+function copyAiResultText() {
+    const textarea = document.getElementById("aiResultTextarea");
+    const btnSpan = document.getElementById("copyAiResultTextSpan");
+    if (!textarea || !navigator.clipboard) return;
+
+    navigator.clipboard.writeText(textarea.value).then(() => {
+        const originalText = btnSpan.textContent;
+        btnSpan.textContent = "Nusxalandi ✓";
+        setTimeout(() => {
+            btnSpan.textContent = originalText;
+        }, 1500);
+    });
+}
+
+// === НОВАЯ ФУНКЦИЯ ДЛЯ ДОРАБОТКИ ТЕКСТА ПРЯМО В ОКНЕ (MINI CHAT) ===
+async function refineAiResult() {
+    const resultTextarea = document.getElementById("aiResultTextarea");
+    const refineInput = document.getElementById("aiRefineInput");
+    const refineBtn = document.getElementById("aiRefineBtn");
+    const refineBtnText = document.getElementById("aiRefineBtnText");
+    const sparkleIcon = refineBtn ? refineBtn.querySelector(".ai-sparkle-icon") : null;
+    
+    // Если поле результата или строка команды пустые — ничего не делаем
+    if (!resultTextarea || !resultTextarea.value.trim() || !refineInput || !refineInput.value.trim()) return;
+
+    const sourceText = resultTextarea.value.trim();
+    const customInstruction = refineInput.value.trim();
+
+    // Визуальная анимация загрузки на кнопке внутри окна
+    if (refineBtn) refineBtn.style.pointerEvents = "none";
+    if (refineBtnText) refineBtnText.textContent = "Kuting...";
+    if (sparkleIcon) sparkleIcon.style.animation = "aiSpinPulse 1.1s linear infinite";
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                mode: "custom", // Всегда используем custom для правок
+                text: sourceText,
+                customPrompt: customInstruction
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data || !data.result) {
+            throw new Error((data && data.error) ? data.error : "AI xatolik");
+        }
+
+        // Применяем фильтр узбекской латиницы и обновляем текст в окне
+        const cleanResult = enforceNewUzbekAlphabet(data.result);
+        resultTextarea.value = cleanResult;
+        
+        // Очищаем строку ввода после успешной отработки
+        refineInput.value = ""; 
+        
+    } catch (err) {
+        console.error("AI Refine Error:", err);
+        if (typeof showAutosaveIndicator === "function") {
+            showAutosaveIndicator("Xatolik! Qayta urinib köring.");
+        }
+    } finally {
+        // Возвращаем кнопку в исходное состояние
+        if (refineBtn) refineBtn.style.pointerEvents = "auto";
+        if (refineBtnText) refineBtnText.textContent = "Qayta yozing";
+        if (sparkleIcon) sparkleIcon.style.animation = "";
+    }
+}
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        closeAiCustomModal();
+        closeAiMenu();
+        closeAiResultModal(); // <-- Добавьте эту строчку
     }
 });
