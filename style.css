@@ -2178,8 +2178,15 @@ body.dark-mode .container {
 }
 
 /* Если логотип темный, слегка подсвечиваем его для контраста (опционально) */
-body.dark-mode .nav-brand img {
-    filter: brightness(1.15);
+/* Переключение логотипа между светлой и темной темой */
+.nav-brand .logo-dark {
+    display: none;
+}
+body.dark-mode .nav-brand .logo-light {
+    display: none;
+}
+body.dark-mode .nav-brand .logo-dark {
+    display: block;
 }
 
 body.dark-mode .nav-link-btn {
