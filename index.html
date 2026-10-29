@@ -742,6 +742,48 @@
             </div>
         </div>
     </div>
+
+
+    <!-- === МОДАЛЬНОЕ ОКНО РЕЗУЛЬТАТОВ ИИ (AI YORDAMÇI NATIJASI) === -->
+    <div class="weather-modal-backdrop" id="aiResultModalBackdrop" onclick="closeAiResultModal(event)">
+        <div class="weather-modal-card ai-modal-card" style="max-width: 650px;" onclick="event.stopPropagation()">
+            <div class="calc-input-banner">
+                <div class="calc-banner-top">
+                    <div class="weather-selected-tag">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
+                        <span>AI YORDAMÇI NATIJASI</span>
+                    </div>
+                </div>
+                
+                <!-- Поле без автозамен, куда ИИ выдаст чистый результат -->
+                <textarea id="aiResultTextarea" class="ai-prompt-textarea" style="height: 250px !important; min-height: 250px; margin-top: 10px; font-weight: 500;" spellcheck="false"></textarea>
+
+                <!-- НОВОЕ: Панель доработки результатов ИИ прямо в окне (Чат) -->
+                <div style="margin-top: 12px; border-top: 1px dashed #CBD5E1; padding-top: 12px;">
+                    <div class="weather-other-title" style="margin: 0 4px 8px;">MATNNI QAYTA TAHRIRLAŞ (PROMPT)</div>
+                    <div class="qr-input-row" style="padding: 4px 4px 4px 14px;">
+                        <input type="text" id="aiRefineInput" class="qr-text-input" placeholder="Masalan: Qisqaroq yoz, xatoni to'g'irla..." aria-label="Qöşimça buyruq" onkeydown="if(event.key === 'Enter') refineAiResult()">
+                        <button type="button" class="ai-submit-modal-btn" id="aiRefineBtn" onclick="refineAiResult()" style="width: auto; height: 34px; border-radius: 10px; padding: 0 16px; margin: 0; box-shadow: none;">
+                            <svg class="ai-sparkle-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
+                            <span id="aiRefineBtnText">Qayta yozing</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопка копирования результата (сделали её зеленой для акцента) -->
+            <button type="button" class="ai-submit-modal-btn" id="copyAiResultBtn" onclick="copyAiResultText()" style="margin-top: 14px; background: #10B981; box-shadow: 0 6px 18px rgba(16, 185, 129, 0.28);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span id="copyAiResultTextSpan">Natijani nusxalaş</span>
+            </button>
+
+            <div class="weather-modal-footer">
+                <span>Asosiy matn özgartirilmadi</span>
+                <button type="button" class="weather-modal-close" onclick="closeAiResultModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
+
     
     <div class="container">
         
