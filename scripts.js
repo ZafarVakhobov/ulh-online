@@ -2758,10 +2758,23 @@ const AI_PROXY_ENDPOINT = "https://ulh-ai-helper.lanigirodesigner.workers.dev";
 let previousTextBeforeAi = "";
 
 // Нормализация ответа ИИ под стандарты нового узбекского латинского алфавита (Ö, Ğ, Ş, Ç)
+// Умная нормализация ответа ИИ с автоопределением языка (Ö, Ğ, Ş, Ç только для узбекского)
 function enforceNewUzbekAlphabet(rawText) {
     if (!rawText) return "";
     let res = String(rawText);
 
+    // 1. Если ИИ выдал текст на кириллице (русский язык), мы не применяем замены
+    if (/[А-Яа-яЁё]/.test(res)) {
+        return res.trim();
+    }
+
+    // 2. Если ИИ выдал текст на английском (ищем частые английские слова, чтобы не сломать "she", "change")
+    const englishWordsRegex = /\b(the|and|is|are|this|that|with|for|have|has|will)\b/i;
+    if (englishWordsRegex.test(res)) {
+        return res.trim(); 
+    }
+
+    // 3. Во всех остальных случаях (узбекский язык) — смело применяем новый алфавит
     res = res
         .replace(/O['‘’`ʻʼ]/g, "Ö")
         .replace(/o['‘’`ʻʼ]/g, "ö")
