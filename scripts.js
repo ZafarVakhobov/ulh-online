@@ -44,15 +44,20 @@ function copyEditorText() {
     if (!editor || !editor.value || !btn) return;
 
     navigator.clipboard.writeText(editor.value).then(() => {
-        btn.innerText = 'Nusxalandi ✓';
+        const tooltipNode = btn.querySelector('.custom-tooltip');
+        if (tooltipNode) tooltipNode.textContent = "Nusxalandi ✓";
         btn.classList.add('copied');
+
         setTimeout(() => {
-            btn.innerText = 'Nusxa oliş';
+            if (tooltipNode) tooltipNode.textContent = "Nusxa oliş";
             btn.classList.remove('copied');
-        }, 1000);
+        }, 1200);
     }).catch(() => {
-        btn.innerText = 'Nusxa olinmadi';
-        setTimeout(() => { btn.innerText = 'Nusxa oliş'; }, 1000);
+        const tooltipNode = btn.querySelector('.custom-tooltip');
+        if (tooltipNode) {
+            tooltipNode.textContent = "Xatolik!";
+            setTimeout(() => { tooltipNode.textContent = "Nusxa oliş"; }, 1200);
+        }
     });
 }
 
