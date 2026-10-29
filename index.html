@@ -231,9 +231,51 @@
         </div>
 
         <!-- Правая группа: Переключатель тёмной темы + Кнопка Telegram -->
+        
+<!-- Правая группа: Мини-плеер + Переключатель тёмной темы + Кнопка Telegram -->
         <div class="nav-right-actions">
+            <!-- Кнопка и выпадающее окошко генеративного плеера -->
+            <div class="nav-music-wrap" id="navMusicWrap">
+                <button type="button" class="theme-toggle-btn music-toggle-btn" id="musicToggleBtn" onclick="toggleMusicDropdown(event)" title="Konsentratsiya uçun musiqa" aria-label="Musiqa pleyerini oçiş" aria-expanded="false">
+                    <!-- Иконка музыкальной ноты -->
+                    <svg class="music-note-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 18V5l12-2v13"/>
+                        <circle cx="6" cy="18" r="3"/>
+                        <circle cx="18" cy="16" r="3"/>
+                    </svg>
+                </button>
+
+                <!-- Выпадающее окошко плеера -->
+                <div class="nav-dropdown music-dropdown-box" id="musicDropdownBox" onclick="event.stopPropagation()">
+                    <div class="music-player-row">
+                        <!-- Обложка music.svg слева (клик переключает Play / Pause) -->
+                        <button type="button" class="music-cover-btn" id="musicPlayPauseBtn" onclick="toggleAmbientPlayback(event)" title="Ijro etiş / Pauza" aria-label="Ijro etiş yoki pauza">
+                            <img src="/music.svg" alt="Konsentratsiya uçun musiqa" class="music-cover-img" onerror="this.onerror=null;this.src='./music.svg';">
+                            <span class="music-cover-overlay">
+                                <!-- Иконка Play -->
+                                <svg class="play-state-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                                <!-- Иконка Pause -->
+                                <svg class="pause-state-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+                            </span>
+                        </button>
+
+                        <!-- Текстовый блок по центру -->
+                        <div class="music-meta">
+                            <div class="music-title">Konsentratsiya uçun musiqa</div>
+                            <div class="music-subtitle">AI Generated Music by LANIGIRO</div>
+                        </div>
+
+                        <!-- Капсульный регулятор громкости справа + тултип с % -->
+                        <div class="music-volume-capsule" id="musicVolumeCapsule" role="slider" tabindex="0" aria-label="Ovoz balandligi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
+                            <div class="music-volume-fill" id="musicVolumeFill" style="width: 70%;"></div>
+                            <span class="custom-tooltip" id="musicVolumeTooltip">70%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Переключатель тёмной темы -->
             <button type="button" class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleDarkMode()" title="Tun / Kun rejimini almaştiriş" aria-label="Tun rejimini yoqiş">
-                <!-- Иконка Солнца (показывается в тёмном режиме для возврата к светлому) -->
                 <svg class="theme-icon sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="5"/>
                     <line x1="12" y1="1" x2="12" y2="3"/>
@@ -245,7 +287,6 @@
                     <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
                     <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                 </svg>
-                <!-- Иконка Луны (показывается в светлом режиме для включения тёмного) -->
                 <svg class="theme-icon moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                 </svg>
@@ -253,6 +294,7 @@
 
             <a href="https://t.me/ulh_releases" target="_blank" rel="noopener" class="nav-tg-btn" onclick="openTgLink(event)">UHL Releases</a>
         </div>
+        
     </nav>
 
     <!-- === МОДАЛЬНОЕ ПОП-АП ОКНО ВЫБОРА ГОРОДА ПОГОДЫ === -->
