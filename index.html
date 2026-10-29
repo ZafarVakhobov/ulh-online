@@ -809,10 +809,10 @@
                 <div style="margin-top: 10px; border-top: 1px dashed #CBD5E1; padding-top: 10px;">
                     <div class="weather-other-title" style="margin: 0 4px 6px;">MATNNI QAYTA TAHRIRLAŞ (PROMPT)</div>
                     <div class="qr-input-row" style="padding: 4px 4px 4px 14px;">
-                        <input type="text" id="aiRefineInput" class="qr-text-input" placeholder="Masalan: Qisqaroq yoz, xatoni to'g'irla..." aria-label="Qöşimça buyruq" onkeydown="if(event.key === 'Enter') { event.preventDefault(); refineAiResult(); }">
+                        <input type="text" id="aiRefineInput" class="qr-text-input" placeholder="Masalan: Qisqaroq yoz, xatoni töğirla..." aria-label="Qöşimça buyruq" onkeydown="if(event.key === 'Enter') { event.preventDefault(); refineAiResult(); }">
                         
                         <!-- НОВАЯ КНОПКА "НАЗАД" (Появляется только если есть история) -->
-                        <button type="button" id="aiModalUndoBtn" onclick="undoAiAction()" style="display: block; align-items: center; background: #F1F5F9; border: none; border-radius: 10px; height: 34px; padding: 0 12px; margin-right: 6px; color: #475569; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.15s ease;" onmouseover="this.style.background='#E2E8F0'; this.style.color='#0F172A'" onmouseout="this.style.background='#F1F5F9'; this.style.color='#475569'" title="Oldingi versiyaga qaytiş">
+                        <button type="button" id="aiModalUndoBtn" onclick="undoAiAction()" style="display: none; align-items: center; background: #F1F5F9; border: none; border-radius: 10px; height: 34px; padding: 0 12px; margin-right: 6px; color: #475569; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.15s ease;" onmouseover="this.style.background='#E2E8F0'; this.style.color='#0F172A'" onmouseout="this.style.background='#F1F5F9'; this.style.color='#475569'" title="Oldingi versiyaga qaytiş">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
                             <span>Orqaga</span>
                         </button>
