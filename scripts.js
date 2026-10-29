@@ -3174,3 +3174,137 @@ document.addEventListener("keydown", (e) => {
         closeAiResultModal(); // <-- Добавьте эту строчку
     }
 });
+
+// === МЕНЕДЖЕР СОХРАНЕННЫХ ТЕКСТОВ (ARXIV) ===
+const ARCHIVE_STORAGE_KEY = "ulh_archive_v1";
+
+function openArchiveModal(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    
+    renderArchiveList();
+    
+    const modal = document.getElementById('archiveModalBackdrop');
+    if (modal) modal.classList.add('open');
+}
+
+function closeArchiveModal(event) {
+    const modal = document.getElementById('archiveModalBackdrop');
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove('open');
+}
+
+// Получить список сохраненных текстов из браузера
+function getArchiveNotes() {
+    try {
+        const stored = localStorage.getItem(ARCHIVE_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+    } catch (_) {
+        return [];
+    }
+}
+
+// Сохранить текущий текст из редактора
+function saveCurrentTextToArchive() {
+    const editorEl = document.getElementById("editor");
+    if (!editorEl || !editorEl.value.trim()) {
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Matn kiritilmagan!");
+        return;
+    }
+
+    const textToSave = editorEl.value.trim();
+    const notes = getArchiveNotes();
+    
+    // Добавляем новую заметку в начало массива
+    notes.unshift({
+        id: Date.now(),
+        date: new Date().toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        text: textToSave
+    });
+
+    try {
+        localStorage.setItem(ARCHIVE_STORAGE_KEY, JSON.stringify(notes));
+        renderArchiveList();
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Arxivga saqlandi ✓");
+    } catch (e) {
+        console.error("Archive Save Error:", e);
+    }
+}
+
+// Отображение списка
+function renderArchiveList() {
+    const container = document.getElementById("archiveListContainer");
+    if (!container) return;
+
+    const notes = getArchiveNotes();
+    container.innerHTML = "";
+
+    if (notes.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:#64748B; font-size:13px; padding: 20px 0;">Arxiv bo'sh. Hali hech qanday matn saqlanmagan.</div>`;
+        return;
+    }
+
+    notes.forEach(note => {
+        const card = document.createElement("div");
+        card.className = "archive-item-card";
+        
+        card.innerHTML = `
+            <div class="archive-item-header">
+                <span class="archive-item-date">${note.date}</span>
+            </div>
+            <div class="archive-item-snippet">${note.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+            <div class="archive-item-actions">
+                <button type="button" class="archive-btn-small archive-btn-load" onclick="loadArchiveNote(${note.id})">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Tahrirlash
+                </button>
+                <button type="button" class="archive-btn-small archive-btn-del" onclick="deleteArchiveNote(${note.id})">
+                    Öçiriş
+                </button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// Загрузить текст обратно в редактор
+function loadArchiveNote(id) {
+    const notes = getArchiveNotes();
+    const note = notes.find(n => n.id === id);
+    const editorEl = document.getElementById("editor");
+    
+    if (note && editorEl) {
+        editorEl.value = note.text;
+        closeArchiveModal();
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Matn yuklandi ✓");
+        if (typeof saveEditorDraft === "function") saveEditorDraft();
+        if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+    }
+}
+
+// Удалить конкретную заметку
+function deleteArchiveNote(id) {
+    let notes = getArchiveNotes();
+    notes = notes.filter(n => n.id !== id);
+    localStorage.setItem(ARCHIVE_STORAGE_KEY, JSON.stringify(notes));
+    renderArchiveList();
+}
+
+// Очистить весь архив
+function clearAllArchive() {
+    if (confirm("Barcha saqlangan matnlarni o'chirib tashlamoqchimisiz?")) {
+        localStorage.removeItem(ARCHIVE_STORAGE_KEY);
+        renderArchiveList();
+    }
+}
+
+// Добавляем закрытие окна архива по клавише Escape
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        closeArchiveModal();
+    }
+});
