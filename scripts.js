@@ -2139,3 +2139,236 @@ function toggleDarkMode() {
 }
 
 applySavedTheme();
+
+// === 11. УМНОЕ АВТОСОХРАНЕНИЕ ЧЕРНОВИКА, ЧИСТКА ТЕКСТА И ЭКСПОРТ РЕДАКТОРА В TXT / PDF ===
+const DRAFT_STORAGE_KEY = "ulh_editor_draft_v1";
+let autosaveBadgeTimer = null;
+
+function showAutosaveIndicator(customText) {
+    const badge = document.getElementById("autosaveBadge");
+    if (!badge) return;
+    badge.textContent = customText || "Avtosaqlandi ✓";
+    badge.classList.add("visible");
+
+    if (autosaveBadgeTimer) clearTimeout(autosaveBadgeTimer);
+    autosaveBadgeTimer = setTimeout(() => {
+        badge.classList.remove("visible");
+    }, 1800);
+}
+
+function saveEditorDraft() {
+    if (!editor) return;
+    try {
+        localStorage.setItem(DRAFT_STORAGE_KEY, editor.value);
+        if (editor.value.trim().length > 0) {
+            showAutosaveIndicator("Avtosaqlandi ✓");
+        }
+    } catch (_) {}
+}
+
+function restoreEditorDraft() {
+    if (!editor) return;
+    try {
+        const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
+        if (saved && saved.length > 0 && !editor.value) {
+            editor.value = saved;
+            if (typeof calculateAndRenderTextStats === "function") {
+                calculateAndRenderTextStats();
+            }
+            showAutosaveIndicator("Qoralama tiklandi ✓");
+        }
+    } catch (_) {}
+}
+
+// Автосохранение при вводе, вставке и очистке
+if (editor) {
+    editor.addEventListener("input", saveEditorDraft);
+    editor.addEventListener("paste", () => setTimeout(saveEditorDraft, 20));
+}
+
+const clearBtnDraftHook = document.getElementById("clearBtn");
+if (clearBtnDraftHook) {
+    clearBtnDraftHook.addEventListener("click", () => {
+        try {
+            localStorage.removeItem(DRAFT_STORAGE_KEY);
+        } catch (_) {}
+    });
+}
+
+// Открытие / закрытие меню «Asboblar»
+function toggleEditorToolsMenu(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    const wrap = document.getElementById("editorToolsWrap");
+    const btn = document.getElementById("toolsBtn");
+    if (!wrap) return;
+
+    const isOpen = wrap.classList.toggle("open");
+    if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+}
+
+function closeEditorToolsMenu() {
+    const wrap = document.getElementById("editorToolsWrap");
+    const btn = document.getElementById("toolsBtn");
+    if (wrap) wrap.classList.remove("open");
+    if (btn) btn.setAttribute("aria-expanded", "false");
+}
+
+document.addEventListener("click", closeEditorToolsMenu);
+
+// Инструменты чистки пробелов и смены регистра с учетом узбекского алфавита
+function applyEditorTool(actionType) {
+    if (!editor || !editor.value) {
+        closeEditorToolsMenu();
+        return;
+    }
+
+    let text = editor.value;
+
+    if (actionType === "clean_spaces") {
+        text = text
+            .replace(/[ \t]+/g, " ")               // убираем двойные и множественные пробелы
+            .replace(/^[ \t]+|[ \t]+$/gm, "")      // убираем пробелы по краям каждой строки
+            .replace(/\s+([,.;:!?])/g, "$1")       // убираем лишний пробел перед знаками препинания
+            .replace(/\n{3,}/g, "\n\n")            // оставляем максимум один пустой отступ между абзацами
+            .trim();
+        showAutosaveIndicator("Böşliqlar tozalandi ✓");
+    } else if (actionType === "upper_case") {
+        text = text.toUpperCase();
+        showAutosaveIndicator("KATTA HARFLAR ✓");
+    } else if (actionType === "lower_case") {
+        text = text.toLowerCase();
+        showAutosaveIndicator("kiçik harflar ✓");
+    } else if (actionType === "sentence_case") {
+        text = text.toLowerCase().replace(/(^\s*[a-zA-ZçşğöÇŞĞÖа-яА-ЯёЁўқғҳЎҚҒҲ]|[.!?]\s+[a-zA-ZçşğöÇŞĞÖа-яА-ЯёЁўқғҳЎҚҒҲ]|\n\s*[a-zA-ZçşğöÇŞĞÖа-яА-ЯёЁўқғҳЎҚҒҲ])/g, function(match) {
+            return match.toUpperCase();
+        });
+        showAutosaveIndicator("Gap boşidan katta ✓");
+    }
+
+    editor.value = text;
+    saveEditorDraft();
+    if (typeof calculateAndRenderTextStats === "function") {
+        calculateAndRenderTextStats();
+    }
+    closeEditorToolsMenu();
+}
+
+// Быстрое скачивание текста из редактора в .TXT
+function exportEditorAsTxt() {
+    closeEditorToolsMenu();
+    if (!editor || !editor.value.trim()) {
+        showAutosaveIndicator("Avval matn kiriting!");
+        return;
+    }
+
+    const blob = new Blob([editor.value], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "ulh_matn.txt";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    showAutosaveIndicator(".TXT yuklab olindi ✓");
+}
+
+// Быстрое скачивание текста из редактора в .PDF (формат А4)
+async function exportEditorAsPdf() {
+    closeEditorToolsMenu();
+    if (!editor || !editor.value.trim()) {
+        showAutosaveIndicator("Avval matn kiriting!");
+        return;
+    }
+
+    const stage = document.getElementById("pdfRenderStage");
+    if (!stage || !window.jspdf || typeof html2canvas !== "function") return;
+
+    showAutosaveIndicator("PDF tayyorlanmoqda...");
+
+    try {
+        stage.innerHTML = "";
+        const txtDiv = document.createElement("div");
+        txtDiv.className = "pdf-page-section";
+        txtDiv.dataset.orientation = "portrait";
+        txtDiv.style.cssText = "width: 595.3pt; min-height: 841.9pt; padding: 42pt 48pt; background: #FFFFFF; white-space: pre-wrap; word-break: break-word; font-family: 'Manrope', Arial, sans-serif; font-size: 12pt; line-height: 1.6; color: #0F172A;";
+        txtDiv.textContent = editor.value;
+        stage.appendChild(txtDiv);
+
+        const { jsPDF } = window.jspdf;
+        const pageWidthMm = 210;
+        const pageHeightMm = 297;
+
+        const canvas = await html2canvas(txtDiv, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: "#FFFFFF",
+            logging: false
+        });
+
+        const onePageCanvasHeight = Math.round(canvas.width * (pageHeightMm / pageWidthMm));
+        const pdf = new jsPDF({
+            orientation: "p",
+            unit: "mm",
+            format: "a4",
+            compress: true
+        });
+
+        if (canvas.height <= onePageCanvasHeight * 1.04) {
+            const imgData = canvas.toDataURL("image/jpeg", 0.96);
+            const renderedHeightMm = Math.min(pageHeightMm, (canvas.height / canvas.width) * pageWidthMm);
+            pdf.addImage(imgData, "JPEG", 0, 0, pageWidthMm, renderedHeightMm, undefined, "FAST");
+        } else {
+            const ctx = canvas.getContext("2d");
+            const topMarginMm = 12;
+            const marginCanvasPx = Math.round((topMarginMm / pageHeightMm) * onePageCanvasHeight);
+            let currentY = 0;
+            let isFirstPage = true;
+
+            while (currentY < canvas.height - 16) {
+                const maxSliceHeight = isFirstPage
+                    ? (onePageCanvasHeight - marginCanvasPx)
+                    : (onePageCanvasHeight - marginCanvasPx * 2);
+
+                let targetEndY = currentY + maxSliceHeight;
+                if (targetEndY >= canvas.height - 16) {
+                    targetEndY = canvas.height;
+                } else if (typeof findSafeSliceY === "function") {
+                    const minSearchY = Math.max(currentY + Math.floor(maxSliceHeight * 0.75), targetEndY - 140);
+                    targetEndY = findSafeSliceY(ctx, canvas.width, targetEndY, minSearchY);
+                }
+
+                const sliceHeight = targetEndY - currentY;
+                if (sliceHeight <= 0) break;
+
+                const sliceCanvas = document.createElement("canvas");
+                sliceCanvas.width = canvas.width;
+                sliceCanvas.height = sliceHeight;
+                const sliceCtx = sliceCanvas.getContext("2d");
+                sliceCtx.fillStyle = "#FFFFFF";
+                sliceCtx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+                sliceCtx.drawImage(canvas, 0, currentY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+
+                if (!isFirstPage) pdf.addPage("a4", "p");
+
+                const sliceImg = sliceCanvas.toDataURL("image/jpeg", 0.96);
+                const sliceHeightMm = (sliceHeight / canvas.width) * pageWidthMm;
+                const offsetTopMm = isFirstPage ? 0 : topMarginMm;
+                pdf.addImage(sliceImg, "JPEG", 0, offsetTopMm, pageWidthMm, sliceHeightMm, undefined, "FAST");
+
+                currentY = targetEndY;
+                isFirstPage = false;
+            }
+        }
+
+        pdf.save("ulh_matn.pdf");
+        showAutosaveIndicator(".PDF yuklab olindi ✓");
+    } catch (_) {
+        showAutosaveIndicator("PDF xatolik!");
+    }
+}
+
+restoreEditorDraft();
