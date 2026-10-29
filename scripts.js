@@ -2752,3 +2752,201 @@ function setAmbientVolumeRatio(ratio) {
         }
     });
 })();
+
+// === 13. AI YORDAMÇI (ИСПРАВЛЕНИЕ ОШИБОК, ПОСТЫ ДЛЯ СОЦСЕТЕЙ, ЗАГОЛОВКИ И СВОЁ ЗАДАНИЕ) ===
+const AI_PROXY_ENDPOINT = "./ai.php"; // Серверный прокси-файл в корне вашего сайта
+let previousTextBeforeAi = "";
+
+// Нормализация ответа ИИ под стандарты нового узбекского латинского алфавита (Ö, Ğ, Ş, Ç)
+function enforceNewUzbekAlphabet(rawText) {
+    if (!rawText) return "";
+    let res = String(rawText);
+
+    // Если на сайте уже есть функция транслитерации кириллицы/старой латиницы — используем её,
+    // а также гарантированно заменяем старые буквосочетания O', G', Sh, Ch на Ö, Ğ, Ş, Ç
+    res = res
+        .replace(/O['‘’`ʻʼ]/g, "Ö")
+        .replace(/o['‘’`ʻʼ]/g, "ö")
+        .replace(/G['‘’`ʻʼ]/g, "Ğ")
+        .replace(/g['‘’`ʻʼ]/g, "ğ")
+        .replace(/Sh/g, "Ş")
+        .replace(/SH/g, "Ş")
+        .replace(/sh/g, "ş")
+        .replace(/Ch/g, "Ç")
+        .replace(/CH/g, "Ç")
+        .replace(/ch/g, "ç");
+
+    return res.trim();
+}
+
+function toggleAiMenu(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    if (typeof closeEditorToolsMenu === "function") closeEditorToolsMenu();
+
+    const wrap = document.getElementById("editorAiWrap");
+    const btn = document.getElementById("aiHelperBtn");
+    if (!wrap) return;
+
+    const isOpen = wrap.classList.toggle("open");
+    if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+}
+
+function closeAiMenu() {
+    const wrap = document.getElementById("editorAiWrap");
+    const btn = document.getElementById("aiHelperBtn");
+    if (wrap) wrap.classList.remove("open");
+    if (btn) btn.setAttribute("aria-expanded", "false");
+}
+
+document.addEventListener("click", (e) => {
+    const wrap = document.getElementById("editorAiWrap");
+    if (wrap && !wrap.contains(e.target)) {
+        closeAiMenu();
+    }
+});
+
+function openAiCustomModal(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    closeAiMenu();
+
+    if (!editor || !editor.value.trim()) {
+        if (typeof showAutosaveIndicator === "function") {
+            showAutosaveIndicator("Avval tahrirlovçiga matn kiriting!");
+        }
+        if (editor) editor.focus();
+        return;
+    }
+
+    const modal = document.getElementById("aiModalBackdrop");
+    if (modal) {
+        modal.classList.add("open");
+        setTimeout(() => {
+            const input = document.getElementById("aiCustomPromptInput");
+            if (input) input.focus();
+        }, 100);
+    }
+}
+
+function closeAiCustomModal(event) {
+    const modal = document.getElementById("aiModalBackdrop");
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove("open");
+}
+
+function setAiQuickPrompt(promptText) {
+    const input = document.getElementById("aiCustomPromptInput");
+    if (!input) return;
+    input.value = promptText;
+    input.focus();
+}
+
+function submitAiCustomPrompt() {
+    const input = document.getElementById("aiCustomPromptInput");
+    const customTask = input ? input.value.trim() : "";
+    if (!customTask) {
+        if (input) input.focus();
+        return;
+    }
+    closeAiCustomModal();
+    executeAiRequest("custom", customTask);
+}
+
+function runAiPreset(presetType) {
+    closeAiMenu();
+    executeAiRequest(presetType, "");
+}
+
+function setAiLoadingState(isLoading) {
+    const btn = document.getElementById("aiHelperBtn");
+    const label = document.getElementById("aiBtnLabel");
+    if (!btn || !label) return;
+
+    btn.classList.toggle("loading", isLoading);
+    label.textContent = isLoading ? "AI öylamoqda..." : "AI yordamçi";
+}
+
+function undoLastAiAction() {
+    if (!editor || !previousTextBeforeAi) return;
+    editor.value = previousTextBeforeAi;
+    previousTextBeforeAi = "";
+
+    const undoBtn = document.getElementById("aiUndoBtn");
+    if (undoBtn) undoBtn.style.display = "none";
+
+    if (typeof saveEditorDraft === "function") saveEditorDraft();
+    if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Asl matn qaytarildi ✓");
+    closeAiMenu();
+}
+
+async function executeAiRequest(mode, customInstruction) {
+    if (!editor || !editor.value.trim()) {
+        if (typeof showAutosaveIndicator === "function") {
+            showAutosaveIndicator("Avval matn kiriting!");
+        }
+        if (editor) editor.focus();
+        return;
+    }
+
+    const sourceText = editor.value.trim();
+    previousTextBeforeAi = editor.value;
+
+    setAiLoadingState(true);
+    if (typeof showAutosaveIndicator === "function") {
+        showAutosaveIndicator("AI matn ustida işlamoqda...");
+    }
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                mode: mode,
+                text: sourceText,
+                customPrompt: customInstruction || ""
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data || !data.result) {
+            throw new Error((data && data.error) ? data.error : "AI xatolik");
+        }
+
+        const cleanResult = enforceNewUzbekAlphabet(data.result);
+
+        // Если выбрана генерация заголовков — добавляем их сверху над основным текстом
+        if (mode === "generate_titles") {
+            editor.value = cleanResult + "\n\n---\n\n" + sourceText;
+        } else {
+            editor.value = cleanResult;
+        }
+
+        const undoBtn = document.getElementById("aiUndoBtn");
+        if (undoBtn) undoBtn.style.display = "inline-flex";
+
+        if (typeof saveEditorDraft === "function") saveEditorDraft();
+        if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("AI vazifani bajardi ✓");
+    } catch (err) {
+        if (typeof showAutosaveIndicator === "function") {
+            showAutosaveIndicator("AI xatolik: qayta urinib köring");
+        }
+        console.error("AI Helper Error:", err);
+    } finally {
+        setAiLoadingState(false);
+    }
+}
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        closeAiCustomModal();
+        closeAiMenu();
+    }
+});
