@@ -2754,7 +2754,7 @@ function setAmbientVolumeRatio(ratio) {
 })();
 
 // === 13. AI YORDAMÇI (ИСПРАВЛЕНИЕ ОШИБОК, ПОСТЫ ДЛЯ СОЦСЕТЕЙ, ЗАГОЛОВКИ И СВОЁ ЗАДАНИЕ) ===
-const AI_PROXY_ENDPOINT = "./ai.php"; // Серверный прокси-файл в корне вашего сайта
+const AI_PROXY_ENDPOINT = "https://ulh-ai-helper.lanigirodesigner.workers.dev/"; // Серверный прокси-файл в корне вашего сайта
 let previousTextBeforeAi = "";
 
 // Нормализация ответа ИИ под стандарты нового узбекского латинского алфавита (Ö, Ğ, Ş, Ç)
