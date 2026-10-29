@@ -2933,7 +2933,6 @@ async function executeAiRequest(mode, customInstruction) {
         }
 
         // Фильтр нового алфавита применяется ТОЛЬКО к узбекскому тексту
-        // (на русский и английский он не повлияет, так как там нет O' и G')
         const cleanResult = enforceNewUzbekAlphabet(data.result);
 
         let finalOutput = cleanResult;
@@ -2941,10 +2940,10 @@ async function executeAiRequest(mode, customInstruction) {
             finalOutput = cleanResult + "\n\n---\n\n" + sourceText;
         }
 
-        // ВМЕСТО ЗАМЕНЫ ГЛАВНОГО ТЕКСТА, ОТКРЫВАЕМ НОВОЕ ОКНО:
+        // ВОТ ТА САМАЯ СТРОЧКА: Открываем новое окно визуального редактора
         openAiResultModal(finalOutput);
 
-        // Убираем кнопку "Oldingi matnni qaytarish", так как мы больше не стираем главный текст
+        // Убираем кнопку отмены, так как оригинальный текст мы больше не стираем
         const undoBtn = document.getElementById("aiUndoBtn");
         if (undoBtn) undoBtn.style.display = "none";
 
@@ -2967,14 +2966,50 @@ document.addEventListener("keydown", (e) => {
 });
 
 // === ДОБАВЬТЕ ЭТИ ФУНКЦИИ В РАЗДЕЛ 13 ===
-function openAiResultModal(text) {
+// === ВИЗУАЛЬНЫЙ РЕДАКТОР ИИ (ПАРСЕР MARKDOWN, ТУЛБАР, ЭКСПОРТ) ===
+
+// Конвертируем Markdown от ИИ в нормальный HTML (жирный, курсив, заголовки, ссылки)
+function parseMarkdownToHTML(text) {
+    if (!text) return "";
+    let html = text
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        .replace(/\*(.*?)\*/g, '<i>$1</i>')
+        .replace(/~~(.*?)~~/g, '<strike>$1</strike>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+        .replace(/\n/g, '<br>');
+    return html;
+}
+
+// Функции кнопок тулбара (Жирный, Курсив, По центру и т.д.)
+function formatAiText(command) {
+    document.execCommand(command, false, null);
+    document.getElementById("aiResultContent").focus();
+}
+
+function addAiLink() {
+    const url = prompt("Havola (URL) kiriting:", "https://");
+    if (url) {
+        document.execCommand("createLink", false, url);
+        // Делаем добавленную ссылку открывающейся в новом окне
+        const selection = window.getSelection();
+        if (selection.anchorNode && selection.anchorNode.parentElement.tagName === 'A') {
+            selection.anchorNode.parentElement.setAttribute('target', '_blank');
+            selection.anchorNode.parentElement.setAttribute('rel', 'noopener');
+        }
+    }
+}
+
+// Открытие окна: ИИ выдает текст, мы парсим Markdown и вставляем HTML
+function openAiResultModal(rawText) {
     const modal = document.getElementById("aiResultModalBackdrop");
-    const textarea = document.getElementById("aiResultTextarea");
+    const contentDiv = document.getElementById("aiResultContent");
     const refineInput = document.getElementById("aiRefineInput");
     
-    if (modal && textarea) {
-        textarea.value = text;
-        // Очищаем строку ввода правок при новом запуске
+    if (modal && contentDiv) {
+        contentDiv.innerHTML = parseMarkdownToHTML(rawText);
         if (refineInput) refineInput.value = ""; 
         modal.classList.add("open");
     }
@@ -2987,18 +3022,118 @@ function closeAiResultModal(event) {
     modal.classList.remove("open");
 }
 
-function copyAiResultText() {
-    const textarea = document.getElementById("aiResultTextarea");
+// Копирование с сохранением стилей (Rich Text), чтобы вставлять красиво в Word/Telegram
+function copyAiResultRichText() {
+    const contentDiv = document.getElementById("aiResultContent");
     const btnSpan = document.getElementById("copyAiResultTextSpan");
-    if (!textarea || !navigator.clipboard) return;
+    if (!contentDiv) return;
 
-    navigator.clipboard.writeText(textarea.value).then(() => {
+    // Создаем невидимый элемент для копирования HTML
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(contentDiv);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    try {
+        document.execCommand('copy');
         const originalText = btnSpan.textContent;
         btnSpan.textContent = "Nusxalandi ✓";
-        setTimeout(() => {
-            btnSpan.textContent = originalText;
-        }, 1500);
-    });
+        setTimeout(() => { btnSpan.textContent = originalText; }, 1500);
+    } catch (e) {
+        console.error("Nusxalashda xatolik:", e);
+    }
+    selection.removeAllRanges();
+}
+
+// Скачивание в формате .DOCX (Word Document) с сохранением жирности и стилей
+function exportAiToDocx() {
+    const contentHtml = document.getElementById("aiResultContent").innerHTML;
+    // Оборачиваем в базовую структуру Word-документа
+    const preHtml = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>ULH AI Result</title></head><body>";
+    const postHtml = "</body></html>";
+    const fullHtml = preHtml + contentHtml + postHtml;
+    
+    const blob = new Blob(['\ufeff', fullHtml], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'ulh_ai_natija.doc';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// Скачивание в формате .PDF (Используем ваш встроенный html2canvas и jsPDF)
+async function exportAiToPdf() {
+    const contentDiv = document.getElementById("aiResultContent");
+    const stage = document.getElementById("pdfRenderStage");
+    if (!contentDiv || !stage || !window.jspdf || typeof html2canvas !== "function") return;
+
+    // Копируем содержимое на скрытую сцену для рендеринга PDF (в формате А4)
+    stage.innerHTML = "";
+    const pdfWrap = document.createElement("div");
+    pdfWrap.style.cssText = "width: 595.3pt; min-height: 841.9pt; padding: 42pt 48pt; background: #FFFFFF; font-family: 'Manrope', Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #000000;";
+    pdfWrap.innerHTML = contentDiv.innerHTML;
+    stage.appendChild(pdfWrap);
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const canvas = await html2canvas(pdfWrap, { scale: 2, backgroundColor: "#FFFFFF", logging: false });
+        const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
+        
+        const pageWidthMm = 210;
+        const pageHeightMm = 297;
+        const imgData = canvas.toDataURL("image/jpeg", 0.96);
+        const renderedHeightMm = Math.min(pageHeightMm, (canvas.height / canvas.width) * pageWidthMm);
+        
+        pdf.addImage(imgData, "JPEG", 0, 0, pageWidthMm, renderedHeightMm, undefined, "FAST");
+        pdf.save("ulh_ai_natija.pdf");
+    } catch (e) {
+        console.error("PDF xatolik:", e);
+    }
+}
+
+// === ФУНКЦИЯ ДЛЯ ЧАТА ДОРАБОТКИ (MINI CHAT) В ОКНЕ ===
+async function refineAiResult() {
+    const contentDiv = document.getElementById("aiResultContent");
+    const refineInput = document.getElementById("aiRefineInput");
+    const refineBtn = document.getElementById("aiRefineBtn");
+    const refineBtnText = document.getElementById("aiRefineBtnText");
+    const sparkleIcon = refineBtn ? refineBtn.querySelector(".ai-sparkle-icon") : null;
+    
+    // ИИ читает текст прямо из визуального редактора (innerText отсекает HTML теги)
+    if (!contentDiv || !contentDiv.innerText.trim() || !refineInput || !refineInput.value.trim()) return;
+
+    const sourceText = contentDiv.innerText.trim();
+    const customInstruction = refineInput.value.trim();
+
+    if (refineBtn) refineBtn.style.pointerEvents = "none";
+    if (refineBtnText) refineBtnText.textContent = "Kuting...";
+    if (sparkleIcon) sparkleIcon.style.animation = "aiSpinPulse 1.1s linear infinite";
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: sourceText, customPrompt: customInstruction })
+        });
+        const data = await response.json();
+        if (!response.ok || !data || !data.result) throw new Error((data && data.error) ? data.error : "AI xatolik");
+
+        // Фильтруем новый алфавит и ПАРСИМ Markdown перед вставкой!
+        const cleanResult = enforceNewUzbekAlphabet(data.result);
+        contentDiv.innerHTML = parseMarkdownToHTML(cleanResult);
+        refineInput.value = ""; 
+        
+    } catch (err) {
+        console.error("AI Refine Error:", err);
+    } finally {
+        if (refineBtn) refineBtn.style.pointerEvents = "auto";
+        if (refineBtnText) refineBtnText.textContent = "Qayta yozing";
+        if (sparkleIcon) sparkleIcon.style.animation = "";
+    }
 }
 
 // === НОВАЯ ФУНКЦИЯ ДЛЯ ДОРАБОТКИ ТЕКСТА ПРЯМО В ОКНЕ (MINI CHAT) ===
