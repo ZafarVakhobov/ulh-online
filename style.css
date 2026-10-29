@@ -983,25 +983,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 6px;
-    flex-wrap: nowrap; /* Запрещаем перенос на новую строку */
+    gap: 5px;
+    flex-wrap: nowrap !important;
 }
-
-/* Запрещаем иконкам сжиматься */
 .action-icon-btn,
 .editor-tools-wrap,
 .editor-ai-wrap {
-    flex-shrink: 0;
+    flex-shrink: 0 !important;
 }
-
-/* Счетчик аккуратно расширяется для длинных чисел без ломания строки */
 .stats-icon-btn {
-    min-width: 48px;
-    padding: 0 8px;
-    background-color: #ecfdf5;
-    color: #10b99f;
-    font-size: 13px;
-    font-weight: 800;
+    min-width: 42px;
+    padding: 0 6px;
+    font-size: 12.5px;
+    letter-spacing: -0.02em;
 }
 
 /* Кнопка Nusxa oliş и Öçiriş */
