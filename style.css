@@ -2680,3 +2680,163 @@ body.dark-mode .tools-export-btn.pdf-btn {
     background: rgba(16, 185, 129, 0.2);
     color: #34D399;
 }
+
+/* === НОВЫЙ ДИЗАЙН КНОПОК ПАНЕЛИ РЕДАКТОРА С АНИМИРОВАННЫМИ ТУЛТИПАМИ === */
+.editor-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Общий вид квадратных иконных кнопок */
+.action-icon-btn {
+    position: relative;
+    width: 36px;
+    height: 32px;
+    border-radius: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+/* 1. Кнопка удаления (Корзинка) */
+.clear-icon-btn {
+    background-color: #FDE0DB;
+    color: #F54927;
+}
+.clear-icon-btn:hover {
+    background-color: #F54927;
+    color: #FFFFFF;
+}
+
+/* 2. Кнопка копирования */
+.copy-icon-btn {
+    background-color: #D9F0FC;
+    color: #2AABEE;
+}
+.copy-icon-btn:hover {
+    background-color: #2AABEE;
+    color: #FFFFFF;
+}
+.copy-icon-btn.copied {
+    background-color: #D9F0FC;
+    color: #2AABEE;
+}
+
+/* 3. Кнопка счетчика (только число) */
+.stats-icon-btn {
+    min-width: 44px;
+    padding: 0 10px;
+    background-color: #ecfdf5;
+    color: #10b99f;
+    font-size: 13.5px;
+    font-weight: 800;
+}
+.stats-icon-btn:hover {
+    background-color: #10b99f;
+    color: #FFFFFF;
+}
+.stats-number-only {
+    letter-spacing: -0.01em;
+}
+
+/* 4. Кнопка инструментов (Буква Т + стрелочка) */
+.tools-icon-btn {
+    width: 46px;
+    gap: 3px;
+    background-color: #F3E8FF;
+    color: #7C3AED;
+}
+.tools-icon-btn:hover,
+.editor-tools-wrap.open .tools-icon-btn {
+    background-color: #7C3AED;
+    color: #FFFFFF;
+}
+.editor-tools-wrap.open .tools-chevron {
+    transform: rotate(180deg);
+}
+
+/* Анимированный всплывающий тултип */
+.custom-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px) scale(0.95);
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: #F8FAFC;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.18s;
+    z-index: 1200;
+}
+.custom-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 4px;
+    border-style: solid;
+    border-color: rgba(15, 23, 42, 0.92) transparent transparent transparent;
+}
+.action-icon-btn:hover .custom-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* Поддержка тёмной темы для новых иконных кнопок */
+body.dark-mode .clear-icon-btn {
+    background-color: rgba(245, 73, 39, 0.18);
+    color: #FB7185;
+}
+body.dark-mode .clear-icon-btn:hover {
+    background-color: #F54927;
+    color: #FFFFFF;
+}
+body.dark-mode .copy-icon-btn {
+    background-color: rgba(42, 171, 238, 0.18);
+    color: #38BDF8;
+}
+body.dark-mode .copy-icon-btn:hover {
+    background-color: #2AABEE;
+    color: #FFFFFF;
+}
+body.dark-mode .stats-icon-btn {
+    background-color: rgba(16, 185, 159, 0.18);
+    color: #34D399;
+}
+body.dark-mode .stats-icon-btn:hover {
+    background-color: #10b99f;
+    color: #FFFFFF;
+}
+body.dark-mode .tools-icon-btn {
+    background-color: rgba(139, 92, 246, 0.18);
+    color: #C4B5FD;
+}
+body.dark-mode .tools-icon-btn:hover,
+body.dark-mode .editor-tools-wrap.open .tools-icon-btn {
+    background-color: #7C3AED;
+    color: #FFFFFF;
+}
+body.dark-mode .custom-tooltip {
+    background: rgba(30, 41, 59, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+body.dark-mode .custom-tooltip::after {
+    border-color: rgba(30, 41, 59, 0.96) transparent transparent transparent;
+}
