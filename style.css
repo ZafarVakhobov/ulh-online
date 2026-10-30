@@ -3764,3 +3764,36 @@ body.dark-mode #bibResultText {
 body.dark-mode #bibCopyHint {
     color: #0284C7 !important;
 }
+
+/* === КНОПКА ОЧИСТКИ В ГЕНЕРАТОРЕ ЛИТЕРАТУРЫ === */
+.bib-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #FDE0DB;
+    color: #F54927;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bib-clear-btn:hover {
+    background-color: #F54927;
+    color: #FFFFFF;
+}
+
+/* Адаптация под темную тему */
+body.dark-mode .bib-clear-btn {
+    background-color: rgba(245, 73, 39, 0.15);
+    color: #FF7456;
+}
+
+body.dark-mode .bib-clear-btn:hover {
+    background-color: #F54927;
+    color: #FFFFFF;
+}
