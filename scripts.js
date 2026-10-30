@@ -3446,7 +3446,7 @@ function convertIntToWordsUz(n) {
     const scales = ["", "ming", "million", "milliard", "trillion"];
 
     let word = "";
-    let scaleIdx = -1;
+    let scaleIdx = 0; // ИСПРАВЛЕНО: Теперь счетчик начинается строго с 0
 
     while (n > 0) {
         let chunk = n % 1000;
@@ -3461,102 +3461,11 @@ function convertIntToWordsUz(n) {
             if (t > 0) chunkStr += tens[t] + " ";
             if (u > 0) chunkStr += ones[u] + " ";
 
-            if (scaleIdx >= 0) chunkStr += scales[scaleIdx] + " ";
+            chunkStr += scales[scaleIdx] + " ";
             word = chunkStr + word;
         }
         n = Math.floor(n / 1000);
         scaleIdx++;
     }
     return word.trim().replace(/\s+/g, ' ');
-}
-
-function getCurrencyName(curr, isFrac) {
-    switch(curr) {
-        case 'uzs': return isFrac ? 'tiyin' : 'söm';
-        case 'usd': return isFrac ? 'sent' : 'AQŞ dollari';
-        case 'eur': return isFrac ? 'yevrosent' : 'yevro';
-        case 'rub': return isFrac ? 'kopeyka' : 'rubl';
-        case 'foiz': return isFrac ? '' : 'foiz';
-        case 'none': return '';
-        default: return '';
-    }
-}
-
-function numToWordsUz(numStr, currency) {
-    let cleanNum = numStr.replace(/\s+/g, '').replace(/,/g, '.');
-    if (!cleanNum || isNaN(cleanNum)) return "";
-
-    let parts = cleanNum.split('.');
-    let intPart = parseInt(parts[0], 10);
-    // Обработка копеек (всегда берем 2 знака)
-    let fracStr = parts[1] ? parts[1].substring(0, 2).padEnd(2, '0') : "00";
-    let fracPart = parseInt(fracStr, 10);
-
-    if (intPart === 0 && fracPart === 0) return "nol " + getCurrencyName(currency, false);
-
-    let result = convertIntToWordsUz(intPart);
-    if (currency !== 'none') result += " " + getCurrencyName(currency, false);
-
-    // Добавляем тийины/центы, если они есть
-    if (fracPart > 0 && currency !== 'foiz' && currency !== 'none') {
-        result += " " + convertIntToWordsUz(fracPart) + " " + getCurrencyName(currency, true);
-    }
-
-    return result.trim();
-}
-
-// Форматирование поля ввода на лету (ставит красивые пробелы: 1 485 000)
-function formatAndTranslateNumber(inputEl) {
-    let val = inputEl.value.replace(/[^\d.,]/g, '').replace(/,/g, '.');
-    let parts = val.split('.');
-    
-    // Защита от второй точки
-    if (parts.length > 2) parts = [parts[0], parts.slice(1).join('')];
-    
-    // Добавляем пробелы каждые 3 цифры
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-    
-    inputEl.value = parts.join('.');
-    updateNumberToWords();
-}
-
-// Обновление интерфейса
-function updateNumberToWords() {
-    const input = document.getElementById("numWordsInput").value;
-    const currency = document.getElementById("numWordsCurrency").value;
-    const box = document.getElementById("numWordsResultBox");
-    const textEl = document.getElementById("numWordsResultText");
-    const hintEl = document.getElementById("numWordsCopyHint");
-
-    if (!input.trim()) {
-        box.style.display = "none";
-        return;
-    }
-
-    const words = numToWordsUz(input, currency);
-    if (words) {
-        textEl.textContent = words;
-        hintEl.textContent = "Nusxa oliş üçün bosing";
-        hintEl.style.color = "#16A34A";
-        box.style.display = "block";
-    } else {
-        box.style.display = "none";
-    }
-}
-
-// Копирование в буфер обмена по клику
-function copyNumberToWords() {
-    const textEl = document.getElementById("numWordsResultText");
-    const hintEl = document.getElementById("numWordsCopyHint");
-    if (!textEl || !textEl.textContent) return;
-
-    navigator.clipboard.writeText(textEl.textContent).then(() => {
-        hintEl.textContent = "Nusxalandi ✓";
-        hintEl.style.color = "#059669";
-        
-        setTimeout(() => {
-            hintEl.textContent = "Nusxa oliş üçün bosing";
-            hintEl.style.color = "#16A34A";
-        }, 1500);
-    });
 }
