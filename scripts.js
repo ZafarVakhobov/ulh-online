@@ -2585,43 +2585,181 @@ function triggerAmbientMelodyNote() {
     ambientMelodyTimer = setTimeout(triggerAmbientMelodyNote, nextDelay);
 }
 
-function startAmbientMusic() {
-    initAmbientAudioEngine();
-    if (!ambientAudioCtx) return;
+// === ПРОЦЕДУРНАЯ ГЕНЕРАЦИЯ МУЗЫКИ (WEB AUDIO API) ===
 
-    if (ambientAudioCtx.state === "suspended") {
-        ambientAudioCtx.resume();
+let audioCtx = null;
+let masterGain = null;
+let isMusicPlaying = false;
+let currentMood = null;
+let activeNodes = [];
+let activeIntervals = [];
+
+// Данные о настроениях
+const musicData = {
+    rain: { title: "Yomg'ir sadosi", color: 'linear-gradient(135deg, #64748B, #334155)' },
+    calm: { title: "Sokin musiqa", color: 'linear-gradient(135deg, #A855F7, #3B82F6)' },
+    motivated: { title: "Faol ritm", color: 'linear-gradient(135deg, #F97316, #EAB308)' }
+};
+
+// Инициализация аудио-движка
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        masterGain = audioCtx.createGain();
+        masterGain.connect(audioCtx.destination);
     }
-
-    ambientIsPlaying = true;
-    ambientHasStartedOnce = true;
-    updateMusicPlayerUI();
-
-    clearInterval(ambientChordTimer);
-    clearTimeout(ambientMelodyTimer);
-
-    triggerAmbientPadChord();
-    ambientChordTimer = setInterval(triggerAmbientPadChord, 7200);
-    ambientMelodyTimer = setTimeout(triggerAmbientMelodyNote, 1100);
+    if (audioCtx.state === 'suspended') audioCtx.resume();
 }
 
-function pauseAmbientMusic() {
-    ambientIsPlaying = false;
-    clearInterval(ambientChordTimer);
-    clearTimeout(ambientMelodyTimer);
-    updateMusicPlayerUI();
+// Остановка всех звуков
+function stopAudio() {
+    activeNodes.forEach(node => { try { node.stop(); node.disconnect(); } catch(e) {} });
+    activeNodes = [];
+    activeIntervals.forEach(clearInterval);
+    activeIntervals = [];
 }
 
-function toggleAmbientPlayback(event) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-    if (ambientIsPlaying) {
-        pauseAmbientMusic();
+// Выбор эмоции (Клик по карточке)
+function selectMusicMood(mood) {
+    initAudio();
+    stopAudio();
+    currentMood = mood;
+    
+    // Устанавливаем громкость со слайдера (стандарт 0.7)
+    const vol = document.getElementById('volumeSlider').value;
+    masterGain.gain.setValueAtTime(vol, audioCtx.currentTime);
+
+    // Меняем UI
+    document.getElementById('trackTitle').innerText = musicData[mood].title;
+    document.getElementById('musicPlayPauseBtn').style.background = musicData[mood].color;
+    
+    // Переход между экранами
+    document.getElementById('musicMoodView').style.display = 'none';
+    document.getElementById('musicPlayerView').style.display = 'block';
+
+    // Включаем нужный генератор
+    isMusicPlaying = true;
+    updatePlayPauseUI();
+    
+    if (mood === 'rain') generateRain();
+    if (mood === 'calm') generateCalm();
+    if (mood === 'motivated') generateMotivated();
+}
+
+// Кнопка Назад (Возврат к списку настроений)
+function goBackToMoods() {
+    stopAudio();
+    if(audioCtx) audioCtx.suspend();
+    isMusicPlaying = false;
+    currentMood = null;
+    document.getElementById('musicPlayerView').style.display = 'none';
+    document.getElementById('musicMoodView').style.display = 'block';
+}
+
+// Кнопка Пауза/Play на обложке
+function togglePlayPause() {
+    if (!currentMood || !audioCtx) return;
+    
+    if (isMusicPlaying) {
+        masterGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+        isMusicPlaying = false;
+        setTimeout(() => { if(!isMusicPlaying) audioCtx.suspend(); }, 200);
     } else {
-        startAmbientMusic();
+        audioCtx.resume();
+        const vol = document.getElementById('volumeSlider').value;
+        masterGain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.1);
+        isMusicPlaying = true;
     }
+    updatePlayPauseUI();
+}
+
+// Смена иконки Play/Pause
+function updatePlayPauseUI() {
+    const icon = document.getElementById('playPauseIcon');
+    if (isMusicPlaying) {
+        icon.innerHTML = `<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>`;
+    } else {
+        icon.innerHTML = `<polygon points="6 4 20 12 6 20 6 4"/>`;
+    }
+}
+
+// Изменение громкости ползунком
+function changeVolume(val) {
+    if (masterGain && audioCtx) {
+        masterGain.gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
+    }
+}
+
+// --- АЛГОРИТМЫ ГЕНЕРАЦИИ ---
+
+function generateRain() {
+    const bufferSize = audioCtx.sampleRate * 2;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
+    
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 800; // Срез звонких частот
+    
+    noise.connect(filter).connect(masterGain);
+    noise.start();
+    activeNodes.push(noise);
+}
+
+function generateCalm() {
+    const frequencies = [261.63, 329.63, 392.00, 493.88]; // Cmaj7
+    frequencies.forEach((freq, index) => {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = index % 2 === 0 ? 'sine' : 'triangle';
+        osc.frequency.value = freq;
+        gainNode.gain.value = 0.15;
+        osc.connect(gainNode).connect(masterGain);
+        osc.start();
+        activeNodes.push(osc);
+    });
+}
+
+function generateMotivated() {
+    let nextNoteTime = audioCtx.currentTime;
+    let noteIndex = 0;
+    const arpNotes = [220.00, 261.63, 329.63, 440.00, 329.63, 261.63]; 
+    
+    const interval = setInterval(() => {
+        if (!isMusicPlaying || currentMood !== 'motivated') return;
+        
+        while (nextNoteTime < audioCtx.currentTime + 0.1) {
+            const osc = audioCtx.createOscillator();
+            const noteGain = audioCtx.createGain();
+            
+            osc.type = 'square';
+            osc.frequency.value = arpNotes[noteIndex % arpNotes.length];
+            
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(2000, nextNoteTime);
+            filter.frequency.exponentialRampToValueAtTime(300, nextNoteTime + 0.15);
+
+            osc.connect(filter).connect(noteGain).connect(masterGain);
+            
+            noteGain.gain.setValueAtTime(0, nextNoteTime);
+            noteGain.gain.linearRampToValueAtTime(0.15, nextNoteTime + 0.02);
+            noteGain.gain.exponentialRampToValueAtTime(0.001, nextNoteTime + 0.2);
+            
+            osc.start(nextNoteTime);
+            osc.stop(nextNoteTime + 0.2);
+            
+            activeNodes.push(osc);
+            nextNoteTime += 0.2;
+            noteIndex++;
+        }
+    }, 25);
+    activeIntervals.push(interval);
 }
 
 function updateMusicPlayerUI() {
