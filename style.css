@@ -4102,3 +4102,55 @@ body.dark-mode .num-words-select.custom-select-trigger:hover {
 .custom-select-option {
     text-align: left !important;
 }
+
+/* === КАСТОМНАЯ КНОПКА ВЫБОРА ЦВЕТА QR === */
+.qr-custom-color-wrap {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 0 0 1px #CBD5E1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.qr-custom-color-wrap:hover {
+    transform: scale(1.15);
+}
+.qr-custom-color-wrap.active-custom {
+    box-shadow: 0 0 0 2px #0284C7;
+    transform: scale(1.15);
+}
+.qr-custom-color-wrap input[type="color"] {
+    position: absolute;
+    inset: -4px;
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0; /* Скрываем стандартный инпут поверх красивого градиентного фона */
+}
+.qr-custom-color-icon {
+    position: relative;
+    z-index: 2;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Темная тема для кастомного кружка */
+body.dark-mode .qr-custom-color-wrap {
+    box-shadow: 0 0 0 1px #475569;
+}
+body.dark-mode .qr-custom-color-wrap.active-custom {
+    box-shadow: 0 0 0 2px #38BDF8;
+}
