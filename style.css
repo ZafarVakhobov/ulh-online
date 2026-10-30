@@ -4155,3 +4155,155 @@ body.dark-mode .qr-custom-color-wrap {
 body.dark-mode .qr-custom-color-wrap.active-custom {
     box-shadow: 0 0 0 2px #38BDF8;
 }
+
+/* === КАСТОМНАЯ ПАЛИТРА И ВЫПАДАЮЩЕЕ ОКНО QR === */
+.qr-custom-color-dropdown-wrap {
+    position: relative;
+    display: inline-flex;
+}
+
+.qr-custom-color-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 0 0 1px #CBD5E1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.qr-custom-color-btn:hover {
+    transform: scale(1.15);
+}
+.qr-custom-color-btn.active-custom {
+    box-shadow: 0 0 0 2px #0284C7;
+    transform: scale(1.15);
+}
+.qr-custom-color-icon {
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* Выпадающее меню палитры */
+.qr-palette-dropdown {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    right: 0;
+    width: 210px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(6px) scale(0.98);
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s;
+    z-index: 1500;
+}
+.qr-custom-color-dropdown-wrap.open .qr-palette-dropdown {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+.qr-palette-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+.qr-palette-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+.qr-palette-row input[type="text"] {
+    height: 36px;
+    padding: 0 10px;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+}
+
+/* Кнопка вызова системной палитры внутри нашего меню */
+.qr-native-picker-trigger {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.qr-native-picker-trigger:hover {
+    background: #E2E8F0;
+    color: #0F172A;
+}
+.qr-native-picker-trigger input[type="color"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Сетка быстрых пресетов цветов */
+.qr-palette-preset-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+}
+.qr-palette-preset-grid button {
+    height: 26px;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+.qr-palette-preset-grid button:hover {
+    transform: scale(1.12);
+}
+
+/* Темная тема для палитры */
+body.dark-mode .qr-custom-color-btn {
+    box-shadow: 0 0 0 1px #475569;
+}
+body.dark-mode .qr-palette-dropdown {
+    background: #0F172A;
+    border-color: #1E293B;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7);
+}
+body.dark-mode .qr-palette-title {
+    color: #94A3B8;
+}
+body.dark-mode .qr-native-picker-trigger {
+    background: #1E293B;
+    border-color: #334155;
+    color: #94A3B8;
+}
+body.dark-mode .qr-native-picker-trigger:hover {
+    background: #334155;
+    color: #F8FAFC;
+}
