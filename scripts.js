@@ -3114,15 +3114,7 @@ async function exportAiToPdf() {
 
 // === ФУНКЦИЯ ДЛЯ ЧАТА ДОРАБОТКИ (MINI CHAT) В ОКНЕ ===
 async function refineAiResult() {
-// === НОВЫЙ КОД ДЛЯ КНОПКИ ОТКАТА (ВСТАВЛЯЕМ СЮДА) ===
-    const editor = document.querySelector('.main-textarea'); // ЗАМЕНИТЕ на ID или класс вашего главного текстового поля, если он другой!
-    if (editor) {
-        previousTextBeforeAi = editor.value; // Сохраняем текущий текст до того, как ИИ его перепишет
-        
-        const undoBtn = document.getElementById("aiUndoBtn");
-        if (undoBtn) undoBtn.style.display = "inline-flex"; // Показываем кнопку "Orqaga"
-    }
-    // === КОНЕЦ НОВОГО КОДА ===
+
 
     
     const contentDiv = document.getElementById("aiResultContent");
