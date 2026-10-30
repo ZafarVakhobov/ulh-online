@@ -3595,8 +3595,8 @@ function toggleBiblioFields() {
     
     const pagesInput = document.getElementById("bibPages");
     if (type === 'book') pagesInput.placeholder = "Jami sahifalar (masalan: 250)";
-    if (type === 'article') pagesInput.placeholder = "Sahifalar oralig'i (masalan: 15-22)";
-    if (type === 'web') pagesInput.placeholder = "Murojaat sanasi (bo'sh bo'lsa bugun)";
+    if (type === 'article') pagesInput.placeholder = "Sahifalar oraliği (masalan: 15-22)";
+    if (type === 'web') pagesInput.placeholder = "Murojaat sanasi (böş bölsa bugun)";
 }
 
 // Алгоритм генерации по ГОСТ и APA
@@ -3604,10 +3604,10 @@ function generateBiblio() {
     const style = document.getElementById("bibStyle").value;
     const type = document.getElementById("bibType").value;
     
-    const author = document.getElementById("bibAuthor").value.trim() || "[Muallif F.I.SH.]";
+    const author = document.getElementById("bibAuthor").value.trim() || "[Muallif F.I.Ş.]";
     const title = document.getElementById("bibTitle").value.trim() || "[Asar sarlavhasi]";
-    const city = document.getElementById("bibCity").value.trim() || "[Shahar]";
-    const pub = document.getElementById("bibPublisher").value.trim() || "[Nashriyot]";
+    const city = document.getElementById("bibCity").value.trim() || "[Şahar]";
+    const pub = document.getElementById("bibPublisher").value.trim() || "[Naşriyot]";
     const year = document.getElementById("bibYear").value.trim() || "[Yil]";
     const pages = document.getElementById("bibPages").value.trim() || "[Sahifalar]";
     const journal = document.getElementById("bibJournal").value.trim() || "[Jurnal nomi]";
