@@ -1047,7 +1047,10 @@
 
 <!-- === МОДАЛЬНОЕ ОКНО: СПИСОК ЛИТЕРАТУРЫ (BIBLIOGRAFIYA) === -->
     <div class="weather-modal-backdrop" id="biblioModalBackdrop" onclick="closeBiblioModal(event)">
-        <div class="weather-modal-card" style="max-width: 550px;" onclick="event.stopPropagation()">
+        <!-- Добавлен класс alphabet-modal-card для правильных отступов -->
+        <div class="weather-modal-card alphabet-modal-card" style="max-width: 550px;" onclick="event.stopPropagation()">
+            
+            <!-- Желтый баннер (ТОЛЬКО для заголовка и описания) -->
             <div class="calc-input-banner">
                 <div class="calc-banner-top">
                     <div class="weather-selected-tag">
@@ -1055,21 +1058,25 @@
                         <span>IQTIBOS VA ADABIYOTLAR</span>
                     </div>
                 </div>
-                <div class="ads-banner-title">Avtomatik röyxat tuzuvçi</div>
-                <div class="ads-banner-sub">Ilmiy işlar va maqolalar uçun manbalarni GOST yoki APA standartida şakllantiring.</div>
+                <div class="ads-banner-title">Avtomatik ro'yxat tuzuvchi</div>
+                <div class="ads-banner-sub">Ilmiy ishlar va maqolalar uchun manbalarni GOST yoki APA standartida shakllantiring.</div>
+            </div>
 
+            <!-- Блок с настройками и полями ввода (ВНЕ баннера) -->
+            <div style="padding: 0 4px; margin-top: 18px;">
+                
                 <!-- Выбор формата и типа -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
                     <div>
-                        <label style="font-size: 11px; font-weight: 800; color: #64748B; margin-bottom: 4px; display: block; text-transform: uppercase;">Standart</label>
-                        <select id="bibStyle" class="ai-tool-select" style="width: 100%; height: 38px; padding: 0 10px; border-radius: 8px; border: 1px solid #E2E8F0; font-size: 13.5px;" onchange="generateBiblio()">
+                        <label style="font-size: 11px; font-weight: 800; color: #64748B; margin-bottom: 6px; display: block; text-transform: uppercase;">Standart</label>
+                        <select id="bibStyle" class="bib-custom-input" onchange="generateBiblio()">
                             <option value="gost">GOST (MDH standarti)</option>
                             <option value="apa">APA (Xalqaro)</option>
                         </select>
                     </div>
                     <div>
-                        <label style="font-size: 11px; font-weight: 800; color: #64748B; margin-bottom: 4px; display: block; text-transform: uppercase;">Manba turi</label>
-                        <select id="bibType" class="ai-tool-select" style="width: 100%; height: 38px; padding: 0 10px; border-radius: 8px; border: 1px solid #E2E8F0; font-size: 13.5px;" onchange="toggleBiblioFields(); generateBiblio()">
+                        <label style="font-size: 11px; font-weight: 800; color: #64748B; margin-bottom: 6px; display: block; text-transform: uppercase;">Manba turi</label>
+                        <select id="bibType" class="bib-custom-input" onchange="toggleBiblioFields(); generateBiblio()">
                             <option value="book">Kitob (Monografiya)</option>
                             <option value="article">Ilmiy maqola (Jurnal)</option>
                             <option value="web">Veb-sayt (Internet)</option>
@@ -1077,33 +1084,34 @@
                     </div>
                 </div>
 
-                <!-- Поля ввода данных -->
-                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
-                    <input type="text" id="bibAuthor" class="qr-text-input" placeholder="Muallif F.I.Ş. (masalan: Vakhobov Z.)" oninput="generateBiblio()">
-                    <input type="text" id="bibTitle" class="qr-text-input" placeholder="Sarlavha (masalan: Raqamli media imidji)" oninput="generateBiblio()">
+                <!-- Красивые раздельные поля ввода -->
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <input type="text" id="bibAuthor" class="bib-custom-input" placeholder="Muallif F.I.SH. (masalan: Vakhobov Z.)" oninput="generateBiblio()">
+                    <input type="text" id="bibTitle" class="bib-custom-input" placeholder="Sarlavha (masalan: Raqamli media imidji)" oninput="generateBiblio()">
                     
-                    <div id="bibBookFields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <input type="text" id="bibCity" class="qr-text-input" placeholder="Naşr şahri (Samarqand)" oninput="generateBiblio()">
-                        <input type="text" id="bibPublisher" class="qr-text-input" placeholder="Naşriyot (Universitet)" oninput="generateBiblio()">
+                    <div id="bibBookFields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <input type="text" id="bibCity" class="bib-custom-input" placeholder="Nashr shahri (Samarqand)" oninput="generateBiblio()">
+                        <input type="text" id="bibPublisher" class="bib-custom-input" placeholder="Nashriyot (Universitet)" oninput="generateBiblio()">
                     </div>
                     
-                    <input type="text" id="bibJournal" class="qr-text-input" placeholder="Jurnal nomi (masalan: Turizm xabarnomasi)" oninput="generateBiblio()" style="display:none;">
-                    <input type="text" id="bibUrl" class="qr-text-input" placeholder="URL havola (https://...)" oninput="generateBiblio()" style="display:none;">
+                    <input type="text" id="bibJournal" class="bib-custom-input" placeholder="Jurnal nomi (masalan: Turizm xabarnomasi)" oninput="generateBiblio()" style="display:none;">
+                    <input type="text" id="bibUrl" class="bib-custom-input" placeholder="URL havola (https://...)" oninput="generateBiblio()" style="display:none;">
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <input type="number" id="bibYear" class="qr-text-input" placeholder="Yil (2026)" oninput="generateBiblio()">
-                        <input type="text" id="bibPages" class="qr-text-input" placeholder="Sahifalar (masalan: 120 yoki 15-20)" oninput="generateBiblio()">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <!-- type изменен на text, чтобы убрать некрасивые стрелки прокрутки цифр в браузере -->
+                        <input type="text" id="bibYear" class="bib-custom-input" placeholder="Yil (2026)" oninput="generateBiblio()">
+                        <input type="text" id="bibPages" class="bib-custom-input" placeholder="Sahifalar (masalan: 120 yoki 15-20)" oninput="generateBiblio()">
                     </div>
                 </div>
 
                 <!-- Результат для копирования -->
-                <div class="archive-item-card" id="bibResultBox" style="margin-top: 14px; cursor: pointer; background: #F0F9FF; border-color: #BAE6FD; padding: 14px;" onclick="copyBiblio()">
-                    <div id="bibResultText" style="font-size: 14px; font-weight: 600; color: #0369A1; line-height: 1.5;">Natija bu yerda avtomatik şakllanadi...</div>
-                    <div id="bibCopyHint" style="font-size: 11px; color: #0284C7; margin-top: 8px; font-weight: 800; text-transform: uppercase;">Nusxa oliş üçün bosing</div>
+                <div class="archive-item-card" id="bibResultBox" style="margin-top: 16px; cursor: pointer; background: #F0F9FF; border-color: #BAE6FD; padding: 16px; border-radius: 12px;" onclick="copyBiblio()">
+                    <div id="bibResultText" style="font-size: 14px; font-weight: 600; color: #0369A1; line-height: 1.5;">Natija bu yerda avtomatik shakllanadi...</div>
+                    <div id="bibCopyHint" style="font-size: 11px; color: #0284C7; margin-top: 10px; font-weight: 800; text-transform: uppercase;">Nusxa oliş üçün bosing</div>
                 </div>
             </div>
             
-            <div class="weather-modal-footer" style="margin-top: 14px;">
+            <div class="weather-modal-footer" style="margin-top: 18px;">
                 <button type="button" class="weather-modal-close" onclick="closeBiblioModal()">Yopiş</button>
             </div>
         </div>
