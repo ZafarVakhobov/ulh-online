@@ -3679,3 +3679,16 @@ body.dark-mode .ai-tool-select option {
     background-color: #0F172A;
     color: #F8FAFC;
 }
+
+/* Стили для результата Суммы Прописью в Темной теме */
+body.dark-mode #numWordsResultBox {
+    background: rgba(22, 163, 74, 0.1) !important;
+    border-color: rgba(22, 163, 74, 0.25) !important;
+}
+body.dark-mode #numWordsResultText {
+    color: #4ADE80 !important;
+}
+body.dark-mode #numWordsCurrency {
+    background: #0F172A !important;
+    border-color: #334155 !important;
+}
