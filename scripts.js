@@ -3808,3 +3808,97 @@ async function submitAdOrder(event) {
         }
     };
 }
+
+// === АВТО-КАСТОМИЗАЦИЯ ВСЕХ ВЫПАДАЮЩИХ СПИСКОВ (<SELECT>) ===
+function initCustomSelects() {
+    // Находим все селекты на сайте
+    const selects = document.querySelectorAll('select');
+
+    selects.forEach(select => {
+        // Если уже кастомизирован - пропускаем
+        if (select.nextElementSibling && select.nextElementSibling.classList.contains('custom-select-wrapper')) return;
+
+        // Скрываем стандартный селект, но оставляем его в DOM для работы ваших функций
+        select.style.display = 'none';
+
+        // Создаем обертку
+        const wrapper = document.createElement('div');
+        wrapper.className = 'custom-select-wrapper';
+        wrapper.style.width = select.style.width || (select.classList.contains('ai-tool-select') ? 'auto' : '100%');
+        if (select.style.flexShrink) wrapper.style.flexShrink = select.style.flexShrink;
+
+        // Визуальная кнопка (копирует ВАШИ классы и стили оригинала)
+        const trigger = document.createElement('div');
+        trigger.className = select.className; // Наследуем классы (например, bib-custom-input)
+        trigger.classList.add('custom-select-trigger');
+        trigger.style.cssText = select.style.cssText; // Наследуем инлайн-стили
+        trigger.style.display = 'flex'; // Принудительно ставим flex для текста
+        
+        const selectedText = select.options[select.selectedIndex]?.text || "";
+        trigger.innerHTML = `<span class="custom-select-text">${selectedText}</span>`;
+
+        // Выпадающее меню
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'custom-select-options';
+
+        // Заполняем вариантами
+        Array.from(select.options).forEach(option => {
+            // Пропускаем некликабельные плейсхолдеры (например, "Tarifni tanlang")
+            if (option.disabled && !option.value) return; 
+            
+            const optDiv = document.createElement('div');
+            optDiv.className = 'custom-select-option';
+            optDiv.textContent = option.text;
+            
+            optDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                // Меняем значение в оригинальном скрытом селекте
+                select.value = option.value;
+                trigger.querySelector('.custom-select-text').textContent = option.text;
+                optionsDiv.classList.remove('open');
+                
+                // Эмулируем стандартное событие onchange для запуска ваших функций
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            optionsDiv.appendChild(optDiv);
+        });
+
+        // Открытие/закрытие меню
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Закрываем другие открытые меню
+            document.querySelectorAll('.custom-select-options.open').forEach(el => {
+                if (el !== optionsDiv) el.classList.remove('open');
+            });
+            optionsDiv.classList.toggle('open');
+        });
+
+        // Вставляем новые элементы на страницу
+        wrapper.appendChild(trigger);
+        wrapper.appendChild(optionsDiv);
+        select.parentNode.insertBefore(wrapper, select.nextSibling);
+
+        // Умная синхронизация: если ваш скрипт меняет select.value извне, обновляем текст кнопки
+        const originalSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;
+        Object.defineProperty(select, 'value', {
+            set: function(val) {
+                originalSetter.call(this, val);
+                const newText = this.options[this.selectedIndex]?.text || "";
+                trigger.querySelector('.custom-select-text').textContent = newText;
+            },
+            get: function() {
+                return Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').get.call(this);
+            }
+        });
+    });
+
+    // Закрываем меню при клике в любое пустое место сайта
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.custom-select-options.open').forEach(el => el.classList.remove('open'));
+    });
+}
+
+// Запускаем скрипт сразу и для подстраховки после загрузки контента
+initCustomSelects();
+document.addEventListener('DOMContentLoaded', initCustomSelects);
