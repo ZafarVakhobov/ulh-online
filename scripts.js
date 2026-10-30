@@ -3560,3 +3560,106 @@ function copyNumberToWords() {
         }, 1500);
     });
 }
+
+// === АВТОМАТИЧЕСКИЙ ГЕНЕРАТОР СПИСКА ЛИТЕРАТУРЫ (IQTIBOS) ===
+
+function openBiblioModal(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    // Закрываем меню "Foydali resurslar"
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    const modal = document.getElementById('biblioModalBackdrop');
+    if (modal) {
+        modal.classList.add('open');
+        toggleBiblioFields(); // Настраиваем поля по умолчанию
+        generateBiblio();     // Генерируем базовый плейсхолдер
+    }
+}
+
+function closeBiblioModal(event) {
+    const modal = document.getElementById('biblioModalBackdrop');
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove('open');
+}
+
+// Показываем нужные поля в зависимости от типа источника (Книга, Статья, Сайт)
+function toggleBiblioFields() {
+    const type = document.getElementById("bibType").value;
+    
+    document.getElementById("bibBookFields").style.display = type === 'book' ? 'grid' : 'none';
+    document.getElementById("bibJournal").style.display = type === 'article' ? 'block' : 'none';
+    document.getElementById("bibUrl").style.display = type === 'web' ? 'block' : 'none';
+    
+    const pagesInput = document.getElementById("bibPages");
+    if (type === 'book') pagesInput.placeholder = "Jami sahifalar (masalan: 250)";
+    if (type === 'article') pagesInput.placeholder = "Sahifalar oralig'i (masalan: 15-22)";
+    if (type === 'web') pagesInput.placeholder = "Murojaat sanasi (bo'sh bo'lsa bugun)";
+}
+
+// Алгоритм генерации по ГОСТ и APA
+function generateBiblio() {
+    const style = document.getElementById("bibStyle").value;
+    const type = document.getElementById("bibType").value;
+    
+    const author = document.getElementById("bibAuthor").value.trim() || "[Muallif F.I.SH.]";
+    const title = document.getElementById("bibTitle").value.trim() || "[Asar sarlavhasi]";
+    const city = document.getElementById("bibCity").value.trim() || "[Shahar]";
+    const pub = document.getElementById("bibPublisher").value.trim() || "[Nashriyot]";
+    const year = document.getElementById("bibYear").value.trim() || "[Yil]";
+    const pages = document.getElementById("bibPages").value.trim() || "[Sahifalar]";
+    const journal = document.getElementById("bibJournal").value.trim() || "[Jurnal nomi]";
+    const url = document.getElementById("bibUrl").value.trim() || "[URL]";
+
+    let result = "";
+
+    if (style === 'gost') {
+        // Формат ГОСТ
+        if (type === 'book') {
+            result = `${author}. ${title} / ${author}. – ${city}: ${pub}, ${year}. – ${pages} b.`;
+        } else if (type === 'article') {
+            result = `${author}. ${title} // ${journal}. – ${year}. – B. ${pages}.`;
+        } else if (type === 'web') {
+            const accessDate = document.getElementById("bibPages").value.trim() || new Date().toLocaleDateString('uz-UZ');
+            result = `${author}. ${title} [Elektron resurs] // URL: ${url} (murojaat sanasi: ${accessDate}).`;
+        }
+    } else if (style === 'apa') {
+        // Формат APA
+        if (type === 'book') {
+            result = `${author}. (${year}). ${title}. ${city}: ${pub}.`;
+        } else if (type === 'article') {
+            result = `${author}. (${year}). ${title}. ${journal}, ${pages}.`;
+        } else if (type === 'web') {
+            result = `${author}. (${year}). ${title}. Olingan manba: ${url}`;
+        }
+    }
+
+    document.getElementById("bibResultText").innerHTML = result;
+}
+
+// Копирование результата по клику на карточку
+function copyBiblio() {
+    const textEl = document.getElementById("bibResultText");
+    const hintEl = document.getElementById("bibCopyHint");
+    if (!textEl || !textEl.textContent) return;
+
+    // Копируем как чистый текст
+    navigator.clipboard.writeText(textEl.textContent).then(() => {
+        hintEl.textContent = "Nusxalandi ✓";
+        hintEl.style.color = "#059669";
+        
+        setTimeout(() => {
+            hintEl.textContent = "Nusxa oliş üçün bosing";
+            hintEl.style.color = "#0284C7";
+        }, 1500);
+    });
+}
+
+// Привязка закрытия окна к Esc
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeBiblioModal();
+    }
+});
