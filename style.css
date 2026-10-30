@@ -3849,3 +3849,75 @@ body.dark-mode .bib-clear-btn:hover {
     background-color: #F54927;
     color: #FFFFFF;
 }
+
+/* === СТИЛИ ФОРМЫ ЗАКАЗА РЕКЛАМЫ === */
+
+/* Зона загрузки файла */
+.ad-file-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: #F8FAFC;
+    border: 2px dashed #CBD5E1;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    transition: all 0.2s ease;
+}
+.ad-file-label:hover { background: #F1F5F9; border-color: #94A3B8; }
+.ad-file-label.file-selected {
+    background: #F0FDF4;
+    border-color: #86EFAC;
+    color: #16A34A;
+}
+
+/* Кастомные чекбоксы (Галочки) */
+.ad-checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+}
+.ad-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #64748B;
+    cursor: pointer;
+    line-height: 1.4;
+}
+.ad-checkbox-label input { display: none; }
+.ad-checkmark {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #CBD5E1;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+.ad-checkbox-label input:checked + .ad-checkmark {
+    background-color: #0284C7;
+    border-color: #0284C7;
+}
+.ad-checkbox-label input:checked + .ad-checkmark::after {
+    content: "✓";
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Темная тема */
+body.dark-mode .ad-file-label { background: #0F172A; border-color: #334155; color: #94A3B8; }
+body.dark-mode .ad-file-label.file-selected { background: rgba(22, 163, 74, 0.1); border-color: #15803D; color: #4ADE80; }
+body.dark-mode .ad-checkbox-label { color: #94A3B8; }
+body.dark-mode .ad-checkmark { border-color: #334155; }
