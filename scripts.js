@@ -3828,7 +3828,15 @@ function initCustomSelects() {
         // Создаем обертку
         const wrapper = document.createElement('div');
         wrapper.className = 'custom-select-wrapper';
-        wrapper.style.width = select.style.width || (select.classList.contains('ai-tool-select') ? 'auto' : '100%');
+        
+// Если у селекта есть класс calc-currency-select (в калькуляторе) или num-words-select (для суммы),
+// не даем скрипту растягивать его на 100%
+if (select.classList.contains('ai-tool-select') || select.classList.contains('calc-currency-select') || select.classList.contains('num-words-select')) {
+    wrapper.style.width = 'auto';
+} else {
+    wrapper.style.width = select.style.width || '100%';
+}
+        
         if (select.style.flexShrink) wrapper.style.flexShrink = select.style.flexShrink;
 
         // Визуальная кнопка (копирует ВАШИ классы и стили оригинала)
