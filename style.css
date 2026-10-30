@@ -4072,3 +4072,33 @@ body.dark-mode .custom-select-options::-webkit-scrollbar-thumb { background-colo
 .qr-input-row .custom-select-options.open {
     transform: translateY(0) !important;
 }
+
+/* === ЦЕНТРИРОВАНИЕ ТЕКСТА В КНОПКАХ СПИСКА === */
+.calc-input-row .custom-select-text,
+.qr-input-row .custom-select-text {
+    text-align: center !important;
+    padding-right: 4px; /* Легкая компенсация под иконку стрелочки */
+}
+
+/* === ФИКС БЕЛОГО ФОНА В ТЁМНОЙ ТЕМЕ ДЛЯ СУММЫ ПРОПИСЬЮ === */
+body.dark-mode .num-words-select.custom-select-trigger {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+    color: #F8FAFC !important;
+}
+
+body.dark-mode .num-words-select.custom-select-trigger:hover {
+    background: #0F172A !important;
+    border-color: #475569 !important;
+}
+
+/* === ВОЗВРАЩАЕМ ВЫРАВНИВАНИЕ ВЛЕВО ДЛЯ БИБЛИОГРАФИИ === */
+.bib-custom-input.custom-select-trigger .custom-select-text {
+    text-align: left !important;
+    padding-left: 2px; /* Аккуратный отступ от левого края */
+}
+
+/* На всякий случай жестко прижимаем влево и сами пункты меню */
+.custom-select-option {
+    text-align: left !important;
+}
