@@ -1509,9 +1509,36 @@ function renderQrCodePreview() {
 
 function selectQrColor(colorHex) {
     currentQrColor = colorHex;
+    
+    // Снимаем класс "active" с обычных цветных точек
     document.querySelectorAll(".qr-color-dot").forEach(btn => {
         btn.classList.toggle("active", btn.getAttribute("data-color") === colorHex);
     });
+    
+    // Снимаем подсветку с круглой кнопки кастомной палитры
+    const customWrap = document.querySelector(".qr-custom-color-wrap");
+    if (customWrap) customWrap.classList.remove("active-custom");
+
+    // Синхронизируем выбранный цвет со скрытым полем ввода типа color
+    const colorInput = document.getElementById("qrCustomColorInput");
+    if (colorInput) colorInput.value = colorHex;
+
+    renderQrCodePreview();
+}
+
+// Функция обработки выбора кастомного цвета через палитру
+function selectCustomQrColor(colorHex) {
+    currentQrColor = colorHex;
+
+    // Снимаем активность со всех стандартных круглых точек (синей, черной и т.д.)
+    document.querySelectorAll(".qr-color-dot").forEach(btn => {
+        btn.classList.remove("active");
+    });
+
+    // Добавляем красивую рамку-обводку на градиентную кнопку палитры
+    const customWrap = document.querySelector(".qr-custom-color-wrap");
+    if (customWrap) customWrap.classList.add("active-custom");
+
     renderQrCodePreview();
 }
 
