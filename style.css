@@ -4026,3 +4026,49 @@ body.dark-mode .custom-select-options::-webkit-scrollbar-thumb { background-colo
     left: auto !important;  /* Отменяем выравнивание по левому краю */
     right: 0 !important;    /* Раскрываем список влево, чтобы не ломать окно */
 }
+
+/* === КАЛЬКУЛЯТОР: ИСПРАВЛЕНИЕ ШИРИНЫ === */
+/* Заставляем кнопку калькулятора быть по размеру самого длинного слова внутри */
+.calc-input-row .custom-select-wrapper {
+    width: max-content !important; 
+    min-width: 120px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Прижимаем выпадающее меню калькулятора к правому краю */
+.calc-input-row .custom-select-options {
+    left: auto !important;
+    right: 0 !important;
+    min-width: 100% !important; 
+    width: max-content !important;
+}
+
+/* Поле ввода цифр должно занимать все оставшееся место */
+.calc-amount-input {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+}
+
+
+/* === СУММА ПРОПИСЬЮ: ИСПРАВЛЕНИЕ МЕНЮ (ОТКРЫТИЕ ВВЕРХ) === */
+.qr-input-row .custom-select-wrapper {
+    width: max-content !important; 
+    min-width: 130px !important; /* Ширина кнопки под "AQŞ dollari" */
+    flex-shrink: 0 !important;
+}
+
+/* Заставляем список суммы прописью выпадать ВВЕРХ и прижиматься ВПРАВО */
+.qr-input-row .custom-select-options {
+    top: auto !important;         /* Отменяем выпадение вниз */
+    bottom: calc(100% + 6px) !important; /* Открываем ровно над кнопкой */
+    left: auto !important;
+    right: 0 !important;
+    min-width: 100% !important;
+    width: max-content !important;
+    transform: translateY(8px);   /* Настройка анимации для открытия вверх */
+}
+
+/* Фикс анимации при открытии вверх */
+.qr-input-row .custom-select-options.open {
+    transform: translateY(0) !important;
+}
