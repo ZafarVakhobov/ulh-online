@@ -477,7 +477,7 @@
                 </div>
 
                 <div class="qr-input-row">
-                    <input type="text" id="qrTextInput" class="qr-text-input" value="https://ulh-online.uz/" placeholder="Havola yoki matnni kiriting (https://...)" aria-label="QR-kod uçun havola yoki matn">
+                    <input type="text" id="qrTextInput" class="qr-text-input" value="https://ulh-online.uz/" placeholder="Havola yoki matnni kiriting (https://...)" aria-label="QR-kod uçun havola yoki matn" style="text-align: left !important;">
                     <button type="button" class="qr-clear-btn" onclick="clearQrInput()" title="Tozalaş" aria-label="Tozalaş">✕</button>
                 </div>
 
@@ -489,14 +489,38 @@
                     <button type="button" class="qr-color-dot" data-color="#0284C7" style="background:#0284C7;" onclick="selectQrColor('#0284C7')"><span class="custom-tooltip">#0284C7</span></button>
                     <button type="button" class="qr-color-dot" data-color="#10B981" style="background:#10B981;" onclick="selectQrColor('#10B981')"><span class="custom-tooltip">#10B981</span></button>
                     
-                    <!-- НОВАЯ КНОПКА КАСТОМНОГО ЦВЕТА (Color Picker) -->
-                    <label class="qr-custom-color-wrap">
-                        <input type="color" id="qrCustomColorInput" value="#3f51b5" oninput="selectCustomQrColor(this.value)">
+                    <!-- Кастомная кнопка с выпадающей панелью HEX -->
+                <div class="qr-custom-color-dropdown-wrap" id="qrCustomColorWrap">
+                    <button type="button" class="qr-custom-color-btn" onclick="toggleQrCustomPalette(event)" title="Maxsus rang kiritish (HEX)">
                         <span class="qr-custom-color-icon">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         </span>
-                        <span class="custom-tooltip">Boşqa rangni tanlaş</span>
-                    </label>
+                        <span class="custom-tooltip">Boshqa rang (HEX)</span>
+                    </button>
+
+                    <!-- Выпадающее мини-окошко выбора цвета -->
+                    <div class="qr-palette-dropdown" onclick="event.stopPropagation()">
+                        <div class="qr-palette-title">Rangni kiriting (HEX)</div>
+                        <div class="qr-palette-row">
+                            <input type="text" id="qrHexInput" class="bib-custom-input" value="#3F51B5" maxlength="7" oninput="applyHexColorFromInput(this.value)">
+                            <label class="qr-native-picker-trigger" title="Palitradan tanlaş">
+                                <input type="color" id="qrNativeColorPicker" value="#3F51B5" oninput="applyNativeColorPicker(this.value)">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                            </label>
+                        </div>
+                        <div class="qr-palette-preset-grid">
+                            <button type="button" style="background:#4F46E5;" onclick="selectPresetHex('#4F46E5')"></button>
+                            <button type="button" style="background:#7C3AED;" onclick="selectPresetHex('#7C3AED')"></button>
+                            <button type="button" style="background:#DB2777;" onclick="selectPresetHex('#DB2777')"></button>
+                            <button type="button" style="background:#DC2626;" onclick="selectPresetHex('#DC2626')"></button>
+                            <button type="button" style="background:#EA580C;" onclick="selectPresetHex('#EA580C')"></button>
+                            <button type="button" style="background:#16A34A;" onclick="selectPresetHex('#16A34A')"></button>
+                            <button type="button" style="background:#0D9488;" onclick="selectPresetHex('#0D9488')"></button>
+                            <button type="button" style="background:#1E293B;" onclick="selectPresetHex('#1E293B')"></button>
+                        </div>
+                    </div>
+                </div>
+                    
                 </div>
             </div>
 
@@ -1006,7 +1030,7 @@
                 <div style="margin-top: 10px; border-top: 0px dashed #CBD5E1; padding-top: 10px;">
                     <div class="weather-other-title" style="margin: 0 4px 6px;">MATNNI QAYTA TAHRIRLAŞ (PROMPT)</div>
                     <div class="qr-input-row" style="padding: 4px 4px 4px 14px;">
-                        <input type="text" id="aiRefineInput" class="qr-text-input" placeholder="Masalan: Qisqaroq yoz, xatoni töğirla..." aria-label="Qöşimça buyruq" onkeydown="if(event.key === 'Enter') { event.preventDefault(); refineAiResult(); }">
+                        <input type="text" id="aiRefineInput" class="qr-text-input" style="text-align: left !important;" placeholder="Masalan: Qisqaroq yoz, xatoni töğirla..." aria-label="Qöşimça buyruq" onkeydown="if(event.key === 'Enter') { event.preventDefault(); refineAiResult(); }">
                         
                         <!-- НОВАЯ КНОПКА "НАЗАД" (Появляется только если есть история) -->
                         <button type="button" id="aiUndoBtn" onclick="undoLastAiAction()" style="display: none; align-items: center; background: #F1F5F9; border: none; border-radius: 10px; height: 34px; padding: 0 12px; margin-right: 6px; color: #475569; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.15s ease;" onmouseover="this.style.background='#E2E8F0'; this.style.color='#0F172A'" onmouseout="this.style.background='#F1F5F9'; this.style.color='#475569'" title="Oldingi versiyaga qaytiş">
