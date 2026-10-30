@@ -3690,7 +3690,7 @@ function clearBiblioFields() {
 
 // === ЛОГИКА ФОРМЫ ЗАКАЗА РЕКЛАМЫ (TELEGRAM BOT) ===
 
-// ВАШИ ДАННЫЕ (ВСТАВЬТЕ СВОИ ЗНАЧЕНИЯ)
+// Ваши точные данные
 const TG_BOT_TOKEN = "8720893006:AAGSev8YHwdFTyBd1y7frEeOAQDEd9ZuVnw";
 const TG_CHAT_ID = "1674718";
 
@@ -3705,7 +3705,6 @@ function closeAdOrderModal() {
     if (modal) modal.classList.remove('open');
 }
 
-// Изменение стиля кнопки при выборе картинки
 function handleAdFileSelect(input) {
     const label = document.getElementById('adFileLabel');
     if (input.files && input.files[0]) {
@@ -3717,9 +3716,8 @@ function handleAdFileSelect(input) {
     }
 }
 
-// Отправка формы
 async function submitAdOrder(event) {
-    event.preventDefault(); // Останавливаем перезагрузку страницы
+    event.preventDefault(); 
     
     const fileInput = document.getElementById('adBannerFile');
     const file = fileInput.files[0];
@@ -3727,22 +3725,19 @@ async function submitAdOrder(event) {
     
     if (!file) return alert("Iltimos, banner rasmini yuklang!");
 
-    // 1. ПРОВЕРКА РАЗРЕШЕНИЯ КАРТИНКИ (2560x844)
     const img = new Image();
     img.src = URL.createObjectURL(file);
     
     img.onload = async function() {
         if (img.width !== 2560 || img.height !== 844) {
-            alert(`Xatolik! Rasm o'lchami aynan 2560x844 px bo'lishi kerak.\nSiz yuklagan rasm: ${img.width}x${img.height} px`);
+            alert(`Xatolik! Rasm ölçami aynan 2560x844 px bölişi kerak.\nSiz yuklagan rasm: ${img.width}x${img.height} px`);
             return;
         }
 
-        // Если разрешение правильное - начинаем отправку
         submitBtn.innerHTML = `<span>Yuborilmoqda... Kuting</span>`;
         submitBtn.style.opacity = "0.7";
         submitBtn.disabled = true;
 
-        // Собираем данные
         const name = document.getElementById('adName').value;
         const phone = document.getElementById('adPhone').value;
         const org = document.getElementById('adOrg').value;
@@ -3751,12 +3746,12 @@ async function submitAdOrder(event) {
         const messageText = `🔥 <b>YANGI REKLAMA BUYURTMASI</b>\n\n` +
                             `👤 <b>Ism:</b> ${name}\n` +
                             `📞 <b>Aloqa:</b> ${phone}\n` +
-                            `🏢 <b>Tashkilot:</b> ${org}\n` +
+                            `🏢 <b>Taşkilot:</b> ${org}\n` +
                             `💰 <b>Tarif:</b> ${tariff}\n\n` +
-                            `✅ <i>Shartlarga rozi bo'ldi va javobgarlikni oldi.</i>`;
+                            `✅ <i>Şartlarga rozi böldi va javobgarlikni oldi.</i>`;
 
         try {
-            // ОТПРАВЛЯЕМ ТЕКСТ
+            // Отправляем текст
             const textResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -3766,9 +3761,13 @@ async function submitAdOrder(event) {
                     parse_mode: 'HTML'
                 })
             });
-            if (!textResponse.ok) throw new Error("Matn yuborishda xatolik");
+            
+            if (!textResponse.ok) {
+                const errData = await textResponse.json();
+                throw new Error(`Telegram API xatosi (Matn): ${errData.description}`);
+            }
 
-            // ОТПРАВЛЯЕМ КАРТИНКУ КАК ФАЙЛ (ЧТОБЫ НЕ ПОРТИЛОСЬ КАЧЕСТВО)
+            // Отправляем файл
             const formData = new FormData();
             formData.append('chat_id', TG_CHAT_ID);
             formData.append('document', file);
@@ -3777,13 +3776,16 @@ async function submitAdOrder(event) {
                 method: 'POST',
                 body: formData
             });
-            if (!fileResponse.ok) throw new Error("Fayl yuborishda xatolik");
+            
+            if (!fileResponse.ok) {
+                const errData = await fileResponse.json();
+                throw new Error(`Telegram API xatosi (Fayl): ${errData.description}`);
+            }
 
-            // Успех! Показываем галочку
+            // Визуальный успех
             submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Muvaffaqiyatli yuborildi!</span>`;
             submitBtn.style.background = "#10B981";
             
-            // Через 2.5 секунды всё сбрасываем и закрываем окно
             setTimeout(() => {
                 document.getElementById('adOrderForm').reset();
                 handleAdFileSelect(fileInput);
@@ -3796,9 +3798,9 @@ async function submitAdOrder(event) {
             }, 2500);
 
         } catch (error) {
-            console.error(error);
-            alert("Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.");
-            submitBtn.innerHTML = `<span>So'rovni yuborish</span>`;
+            console.error("Yuborishda xatolik:", error);
+            alert("Xatolik yuz berdi. Iltimos qaytadan urinib köring.\nSabab: " + error.message);
+            submitBtn.innerHTML = `<span>Sörovni yuborish</span>`;
             submitBtn.style.opacity = "1";
             submitBtn.disabled = false;
         }
