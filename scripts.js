@@ -3687,3 +3687,120 @@ function clearBiblioFields() {
         btn.innerHTML = originalHtml;
     }, 1500);
 }
+
+// === ЛОГИКА ФОРМЫ ЗАКАЗА РЕКЛАМЫ (TELEGRAM BOT) ===
+
+// ВАШИ ДАННЫЕ (ВСТАВЬТЕ СВОИ ЗНАЧЕНИЯ)
+const TG_BOT_TOKEN = "8720893006:AAGSev8YHwdFTyBd1y7frEeOAQDEd9ZuVnw";
+const TG_CHAT_ID = "1674718";
+
+function openAdOrderModal(event) {
+    if (event) event.preventDefault();
+    const modal = document.getElementById('adOrderModalBackdrop');
+    if (modal) modal.classList.add('open');
+}
+
+function closeAdOrderModal() {
+    const modal = document.getElementById('adOrderModalBackdrop');
+    if (modal) modal.classList.remove('open');
+}
+
+// Изменение стиля кнопки при выборе картинки
+function handleAdFileSelect(input) {
+    const label = document.getElementById('adFileLabel');
+    if (input.files && input.files[0]) {
+        label.classList.add('file-selected');
+        label.querySelector('span').textContent = `Fayl: ${input.files[0].name}`;
+    } else {
+        label.classList.remove('file-selected');
+        label.querySelector('span').textContent = "Banner rasmini yuklang (PNG, JPG, GIF)";
+    }
+}
+
+// Отправка формы
+async function submitAdOrder(event) {
+    event.preventDefault(); // Останавливаем перезагрузку страницы
+    
+    const fileInput = document.getElementById('adBannerFile');
+    const file = fileInput.files[0];
+    const submitBtn = document.getElementById('adSubmitBtn');
+    
+    if (!file) return alert("Iltimos, banner rasmini yuklang!");
+
+    // 1. ПРОВЕРКА РАЗРЕШЕНИЯ КАРТИНКИ (2560x844)
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    
+    img.onload = async function() {
+        if (img.width !== 2560 || img.height !== 844) {
+            alert(`Xatolik! Rasm o'lchami aynan 2560x844 px bo'lishi kerak.\nSiz yuklagan rasm: ${img.width}x${img.height} px`);
+            return;
+        }
+
+        // Если разрешение правильное - начинаем отправку
+        submitBtn.innerHTML = `<span>Yuborilmoqda... Kuting</span>`;
+        submitBtn.style.opacity = "0.7";
+        submitBtn.disabled = true;
+
+        // Собираем данные
+        const name = document.getElementById('adName').value;
+        const phone = document.getElementById('adPhone').value;
+        const org = document.getElementById('adOrg').value;
+        const tariff = document.getElementById('adTariff').value;
+
+        const messageText = `🔥 <b>YANGI REKLAMA BUYURTMASI</b>\n\n` +
+                            `👤 <b>Ism:</b> ${name}\n` +
+                            `📞 <b>Aloqa:</b> ${phone}\n` +
+                            `🏢 <b>Tashkilot:</b> ${org}\n` +
+                            `💰 <b>Tarif:</b> ${tariff}\n\n` +
+                            `✅ <i>Shartlarga rozi bo'ldi va javobgarlikni oldi.</i>`;
+
+        try {
+            // ОТПРАВЛЯЕМ ТЕКСТ
+            const textResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: TG_CHAT_ID,
+                    text: messageText,
+                    parse_mode: 'HTML'
+                })
+            });
+            if (!textResponse.ok) throw new Error("Matn yuborishda xatolik");
+
+            // ОТПРАВЛЯЕМ КАРТИНКУ КАК ФАЙЛ (ЧТОБЫ НЕ ПОРТИЛОСЬ КАЧЕСТВО)
+            const formData = new FormData();
+            formData.append('chat_id', TG_CHAT_ID);
+            formData.append('document', file);
+
+            const fileResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument`, {
+                method: 'POST',
+                body: formData
+            });
+            if (!fileResponse.ok) throw new Error("Fayl yuborishda xatolik");
+
+            // Успех! Показываем галочку
+            submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Muvaffaqiyatli yuborildi!</span>`;
+            submitBtn.style.background = "#10B981";
+            
+            // Через 2.5 секунды всё сбрасываем и закрываем окно
+            setTimeout(() => {
+                document.getElementById('adOrderForm').reset();
+                handleAdFileSelect(fileInput);
+                closeAdOrderModal();
+                
+                submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg><span>So'rovni yuborish</span>`;
+                submitBtn.style.background = "#0284C7";
+                submitBtn.style.opacity = "1";
+                submitBtn.disabled = false;
+            }, 2500);
+
+        } catch (error) {
+            console.error(error);
+            alert("Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.");
+            submitBtn.innerHTML = `<span>So'rovni yuborish</span>`;
+            submitBtn.style.opacity = "1";
+            submitBtn.disabled = false;
+        }
+    };
+}
