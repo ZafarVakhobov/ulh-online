@@ -3926,6 +3926,14 @@ body.dark-mode .ad-checkbox-label { color: #94A3B8; }
 body.dark-mode .ad-checkmark { border-color: #334155; }
 
 /* === КАСТОМНЫЕ ВЫПАДАЮЩИЕ СПИСКИ (CUSTOM SELECT) === */
+
+/* Исправление смещения меню выбора валюты (Сумма прописью) */
+.qr-input-row .custom-select-options {
+    left: auto !important;
+    right: 0 !important;
+    min-width: 140px; /* Фиксируем ширину, чтобы текст не прыгал */
+}
+
 .custom-select-wrapper {
     position: relative;
     display: inline-block;
@@ -4007,3 +4015,14 @@ body.dark-mode .custom-select-option:hover {
     color: #38BDF8;
 }
 body.dark-mode .custom-select-options::-webkit-scrollbar-thumb { background-color: #475569; }
+
+/* === ИСПРАВЛЕНИЕ ШИРИНЫ СПИСКА В КАЛЬКУЛЯТОРЕ ВАЛЮТ === */
+.calc-input-row .custom-select-wrapper {
+    width: auto !important; /* Отменяем 100% ширину от скрипта */
+    min-width: 115px;       /* Фиксируем аккуратный размер кнопки */
+}
+
+.calc-input-row .custom-select-options {
+    left: auto !important;  /* Отменяем выравнивание по левому краю */
+    right: 0 !important;    /* Раскрываем список влево, чтобы не ломать окно */
+}
