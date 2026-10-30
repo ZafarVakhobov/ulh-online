@@ -3663,3 +3663,27 @@ document.addEventListener('keydown', function(e) {
         closeBiblioModal();
     }
 });
+
+// Функция очистки полей библиографии
+function clearBiblioFields() {
+    // 1. Находим все текстовые поля внутри модалки и очищаем их
+    const inputs = document.querySelectorAll('#biblioModalBackdrop input.bib-custom-input');
+    inputs.forEach(input => input.value = '');
+    
+    // 2. Обновляем итоговый результат (возвращаем плейсхолдер)
+    generateBiblio();
+
+    // 3. Визуальный фидбек: меняем текст иконки на кнопке
+    const btn = document.getElementById('bibClearBtn');
+    if (!btn) return;
+    
+    const originalHtml = btn.innerHTML; // Запоминаем исходный HTML с корзинкой
+    
+    // Вставляем иконку галочки и текст "Öçirildi"
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span>Öçirildi</span>`;
+    
+    // Через 1.5 секунды возвращаем оригинальную корзинку
+    setTimeout(() => {
+        btn.innerHTML = originalHtml;
+    }, 1500);
+}
