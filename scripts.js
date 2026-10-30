@@ -3479,6 +3479,7 @@ function getCurrencyName(curr, isFrac) {
         case 'usd': return isFrac ? 'sent' : 'AQŞ dollari';
         case 'eur': return isFrac ? 'yevrosent' : 'yevro';
         case 'rub': return isFrac ? 'kopeyka' : 'rubl';
+        case 'cny': return isFrac ? 'fin' : 'yuan';
         case 'foiz': return isFrac ? '' : 'foiz';
         case 'none': return '';
         default: return '';
