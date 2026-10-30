@@ -3741,12 +3741,14 @@ async function submitAdOrder(event) {
         const name = document.getElementById('adName').value;
         const phone = document.getElementById('adPhone').value;
         const org = document.getElementById('adOrg').value;
+        const url = document.getElementById('adUrl').value; // <-- Получаем ссылку
         const tariff = document.getElementById('adTariff').value;
 
         const messageText = `🔥 <b>YANGI REKLAMA BUYURTMASI</b>\n\n` +
                             `👤 <b>Ism:</b> ${name}\n` +
-                            `📞 <b>Aloqa:</b> ${phone}\n` +
+                            `📞 <b>Aloqa:</b> ${phone}\n` + 
                             `🏢 <b>Taşkilot:</b> ${org}\n` +
+                            `🔗 <b>Havola:</b> ${url}\n` + // <-- Вставляем ссылку в сообщение 
                             `💰 <b>Tarif:</b> ${tariff}\n\n` +
                             `✅ <i>Şartlarga rozi böldi va javobgarlikni oldi.</i>`;
 
