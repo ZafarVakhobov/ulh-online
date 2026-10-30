@@ -3941,3 +3941,60 @@ if (select.classList.contains('ai-tool-select') || select.classList.contains('ca
 // Запускаем скрипт сразу и для подстраховки после загрузки контента
 initCustomSelects();
 document.addEventListener('DOMContentLoaded', initCustomSelects);
+
+// Открытие / закрытие кастомной палитры QR
+function toggleQrCustomPalette(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    const wrap = document.getElementById("qrCustomColorWrap");
+    if (wrap) wrap.classList.toggle("open");
+}
+
+// Закрытие палитры при клике вне её
+document.addEventListener("click", (e) => {
+    const wrap = document.getElementById("qrCustomColorWrap");
+    if (wrap && !wrap.contains(e.target)) {
+        wrap.classList.remove("open");
+    }
+});
+
+// Применение цвета из текстового инпута (HEX)
+function applyHexColorFromInput(hexVal) {
+    if (!hexVal.startsWith("#")) hexVal = "#" + hexVal;
+    if (/^#[0-9A-Fa-f]{6}$/.test(hexVal)) {
+        currentQrColor = hexVal;
+        
+        // Снимаем активность с точек
+        document.querySelectorAll(".qr-color-dot").forEach(b => b.classList.remove("active"));
+        const btn = document.querySelector(".qr-custom-color-btn");
+        if (btn) btn.classList.add("active-custom");
+
+        // Синхронизируем с нативным пикером
+        const nativePicker = document.getElementById("qrNativeColorPicker");
+        if (nativePicker) nativePicker.value = hexVal;
+
+        renderQrCodePreview();
+    }
+}
+
+// Применение цвета через встроенный выбор палитры
+function applyNativeColorPicker(hexVal) {
+    const hexInput = document.getElementById("qrHexInput");
+    if (hexInput) hexInput.value = hexVal;
+    applyHexColorFromInput(hexVal);
+}
+
+// Клик по готовому пресету в палитре
+function selectPresetHex(hexVal) {
+    const hexInput = document.getElementById("qrHexInput");
+    const nativePicker = document.getElementById("qrNativeColorPicker");
+    if (hexInput) hexInput.value = hexVal;
+    if (nativePicker) nativePicker.value = hexVal;
+    applyHexColorFromInput(hexVal);
+    
+    // Закрываем палитру после выбора
+    const wrap = document.getElementById("qrCustomColorWrap");
+    if (wrap) wrap.classList.remove("open");
+}
