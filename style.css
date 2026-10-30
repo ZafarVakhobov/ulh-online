@@ -4077,7 +4077,7 @@ body.dark-mode .custom-select-options::-webkit-scrollbar-thumb { background-colo
 .calc-input-row .custom-select-text,
 .qr-input-row .custom-select-text {
     text-align: center !important;
-    padding-right: 4px; /* Легкая компенсация под иконку стрелочки */
+    padding-right: 0px; /* Легкая компенсация под иконку стрелочки */
 }
 
 /* === ФИКС БЕЛОГО ФОНА В ТЁМНОЙ ТЕМЕ ДЛЯ СУММЫ ПРОПИСЬЮ === */
