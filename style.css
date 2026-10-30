@@ -2962,6 +2962,62 @@ body.dark-mode .custom-tooltip::after {
 }
 
 /* === МИНИ-ПЛЕЕР ГЕНЕРАТИВНОЙ МУЗЫКИ В ВЕРХНЕМ МЕНЮ === */
+/* === МИНИ-ПЛЕЕР И ВЫБОР ЭМОЦИЙ === */
+
+.music-dropdown-box {
+    padding: 12px;
+    min-width: 250px;
+}
+
+/* Экран 1: Карточки настроений */
+.mood-cards-container { display: flex; flex-direction: column; gap: 8px; }
+.mood-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px; border-radius: 10px;
+    cursor: pointer; transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+.mood-card:hover {
+    background: #F8FAFC; border-color: #E2E8F0;
+}
+.mood-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1); flex-shrink: 0;
+}
+.mood-card span {
+    font-size: 13.5px; font-weight: 700; color: #1E293B;
+}
+
+/* Экран 2: Активный плеер */
+.player-back-btn {
+    display: flex; align-items: center; gap: 4px;
+    background: none; border: none; color: #64748B;
+    font-size: 12px; font-weight: 800; cursor: pointer;
+    padding: 0; margin-bottom: 8px; transition: color 0.2s;
+    text-transform: uppercase;
+}
+.player-back-btn:hover { color: #0284C7; }
+
+/* Кастомный ползунок громкости */
+.custom-vol-slider {
+    -webkit-appearance: none; height: 6px;
+    background: #E2E8F0; border-radius: 4px; outline: none;
+}
+.custom-vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px;
+    border-radius: 50%; background: #0284C7;
+    cursor: pointer; transition: 0.15s;
+}
+.custom-vol-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+/* Темная тема */
+body.dark-mode .mood-card:hover { background: #1E293B; border-color: #334155; }
+body.dark-mode .mood-card span { color: #F8FAFC; }
+body.dark-mode .custom-vol-slider { background: #334155; }
+body.dark-mode .custom-vol-slider::-webkit-slider-thumb { background: #38BDF8; }
+
+
 .nav-music-wrap {
     position: relative;
     display: inline-flex;
