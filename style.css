@@ -20,6 +20,58 @@ body {
     min-height: 100vh;
 }
 
+/* === КАСТОМНЫЙ СКРОЛЛБАР (ГЛОБАЛЬНО ДЛЯ ВСЕГО САЙТА) === */
+
+/* 1. Стандарт Firefox */
+* {
+    scrollbar-width: thin; /* Делает скроллбар тонким */
+    scrollbar-color: #CBD5E1 transparent; /* Цвет ползунка и прозрачный фон (светлая тема) */
+}
+
+/* Firefox: Темная тема */
+body.dark-mode * {
+    scrollbar-color: #475569 transparent; /* Темный ползунок и прозрачный фон */
+}
+
+
+/* 2. Стандарт WebKit (Chrome, Edge, Safari, Opera, мобильные браузеры) */
+::-webkit-scrollbar {
+    width: 6px;  /* Ширина вертикального ползунка */
+    height: 6px; /* Высота горизонтального ползунка (если появится) */
+}
+
+/* Фон скроллбара (дорожка) */
+::-webkit-scrollbar-track {
+    background: transparent; /* Делаем полностью прозрачным, чтобы сливалось с фоном модалок */
+    border-radius: 10px;
+}
+
+/* Сам ползунок (бегунок) - Светлая тема */
+::-webkit-scrollbar-thumb {
+    background-color: #CBD5E1; /* Мягкий серо-синий цвет */
+    border-radius: 10px;       /* Красивые круглые края, как на iPhone/Mac */
+}
+
+/* Эффект наведения на ползунок (Светлая тема) */
+::-webkit-scrollbar-thumb:hover {
+    background-color: #94A3B8; /* Чуть темнеет при наведении мыши */
+}
+
+/* === ТЕМНАЯ ТЕМА ДЛЯ WEBKIT === */
+body.dark-mode ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Сам ползунок - Темная тема */
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background-color: #475569; /* Темно-серый, отлично подходящий под фон #0F172A */
+}
+
+/* Эффект наведения - Темная тема */
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background-color: #64748B; /* Слегка светлеет при захвате мышью */
+}
+
 /* === СТИЛИ ВЕРХНЕГО МЕНЮ (NAVBAR) === */
 .top-navbar {
     width: 100%;
