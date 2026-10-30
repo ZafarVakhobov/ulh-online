@@ -484,17 +484,18 @@
                 <!-- Выбор цвета QR-кода для дизайна и документов -->
                 <div class="qr-color-row">
                     <span class="qr-color-label">Rang:</span>
-                    <button type="button" class="qr-color-dot active" data-color="#3f51b5" style="background:#3f51b5;" onclick="selectQrColor('#3f51b5')" title="Toq kök"></button>
-                    <button type="button" class="qr-color-dot" data-color="#000000" style="background:#000000;" onclick="selectQrColor('#000000')" title="Qora (Klassik)"></button>
-                    <button type="button" class="qr-color-dot" data-color="#0284C7" style="background:#0284C7;" onclick="selectQrColor('#0284C7')" title="Moviy (ULH)"></button>
-                    <button type="button" class="qr-color-dot" data-color="#10B981" style="background:#10B981;" onclick="selectQrColor('#10B981')" title="Yaşil"></button>
+                    <button type="button" class="qr-color-dot active" data-color="#3f51b5" style="background:#3f51b5;" onclick="selectQrColor('#3f51b5')"><span class="custom-tooltip">#3F51B5</span></button>
+                    <button type="button" class="qr-color-dot" data-color="#000000" style="background:#000000;" onclick="selectQrColor('#000000')"><span class="custom-tooltip">#000000</span></button>
+                    <button type="button" class="qr-color-dot" data-color="#0284C7" style="background:#0284C7;" onclick="selectQrColor('#0284C7')"><span class="custom-tooltip">#0284C7</span></button>
+                    <button type="button" class="qr-color-dot" data-color="#10B981" style="background:#10B981;" onclick="selectQrColor('#10B981')"><span class="custom-tooltip">#10B981</span></button>
                     
                     <!-- НОВАЯ КНОПКА КАСТОМНОГО ЦВЕТА (Color Picker) -->
-                    <label class="qr-custom-color-wrap" title="Boşqa rangni tanlaş (HEX)">
+                    <label class="qr-custom-color-wrap">
                         <input type="color" id="qrCustomColorInput" value="#3f51b5" oninput="selectCustomQrColor(this.value)">
                         <span class="qr-custom-color-icon">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         </span>
+                        <span class="custom-tooltip">Boşqa rangni tanlaş</span>
                     </label>
                 </div>
             </div>
