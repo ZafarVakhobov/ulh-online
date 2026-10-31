@@ -1845,6 +1845,7 @@ calculateAndRenderTextStats();
 
 // === 9. УМНЫЙ СЛАЙДЕР БАННЕРОВ ПО РАСПИСАНИЮ (UTC+5 ТАШКЕНТ) И МОДАЛЬНОЕ ОКНО РЕКЛАМЫ ===
 const BANNER_CONFIG = {
+    // 1. ОСНОВНОЙ БАННЕР (Отображается по умолчанию, когда нет праздников)
     main: {
         id: "main",
         src: "./header.png",
@@ -1853,7 +1854,7 @@ const BANNER_CONFIG = {
         href: "https://ulh-online.uz/"
     },
 
-    // === ВАШ НОВЫЙ БАННЕР БОТА ===
+    // 2. БАННЕР ВАШЕГО БОТА
     bot: {
         id: "bot",
         src: "./banner-bot.png",
@@ -1863,68 +1864,85 @@ const BANNER_CONFIG = {
         target: "_blank"
     },
     
+    // 3. БАННЕР "ЗАКАЗАТЬ РЕКЛАМУ" (Всегда последний, открывает окно тарифов)
     ads: {
         id: "ads",
         src: "./banner-ads.png",
         alt: "Saytda reklama joylaştiriş — Tariflar bilan tanişing",
         action: "modal"
     },
+
+    // 4. ЗАКАЗНЫЕ БАННЕРЫ ОТ КЛИЕНТОВ (Платная реклама с автоматическим снятием)
+    customAds: [
+        {
+            id: "ad_client1",
+            src: "./banner-client1.png",      // Картинка баннера (загрузите в корень сайта)
+            alt: "Kompaniya reklamasi",       // Описание для слепых и поисковиков
+            action: "link",
+            href: "https://client-site.uz",   // Ссылка на сайт или канал клиента
+            target: "_blank",                 // Открывать в новом окне
+            startDate: "2026-11-01",          // Дата НАЧАЛА показа (включительно, ГГГГ-ММ-ДД)
+            endDate: "2026-11-30"             // Дата ОКОНЧАНИЯ показа (включительно, ГГГГ-ММ-ДД)
+        }
+    ],
+
+    // 5. ПРАЗДНИКИ УЗБЕКИСТАНА (Авто-замена основного баннера по датам)
     holidays: [
         {
             id: "new_year",
             name: "Yangi yil bayrami",
             src: "./banner-newyear.png",
-            // С 24 декабря (00:00) по 13 января (23:59) любого года
+            // С 24 декабря (00:00) по 13 января (23:59)
             check: (m, d) => (m === 12 && d >= 24) || (m === 1 && d <= 13)
         },
         {
             id: "defenders_day",
             name: "14-yanvar — Vatan himoyaçilari kuni",
             src: "./banner-14jan.png",
-            // Только 14 января (00:00 - 23:59)
+            // Только 14 января
             check: (m, d) => (m === 1 && d === 14)
         },
         {
             id: "womens_day",
             name: "8-mart — Xalqaro xotin-qizlar kuni",
             src: "./banner-8march.png",
-            // Только 8 марта (00:00 - 23:59)
-            check: (m, d) => (m === 3 && d === 8)
+            // С 6 по 9 марта
+            check: (m, d) => m === 3 && (d >= 6 && d <= 9)
         },
         {
             id: "navruz",
             name: "21-mart — Navröz bayrami",
             src: "./banner-navruz.png",
-            // Только 21 марта (00:00 - 23:59)
-            check: (m, d) => (m === 3 && d === 21)
+            // С 19 по 23 марта
+            check: (m, d) => m === 3 && (d >= 19 && d <= 23)
         },
         {
             id: "memory_day",
             name: "9-may — Xotira va qadrlaş kuni",
             src: "./banner-9may.png",
-            // Только 9 мая (00:00 - 23:59)
-            check: (m, d) => (m === 5 && d === 9)
+            // С 7 по 10 мая
+            check: (m, d) => m === 5 && (d >= 7 && d <= 10)
         },
         {
             id: "independence_day",
             name: "Mustaqillik bayrami",
             src: "./banner-mustaqillik.png",
-            // С 30 августа (00:00) по 2 сентября (23:59) любого года
-            check: (m, d) => (m === 8 && d >= 30) || (m === 9 && d <= 2)
+            // С 30 августа (00:00) по 3 сентября (23:59)
+            check: (m, d) => (m === 8 && d >= 30) || (m === 9 && d <= 3)
         },
         {
             id: "teachers_day",
             name: "1-oktabr — Öqituvçi va murabbiylar kuni",
             src: "./banner-1oct.png",
-            // Только 1 октября (00:00 - 23:59)
-            check: (m, d) => (m === 10 && d === 1)
+            // С 29 сентября по 2 октября
+            check: (m, d) => (m === 9 && d >= 29) || (m === 10 && d <= 2)
         },
         {
             id: "constitution_day",
             name: "8-dekabr — Özbekiston Respublikasi Konstitutsiyasi kuni",
             src: "./banner-8dec.png",
-            // Только 8 декабря (00:00 - 23:59)
-            check: (m, d) => (m === 12 && d === 8)
+            // С 6 по 9 декабря
+            check: (m, d) => m === 12 && (d >= 6 && d <= 9)
         }
     ]
 };
@@ -1943,31 +1961,45 @@ function getTashkentDateParts() {
 }
 
 function getActiveSlidesList() {
-    const { month, day } = getTashkentDateParts();
+    // Получаем текущую дату по Ташкенту
+    const { year, month, day } = getTashkentDateParts();
+    
+    // Формируем сегодняшнюю дату в формате "YYYY-MM-DD" для сравнения с заказными баннерами
+    const todayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    // Ищем активный праздник на сегодня
     const activeHoliday = BANNER_CONFIG.holidays.find(h => h.check(month, day));
 
+    // Выбираем платные баннеры, у которых сегодня входит в срок аренды
+    const activeCustomAds = (BANNER_CONFIG.customAds || []).filter(ad => {
+        return todayStr >= ad.startDate && todayStr <= ad.endDate;
+    });
+
+    let slides = []; 
+
+    // СЛАЙД 1: Праздничный (если есть) ИЛИ Основной
     if (activeHoliday) {
-        // В праздничный период: 1) Праздничный баннер, 2) Рекламный баннер, 3) Основной баннер
-        return [
-            {
-                id: activeHoliday.id,
-                src: activeHoliday.src,
-                alt: activeHoliday.name,
-                action: "link",
-                href: "https://ulh-online.uz/"
-            },
-            BANNER_CONFIG.bot,
-            BANNER_CONFIG.ads,
-            BANNER_CONFIG.main
-        ];
+        slides.push({
+            id: activeHoliday.id,
+            src: activeHoliday.src,
+            alt: activeHoliday.name,
+            action: "link",
+            href: "https://ulh-online.uz/"
+        });
+    } else {
+        slides.push(BANNER_CONFIG.main);
     }
 
-    // В обычные дни: 1) Основной баннер, 2) Рекламный баннер
-    return [
-        BANNER_CONFIG.main,
-        BANNER_CONFIG.bot,
-        BANNER_CONFIG.ads
-    ];
+    // СЛАЙД 2: Ваш Telegram-бот
+    slides.push(BANNER_CONFIG.bot);
+
+    // СЛАЙД 3 (и далее): Оплаченная реклама клиентов (если их даты актуальны)
+    slides = slides.concat(activeCustomAds);
+
+    // ПОСЛЕДНИЙ СЛАЙД: Кнопка "Заказать рекламу"
+    slides.push(BANNER_CONFIG.ads);
+
+    return slides;
 }
 
 let heroSlidesData = [];
@@ -2161,6 +2193,7 @@ setInterval(() => {
 }, 60000);
 
 initHeroSlider();
+
 
 // === 10. ПЕРЕКЛЮЧАТЕЛЬ ТЁМНОЙ ТЕМЫ («TUN REJIMI» / DARK MODE) ===
 const THEME_STORAGE_KEY = "ulh_theme_mode";
