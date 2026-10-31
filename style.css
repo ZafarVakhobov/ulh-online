@@ -4333,6 +4333,19 @@ body.dark-mode .qr-native-picker-trigger:hover {
     transform: translateY(0) scale(1);
 }
 
+/* === ФИКС ОТОБРАЖЕНИЯ МЕНЮ АВТОРА НА МОБИЛЬНЫХ ЭКРАНАХ === */
+@media (max-width: 760px) {
+    .user-dropdown-box {
+        left: -10px !important; /* Привязываем меню к левой стороне с аккуратным отступом */
+        right: auto !important; /* Отменяем привязку к правому краю */
+        transform: translateY(8px) scale(0.98) !important;
+    }
+    
+    .nav-item.open .user-dropdown-box {
+        transform: translateY(0) scale(1) !important;
+    }
+}
+
 /* Шапка профиля */
 .user-profile-header {
     display: flex;
@@ -4479,3 +4492,4 @@ body.dark-mode .user-social-link:hover {
     color: #38BDF8;
 }
 body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
+
