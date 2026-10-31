@@ -1852,6 +1852,17 @@ const BANNER_CONFIG = {
         action: "link",
         href: "https://ulh-online.uz/"
     },
+
+    // === ВАШ НОВЫЙ БАННЕР БОТА ===
+    bot: {
+        id: "bot",
+        src: "./banner-bot.png",
+        alt: "Uzbek Latin Helper Telegram boti",
+        action: "link",
+        href: "https://t.me/UzbekLatinAppBot",
+        target: "_blank"
+    },
+    
     ads: {
         id: "ads",
         src: "./banner-ads.png",
@@ -1945,6 +1956,7 @@ function getActiveSlidesList() {
                 action: "link",
                 href: "https://ulh-online.uz/"
             },
+            BANNER_CONFIG.bot,
             BANNER_CONFIG.ads,
             BANNER_CONFIG.main
         ];
@@ -1953,6 +1965,7 @@ function getActiveSlidesList() {
     // В обычные дни: 1) Основной баннер, 2) Рекламный баннер
     return [
         BANNER_CONFIG.main,
+        BANNER_CONFIG.bot,
         BANNER_CONFIG.ads
     ];
 }
@@ -1980,6 +1993,12 @@ function initHeroSlider() {
         if (slide.action === "link") {
             slideEl.href = slide.href || "/";
             slideEl.setAttribute("aria-label", slide.alt);
+            
+            // Если в настройках баннера указан target, применяем его
+            if (slide.target) {
+                slideEl.setAttribute("target", slide.target);
+                slideEl.setAttribute("rel", "noopener"); // для безопасности
+            }
         } else if (slide.action === "modal") {
             slideEl.setAttribute("role", "button");
             slideEl.setAttribute("tabindex", "0");
