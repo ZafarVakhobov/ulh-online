@@ -3474,6 +3474,15 @@ body.dark-mode .ai-undo-btn {
     border-radius: 12px 12px 0 0;
     margin-top: 10px;
 }
+
+/* === ИСПРАВЛЕНИЕ ПАНЕЛИ ИНСТРУМЕНТОВ ИИ ТОЛЬКО ДЛЯ МОБИЛЬНЫХ === */
+@media (max-width: 640px) {
+    .ai-rich-toolbar {
+        flex-wrap: wrap !important;      /* Разрешаем перенос только на смартфонах */
+        row-gap: 8px !important;         /* Отступ между рядами */
+    }
+}
+
 .ai-tool-btn {
     position: relative; /* Обязательно для позиционирования тултипа */
     width: 28px;
