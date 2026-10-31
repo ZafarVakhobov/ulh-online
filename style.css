@@ -2839,7 +2839,7 @@ body.dark-mode .tools-export-btn.pdf-btn {
 
 /* 3. Кнопка счетчика (только число) */
 .stats-icon-btn {
-    min-width: 44px;
+    min-width: 20%;
     padding: 0 10px;
     background-color: #ecfdf5;
     color: #10b99f;
