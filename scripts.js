@@ -1876,7 +1876,7 @@ const BANNER_CONFIG = {
     customAds: [
         {
             id: "ad_client1",
-            src: "./ads/banner-client1.png",      // Картинка баннера (загрузите в корень сайта)
+            src: "./banner-client1.png",      // Картинка баннера (загрузите в корень сайта)
             alt: "Dastur",       // Описание для слепых и поисковиков
             action: "link",
             href: "https://t.me/ulh_releases/10",   // Ссылка на сайт или канал клиента
