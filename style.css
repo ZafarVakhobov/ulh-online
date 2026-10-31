@@ -4309,3 +4309,156 @@ body.dark-mode .qr-native-picker-trigger:hover {
     background: #334155;
     color: #F8FAFC;
 }
+
+/* === СТИЛИ МЕНЮ АВТОРА ПРОЕКТА (ZAFAR VAKHOBOV) === */
+
+/* Выравниваем выпадающее меню по правому краю, как у плеера */
+.user-dropdown-box {
+    left: auto;
+    right: 0;
+    transform: translateY(8px) scale(0.98);
+    min-width: 260px;
+    padding: 16px;
+}
+.nav-item.open .user-dropdown-box {
+    transform: translateY(0) scale(1);
+}
+
+/* Шапка профиля */
+.user-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+/* Градиентная обводка в стиле Instagram */
+.user-avatar-wrap {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    /* Фирменный градиент сайта */
+    background: linear-gradient(135deg, #0284C7 0%, #10B981 100%);
+    padding: 2.5px; /* Толщина градиентной рамки */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.user-avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    /* Белая прослойка между картинкой и градиентом */
+    border: 2px solid #FFFFFF; 
+    object-fit: cover;
+    background: #F1F5F9;
+}
+
+/* Тексты имени и роли */
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.user-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+}
+.user-role {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #64748B;
+}
+
+/* Кнопка заказа рекламы */
+.user-ad-btn {
+    width: 100%;
+    height: 40px;
+    border-radius: 12px;
+    background: #E0F2FE;
+    color: #0284C7;
+    border: none;
+    font-size: 13.5px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-bottom: 14px;
+}
+.user-ad-btn:hover {
+    background: #0284C7;
+    color: #FFFFFF;
+}
+
+/* Ссылки на социальные сети */
+.user-socials {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.user-social-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1E293B;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.user-social-link:hover {
+    background: #F1F5F9;
+    color: #0284C7;
+}
+.social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    color: #64748B;
+    transition: color 0.15s ease;
+}
+.user-social-link:hover .social-icon {
+    color: #0284C7;
+}
+
+/* Мелкий текст снизу */
+.user-footer-text {
+    font-size: 10px;
+    font-weight: 600;
+    color: #94A3B8;
+    text-align: center;
+    line-height: 1.4;
+    margin-top: 8px;
+}
+
+/* Темная тема (Dark Mode) */
+body.dark-mode .user-avatar-img {
+    border-color: #0F172A; /* Цвет фона меню в тёмной теме */
+    background: #1E293B;
+}
+body.dark-mode .user-name { color: #F8FAFC; }
+body.dark-mode .user-role { color: #94A3B8; }
+body.dark-mode .user-ad-btn {
+    background: rgba(2, 132, 199, 0.18);
+    color: #38BDF8;
+}
+body.dark-mode .user-ad-btn:hover {
+    background: #0284C7;
+    color: #FFFFFF;
+}
+body.dark-mode .user-social-link { color: #E2E8F0; }
+body.dark-mode .user-social-link:hover {
+    background: #1E293B;
+    color: #38BDF8;
+}
+body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
