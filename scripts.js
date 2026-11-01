@@ -4215,3 +4215,142 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderTasks();
 });
+
+
+/* ========================================== */
+/* === ЛОГИКА МЕНЕДЖЕРА ИСТОЧНИКОВ (MANBALAR) === */
+/* ========================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- 1. Открытие/Закрытие окна ---
+    const srcBtn = document.getElementById('sources-toggle-btn');
+    const srcModal = document.getElementById('sources-modal');
+    const srcCloseBtn = document.getElementById('sources-close-btn');
+
+    if (srcBtn && srcModal && srcCloseBtn) {
+        srcBtn.addEventListener('click', () => srcModal.classList.add('open'));
+        srcCloseBtn.addEventListener('click', () => srcModal.classList.remove('open'));
+        
+        // Закрытие по клику вне окна
+        srcModal.addEventListener('click', (e) => {
+            if (e.target === srcModal) srcModal.classList.remove('open');
+        });
+        
+        // Закрытие по кнопке Esc
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && srcModal.classList.contains('open')) {
+                srcModal.classList.remove('open');
+            }
+        });
+    }
+
+    // --- 2. Логика работы с базой данных источников (localStorage) ---
+    let academicSources = JSON.parse(localStorage.getItem('ulh-academic-sources')) || [];
+    
+    const renderSources = () => {
+        const list = document.getElementById('sources-list');
+        if (!list) return;
+        
+        list.innerHTML = '';
+        const countEl = document.getElementById('sources-count');
+        if (countEl) countEl.innerText = academicSources.length;
+
+        // Отрисовываем от новых к старым (reverse)
+        [...academicSources].reverse().forEach(src => {
+            const card = document.createElement('div');
+            card.className = 'source-card';
+            
+            // Форматируем предпросмотр по ГОСТ / ВАК
+            const vakFormat = `${src.author ? src.author + ' ' : ''}${src.title} // ${src.journal}. – ${src.year}.` + (src.pages ? ` – S. ${src.pages}.` : '');
+            
+            let quoteHtml = '';
+            if (src.quote) {
+                quoteHtml = `<div class="source-card-quote">«${src.quote}»</div>`;
+            }
+
+            card.innerHTML = `
+                <div style="font-size: 13px; font-weight: 600; color: #1e293b;" class="dark:text-white">${vakFormat}</div>
+                ${quoteHtml}
+                <button class="delete-src-btn" data-id="${src.id}" style="position: absolute; top: 8px; right: 10px; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 16px; font-weight: bold;">×</button>
+            `;
+            list.appendChild(card);
+        });
+
+        // Слушатели для кнопок удаления (Крестик)
+        document.querySelectorAll('.delete-src-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.target.getAttribute('data-id');
+                academicSources = academicSources.filter(s => s.id !== id);
+                localStorage.setItem('ulh-academic-sources', JSON.stringify(academicSources));
+                renderSources();
+            });
+        });
+    };
+
+    // --- 3. Сохранение нового источника ---
+    const saveBtn = document.getElementById('save-source-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const author = document.getElementById('src-author').value.trim();
+            const title = document.getElementById('src-title').value.trim();
+            const journal = document.getElementById('src-journal').value.trim();
+            const year = document.getElementById('src-year').value.trim();
+            const pages = document.getElementById('src-pages').value.trim();
+            const quote = document.getElementById('src-quote').value.trim();
+
+            if (!title) {
+                alert("Iltimos, maqola yoki kitob nomini kiriting!");
+                return;
+            }
+
+            const newSource = {
+                id: Date.now().toString(),
+                author, title, journal, year, pages, quote
+            };
+
+            academicSources.push(newSource);
+            localStorage.setItem('ulh-academic-sources', JSON.stringify(academicSources));
+            renderSources();
+
+            // Очищаем форму после сохранения
+            document.querySelectorAll('.src-input').forEach(input => input.value = '');
+        });
+    }
+
+    // --- 4. Массовый экспорт списка литературы (VAK) ---
+    const exportBtn = document.getElementById('export-vak-btn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            if (academicSources.length === 0) return;
+            
+            // Алфавитная сортировка по автору или названию
+            const sortedSources = [...academicSources].sort((a, b) => {
+                const nameA = a.author || a.title;
+                const nameB = b.author || b.title;
+                return nameA.localeCompare(nameB);
+            });
+
+            // Формируем финальный текстовый список
+            let finalList = "FOYDALANILGAN ADABIYOTLAR RÖYXATI:\n\n";
+            sortedSources.forEach((src, index) => {
+                finalList += `${index + 1}. ${src.author ? src.author + ' ' : ''}${src.title} // ${src.journal}. – ${src.year}.` + (src.pages ? ` – S. ${src.pages}.` : '') + `\n`;
+            });
+
+            // Копируем в буфер обмена
+            navigator.clipboard.writeText(finalList).then(() => {
+                const originalText = exportBtn.innerText;
+                exportBtn.innerText = "Nusxalandi! ✓";
+                exportBtn.style.background = "#059669";
+                
+                // Возвращаем исходный текст кнопки через 2 секунды
+                setTimeout(() => {
+                    exportBtn.innerText = originalText;
+                    exportBtn.style.background = "#10B981";
+                }, 2000);
+            });
+        });
+    }
+
+    // Первичная отрисовка при загрузке страницы
+    renderSources();
+});
