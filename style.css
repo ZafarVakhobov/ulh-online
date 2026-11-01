@@ -4788,6 +4788,47 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     z-index: 2;
 }
 
+/* === КНОПКА РЕДАКТИРОВАНИЯ (КАРАНДАШ) === */
+.osha-edit-msg-btn {
+    position: absolute;
+    bottom: 36px; /* Размещаем ровно над кнопкой копирования */
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(0, 0, 0, 0.04);
+    color: #64748B;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+    z-index: 2;
+}
+
+/* Показываем карандаш вместе с кнопкой копирования при наведении */
+.osha-msg-container:hover .osha-edit-msg-btn {
+    opacity: 1;
+}
+
+/* При наведении делаем карандаш синим, чтобы отличать от копирования */
+.osha-edit-msg-btn:hover {
+    background: rgba(0, 0, 0, 0.09);
+    color: #0284c7; 
+}
+
+/* Поддержка темной темы */
+.dark .osha-edit-msg-btn {
+    background: rgba(255, 255, 255, 0.06);
+    color: #94A3B8;
+}
+.dark .osha-edit-msg-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #38bdf8;
+}
+
 .osha-msg-container:hover .osha-copy-msg-btn {
     opacity: 1;
 }
