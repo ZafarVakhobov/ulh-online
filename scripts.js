@@ -4112,69 +4112,60 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    const chatBtn = document.getElementById('osha-chat-btn');
-    const closeBtn = document.getElementById('osha-close-btn');
-    const chatModal = document.getElementById('osha-chat-modal');
+    const chatBtn = document.getElementById('osha-btn');
+    const closeBtn = document.getElementById('osha-close');
+    const chatModal = document.getElementById('osha-chat');
     const bubble = document.getElementById('osha-bubble');
-    const messagesContainer = document.getElementById('osha-chat-messages');
-    const inputField = document.getElementById('osha-chat-input');
-    const sendBtn = document.getElementById('osha-send-btn');
+    const messagesContainer = document.getElementById('osha-messages');
+    const inputField = document.getElementById('osha-input');
+    const sendBtn = document.getElementById('osha-send');
 
-    // Адрес вашего безопасного прокси
+    // Адрес вашего Cloudflare Worker
     const WORKER_URL = 'https://ulh-ai-helper.lanigirodesigner.workers.dev/'; 
     const SYSTEM_PROMPT = "Sen ULH (Uzbek Latin Helper) loyihasining rasmiy yordamchisi - Öşa'san. Foydalanuvchilarga yangi o'zbek lotin alifbosi (Ç, Ş, Ğ, Ö) bo'yicha yordam berasan, matnlarni tahrirlaysan, xatolarni to'g'rilaysan. Doim do'stona, qisqa va aniq javob ber.";
 
-    // Инициализация истории из localStorage
     let chatHistory = JSON.parse(localStorage.getItem('oshaChatHistory')) || [];
 
-    // Открытие/Закрытие чата
+    // Открытие чата
     chatBtn.addEventListener('click', () => {
-        chatModal.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-        bubble.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
+        chatModal.classList.remove('osha-hidden');
+        bubble.style.opacity = '0';
+        bubble.style.visibility = 'hidden';
         renderMessages();
         setTimeout(() => inputField.focus(), 300);
     });
 
+    // Закрытие чата
     closeBtn.addEventListener('click', () => {
-        chatModal.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
-        setTimeout(() => bubble.classList.remove('opacity-0', 'scale-90', 'pointer-events-none'), 300);
+        chatModal.classList.add('osha-hidden');
+        setTimeout(() => {
+            bubble.style.opacity = '1';
+            bubble.style.visibility = 'visible';
+        }, 300);
     });
 
-    // Автоматическое расширение поля ввода
+    // Авто-высота textarea
     inputField.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight < 96 ? this.scrollHeight : 96) + 'px';
     });
 
-    // Отрисовка сообщений
+    // Отрисовка
     function renderMessages() {
         messagesContainer.innerHTML = '';
-        
         if (chatHistory.length === 0) {
             appendMessage('assistant', "Salom! Men Öşaman. Matningizni tekşiriş, xatolarni töğrilaş yoki yangi alifbo böyiça savollaringiz bölsa, yozing!");
         }
-
         chatHistory.forEach(msg => {
             if (msg.role !== 'system') appendMessage(msg.role, msg.content, false);
         });
         scrollToBottom();
     }
 
-    // Добавление баббла в интерфейс
     function appendMessage(role, content, save = true) {
         const msgDiv = document.createElement('div');
-        msgDiv.className = `flex w-full ${role === 'user' ? 'justify-end' : 'justify-start'}`;
-        
-        const innerClass = role === 'user' 
-            ? 'bg-blue-500 text-white rounded-2xl rounded-br-sm'
-            : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white border border-black/5 dark:border-white/5 rounded-2xl rounded-bl-sm shadow-sm';
-
-        msgDiv.innerHTML = `
-            <div class="max-w-[85%] px-4 py-2.5 text-[14px] leading-relaxed ${innerClass}">
-                ${content.replace(/\n/g, '<br>')}
-            </div>
-        `;
-        
+        msgDiv.className = `osha-msg ${role === 'user' ? 'osha-msg-user' : 'osha-msg-bot'}`;
+        msgDiv.innerHTML = content.replace(/\n/g, '<br>');
         messagesContainer.appendChild(msgDiv);
         scrollToBottom();
 
@@ -4188,7 +4179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    // Отправка сообщения
+    // Отправка запроса к Worker
     async function handleSend() {
         const text = inputField.value.trim();
         if (!text) return;
@@ -4199,21 +4190,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         appendMessage('user', text);
 
-        // Индикатор печати
+        // Анимация печати
         const typingId = 'typing-' + Date.now();
         const typingDiv = document.createElement('div');
         typingDiv.id = typingId;
-        typingDiv.className = 'flex justify-start';
+        typingDiv.className = 'osha-msg osha-msg-bot';
+        typingDiv.style.display = 'flex';
+        typingDiv.style.gap = '4px';
+        typingDiv.style.padding = '14px';
         typingDiv.innerHTML = `
-            <div class="px-4 py-3 bg-white dark:bg-slate-800 rounded-2xl rounded-bl-sm border border-black/5 flex gap-1">
-                <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></div>
-                <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.15s"></div>
-                <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
-            </div>`;
+            <div class="typing-dot"></div>
+            <div class="typing-dot" style="animation-delay: 0.15s"></div>
+            <div class="typing-dot" style="animation-delay: 0.3s"></div>
+        `;
         messagesContainer.appendChild(typingDiv);
         scrollToBottom();
 
-        // Подготовка контекста (10 последних сообщений + System Prompt)
         let apiMessages = [{ role: 'system', content: SYSTEM_PROMPT }];
         const recentHistory = chatHistory.slice(-10);
         apiMessages = apiMessages.concat(recentHistory);
@@ -4221,11 +4213,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(WORKER_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    model: 'qwen/qwen3.8-27b',
+                    model: 'qwen/qwen3.8-27b', // Ваша модель
                     messages: apiMessages,
                     temperature: 0.6,
                     max_tokens: 1024
@@ -4235,24 +4225,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             document.getElementById(typingId).remove();
             
-            // Проверка структуры ответа (в зависимости от того, как воркер возвращает данные)
             if (data.choices && data.choices[0]) {
                 appendMessage('assistant', data.choices[0].message.content);
             } else if (data.message) {
                 appendMessage('assistant', data.message);
             } else {
-                appendMessage('assistant', "Keçirasiz, xatolik yuz berdi. Iltimos, qaytadan urinib köring.");
+                appendMessage('assistant', "Keçirasiz, xatolik yuz berdi. Qaytadan urinib köring.");
             }
         } catch (error) {
             document.getElementById(typingId).remove();
-            appendMessage('assistant', "Internet ulanishini tekshiring yoki keyinroq urinib ko'ring.");
+            appendMessage('assistant', "Internet ulanişini tekşiring yoki keyinroq urinib köring.");
         }
 
         sendBtn.disabled = false;
         inputField.focus();
     }
 
-    // Обработчики событий
     sendBtn.addEventListener('click', handleSend);
     inputField.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
