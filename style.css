@@ -4622,6 +4622,80 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 #osha-close:hover { color: #475569 !important; }
 .dark #osha-close:hover { color: #ffffff !important; }
 
+/* 6.5 КНОПКА ОЧИСТКИ ЧАТА И МЕНЮ ПОДТВЕРЖДЕНИЯ */
+        .osha-header-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            position: relative !important;
+        }
+
+        #osha-clear-btn {
+            background: transparent !important; border: none !important; cursor: pointer !important;
+            color: #94a3b8 !important; padding: 4px !important; transition: color 0.2s !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+        }
+        #osha-clear-btn:hover { color: #f43f5e !important; }
+        .dark #osha-clear-btn:hover { color: #fb7185 !important; }
+
+        #osha-clear-confirm {
+            position: absolute !important;
+            top: calc(100% + 4px) !important;
+            right: 0 !important;
+            width: 220px !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 12px !important;
+            padding: 12px !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transform: translateY(-5px) !important;
+            transition: all 0.2s ease !important;
+            z-index: 1000001 !important;
+        }
+        .dark #osha-clear-confirm { background: #1e293b !important; border-color: #334155 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important; }
+        
+        #osha-clear-confirm.show {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: translateY(0) !important;
+        }
+
+        .osha-confirm-title {
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            color: #1e293b !important;
+            margin-bottom: 10px !important;
+            text-align: center !important;
+            line-height: 1.3 !important;
+        }
+        .dark .osha-confirm-title { color: #f8fafc !important; }
+
+        .osha-confirm-actions {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 6px !important;
+        }
+
+        .osha-confirm-btn {
+            width: 100% !important;
+            padding: 6px 0 !important;
+            border-radius: 8px !important;
+            border: none !important;
+            font-size: 12.5px !important;
+            font-weight: 700 !important;
+            cursor: pointer !important;
+            transition: opacity 0.15s ease !important;
+        }
+        .osha-confirm-btn:hover { opacity: 0.8 !important; }
+        
+        .osha-btn-danger { background: #fee2e2 !important; color: #e11d48 !important; }
+        .dark .osha-btn-danger { background: rgba(225, 29, 72, 0.2) !important; color: #fb7185 !important; }
+        
+        .osha-btn-safe { background: #f1f5f9 !important; color: #475569 !important; }
+        .dark .osha-btn-safe { background: #334155 !important; color: #cbd5e1 !important; }
+
 #osha-messages {
     flex: 1 !important; padding: 16px !important; overflow-y: auto !important;
     display: flex !important; flex-direction: column !important; gap: 12px !important;
