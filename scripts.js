@@ -4051,34 +4051,38 @@ function selectPresetHex(hexVal) {
     if (wrap) wrap.classList.remove("open");
 }
 
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Создаем тултип
     const tooltip = document.createElement('div');
     tooltip.id = 'ulh-tooltip';
     document.body.appendChild(tooltip);
 
+    // Находим все элементы с title
     const elementsWithTitle = document.querySelectorAll('[title]');
 
     elementsWithTitle.forEach(el => {
         el.addEventListener('mouseenter', function(e) {
             const titleText = this.getAttribute('title');
             if (titleText) {
-                // 1. Убираем стандартную системную подсказку
+                // Прячем системный title
                 this.setAttribute('data-ulh-title', titleText);
                 this.removeAttribute('title');
                 
-                // 2. ПРОВЕРКА ТЕМЫ: Ищем класс dark где угодно на странице (на html, body или внутри)
-                const isDarkMode = document.documentElement.classList.contains('dark') || 
-                                   document.body.classList.contains('dark') || 
-                                   document.querySelector('.dark') !== null;
+                // УМНАЯ ПРОВЕРКА ТЕМЫ: 
+                // Смотрим, есть ли класс dark у самого элемента, его родителей, тега html или body
+                // Также проверяем атрибут data-theme (часто используется в современных фреймворках)
+                const isDark = this.closest('.dark') !== null || 
+                               document.documentElement.classList.contains('dark') || 
+                               document.documentElement.getAttribute('data-theme') === 'dark' ||
+                               document.body.classList.contains('dark');
                 
-                // Если темная тема активна — красим тултип в темный
-                if (isDarkMode) {
+                if (isDark) {
                     tooltip.classList.add('ulh-dark-mode');
                 } else {
                     tooltip.classList.remove('ulh-dark-mode');
                 }
                 
-                // 3. Показываем наш тултип
                 tooltip.textContent = titleText;
                 tooltip.classList.add('show');
                 updatePosition(e);
@@ -4092,7 +4096,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el.addEventListener('mouseleave', function() {
             const storedTitle = this.getAttribute('data-ulh-title');
             if (storedTitle) {
-                // Возвращаем родной атрибут
+                // Возвращаем системный title на место
                 this.setAttribute('title', storedTitle);
                 this.removeAttribute('data-ulh-title');
                 
@@ -4102,7 +4106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function updatePosition(e) {
-        // Добавляем отступ от курсора, чтобы текст не перекрывался
+        // Отступ 15px, чтобы мышка не перекрывала текст
         tooltip.style.transform = `translate(${e.clientX + 15}px, ${e.clientY + 15}px)`;
     }
 });
