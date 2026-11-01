@@ -4500,7 +4500,7 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     top: 0;
     left: 0;
     pointer-events: none;
-    z-index: 99999;
+    z-index: 999999;
     padding: 6px 12px;
     border-radius: 8px;
     font-family: 'Manrope', sans-serif;
@@ -4508,20 +4508,20 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     font-weight: 500;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
+    transition: opacity 0.2s ease, visibility 0.2s ease, background-color 0.2s, color 0.2s;
     backdrop-filter: blur(4px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     will-change: transform;
     
     background-color: rgba(255, 255, 255, 0.7);
-    color: #000000;
+    color: #0f172a;
     border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-/* Темная тема (теперь JS сам будет добавлять этот класс тултипу) */
+/* Темная тема */
 #ulh-tooltip.ulh-dark-mode {
     background-color: rgba(30, 41, 59, 0.7);
-    color: #ffffff;
+    color: #f8fafc;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
