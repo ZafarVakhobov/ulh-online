@@ -4230,21 +4230,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (srcBtn && srcModal && srcCloseBtn) {
         srcBtn.addEventListener('click', () => srcModal.classList.add('open'));
         srcCloseBtn.addEventListener('click', () => srcModal.classList.remove('open'));
-        
-        // Закрытие по клику вне окна
         srcModal.addEventListener('click', (e) => {
             if (e.target === srcModal) srcModal.classList.remove('open');
         });
-        
-        // Закрытие по кнопке Esc
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && srcModal.classList.contains('open')) {
-                srcModal.classList.remove('open');
-            }
+            if (e.key === 'Escape' && srcModal.classList.contains('open')) srcModal.classList.remove('open');
         });
     }
 
-    // --- 2. Логика работы с базой данных источников (localStorage) ---
+    // --- 2. База данных и Отрисовка ---
     let academicSources = JSON.parse(localStorage.getItem('ulh-academic-sources')) || [];
     
     const renderSources = () => {
@@ -4255,24 +4249,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const countEl = document.getElementById('sources-count');
         if (countEl) countEl.innerText = academicSources.length;
 
-        // Отрисовываем от новых к старым (reverse)
-        // Отрисовываем от новых к старым (reverse)
         [...academicSources].reverse().forEach(src => {
             const card = document.createElement('div');
-            
-            // ЖЕЛЕЗНАЯ ФИКСАЦИЯ СТИЛЕЙ, чтобы крестик никуда не улетал
             card.className = 'source-card dark:bg-slate-800 dark:border-slate-700';
-            card.style.position = 'relative'; // <-- Это держит крестик внутри карточки!
+            card.style.position = 'relative'; 
             card.style.padding = '12px';
-            card.style.paddingRight = '36px'; // Отступ для крестика, чтобы текст не наезжал
+            card.style.paddingRight = '36px'; 
             card.style.background = '#ffffff';
             card.style.border = '1px solid #e2e8f0';
             card.style.borderRadius = '8px';
             card.style.marginBottom = '12px';
             card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
             
-            // Форматируем предпросмотр по ГОСТ / ВАК
-            const vakFormat = `${src.author ? src.author + ' ' : ''}${src.title} // ${src.journal}. – ${src.year}.` + (src.pages ? ` – S. ${src.pages}.` : '');
+            // НОВОЕ: Определяем префикс страницы в зависимости от сохраненного языка
+            let pagePrefix = 'S.';
+            if (src.lang === 'ru') pagePrefix = 'Стр.';
+            else if (src.lang === 'en') pagePrefix = 'P.';
+
+            const vakFormat = `${src.author ? src.author + ' ' : ''}${src.title} // ${src.journal}. – ${src.year}.` + (src.pages ? ` – ${pagePrefix} ${src.pages}.` : '');
             
             let quoteHtml = '';
             if (src.quote) {
@@ -4287,7 +4281,6 @@ document.addEventListener('DOMContentLoaded', () => {
             list.appendChild(card);
         });
 
-        // Слушатели для кнопок удаления (Крестик)
         document.querySelectorAll('.delete-src-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.target.getAttribute('data-id');
@@ -4298,10 +4291,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // --- 3. Сохранение нового источника ---
+    // --- 3. Сохранение ---
     const saveBtn = document.getElementById('save-source-btn');
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
+            const lang = document.getElementById('src-lang').value; // Захватываем язык
             const author = document.getElementById('src-author').value.trim();
             const title = document.getElementById('src-title').value.trim();
             const journal = document.getElementById('src-journal').value.trim();
@@ -4316,44 +4310,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const newSource = {
                 id: Date.now().toString(),
-                author, title, journal, year, pages, quote
+                lang, author, title, journal, year, pages, quote // Добавили lang в объект
             };
 
             academicSources.push(newSource);
             localStorage.setItem('ulh-academic-sources', JSON.stringify(academicSources));
             renderSources();
 
-            // Очищаем форму после сохранения
-            document.querySelectorAll('.src-input').forEach(input => input.value = '');
+            // Очищаем форму (кроме выбора языка)
+            document.querySelectorAll('.src-input:not(#src-lang)').forEach(input => input.value = '');
         });
     }
 
-    // --- 4. Массовый экспорт списка литературы (VAK) ---
+    // --- 4. Экспорт ---
     const exportBtn = document.getElementById('export-vak-btn');
     if (exportBtn) {
         exportBtn.addEventListener('click', () => {
             if (academicSources.length === 0) return;
             
-            // Алфавитная сортировка по автору или названию
             const sortedSources = [...academicSources].sort((a, b) => {
                 const nameA = a.author || a.title;
                 const nameB = b.author || b.title;
                 return nameA.localeCompare(nameB);
             });
 
-            // Формируем финальный текстовый список
             let finalList = "FOYDALANILGAN ADABIYOTLAR RÖYXATI:\n\n";
             sortedSources.forEach((src, index) => {
-                finalList += `${index + 1}. ${src.author ? src.author + ' ' : ''}${src.title} // ${src.journal}. – ${src.year}.` + (src.pages ? ` – S. ${src.pages}.` : '') + `\n`;
+                // НОВОЕ: Определяем префикс страницы при экспорте
+                let pagePrefix = 'S.';
+                if (src.lang === 'ru') pagePrefix = 'Стр.';
+                else if (src.lang === 'en') pagePrefix = 'P.';
+
+                finalList += `${index + 1}. ${src.author ? src.author + ' ' : ''}${src.title} // ${src.journal}. – ${src.year}.` + (src.pages ? ` – ${pagePrefix} ${src.pages}.` : '') + `\n`;
             });
 
-            // Копируем в буфер обмена
             navigator.clipboard.writeText(finalList).then(() => {
                 const originalText = exportBtn.innerText;
                 exportBtn.innerText = "Nusxalandi! ✓";
                 exportBtn.style.background = "#059669";
-                
-                // Возвращаем исходный текст кнопки через 2 секунды
                 setTimeout(() => {
                     exportBtn.innerText = originalText;
                     exportBtn.style.background = "#10B981";
@@ -4362,6 +4356,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Первичная отрисовка при загрузке страницы
     renderSources();
 });
