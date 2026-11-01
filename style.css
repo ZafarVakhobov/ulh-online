@@ -4863,3 +4863,28 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 }
 .osha-info-ok-btn:hover { opacity: 0.8 !important; }
 .dark .osha-info-ok-btn { background: rgba(2, 132, 199, 0.2) !important; color: #38bdf8 !important; }
+
+.osha-info-export-btn {
+    width: 100% !important;
+    padding: 7px 0 !important;
+    margin-top: 6px !important;
+    border-radius: 8px !important;
+    border: none !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    background: #ECFDF5 !important; /* Ваш новый цвет фона */
+    color: #10B981 !important;      /* Ваш новый цвет текста */
+    transition: background-color 0.15s ease, opacity 0.15s ease !important;
+}
+.osha-info-export-btn:hover { 
+    background: #D1FAE5 !important; /* Чуть темнее при наведении */
+}
+
+.dark .osha-info-export-btn { 
+    background: rgba(16, 185, 129, 0.15) !important; /* Адаптация под темную тему */
+    color: #34D399 !important; 
+}
+.dark .osha-info-export-btn:hover { 
+    background: rgba(16, 185, 129, 0.25) !important; 
+}
