@@ -4708,9 +4708,12 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 .osha-msg-bot-wrap { justify-content: flex-start !important; }
 
 .osha-msg {
-    max-width: 85% !important; padding: 10px 14px !important;
-    font-size: 14px !important; line-height: 1.45 !important; word-wrap: break-word !important;
-}
+            max-width: 85% !important; padding: 10px 14px !important;
+            font-size: 14px !important; line-height: 1.45 !important;
+            word-wrap: break-word !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+        }
 .osha-msg-user { background: #3b82f6 !important; color: #ffffff !important; border-radius: 16px 16px 0 16px !important; }
 .osha-msg-bot {
     background: #ffffff !important; color: #1e293b !important;
