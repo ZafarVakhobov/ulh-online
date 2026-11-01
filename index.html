@@ -2085,9 +2085,8 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
             <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                 <!-- ЛЕВАЯ ЧАСТЬ: Форма добавления -->
                 <div style="flex: 1; min-width: 300px; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;" class="dark:bg-slate-800 dark:border-slate-700">
-                    <h4 style="margin: 0 0 16px 0; font-size: 15px; color: #334155; font-weight: 700;" class="dark:text-slate-300">Yangi manba qöşiş</h4>
+                    <h4 style="margin: 0 0 16px 0; font-size: 15px; color: #334155; font-weight: 700;" class="dark:text-slate-300">Yangi manba qöshish</h4>
                     
-                    <!-- НОВОЕ: Выбор языка источника -->
                     <select id="src-lang" class="src-input" style="cursor: pointer; appearance: auto;" title="Manba tilini tanlang">
                         <option value="uz">Özbek</option>
                         <option value="ru">Русский</option>
@@ -2095,13 +2094,20 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                     </select>
 
                     <input type="text" id="src-author" class="src-input" placeholder="Muallif (Masalan: Vaxobov Z.)">
-                    <input type="text" id="src-title" class="src-input" placeholder="Maqola nomi (Raqamli media...)">
-                    <input type="text" id="src-journal" class="src-input" placeholder="Jurnal / Naşriyot / Sayt">
+                    <input type="text" id="src-title" class="src-input" placeholder="Maqola nomi (masalan: Raqamli media...)">
                     
-                    <!-- ИСПРАВЛЕНИЕ: Добавлен margin-bottom: 14px; чтобы отлепить от поля ниже -->
-                    <div style="display: flex; gap: 12px; margin-bottom: 14px;">
-                        <div style="flex: 1;"><input type="text" id="src-year" class="src-input" placeholder="Yil (2026)" style="margin-bottom: 0 !important;"></div>
-                        <div style="flex: 1;"><input type="text" id="src-pages" class="src-input" placeholder="Sahifalar (15-22)" style="margin-bottom: 0 !important;"></div>
+                    <!-- Поле, которое будет отслеживать скрипт -->
+                    <input type="text" id="src-journal" class="src-input" placeholder="Jurnal / Naşriyot / Sayt (https://...)">
+                    
+                    <!-- Блок для печатных источников (по умолчанию ВИДЕН) -->
+                    <div id="print-fields" style="display: flex; gap: 12px; margin-bottom: 14px;">
+                        <div style="flex: 1;"><input type="text" id="src-year" class="src-input" placeholder="Yil (masalan: 2026)" style="margin-bottom: 0 !important;"></div>
+                        <div style="flex: 1;"><input type="text" id="src-pages" class="src-input" placeholder="Sahifalar (masalan: 15-22)" style="margin-bottom: 0 !important;"></div>
+                    </div>
+
+                    <!-- Блок для веб-источников (по умолчанию СКРЫТ) -->
+                    <div id="web-fields" style="display: none; margin-bottom: 14px;">
+                        <input type="date" id="src-date" class="src-input" title="Murojaat qilingan sana" style="margin-bottom: 0 !important; cursor: pointer;">
                     </div>
                     
                     <textarea id="src-quote" class="src-input" placeholder="Muhim iqtibos yoki öz fikringizni saqlab qöying..." style="min-height: 90px; resize: vertical; margin-bottom: 0 !important;"></textarea>
