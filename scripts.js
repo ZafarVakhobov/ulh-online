@@ -4111,4 +4111,107 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+/* ========================================== */
+/* === ЛОГИКА KANBAN ДОСКИ (ОКНО + ЗАДАЧИ) === */
+/* ========================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- 1. ЛОГИКА ОТКРЫТИЯ/ЗАКРЫТИЯ ОКНА ---
+    const kanbanBtn = document.getElementById('kanban-toggle-btn');
+    const kanbanModal = document.getElementById('kanban-modal');
+    const kanbanCloseBtn = document.getElementById('kanban-close-btn');
 
+    if (kanbanBtn && kanbanModal && kanbanCloseBtn) {
+        kanbanBtn.addEventListener('click', () => kanbanModal.classList.add('open'));
+        kanbanCloseBtn.addEventListener('click', () => kanbanModal.classList.remove('open'));
+        kanbanModal.addEventListener('click', (e) => {
+            if (e.target === kanbanModal) kanbanModal.classList.remove('open');
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && kanbanModal.classList.contains('open')) {
+                kanbanModal.classList.remove('open');
+            }
+        });
+    }
+
+    // --- 2. ЛОГИКА ДОСКИ И ПЕРЕТАСКИВАНИЯ ---
+    let tasks = JSON.parse(localStorage.getItem('ulh-kanban-tasks')) || [];
+
+    const renderTasks = () => {
+        document.querySelectorAll('.task-list').forEach(list => list.innerHTML = '');
+        const counts = { todo: 0, inprogress: 0, done: 0 };
+
+        tasks.forEach(task => {
+            counts[task.status]++;
+            const taskEl = document.createElement('div');
+            taskEl.className = `kanban-task ${task.status}`;
+            taskEl.draggable = true;
+            taskEl.dataset.id = task.id;
+            taskEl.innerHTML = `
+                ${task.text}
+                <span class="delete-task" title="Öçiriş">×</span>
+            `;
+            
+            taskEl.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', task.id);
+                setTimeout(() => taskEl.style.opacity = '0.4', 0);
+            });
+            
+            taskEl.addEventListener('dragend', () => taskEl.style.opacity = '1');
+
+            taskEl.querySelector('.delete-task').addEventListener('click', () => {
+                tasks = tasks.filter(t => t.id !== task.id);
+                saveAndRender();
+            });
+
+            const targetList = document.getElementById(`list-${task.status}`);
+            if (targetList) targetList.appendChild(taskEl);
+        });
+
+        document.getElementById('count-todo').innerText = counts.todo;
+        document.getElementById('count-inprogress').innerText = counts.inprogress;
+        document.getElementById('count-done').innerText = counts.done;
+    };
+
+    const saveAndRender = () => {
+        localStorage.setItem('ulh-kanban-tasks', JSON.stringify(tasks));
+        renderTasks();
+    };
+
+    document.querySelectorAll('.task-list').forEach(list => {
+        list.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            list.classList.add('drag-over');
+        });
+        list.addEventListener('dragleave', () => list.classList.remove('drag-over'));
+        list.addEventListener('drop', (e) => {
+            e.preventDefault();
+            list.classList.remove('drag-over');
+            const taskId = e.dataTransfer.getData('text/plain');
+            const newStatus = list.parentElement.dataset.status;
+            
+            const taskIndex = tasks.findIndex(t => t.id === taskId);
+            if (taskIndex !== -1 && tasks[taskIndex].status !== newStatus) {
+                tasks[taskIndex].status = newStatus;
+                saveAndRender();
+            }
+        });
+    });
+
+    document.querySelectorAll('.add-task-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const status = btn.parentElement.dataset.status;
+            const text = prompt("Yangi vazifani kiriting:");
+            if (text && text.trim() !== '') {
+                tasks.push({
+                    id: Date.now().toString(),
+                    text: text.trim(),
+                    status: status
+                });
+                saveAndRender();
+            }
+        });
+    });
+
+    renderTasks();
+});
