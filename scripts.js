@@ -4052,59 +4052,51 @@ function selectPresetHex(hexVal) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Создаем элемент
+    // 1. Создаем сам элемент тултипа "под капотом" и кидаем его в body
     const tooltip = document.createElement('div');
     tooltip.id = 'ulh-tooltip';
-    
-    // 2. Назначаем стили через родные классы Tailwind!
-    // dark:bg-slate-800/80 и dark:text-white автоматически сработают при темной теме
-    tooltip.className = 'fixed top-0 left-0 pointer-events-none z-[99999] px-3 py-1.5 rounded-lg text-[13px] font-medium opacity-0 invisible transition-all duration-200 backdrop-blur-md shadow-md bg-white/80 text-black border border-black/10 dark:bg-slate-800/80 dark:text-white dark:border-white/10';
-    
-    // Добавляем шрифт и аппаратное ускорение
-    tooltip.style.fontFamily = "'Manrope', sans-serif";
-    tooltip.style.willChange = "transform";
-    
     document.body.appendChild(tooltip);
 
-    // 3. Ищем все элементы с title
+    // 2. Ищем абсолютно все элементы на сайте, у которых прописан title
     const elementsWithTitle = document.querySelectorAll('[title]');
 
     elementsWithTitle.forEach(el => {
+        // Когда мышь заходит на элемент
         el.addEventListener('mouseenter', function(e) {
             const titleText = this.getAttribute('title');
             if (titleText) {
-                // Прячем системный тултип
+                // Забираем текст и удаляем атрибут title, чтобы браузер не показывал свой стандартный
                 this.setAttribute('data-ulh-title', titleText);
                 this.removeAttribute('title');
                 
                 tooltip.textContent = titleText;
-                // Показываем наш через Tailwind классы
-                tooltip.classList.remove('opacity-0', 'invisible');
-                tooltip.classList.add('opacity-100', 'visible');
+                tooltip.classList.add('show');
                 updatePosition(e);
             }
         });
 
+        // Когда мышь двигается внутри элемента
         el.addEventListener('mousemove', (e) => {
+            // Используем requestAnimationFrame для 60fps плавности
             requestAnimationFrame(() => updatePosition(e));
         });
 
+        // Когда мышь уходит
         el.addEventListener('mouseleave', function() {
             const storedTitle = this.getAttribute('data-ulh-title');
             if (storedTitle) {
-                // Возвращаем системный тултип на место
+                // Возвращаем родной атрибут на место
                 this.setAttribute('title', storedTitle);
                 this.removeAttribute('data-ulh-title');
                 
-                // Скрываем наш
-                tooltip.classList.remove('opacity-100', 'visible');
-                tooltip.classList.add('opacity-0', 'invisible');
+                tooltip.classList.remove('show');
             }
         });
     });
 
-    // 4. Плавно двигаем за курсором
+    // Функция обновления координат
     function updatePosition(e) {
+        // Добавляем отступ 15px по осям X и Y, чтобы курсор не перекрывал сам текст
         tooltip.style.transform = `translate(${e.clientX + 15}px, ${e.clientY + 15}px)`;
     }
 });
