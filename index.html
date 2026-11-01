@@ -1612,6 +1612,10 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         const messagesContainer = document.getElementById('osha-messages');
         const inputField = document.getElementById('osha-input');
         const sendBtn = document.getElementById('osha-send');
+        // Элементы для окна информации
+        const infoBtn = document.getElementById('osha-info-btn');
+        const infoPopup = document.getElementById('osha-info-popup');
+        const infoOkBtn = document.getElementById('osha-info-ok');
 
         const WORKER_URL = 'https://ulh-ai-helper.lanigirodesigner.workers.dev/'; 
         const SYSTEM_PROMPT = "Sen ULH (Uzbek Latin Helper) loyihasining rasmiy yordamchisi - Öşa'san. Ushbu loyihaning yaratuvchisi va dasturchisi Zafar Vakhobov (LANIGIRO) hisoblanadi. Foydalanuvchilar loyiha muallifi yoki yaratuvchisi haqida so'rashsa, har doim faxr bilan Zafar Vakhobov ekanligini aytasan. Matnlarni tahrirlaysan, xatolarni to'g'rilaysan. Doim do'stona, qisqa va aniq javob ber.";
@@ -1872,6 +1876,32 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                 clearConfirm.classList.remove('show');
             }
         });
+        
+// === ЛОГИКА ОКНА ИНФОРМАЦИИ ===
+        if (infoBtn && infoPopup) {
+            infoBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Закрываем меню очистки, если оно было открыто
+                if (clearConfirm) clearConfirm.classList.remove('show');
+                // Переключаем показ инфо-окошка
+                infoPopup.classList.toggle('show');
+            });
+
+            if (infoOkBtn) {
+                infoOkBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    infoPopup.classList.remove('show');
+                });
+            }
+
+            // Закрывать инфо-окошко при клике в любое другое место
+            document.addEventListener('click', (e) => {
+                if (infoPopup.classList.contains('show') && !infoPopup.contains(e.target) && e.target !== infoBtn) {
+                    infoPopup.classList.remove('show');
+                }
+            });
+        }
+        
     });
     </script>
 </div>
