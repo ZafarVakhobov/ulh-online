@@ -1307,156 +1307,7 @@
     </div>
 
 
-<!-- Öşa AI Chat Widget -->
-<style>
-/* Главный контейнер кнопки */
-#osha-widget {
-    position: fixed; bottom: 24px; right: 24px; z-index: 99999;
-    display: flex; flex-direction: column; align-items: flex-end;
-    font-family: 'Manrope', sans-serif;
-}
-/* Облачко приветствия */
-#osha-bubble {
-    margin-bottom: 12px; padding: 10px 16px;
-    background: #ffffff; color: #1e293b;
-    font-size: 13px; font-weight: 600;
-    border-radius: 16px 16px 0 16px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(0,0,0,0.05);
-    transition: all 0.3s ease; transform-origin: bottom right;
-    animation: osha-bounce 2s infinite;
-}
-.dark #osha-bubble { background: #1e293b; color: #ffffff; border-color: rgba(255,255,255,0.1); }
-/* Кнопка маскота */
-#osha-btn {
-    position: relative; width: 64px; height: 64px; border-radius: 50%;
-    background: linear-gradient(135deg, #3b82f6, #10b981);
-    padding: 3px; cursor: pointer; border: none; outline: none;
-    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
-    transition: transform 0.2s;
-}
-#osha-btn:hover { transform: scale(1.08); }
-#osha-btn-inner {
-    width: 100%; height: 100%; background: #ffffff; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; overflow: hidden;
-}
-.dark #osha-btn-inner { background: #0f172a; }
-#osha-btn img { width: 46px; height: 46px; object-fit: contain; }
-/* Зеленый индикатор сети */
-#osha-online {
-    position: absolute; bottom: 2px; right: 2px;
-    width: 14px; height: 14px; background: #22c55e;
-    border: 2px solid #ffffff; border-radius: 50%;
-}
-.dark #osha-online { border-color: #0f172a; }
 
-/* Модальное окно чата */
-#osha-chat {
-    position: fixed; bottom: 100px; right: 24px;
-    width: 360px; height: 520px; z-index: 100000;
-    background: #ffffff; border-radius: 20px;
-    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15);
-    border: 1px solid rgba(0,0,0,0.08);
-    display: flex; flex-direction: column;
-    font-family: 'Manrope', sans-serif;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.dark #osha-chat { background: #0f172a; border-color: rgba(255,255,255,0.1); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5); }
-/* Шапка чата */
-#osha-chat-header {
-    padding: 16px; display: flex; justify-content: space-between; align-items: center;
-    background: #f8fafc; border-radius: 20px 20px 0 0;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-}
-.dark #osha-chat-header { background: #1e293b; border-bottom-color: rgba(255,255,255,0.05); }
-#osha-chat-header h3 { margin: 0; font-size: 15px; color: #1e293b; font-weight: 700; }
-.dark #osha-chat-header h3 { color: #ffffff; }
-#osha-chat-header p { margin: 0; font-size: 11px; color: #10b981; font-weight: 600; }
-#osha-close { background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px; transition: color 0.2s; }
-#osha-close:hover { color: #475569; }
-.dark #osha-close:hover { color: #ffffff; }
-/* Тело чата */
-#osha-messages {
-    flex: 1; padding: 16px; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 12px;
-    background: rgba(248, 250, 252, 0.5);
-}
-.dark #osha-messages { background: rgba(15, 23, 42, 0.5); }
-/* Стили скроллбара */
-#osha-messages::-webkit-scrollbar { width: 4px; }
-#osha-messages::-webkit-scrollbar-track { background: transparent; }
-#osha-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.dark #osha-messages::-webkit-scrollbar-thumb { background: #475569; }
-/* Ввод текста */
-#osha-chat-footer {
-    padding: 12px; display: flex; gap: 8px; align-items: flex-end;
-    background: #ffffff; border-radius: 0 0 20px 20px;
-    border-top: 1px solid rgba(0,0,0,0.05);
-}
-.dark #osha-chat-footer { background: #0f172a; border-top-color: rgba(255,255,255,0.05); }
-#osha-input {
-    flex: 1; padding: 10px 14px; background: #f1f5f9;
-    border: none; border-radius: 12px; font-size: 14px; color: #1e293b;
-    resize: none; outline: none; max-height: 96px; font-family: inherit;
-}
-.dark #osha-input { background: #1e293b; color: #f8fafc; }
-#osha-send {
-    background: #3b82f6; color: white; border: none; border-radius: 12px;
-    width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: background 0.2s; flex-shrink: 0;
-}
-#osha-send:hover { background: #2563eb; }
-#osha-send:disabled { opacity: 0.5; cursor: not-allowed; }
-/* Бабблы сообщений */
-.osha-msg { max-width: 85%; padding: 10px 14px; font-size: 14px; line-height: 1.45; }
-.osha-msg-user { background: #3b82f6; color: #ffffff; border-radius: 16px 16px 0 16px; align-self: flex-end; }
-.osha-msg-bot { background: #ffffff; color: #1e293b; border-radius: 16px 16px 16px 0; align-self: flex-start; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-.dark .osha-msg-bot { background: #1e293b; color: #f8fafc; border-color: rgba(255,255,255,0.05); }
-
-/* Анимации и скрытие */
-.osha-hidden { opacity: 0; visibility: hidden; transform: translateY(20px) scale(0.95); pointer-events: none; }
-@keyframes osha-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-.typing-dot { width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; animation: osha-bounce 1s infinite; }
-</style>
-
-<!-- HTML виджета -->
-<div id="osha-widget">
-    <div id="osha-bubble">Men Sizga yordam berişga tayyorman! 💙</div>
-    <button id="osha-btn">
-        <div id="osha-btn-inner">
-            <!-- Вставьте сюда правильный путь к вашему маскоту -->
-            <img src="./mascot.png" alt="Öşa"> 
-        </div>
-        <div id="osha-online"></div>
-    </button>
-</div>
-
-<div id="osha-chat" class="osha-hidden">
-    <div id="osha-chat-header">
-        <div style="display:flex; align-items:center; gap:12px;">
-            <div style="width:40px; height:40px; border-radius:50%; background:rgba(59,130,246,0.1); display:flex; align-items:center; justify-content:center;">
-                <!-- И сюда тоже путь к маскоту -->
-                <img src="./mascot.png" alt="Öşa" style="width:28px; height:28px; object-fit:contain;">
-            </div>
-            <div>
-                <h3>Öşa AI</h3>
-                <p>ULH Yordamchisi</p>
-            </div>
-        </div>
-        <button id="osha-close">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-        </button>
-    </div>
-    
-    <div id="osha-messages"></div>
-    
-    <div id="osha-chat-footer">
-        <textarea id="osha-input" rows="1" placeholder="Savolingizni yozing..."></textarea>
-        <button id="osha-send">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(45deg); margin-right: 2px;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-        </button>
-    </div>
-</div>
     
     
     <div class="container">
@@ -1686,7 +1537,379 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
 
     <script src="./scripts.js" defer></script>
 
+<!-- ================= ÖŞA AI WIDGET ================= -->
+<!-- Вставлять строго перед </body> -->
+<div id="osha-ai-widget-root">
+    <style>
+        /* 1. ЖЕСТКИЙ СБРОС СТИЛЕЙ ТАЙЛВИНДА ДЛЯ ВИДЖЕТА */
+        #osha-ai-widget-root, #osha-ai-widget-root * {
+            box-sizing: border-box !important;
+            margin: 0; padding: 0;
+            font-family: 'Manrope', sans-serif;
+            outline: none;
+        }
 
+        /* 2. КНОПКА МАСКОТА */
+        #osha-btn {
+            position: fixed !important;
+            bottom: 24px !important;
+            right: 24px !important;
+            width: 64px !important;
+            height: 64px !important;
+            border-radius: 50% !important;
+            background: linear-gradient(135deg, #3b82f6, #10b981) !important;
+            padding: 3px !important;
+            cursor: pointer !important;
+            border: none !important;
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5) !important;
+            transition: transform 0.2s !important;
+            z-index: 999999 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        #osha-btn:hover { transform: scale(1.08) !important; }
+        
+        #osha-btn-inner {
+            width: 100% !important; height: 100% !important;
+            background: #ffffff !important;
+            border-radius: 50% !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+            overflow: hidden !important;
+        }
+        .dark #osha-btn-inner { background: #0f172a !important; }
+        
+        #osha-btn-inner img {
+            width: 46px !important; height: 46px !important;
+            object-fit: contain !important; display: block !important;
+        }
+
+        /* 3. ИНДИКАТОР ОНЛАЙН */
+        #osha-online {
+            position: absolute !important;
+            bottom: 2px !important; right: 2px !important;
+            width: 14px !important; height: 14px !important;
+            background: #22c55e !important;
+            border: 2px solid #ffffff !important;
+            border-radius: 50% !important;
+        }
+        .dark #osha-online { border-color: #0f172a !important; }
+
+        /* 4. ПРИВЕТСТВЕННОЕ ОБЛАЧКО */
+        #osha-bubble {
+            position: fixed !important;
+            bottom: 100px !important;
+            right: 24px !important;
+            padding: 10px 16px !important;
+            background: #ffffff !important; color: #1e293b !important;
+            font-size: 13px !important; font-weight: 600 !important;
+            border-radius: 16px 16px 0 16px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15) !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+            transition: all 0.3s ease !important;
+            transform-origin: bottom right !important;
+            animation: osha-bounce 2s infinite !important;
+            z-index: 999998 !important;
+        }
+        .dark #osha-bubble { background: #1e293b !important; color: #ffffff !important; border-color: rgba(255,255,255,0.1) !important; }
+
+        /* 5. ОКНО ЧАТА */
+        #osha-chat {
+            position: fixed !important;
+            bottom: 105px !important;
+            right: 24px !important;
+            width: 360px !important;
+            height: 520px !important;
+            max-width: calc(100vw - 48px) !important; /* Защита для телефонов */
+            max-height: calc(100vh - 140px) !important;
+            z-index: 1000000 !important;
+            background: #ffffff !important;
+            border-radius: 20px !important;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2) !important;
+            border: 1px solid rgba(0,0,0,0.08) !important;
+            display: flex !important; flex-direction: column !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .dark #osha-chat { background: #0f172a !important; border-color: rgba(255,255,255,0.1) !important; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6) !important; }
+        
+        #osha-chat.osha-hidden {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transform: translateY(20px) scale(0.95) !important;
+            pointer-events: none !important;
+        }
+
+        /* 6. ШАПКА ЧАТА */
+        #osha-chat-header {
+            padding: 16px !important; display: flex !important; justify-content: space-between !important; align-items: center !important;
+            background: #f8fafc !important; border-radius: 20px 20px 0 0 !important;
+            border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+            flex-shrink: 0 !important;
+        }
+        .dark #osha-chat-header { background: #1e293b !important; border-bottom-color: rgba(255,255,255,0.05) !important; }
+        #osha-chat-header h3 { font-size: 15px !important; color: #1e293b !important; font-weight: 700 !important; line-height: 1.2 !important; }
+        .dark #osha-chat-header h3 { color: #ffffff !important; }
+        #osha-chat-header p { font-size: 11px !important; color: #10b981 !important; font-weight: 600 !important; margin-top: 2px !important; }
+        
+        #osha-close {
+            background: transparent !important; border: none !important; cursor: pointer !important;
+            color: #94a3b8 !important; padding: 4px !important; transition: color 0.2s !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+        }
+        #osha-close:hover { color: #475569 !important; }
+        .dark #osha-close:hover { color: #ffffff !important; }
+
+        /* 7. СООБЩЕНИЯ */
+        #osha-messages {
+            flex: 1 !important; padding: 16px !important; overflow-y: auto !important;
+            display: flex !important; flex-direction: column !important; gap: 12px !important;
+            background: rgba(248, 250, 252, 0.5) !important;
+        }
+        .dark #osha-messages { background: rgba(15, 23, 42, 0.5) !important; }
+        
+        .osha-msg-wrapper { display: flex !important; width: 100% !important; }
+        .osha-msg-user-wrap { justify-content: flex-end !important; }
+        .osha-msg-bot-wrap { justify-content: flex-start !important; }
+
+        .osha-msg {
+            max-width: 85% !important; padding: 10px 14px !important;
+            font-size: 14px !important; line-height: 1.45 !important;
+            word-wrap: break-word !important;
+        }
+        .osha-msg-user {
+            background: #3b82f6 !important; color: #ffffff !important;
+            border-radius: 16px 16px 0 16px !important;
+        }
+        .osha-msg-bot {
+            background: #ffffff !important; color: #1e293b !important;
+            border-radius: 16px 16px 16px 0 !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+        }
+        .dark .osha-msg-bot { background: #1e293b !important; color: #f8fafc !important; border-color: rgba(255,255,255,0.05) !important; }
+
+        /* 8. ПОДВАЛ (ВВОД ТЕКСТА) */
+        #osha-chat-footer {
+            padding: 12px !important; display: flex !important; gap: 8px !important; align-items: flex-end !important;
+            background: #ffffff !important; border-radius: 0 0 20px 20px !important;
+            border-top: 1px solid rgba(0,0,0,0.05) !important;
+            flex-shrink: 0 !important;
+        }
+        .dark #osha-chat-footer { background: #0f172a !important; border-top-color: rgba(255,255,255,0.05) !important; }
+        
+        #osha-input {
+            flex: 1 !important; padding: 10px 14px !important; background: #f1f5f9 !important;
+            border: none !important; border-radius: 12px !important; font-size: 14px !important; color: #1e293b !important;
+            resize: none !important; min-height: 42px !important; max-height: 96px !important;
+            font-family: inherit !important; line-height: 1.4 !important;
+        }
+        .dark #osha-input { background: #1e293b !important; color: #f8fafc !important; }
+        #osha-input::placeholder { color: #94a3b8 !important; }
+        
+        #osha-send {
+            background: #3b82f6 !important; color: white !important;
+            border: none !important; border-radius: 12px !important;
+            width: 42px !important; height: 42px !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+            cursor: pointer !important; transition: background 0.2s !important;
+            flex-shrink: 0 !important;
+        }
+        #osha-send:hover { background: #2563eb !important; }
+        #osha-send:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
+
+        /* Анимации и Скроллбар */
+        @keyframes osha-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .typing-dot { width: 6px !important; height: 6px !important; background: #94a3b8 !important; border-radius: 50% !important; animation: osha-bounce 1s infinite !important; }
+        #osha-messages::-webkit-scrollbar { width: 4px !important; }
+        #osha-messages::-webkit-scrollbar-track { background: transparent !important; }
+        #osha-messages::-webkit-scrollbar-thumb { background: #cbd5e1 !important; border-radius: 4px !important; }
+        .dark #osha-messages::-webkit-scrollbar-thumb { background: #475569 !important; }
+    </style>
+
+    <!-- КНОПКА -->
+    <div id="osha-bubble">Men Sizga yordam berishga tayyorman! 💙</div>
+    <button id="osha-btn">
+        <div id="osha-btn-inner">
+            <!-- ВАЖНО: ПРОВЕРЬТЕ ЭТОТ ПУТЬ -->
+            <img src="./mascot.png" alt="Öşa"> 
+        </div>
+        <div id="osha-online"></div>
+    </button>
+
+    <!-- ЧАТ -->
+    <div id="osha-chat" class="osha-hidden">
+        <div id="osha-chat-header">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:40px; height:40px; border-radius:50%; background:rgba(59,130,246,0.1); display:flex; align-items:center; justify-content:center;">
+                    <!-- ВАЖНО: ПРОВЕРЬТЕ ЭТОТ ПУТЬ -->
+                    <img src="./mascot.png" alt="Öşa" style="width:28px; height:28px; object-fit:contain;">
+                </div>
+                <div>
+                    <h3>Öşa AI</h3>
+                    <p>ULH Yordamçisi</p>
+                </div>
+            </div>
+            <button id="osha-close">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        <div id="osha-messages"></div>
+        
+        <div id="osha-chat-footer">
+            <textarea id="osha-input" rows="1" placeholder="Savolingizni yozing..."></textarea>
+            <button id="osha-send">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(45deg); margin-right: 2px;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- ЛОГИКА -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const chatBtn = document.getElementById('osha-btn');
+        const closeBtn = document.getElementById('osha-close');
+        const chatModal = document.getElementById('osha-chat');
+        const bubble = document.getElementById('osha-bubble');
+        const messagesContainer = document.getElementById('osha-messages');
+        const inputField = document.getElementById('osha-input');
+        const sendBtn = document.getElementById('osha-send');
+
+        const WORKER_URL = 'https://ulh-ai-helper.lanigirodesigner.workers.dev/'; 
+        const SYSTEM_PROMPT = "Sen ULH (Uzbek Latin Helper) loyihasining rasmiy yordamchisi - Öşa'san. Foydalanuvchilarga yangi o'zbek lotin alifbosi (Ç, Ş, Ğ, Ö) bo'yicha yordam berasan, matnlarni tahrirlaysan, xatolarni to'g'rilaysan. Doim do'stona, qisqa va aniq javob ber.";
+
+        let chatHistory = JSON.parse(localStorage.getItem('oshaChatHistory')) || [];
+
+        chatBtn.addEventListener('click', () => {
+            chatModal.classList.remove('osha-hidden');
+            bubble.style.opacity = '0';
+            bubble.style.visibility = 'hidden';
+            renderMessages();
+            setTimeout(() => inputField.focus(), 300);
+        });
+
+        closeBtn.addEventListener('click', () => {
+            chatModal.classList.add('osha-hidden');
+            setTimeout(() => {
+                bubble.style.opacity = '1';
+                bubble.style.visibility = 'visible';
+            }, 300);
+        });
+
+        inputField.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight < 96 ? this.scrollHeight : 96) + 'px';
+        });
+
+        function renderMessages() {
+            messagesContainer.innerHTML = '';
+            if (chatHistory.length === 0) {
+                appendMessage('assistant', "Salom! Men Öşaman. Matningizni tekşiriş, xatolarni töğrilaş yoki yangi alifbo böyiça savollaringiz bölsa, yozing!");
+            }
+            chatHistory.forEach(msg => {
+                if (msg.role !== 'system') appendMessage(msg.role, msg.content, false);
+            });
+            scrollToBottom();
+        }
+
+        function appendMessage(role, content, save = true) {
+            const wrapDiv = document.createElement('div');
+            wrapDiv.className = `osha-msg-wrapper ${role === 'user' ? 'osha-msg-user-wrap' : 'osha-msg-bot-wrap'}`;
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `osha-msg ${role === 'user' ? 'osha-msg-user' : 'osha-msg-bot'}`;
+            msgDiv.innerHTML = content.replace(/\n/g, '<br>');
+            
+            wrapDiv.appendChild(msgDiv);
+            messagesContainer.appendChild(wrapDiv);
+            scrollToBottom();
+
+            if (save) {
+                chatHistory.push({ role, content });
+                localStorage.setItem('oshaChatHistory', JSON.stringify(chatHistory));
+            }
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function handleSend() {
+            const text = inputField.value.trim();
+            if (!text) return;
+
+            inputField.value = '';
+            inputField.style.height = '42px';
+            sendBtn.disabled = true;
+
+            appendMessage('user', text);
+
+            const typingId = 'typing-' + Date.now();
+            const wrapDiv = document.createElement('div');
+            wrapDiv.id = typingId;
+            wrapDiv.className = 'osha-msg-wrapper osha-msg-bot-wrap';
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'osha-msg osha-msg-bot';
+            typingDiv.style.display = 'flex';
+            typingDiv.style.gap = '4px';
+            typingDiv.style.alignItems = 'center';
+            typingDiv.style.padding = '14px';
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot" style="animation-delay: 0.15s"></div>
+                <div class="typing-dot" style="animation-delay: 0.3s"></div>
+            `;
+            wrapDiv.appendChild(typingDiv);
+            messagesContainer.appendChild(wrapDiv);
+            scrollToBottom();
+
+            let apiMessages = [{ role: 'system', content: SYSTEM_PROMPT }];
+            const recentHistory = chatHistory.slice(-10);
+            apiMessages = apiMessages.concat(recentHistory);
+
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'qwen/qwen3.8-27b',
+                        messages: apiMessages,
+                        temperature: 0.6,
+                        max_tokens: 1024
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById(typingId).remove();
+                
+                if (data.choices && data.choices[0]) {
+                    appendMessage('assistant', data.choices[0].message.content);
+                } else if (data.message) {
+                    appendMessage('assistant', data.message);
+                } else {
+                    appendMessage('assistant', "Keçirasiz, xatolik yuz berdi. Qaytadan urinib köring.");
+                }
+            } catch (error) {
+                document.getElementById(typingId).remove();
+                appendMessage('assistant', "Internet ulanişini tekşiring yoki keyinroq urinib köring.");
+            }
+
+            sendBtn.disabled = false;
+            inputField.focus();
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        inputField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+    });
+    </script>
+</div>
+<!-- ================= END ÖŞA AI WIDGET ================= -->
 
 
 </body>
