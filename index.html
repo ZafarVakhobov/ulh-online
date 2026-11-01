@@ -1712,30 +1712,54 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
             msgDiv.innerHTML = formattedContent;
             containerDiv.appendChild(msgDiv);
 
-            // Кнопка копирования добавляется ТОЛЬКО для сообщений бота (assistant)
+            // Кнопки добавляются ТОЛЬКО для сообщений бота (assistant)
             if (role === 'assistant') {
+                
+                // --- 1. КНОПКА КОПИРОВАНИЯ ---
                 const copyBtn = document.createElement('button');
                 copyBtn.className = 'osha-copy-msg-btn';
                 copyBtn.innerHTML = `
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                    <span class="custom-tooltip">Nusxa oliş</span>
+                    <span class="osha-tooltip">Nusxa oliş</span>
                 `;
 
                 copyBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    
-                    // Копируем оригинальный текст (без HTML-тегов, но с markdown разметкой)
                     navigator.clipboard.writeText(content).then(() => {
-                        const tooltip = copyBtn.querySelector('.custom-tooltip');
+                        const tooltip = copyBtn.querySelector('.osha-tooltip');
                         if (tooltip) {
                             tooltip.textContent = "Nusxalandi ✓";
-                            setTimeout(() => {
-                                tooltip.textContent = "Nusxa oliş";
-                            }, 1400);
+                            setTimeout(() => { tooltip.textContent = "Nusxa oliş"; }, 1400);
                         }
                     }).catch(() => {});
                 });
 
+                // --- 2. КНОПКА РЕДАКТИРОВАНИЯ (КАРАНДАШ) ---
+                const editBtn = document.createElement('button');
+                editBtn.className = 'osha-edit-msg-btn';
+                editBtn.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    <span class="osha-tooltip">Tahrirlash</span>
+                `;
+
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    // Вставляем текст в визуальный AI-редактор
+                    const editorField = document.getElementById('aiResultContent'); 
+                    if (editorField) {
+                        editorField.innerHTML = content.replace(/\n/g, '<br>'); 
+                    }
+
+                    // Открываем модальное окно результатов
+                    const editorModal = document.getElementById('aiResultModalBackdrop');
+                    if (editorModal) {
+                        editorModal.classList.add('open'); 
+                    }
+                });
+
+                // Добавляем обе кнопки в сообщение
+                containerDiv.appendChild(editBtn);
                 containerDiv.appendChild(copyBtn);
             }
             
