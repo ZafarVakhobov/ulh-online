@@ -1663,6 +1663,10 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
             const wrapDiv = document.createElement('div');
             wrapDiv.className = `osha-msg-wrapper ${role === 'user' ? 'osha-msg-user-wrap' : 'osha-msg-bot-wrap'}`;
             
+            // Контейнер для сообщения и кнопки
+            const containerDiv = document.createElement('div');
+            containerDiv.className = 'osha-msg-container';
+
             const msgDiv = document.createElement('div');
             msgDiv.className = `osha-msg ${role === 'user' ? 'osha-msg-user' : 'osha-msg-bot'}`;
             
@@ -1689,8 +1693,36 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                 .replace(/\n/g, '<br>');
 
             msgDiv.innerHTML = formattedContent;
+            containerDiv.appendChild(msgDiv);
+
+            // Кнопка копирования добавляется ТОЛЬКО для сообщений бота (assistant)
+            if (role === 'assistant') {
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'osha-copy-msg-btn';
+                copyBtn.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span class="custom-tooltip">Nusxa oliş</span>
+                `;
+
+                copyBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    // Копируем оригинальный текст (без HTML-тегов, но с markdown разметкой)
+                    navigator.clipboard.writeText(content).then(() => {
+                        const tooltip = copyBtn.querySelector('.custom-tooltip');
+                        if (tooltip) {
+                            tooltip.textContent = "Nusxalandi ✓";
+                            setTimeout(() => {
+                                tooltip.textContent = "Nusxa oliş";
+                            }, 1400);
+                        }
+                    }).catch(() => {});
+                });
+
+                containerDiv.appendChild(copyBtn);
+            }
             
-            wrapDiv.appendChild(msgDiv);
+            wrapDiv.appendChild(containerDiv);
             messagesContainer.appendChild(wrapDiv);
             scrollToBottom();
 
