@@ -4534,3 +4534,145 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+
+
+
+/* ================= ÖŞA AI WIDGET STYLES ================= */
+#osha-ai-widget-root, #osha-ai-widget-root * {
+    box-sizing: border-box !important;
+    margin: 0; padding: 0;
+    font-family: 'Manrope', sans-serif;
+    outline: none;
+}
+
+#osha-btn {
+    position: fixed !important; bottom: 24px !important; right: 24px !important;
+    width: 64px !important; height: 64px !important; border-radius: 50% !important;
+    background: linear-gradient(135deg, #3b82f6, #10b981) !important;
+    padding: 3px !important; cursor: pointer !important; border: none !important;
+    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5) !important;
+    transition: transform 0.2s !important; z-index: 999999 !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+}
+#osha-btn:hover { transform: scale(1.08) !important; }
+
+#osha-btn-inner {
+    width: 100% !important; height: 100% !important; background: #ffffff !important;
+    border-radius: 50% !important; display: flex !important; align-items: center !important;
+    justify-content: center !important; overflow: hidden !important;
+}
+.dark #osha-btn-inner { background: #0f172a !important; }
+
+#osha-btn-inner img {
+    width: 46px !important; height: 46px !important;
+    object-fit: contain !important; display: block !important;
+}
+
+#osha-online {
+    position: absolute !important; bottom: 2px !important; right: 2px !important;
+    width: 14px !important; height: 14px !important; background: #22c55e !important;
+    border: 2px solid #ffffff !important; border-radius: 50% !important;
+}
+.dark #osha-online { border-color: #0f172a !important; }
+
+#osha-bubble {
+    position: fixed !important; bottom: 100px !important; right: 24px !important;
+    padding: 10px 16px !important; background: #ffffff !important; color: #1e293b !important;
+    font-size: 13px !important; font-weight: 600 !important;
+    border-radius: 16px 16px 0 16px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+    transition: all 0.3s ease !important; transform-origin: bottom right !important;
+    animation: osha-bounce 2s infinite !important; z-index: 999998 !important;
+}
+.dark #osha-bubble { background: #1e293b !important; color: #ffffff !important; border-color: rgba(255,255,255,0.1) !important; }
+
+#osha-chat {
+    position: fixed !important; bottom: 105px !important; right: 24px !important;
+    width: 360px !important; height: 520px !important;
+    max-width: calc(100vw - 48px) !important; max-height: calc(100vh - 140px) !important;
+    z-index: 1000000 !important; background: #ffffff !important;
+    border-radius: 20px !important; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2) !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+    display: flex !important; flex-direction: column !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.dark #osha-chat { background: #0f172a !important; border-color: rgba(255,255,255,0.1) !important; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6) !important; }
+
+#osha-chat.osha-hidden {
+    opacity: 0 !important; visibility: hidden !important;
+    transform: translateY(20px) scale(0.95) !important; pointer-events: none !important;
+}
+
+#osha-chat-header {
+    padding: 16px !important; display: flex !important; justify-content: space-between !important;
+    align-items: center !important; background: #f8fafc !important; border-radius: 20px 20px 0 0 !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important; flex-shrink: 0 !important;
+}
+.dark #osha-chat-header { background: #1e293b !important; border-bottom-color: rgba(255,255,255,0.05) !important; }
+#osha-chat-header h3 { font-size: 15px !important; color: #1e293b !important; font-weight: 700 !important; line-height: 1.2 !important; margin: 0 !important; }
+.dark #osha-chat-header h3 { color: #ffffff !important; }
+#osha-chat-header p { font-size: 11px !important; color: #10b981 !important; font-weight: 600 !important; margin: 2px 0 0 0 !important; }
+
+#osha-close {
+    background: transparent !important; border: none !important; cursor: pointer !important;
+    color: #94a3b8 !important; padding: 4px !important; transition: color 0.2s !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+}
+#osha-close:hover { color: #475569 !important; }
+.dark #osha-close:hover { color: #ffffff !important; }
+
+#osha-messages {
+    flex: 1 !important; padding: 16px !important; overflow-y: auto !important;
+    display: flex !important; flex-direction: column !important; gap: 12px !important;
+    background: rgba(248, 250, 252, 0.5) !important;
+}
+.dark #osha-messages { background: rgba(15, 23, 42, 0.5) !important; }
+
+.osha-msg-wrapper { display: flex !important; width: 100% !important; }
+.osha-msg-user-wrap { justify-content: flex-end !important; }
+.osha-msg-bot-wrap { justify-content: flex-start !important; }
+
+.osha-msg {
+    max-width: 85% !important; padding: 10px 14px !important;
+    font-size: 14px !important; line-height: 1.45 !important; word-wrap: break-word !important;
+}
+.osha-msg-user { background: #3b82f6 !important; color: #ffffff !important; border-radius: 16px 16px 0 16px !important; }
+.osha-msg-bot {
+    background: #ffffff !important; color: #1e293b !important;
+    border-radius: 16px 16px 16px 0 !important; border: 1px solid rgba(0,0,0,0.05) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+}
+.dark .osha-msg-bot { background: #1e293b !important; color: #f8fafc !important; border-color: rgba(255,255,255,0.05) !important; }
+
+#osha-chat-footer {
+    padding: 12px !important; display: flex !important; gap: 8px !important; align-items: flex-end !important;
+    background: #ffffff !important; border-radius: 0 0 20px 20px !important;
+    border-top: 1px solid rgba(0,0,0,0.05) !important; flex-shrink: 0 !important;
+}
+.dark #osha-chat-footer { background: #0f172a !important; border-top-color: rgba(255,255,255,0.05) !important; }
+
+#osha-input {
+    flex: 1 !important; padding: 10px 14px !important; background: #f1f5f9 !important;
+    border: none !important; border-radius: 12px !important; font-size: 14px !important; color: #1e293b !important;
+    resize: none !important; min-height: 42px !important; max-height: 96px !important;
+    font-family: inherit !important; line-height: 1.4 !important;
+}
+.dark #osha-input { background: #1e293b !important; color: #f8fafc !important; }
+#osha-input::placeholder { color: #94a3b8 !important; }
+
+#osha-send {
+    background: #3b82f6 !important; color: white !important; border: none !important;
+    border-radius: 12px !important; width: 42px !important; height: 42px !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+    cursor: pointer !important; transition: background 0.2s !important; flex-shrink: 0 !important;
+}
+#osha-send:hover { background: #2563eb !important; }
+#osha-send:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
+
+@keyframes osha-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.typing-dot { width: 6px !important; height: 6px !important; background: #94a3b8 !important; border-radius: 50% !important; animation: osha-bounce 1s infinite !important; }
+#osha-messages::-webkit-scrollbar { width: 4px !important; }
+#osha-messages::-webkit-scrollbar-track { background: transparent !important; }
+#osha-messages::-webkit-scrollbar-thumb { background: #cbd5e1 !important; border-radius: 4px !important; }
+.dark #osha-messages::-webkit-scrollbar-thumb { background: #475569 !important; }
