@@ -4238,7 +4238,60 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 2. База данных и Отрисовка ---
+    // --- 2. Динамическое переключение полей (Print vs Web) ---
+    const journalInput = document.getElementById('src-journal');
+    const printFields = document.getElementById('print-fields');
+    const webFields = document.getElementById('web-fields');
+    const dateInput = document.getElementById('src-date');
+
+    if (journalInput && printFields && webFields && dateInput) {
+        journalInput.addEventListener('input', (e) => {
+            const val = e.target.value.trim().toLowerCase();
+            // Если введено http:// или https://
+            if (val.startsWith('http://') || val.startsWith('https://')) {
+                printFields.style.display = 'none';
+                webFields.style.display = 'block';
+                // Если дата еще не выбрана, ставим сегодняшнюю
+                if (!dateInput.value) {
+                    dateInput.valueAsDate = new Date();
+                }
+            } else {
+                printFields.style.display = 'flex';
+                webFields.style.display = 'none';
+            }
+        });
+    }
+
+    // --- Функция правильного форматирования текста (ВАК) ---
+    const formatSourceText = (src) => {
+        let text = `${src.author ? src.author + ' ' : ''}${src.title} // ${src.journal}.`;
+        
+        if (src.isWeb) {
+            // Форматируем дату из YYYY-MM-DD в DD.MM.YYYY
+            let dateStr = src.accessDate || '';
+            if (dateStr.includes('-')) {
+                const parts = dateStr.split('-');
+                dateStr = `${parts[2]}.${parts[1]}.${parts[0]}`; 
+            }
+            
+            // Подставляем язык для даты обращения
+            let accessText = `(murojaat qilingan sana: ${dateStr})`;
+            if (src.lang === 'ru') accessText = `(дата обращения: ${dateStr})`;
+            else if (src.lang === 'en') accessText = `(accessed: ${dateStr})`;
+            
+            text += ` – ${accessText}.`;
+        } else {
+            // Подставляем язык для страниц
+            let pagePrefix = 'S.';
+            if (src.lang === 'ru') pagePrefix = 'Стр.';
+            else if (src.lang === 'en') pagePrefix = 'P.';
+            
+            text += ` – ${src.year}.` + (src.pages ? ` – ${pagePrefix} ${src.pages}.` : '');
+        }
+        return text;
+    };
+
+    // --- 3. База данных и Отрисовка ---
     let academicSources = JSON.parse(localStorage.getItem('ulh-academic-sources')) || [];
     
     const renderSources = () => {
@@ -4261,12 +4314,8 @@ document.addEventListener('DOMContentLoaded', () => {
             card.style.marginBottom = '12px';
             card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
             
-            // НОВОЕ: Определяем префикс страницы в зависимости от сохраненного языка
-            let pagePrefix = 'S.';
-            if (src.lang === 'ru') pagePrefix = 'Стр.';
-            else if (src.lang === 'en') pagePrefix = 'P.';
-
-            const vakFormat = `${src.author ? src.author + ' ' : ''}${src.title} // ${src.journal}. – ${src.year}.` + (src.pages ? ` – ${pagePrefix} ${src.pages}.` : '');
+            // Получаем отформатированный текст через нашу функцию
+            const vakFormat = formatSourceText(src);
             
             let quoteHtml = '';
             if (src.quote) {
@@ -4291,17 +4340,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // --- 3. Сохранение ---
+    // --- 4. Сохранение ---
     const saveBtn = document.getElementById('save-source-btn');
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
-            const lang = document.getElementById('src-lang').value; // Захватываем язык
+            const lang = document.getElementById('src-lang').value; 
             const author = document.getElementById('src-author').value.trim();
             const title = document.getElementById('src-title').value.trim();
             const journal = document.getElementById('src-journal').value.trim();
             const year = document.getElementById('src-year').value.trim();
             const pages = document.getElementById('src-pages').value.trim();
             const quote = document.getElementById('src-quote').value.trim();
+            
+            // Определяем, был ли это веб-источник
+            const isWeb = webFields && webFields.style.display === 'block';
+            const accessDate = dateInput ? dateInput.value : '';
 
             if (!title) {
                 alert("Iltimos, maqola yoki kitob nomini kiriting!");
@@ -4310,19 +4363,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const newSource = {
                 id: Date.now().toString(),
-                lang, author, title, journal, year, pages, quote // Добавили lang в объект
+                lang, author, title, journal, year, pages, quote, isWeb, accessDate
             };
 
             academicSources.push(newSource);
             localStorage.setItem('ulh-academic-sources', JSON.stringify(academicSources));
             renderSources();
 
-            // Очищаем форму (кроме выбора языка)
+            // Очищаем форму
             document.querySelectorAll('.src-input:not(#src-lang)').forEach(input => input.value = '');
+            // Возвращаем поля в исходное состояние (печатный вид)
+            if (printFields && webFields) {
+                printFields.style.display = 'flex';
+                webFields.style.display = 'none';
+            }
         });
     }
 
-    // --- 4. Экспорт ---
+    // --- 5. Экспорт ---
     const exportBtn = document.getElementById('export-vak-btn');
     if (exportBtn) {
         exportBtn.addEventListener('click', () => {
@@ -4336,12 +4394,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let finalList = "FOYDALANILGAN ADABIYOTLAR RÖYXATI:\n\n";
             sortedSources.forEach((src, index) => {
-                // НОВОЕ: Определяем префикс страницы при экспорте
-                let pagePrefix = 'S.';
-                if (src.lang === 'ru') pagePrefix = 'Стр.';
-                else if (src.lang === 'en') pagePrefix = 'P.';
-
-                finalList += `${index + 1}. ${src.author ? src.author + ' ' : ''}${src.title} // ${src.journal}. – ${src.year}.` + (src.pages ? ` – ${pagePrefix} ${src.pages}.` : '') + `\n`;
+                finalList += `${index + 1}. ${formatSourceText(src)}\n`;
             });
 
             navigator.clipboard.writeText(finalList).then(() => {
