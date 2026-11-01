@@ -1606,7 +1606,27 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         const SYSTEM_PROMPT = "Sen ULH (Uzbek Latin Helper) loyihasining rasmiy yordamchisi - Öşa'san. Foydalanuvchilarga yangi o'zbek lotin alifbosi (Ç, Ş, Ğ, Ö) bo'yicha yordam berasan, matnlarni tahrirlaysan, xatolarni to'g'rilaysan. Doim do'stona, qisqa va aniq javob ber.";
 
         let chatHistory = JSON.parse(localStorage.getItem('oshaChatHistory')) || [];
-
+// === ПРИНУДИТЕЛЬНЫЙ ФИЛЬТР НОВОГО АЛФАВИТА ===
+        function applyNewAlphabet(text) {
+            if (!text) return "";
+            // Если текст содержит кириллицу (русский язык), мы его не ломаем
+            if (/[А-Яа-яЁё]/.test(text)) return text.trim(); 
+            
+            // Жестко заменяем все вариации узбекских букв на новые стандарты
+            return text
+                .replace(/O['‘’`ʻʼ]/g, "Ö")
+                .replace(/o['‘’`ʻʼ]/g, "ö")
+                .replace(/G['‘’`ʻʼ]/g, "Ğ")
+                .replace(/g['‘’`ʻʼ]/g, "ğ")
+                .replace(/Sh/g, "Ş")
+                .replace(/SH/g, "Ş")
+                .replace(/sh/g, "ş")
+                .replace(/Ch/g, "Ç")
+                .replace(/CH/g, "Ç")
+                .replace(/ch/g, "ç")
+                .trim();
+        }
+        
         chatBtn.addEventListener('click', () => {
             chatModal.classList.remove('osha-hidden');
             bubble.style.opacity = '0';
@@ -1669,7 +1689,7 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
             inputField.style.height = '42px';
             sendBtn.disabled = true;
 
-            appendMessage('user', text);
+            appendMessage('user', applyNewAlphabet(text));
 
             const typingId = 'typing-' + Date.now();
             const wrapDiv = document.createElement('div');
@@ -1717,19 +1737,16 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                 const data = await response.json();
                 document.getElementById(typingId).remove();
                 
-                // УМНАЯ ПРОВЕРКА ОТВЕТОВ:
+                // УМНАЯ ПРОВЕРКА ОТВЕТОВ (С ФИЛЬТРОМ БУКВ):
                 if (data.choices && data.choices[0] && data.choices[0].message) {
-                    // Стандартный формат OpenAI (OpenRouter / Groq)
-                    appendMessage('assistant', data.choices[0].message.content);
+                    appendMessage('assistant', applyNewAlphabet(data.choices[0].message.content));
                 } else if (data.result) {
-                    // Формат вашего воркера, как в основном редакторе
-                    appendMessage('assistant', data.result);
+                    appendMessage('assistant', applyNewAlphabet(data.result));
                 } else if (data.error) {
-                    // ЕСЛИ ОШИБКА РЕАЛЬНАЯ, ВЫВОДИМ ЕЕ В ЧАТ
                     const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
                     appendMessage('assistant', "Xatolik yuz berdi: " + errMsg);
                 } else if (data.message) {
-                    appendMessage('assistant', data.message);
+                    appendMessage('assistant', applyNewAlphabet(data.message));
                 } else {
                     appendMessage('assistant', "Keçirasiz, noma'lum xatolik yuz berdi. Server javobi: " + JSON.stringify(data).substring(0, 50));
                 }
