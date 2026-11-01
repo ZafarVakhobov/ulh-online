@@ -2091,9 +2091,10 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                     <input type="text" id="src-title" class="src-input" placeholder="Maqola nomi (Raqamli media...)">
                     <input type="text" id="src-journal" class="src-input" placeholder="Jurnal / Nashriyot / Sayt">
                     <div style="display: flex; gap: 12px;">
-                        <input type="text" id="src-year" class="src-input" placeholder="Yil (2026)" style="width: 35%;">
-                        <input type="text" id="src-pages" class="src-input" placeholder="Sahifalar (15-22)" style="flex: 1;">
-                    </div>
+    <!-- Оборачиваем в div, чтобы они делили пространство поровну (50 на 50) -->
+    <div style="flex: 1;"><input type="text" id="src-year" class="src-input" placeholder="Yil (2026)" style="margin-bottom: 0 !important;"></div>
+    <div style="flex: 1;"><input type="text" id="src-pages" class="src-input" placeholder="Sahifalar (15-22)" style="margin-bottom: 0 !important;"></div>
+</div>
                     <textarea id="src-quote" class="src-input" placeholder="Muhim iqtibos yoki o'z fikringizni saqlab qo'ying..." style="min-height: 90px; resize: vertical;"></textarea>
                     
                     <!-- ИСПРАВЛЕННАЯ КНОПКА (Новый класс src-save-btn) -->
