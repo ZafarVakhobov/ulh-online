@@ -4052,40 +4052,47 @@ function selectPresetHex(hexVal) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Создаем сам элемент тултипа "под капотом" и кидаем его в body
     const tooltip = document.createElement('div');
     tooltip.id = 'ulh-tooltip';
     document.body.appendChild(tooltip);
 
-    // 2. Ищем абсолютно все элементы на сайте, у которых прописан title
     const elementsWithTitle = document.querySelectorAll('[title]');
 
     elementsWithTitle.forEach(el => {
-        // Когда мышь заходит на элемент
         el.addEventListener('mouseenter', function(e) {
             const titleText = this.getAttribute('title');
             if (titleText) {
-                // Забираем текст и удаляем атрибут title, чтобы браузер не показывал свой стандартный
+                // 1. Убираем стандартную системную подсказку
                 this.setAttribute('data-ulh-title', titleText);
                 this.removeAttribute('title');
                 
+                // 2. ПРОВЕРКА ТЕМЫ: Ищем класс dark где угодно на странице (на html, body или внутри)
+                const isDarkMode = document.documentElement.classList.contains('dark') || 
+                                   document.body.classList.contains('dark') || 
+                                   document.querySelector('.dark') !== null;
+                
+                // Если темная тема активна — красим тултип в темный
+                if (isDarkMode) {
+                    tooltip.classList.add('ulh-dark-mode');
+                } else {
+                    tooltip.classList.remove('ulh-dark-mode');
+                }
+                
+                // 3. Показываем наш тултип
                 tooltip.textContent = titleText;
                 tooltip.classList.add('show');
                 updatePosition(e);
             }
         });
 
-        // Когда мышь двигается внутри элемента
         el.addEventListener('mousemove', (e) => {
-            // Используем requestAnimationFrame для 60fps плавности
             requestAnimationFrame(() => updatePosition(e));
         });
 
-        // Когда мышь уходит
         el.addEventListener('mouseleave', function() {
             const storedTitle = this.getAttribute('data-ulh-title');
             if (storedTitle) {
-                // Возвращаем родной атрибут на место
+                // Возвращаем родной атрибут
                 this.setAttribute('title', storedTitle);
                 this.removeAttribute('data-ulh-title');
                 
@@ -4094,9 +4101,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Функция обновления координат
     function updatePosition(e) {
-        // Добавляем отступ 15px по осям X и Y, чтобы курсор не перекрывал сам текст
+        // Добавляем отступ от курсора, чтобы текст не перекрывался
         tooltip.style.transform = `translate(${e.clientX + 15}px, ${e.clientY + 15}px)`;
     }
 });
