@@ -5018,11 +5018,18 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 /* === СТИЛИ ДЛЯ KANBAN ДОСКИ И ЕЁ ОКНА === */
 /* ========================================== */
 
-/* Плавающая кнопка */
-.kanban-toggle-btn {
+/* === ПАНЕЛЬ ИНСТРУМЕНТОВ (ЛЕВЫЙ НИЖНИЙ УГОЛ) === */
+.bottom-left-tools {
     position: fixed;
     bottom: 24px;
     left: 24px;
+    display: flex;
+    gap: 12px; /* Расстояние между кнопками */
+    z-index: 1000;
+}
+
+/* Зеленая кнопка (Доска) */
+.kanban-toggle-btn {
     background: #10B981; 
     color: white;
     border: none;
@@ -5036,13 +5043,33 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     gap: 8px;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    z-index: 1000;
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
 }
 .kanban-toggle-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(16, 185, 129, 0.45);
     background: #059669;
+}
+
+/* Синяя кнопка (Источники - только иконка) */
+.sources-toggle-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    width: 44px; /* Делаем идеальный квадрат для иконки */
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
+}
+.sources-toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.45);
+    background: #2563eb;
 }
 
 /* Фон модального окна */
@@ -5164,14 +5191,48 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 }
 .add-task-btn:hover { background: rgba(0,0,0,0.08); color: #0f172a; }
 
-/* Темная тема */
-.dark .kanban-modal-content { background: #0f172a; border: 1px solid rgba(255,255,255,0.08); }
-.dark .kanban-close-btn { background: rgba(255,255,255,0.05); color: #94a3b8; }
-.dark .kanban-close-btn:hover { background: rgba(255,255,255,0.1); color: #f8fafc; }
-.dark .kanban-main-title { color: #f8fafc; }
-.dark .kanban-column { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
-.dark .kanban-column-header, .dark .task-count { color: #cbd5e1; background: rgba(255,255,255,0.1); }
-.dark .task-list.drag-over { background: rgba(255,255,255,0.08); border-color: #475569; }
-.dark .kanban-task { background: #1e293b; color: #f1f5f9; box-shadow: 0 4px 6px rgba(0,0,0,0.2); border-left-color: #334155; }
-.dark .add-task-btn { background: rgba(255,255,255,0.05); color: #94a3b8; }
-.dark .add-task-btn:hover { background: rgba(255,255,255,0.1); color: #f8fafc; }
+/* ========================================== */
+/* === ЖЕЛЕЗНАЯ ТЕМНАЯ ТЕМА ДЛЯ KANBAN === */
+/* ========================================== */
+.dark .kanban-modal-content,
+[data-theme="dark"] .kanban-modal-content {
+    background: #0f172a !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+}
+.dark .kanban-main-title,
+[data-theme="dark"] .kanban-main-title {
+    color: #f8fafc !important;
+}
+.dark .kanban-column,
+[data-theme="dark"] .kanban-column {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid rgba(255,255,255,0.05) !important;
+}
+.dark .kanban-column-header,
+.dark .task-count,
+[data-theme="dark"] .kanban-column-header,
+[data-theme="dark"] .task-count {
+    color: #cbd5e1 !important;
+    background: rgba(255,255,255,0.1) !important;
+}
+.dark .kanban-task,
+[data-theme="dark"] .kanban-task {
+    background: #1e293b !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2) !important;
+    border-left-color: #334155 !important;
+}
+.dark .kanban-task.todo, [data-theme="dark"] .kanban-task.todo { border-left-color: #64748b !important; }
+.dark .kanban-task.inprogress, [data-theme="dark"] .kanban-task.inprogress { border-left-color: #0ea5e9 !important; }
+.dark .kanban-task.done, [data-theme="dark"] .kanban-task.done { border-left-color: #10B981 !important; }
+
+.dark .add-task-btn,
+[data-theme="dark"] .add-task-btn {
+    background: rgba(255,255,255,0.05) !important;
+    color: #94a3b8 !important;
+}
+.dark .kanban-close-btn,
+[data-theme="dark"] .kanban-close-btn {
+    background: rgba(255,255,255,0.05) !important;
+    color: #94a3b8 !important;
+}
