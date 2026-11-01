@@ -1572,6 +1572,7 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         </div>
     </div>
 
+    <!-- ЛОГИКА -->
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         const chatBtn = document.getElementById('osha-btn');
@@ -1675,6 +1676,9 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
             const recentHistory = chatHistory.slice(-10);
             apiMessages = apiMessages.concat(recentHistory);
 
+            // На всякий случай форматируем историю в текст, если ваш воркер не понимает массив сообщений
+            let fallbackTextFormat = apiMessages.map(m => `${m.role}: ${m.content}`).join('\n');
+
             try {
                 const response = await fetch(WORKER_URL, {
                     method: 'POST',
@@ -1683,23 +1687,36 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                         model: 'qwen/qwen3.8-27b',
                         messages: apiMessages,
                         temperature: 0.6,
-                        max_tokens: 1024
+                        max_tokens: 1024,
+                        // Добавляем параметры из старого редактора для совместимости
+                        mode: 'chat',
+                        text: fallbackTextFormat,
+                        customPrompt: SYSTEM_PROMPT
                     })
                 });
 
                 const data = await response.json();
                 document.getElementById(typingId).remove();
                 
-                if (data.choices && data.choices[0]) {
+                // УМНАЯ ПРОВЕРКА ОТВЕТОВ:
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    // Стандартный формат OpenAI (OpenRouter / Groq)
                     appendMessage('assistant', data.choices[0].message.content);
+                } else if (data.result) {
+                    // Формат вашего воркера, как в основном редакторе
+                    appendMessage('assistant', data.result);
+                } else if (data.error) {
+                    // ЕСЛИ ОШИБКА РЕАЛЬНАЯ, ВЫВОДИМ ЕЕ В ЧАТ
+                    const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
+                    appendMessage('assistant', "Xatolik yuz berdi: " + errMsg);
                 } else if (data.message) {
                     appendMessage('assistant', data.message);
                 } else {
-                    appendMessage('assistant', "Keçirasiz, xatolik yuz berdi. Qaytadan urinib köring.");
+                    appendMessage('assistant', "Keçirasiz, noma'lum xatolik yuz berdi. Server javobi: " + JSON.stringify(data).substring(0, 50));
                 }
             } catch (error) {
                 document.getElementById(typingId).remove();
-                appendMessage('assistant', "Internet ulanişini tekşiring yoki keyinroq urinib köring.");
+                appendMessage('assistant', "Internet ulanişida xatolik: " + error.message);
             }
 
             sendBtn.disabled = false;
