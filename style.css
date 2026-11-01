@@ -4751,7 +4751,7 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 #osha-messages::-webkit-scrollbar-thumb { background: #cbd5e1 !important; border-radius: 4px !important; }
 .dark #osha-messages::-webkit-scrollbar-thumb { background: #475569 !important; }
 
-/* === КНОПКА КОПИРОВАНИЯ ВНУТРИ СООБЩЕНИЙ БОТА === */
+/* === КНОПКА КОПИРОВАНИЯ И КОНТЕЙНЕР СООБЩЕНИЙ === */
 .osha-msg-container {
     position: relative;
     max-width: 85%;
@@ -4759,10 +4759,11 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     flex-direction: column;
 }
 .osha-msg-user-wrap .osha-msg-container {
-    align-self: flex-end;
+    align-self: flex-end !important;
+    align-items: flex-end !important; /* Прижимает сообщение пользователя вправо */
 }
 .osha-msg-bot-wrap .osha-msg-container {
-    align-self: flex-start;
+    align-self: flex-start !important;
 }
 
 .osha-copy-msg-btn {
@@ -4784,7 +4785,6 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     z-index: 2;
 }
 
-/* Показываем кнопку при наведении на контейнер сообщения */
 .osha-msg-container:hover .osha-copy-msg-btn {
     opacity: 1;
 }
@@ -4794,7 +4794,6 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     color: #0F172A;
 }
 
-/* Поддержка темной темы */
 .dark .osha-copy-msg-btn {
     background: rgba(255, 255, 255, 0.06);
     color: #94A3B8;
