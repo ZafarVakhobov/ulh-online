@@ -1550,6 +1550,7 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         <div id="osha-chat-header">
             <div style="display:flex; align-items:center; gap:12px;">
                 <div style="width:40px; height:40px; border-radius:50%; background:rgba(59,130,246,0.1); display:flex; align-items:center; justify-content:center;">
+                    <!-- ВАЖНО: ПРОВЕРЬТЕ ПУТЬ -->
                     <img src="./mascot.png" alt="Öşa" style="width:28px; height:28px; object-fit:contain;">
                 </div>
                 <div>
@@ -1557,9 +1558,27 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                     <p>ULH Yordamçisi</p>
                 </div>
             </div>
-            <button id="osha-close">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-            </button>
+            
+            <div class="osha-header-actions">
+                <!-- Кнопка корзины -->
+                <button id="osha-clear-btn" title="Çat tarixini öçiriş">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+                
+                <!-- Окошко подтверждения -->
+                <div id="osha-clear-confirm">
+                    <div class="osha-confirm-title">Siz rostdan ham çat tarixini bütünüley öçirmoqçimisiz?</div>
+                    <div class="osha-confirm-actions">
+                        <button id="osha-confirm-yes" class="osha-confirm-btn osha-btn-danger">Ha, öçiriş!</button>
+                        <button id="osha-confirm-no" class="osha-confirm-btn osha-btn-safe">Çatni saqlaş</button>
+                    </div>
+                </div>
+
+                <!-- Кнопка закрытия чата -->
+                <button id="osha-close" title="Yopiş">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                </button>
+            </div>
         </div>
         
         <div id="osha-messages"></div>
@@ -1728,6 +1747,46 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSend();
+            }
+        });
+
+// === ЛОГИКА ОЧИСТКИ ЧАТА ===
+        const clearBtn = document.getElementById('osha-clear-btn');
+        const clearConfirm = document.getElementById('osha-clear-confirm');
+        const confirmYes = document.getElementById('osha-confirm-yes');
+        const confirmNo = document.getElementById('osha-confirm-no');
+
+        // Открыть меню подтверждения
+        clearBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearConfirm.classList.toggle('show');
+        });
+
+        // Закрыть меню (Отмена)
+        confirmNo.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearConfirm.classList.remove('show');
+        });
+
+        // Подтвердить очистку
+        confirmYes.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // 1. Очищаем массив и LocalStorage
+            chatHistory = [];
+            localStorage.removeItem('oshaChatHistory');
+            
+            // 2. Скрываем меню
+            clearConfirm.classList.remove('show');
+            
+            // 3. Перерисовываем пустой чат с приветствием
+            renderMessages();
+        });
+
+        // Закрывать меню подтверждения при клике в любое другое место
+        document.addEventListener('click', (e) => {
+            if (clearConfirm.classList.contains('show') && !clearConfirm.contains(e.target) && e.target !== clearBtn) {
+                clearConfirm.classList.remove('show');
             }
         });
     });
