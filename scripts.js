@@ -4256,22 +4256,33 @@ document.addEventListener('DOMContentLoaded', () => {
         if (countEl) countEl.innerText = academicSources.length;
 
         // Отрисовываем от новых к старым (reverse)
+        // Отрисовываем от новых к старым (reverse)
         [...academicSources].reverse().forEach(src => {
             const card = document.createElement('div');
-            card.className = 'source-card';
+            
+            // ЖЕЛЕЗНАЯ ФИКСАЦИЯ СТИЛЕЙ, чтобы крестик никуда не улетал
+            card.className = 'source-card dark:bg-slate-800 dark:border-slate-700';
+            card.style.position = 'relative'; // <-- Это держит крестик внутри карточки!
+            card.style.padding = '12px';
+            card.style.paddingRight = '36px'; // Отступ для крестика, чтобы текст не наезжал
+            card.style.background = '#ffffff';
+            card.style.border = '1px solid #e2e8f0';
+            card.style.borderRadius = '8px';
+            card.style.marginBottom = '12px';
+            card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
             
             // Форматируем предпросмотр по ГОСТ / ВАК
             const vakFormat = `${src.author ? src.author + ' ' : ''}${src.title} // ${src.journal}. – ${src.year}.` + (src.pages ? ` – S. ${src.pages}.` : '');
             
             let quoteHtml = '';
             if (src.quote) {
-                quoteHtml = `<div class="source-card-quote">«${src.quote}»</div>`;
+                quoteHtml = `<div style="margin-top: 8px; padding: 8px; background: #f1f5f9; border-left: 3px solid #3b82f6; font-size: 12px; color: #475569; font-style: italic;" class="dark:bg-slate-900 dark:text-slate-400 dark:border-blue-500">«${src.quote}»</div>`;
             }
 
             card.innerHTML = `
-                <div style="font-size: 13px; font-weight: 600; color: #1e293b;" class="dark:text-white">${vakFormat}</div>
+                <div style="font-size: 13px; font-weight: 600; color: #1e293b; line-height: 1.4;" class="dark:text-white">${vakFormat}</div>
                 ${quoteHtml}
-                <button class="delete-src-btn" data-id="${src.id}" style="position: absolute; top: 8px; right: 10px; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 16px; font-weight: bold;">×</button>
+                <button class="delete-src-btn" data-id="${src.id}" style="position: absolute; top: 12px; right: 12px; background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; cursor: pointer; font-size: 16px; font-weight: bold; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; line-height: 1; transition: background 0.2s;">×</button>
             `;
             list.appendChild(card);
         });
