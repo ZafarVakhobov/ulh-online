@@ -2072,5 +2072,48 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
 </div>
 <!-- ========================================== -->
 
+<!-- ========================================== -->
+<!-- === ОКНО АКАДЕМИЧЕСКОГО МЕНЕДЖЕРА (MANBALAR) === -->
+<!-- ========================================== -->
+<div id="sources-modal" class="kanban-modal-backdrop">
+    <div class="kanban-modal-content" style="max-width: 1000px;">
+        <button id="sources-close-btn" class="kanban-close-btn" title="Yopiş">×</button>
+        
+        <div class="sources-wrapper" style="font-family: 'Manrope', sans-serif;">
+            <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-top: 0; margin-bottom: 16px;" class="dark:text-white">Ilmiy manbalar menejeri (VAK formati)</h3>
+            
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <!-- ЛЕВАЯ ЧАСТЬ: Форма добавления -->
+                <div style="flex: 1; min-width: 300px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0;" class="dark:bg-slate-800 dark:border-slate-700">
+                    <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #334155;" class="dark:text-slate-300">Yangi manba qöşiş</h4>
+                    
+                    <input type="text" id="src-author" class="src-input" placeholder="Muallif (Masalan: Vaxobov Z.T.)">
+                    <input type="text" id="src-title" class="src-input" placeholder="Maqola nomi (Raqamli media va turizm...)">
+                    <input type="text" id="src-journal" class="src-input" placeholder="Jurnal / Naşriyot / Veb-sayt">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="src-year" class="src-input" placeholder="Yil (2026)" style="width: 80px;">
+                        <input type="text" id="src-pages" class="src-input" placeholder="Sahifalar (15-22)" style="flex: 1;">
+                    </div>
+                    <textarea id="src-quote" class="src-input" placeholder="Muhim iqtibos yoki öz fikringizni saqlab qöying..." style="min-height: 80px; resize: vertical;"></textarea>
+                    
+                    <button id="save-source-btn" class="add-task-btn" style="background: #2563eb; color: white; margin-top: 4px;">+ Manbani saqlaş</button>
+                </div>
+
+                <!-- ПРАВАЯ ЧАСТЬ: Список и экспорт -->
+                <div style="flex: 2; min-width: 400px; display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="margin: 0; font-size: 14px; color: #334155;" class="dark:text-slate-300">Saqlangan manbalar (<span id="sources-count">0</span>)</h4>
+                        <button id="export-vak-btn" style="background: #10B981; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: background 0.2s;">Röyxatni VAK formatida nusxalaş</button>
+                    </div>
+                    <div id="sources-list" style="flex: 1; overflow-y: auto; max-height: 350px; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;">
+                        <!-- Карточки источников -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ========================================== -->
+    
 </body>
 </html>
