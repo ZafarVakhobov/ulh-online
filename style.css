@@ -4829,7 +4829,7 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     visibility: hidden !important;
     transform: translateY(-5px) !important;
     transition: all 0.2s ease !important;
-    z-index: 1000001 !important;
+    z-index: 9999999 !important;
 }
 .dark #osha-info-popup { background: #1e293b !important; border-color: #334155 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important; }
 
