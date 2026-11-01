@@ -4971,40 +4971,42 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 /* === ИНДИВИДУАЛЬНЫЕ ТУЛТИПЫ ДЛЯ ЧАТ-БОТА ÖŞA (.osha-tooltip) === */
 .osha-tooltip {
     position: absolute;
-    right: calc(100% + 8px); /* Появляется строго слева от кнопки */
+    right: calc(100% + 10px); /* Чуть больше отодвигаем от самой кнопки */
     top: 50%;
     transform: translateY(-50%) translateX(6px) scale(0.95);
-    background: rgba(15, 23, 42, 0.92);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: rgba(15, 23, 42, 0.85); /* Слегка прозрачный фон для эффекта размытия */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: #F8FAFC;
     font-family: 'Manrope', sans-serif;
     font-size: 11.5px;
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 8px;
+    font-weight: 600; /* Делаем шрифт чуть тоньше, чтобы он не слипался */
+    padding: 6px 10px; /* Добавляем больше "воздуха" сверху, снизу и по краям */
+    border-radius: 6px;
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
-    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.18s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
     z-index: 1200;
+    line-height: 1.2; /* Идеально центрируем текст по вертикали */
 }
 
-/* Стрелочка, указывающая вправо (на саму кнопку) */
+/* Острая и аккуратная стрелочка, указывающая вправо */
 .osha-tooltip::after {
     content: "";
     position: absolute;
     top: 50%;
     left: 100%;
     transform: translateY(-50%);
-    border-width: 4px;
+    /* Секрет идеальной стрелки: верх 4px, право 0, низ 4px, лево 5px */
+    border-width: 4px 0 4px 5px; 
     border-style: solid;
-    border-color: transparent transparent transparent rgba(15, 23, 42, 0.92);
+    border-color: transparent transparent transparent rgba(15, 23, 42, 0.85);
 }
 
-/* Анимация при наведении на кнопки чата */
+/* Плавный выезд при наведении на кнопки чата */
 .osha-copy-msg-btn:hover .osha-tooltip,
 .osha-edit-msg-btn:hover .osha-tooltip {
     opacity: 1;
