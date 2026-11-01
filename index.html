@@ -1665,13 +1665,28 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
             
             const msgDiv = document.createElement('div');
             msgDiv.className = `osha-msg ${role === 'user' ? 'osha-msg-user' : 'osha-msg-bot'}`;
-            // Простой и быстрый парсер Markdown для чата
+            
+            // Расширенный парсер Markdown (заголовки, ссылки, стили)
             let formattedContent = content
+                // 1. Заголовки (захватываем перенос строки в конце, чтобы не было лишних <br>)
+                .replace(/^###\s+(.*?)(?:\r?\n|$)/gm, '<div style="font-size: 14px; font-weight: 800; margin-top: 8px; margin-bottom: 4px;">$1</div>')
+                .replace(/^##\s+(.*?)(?:\r?\n|$)/gm, '<div style="font-size: 15px; font-weight: 800; margin-top: 10px; margin-bottom: 4px;">$1</div>')
+                .replace(/^#\s+(.*?)(?:\r?\n|$)/gm, '<div style="font-size: 16.5px; font-weight: 800; margin-top: 12px; margin-bottom: 6px;">$1</div>')
+                
+                // 2. Обрабатываем оформленные Markdown-ссылки: [текст](ссылка)
+                .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color: #3b82f6; text-decoration: underline;">$1</a>')
+                
+                // 3. Обрабатываем прямые текстовые ссылки
+                .replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener" style="color: #3b82f6; text-decoration: underline;">$2</a>')
+                
+                // 4. Стилизация текста
                 .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // Жирный текст
+                .replace(/__(.*?)__/g, '<u>$1</u>')     // Подчеркнутый текст
                 .replace(/\*(.*?)\*/g, '<i>$1</i>')     // Курсив
                 .replace(/~~(.*?)~~/g, '<strike>$1</strike>') // Зачеркнутый
-                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color: inherit; text-decoration: underline;">$1</a>') // Ссылки
-                .replace(/\n/g, '<br>'); // Переносы строк
+                
+                // 5. Переносы строк (применяется ко всему остальному тексту)
+                .replace(/\n/g, '<br>');
 
             msgDiv.innerHTML = formattedContent;
             
