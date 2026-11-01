@@ -4805,3 +4805,61 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     background: rgba(255, 255, 255, 0.12);
     color: #F8FAFC;
 }
+
+/* === КНОПКА ИНФОРМАЦИИ И ВЫПАДАЮЩЕЕ ОКНО В ШАПКЕ ЧАТА === */
+#osha-info-btn {
+    background: transparent !important; border: none !important; cursor: pointer !important;
+    color: #94a3b8 !important; padding: 4px !important; transition: color 0.2s !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+}
+#osha-info-btn:hover { color: #0284c7 !important; }
+.dark #osha-info-btn:hover { color: #38bdf8 !important; }
+
+#osha-info-popup {
+    position: absolute !important;
+    top: calc(100% + 4px) !important;
+    right: 0 !important;
+    width: 240px !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 12px !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateY(-5px) !important;
+    transition: all 0.2s ease !important;
+    z-index: 1000001 !important;
+}
+.dark #osha-info-popup { background: #1e293b !important; border-color: #334155 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important; }
+
+#osha-info-popup.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+}
+
+.osha-info-text {
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    margin-bottom: 10px !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+}
+.dark .osha-info-text { color: #cbd5e1 !important; }
+
+.osha-info-ok-btn {
+    width: 100% !important;
+    padding: 6px 0 !important;
+    border-radius: 8px !important;
+    border: none !important;
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    background: #e0f2fe !important;
+    color: #0284c7 !important;
+    transition: opacity 0.15s ease !important;
+}
+.osha-info-ok-btn:hover { opacity: 0.8 !important; }
+.dark .osha-info-ok-btn { background: rgba(2, 132, 199, 0.2) !important; color: #38bdf8 !important; }
