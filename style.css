@@ -4500,7 +4500,7 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     top: 0;
     left: 0;
     pointer-events: none;
-    z-index: 999999;
+    z-index: 9999999;
     padding: 6px 12px;
     border-radius: 8px;
     font-family: 'Manrope', sans-serif;
