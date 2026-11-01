@@ -1569,6 +1569,8 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                 <div id="osha-info-popup">
                     <div class="osha-info-text">Öşa AI – sun'iy intellekt bölib, u xato qilişi mumkin. Ma'lumotlarni tekşirib köring.</div>
                     <button id="osha-info-ok" class="osha-info-ok-btn">OK</button>
+                    <!-- Новая кнопка экспорта -->
+                    <button id="osha-export-btn" class="osha-info-export-btn">Çat tarixini yuklab oliş</button>
                 </div>
                 
                 <!-- Кнопка корзины -->
@@ -1899,6 +1901,69 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                 if (infoPopup.classList.contains('show') && !infoPopup.contains(e.target) && e.target !== infoBtn) {
                     infoPopup.classList.remove('show');
                 }
+            });
+        }
+
+        // === ЛОГИКА ЭКСПОРТА ЧАТА В WORD ===
+        const exportBtn = document.getElementById('osha-export-btn');
+
+        if (exportBtn) {
+            exportBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                if (!chatHistory || chatHistory.length === 0) {
+                    alert("Chat tarixi hozircha bo'sh!");
+                    return;
+                }
+
+                // Формируем структурированный HTML, который Word понимает как документ
+                let htmlContent = `
+                    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                    <head>
+                        <meta charset='utf-8'>
+                        <title>Öşa AI - Çat Tarixi</title>
+                        <style>
+                            body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.5; color: #1e293b; padding: 20px; }
+                            h2 { color: #0284c7; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+                            .msg { margin-bottom: 14px; padding: 10px 14px; border-radius: 8px; }
+                            .user { background-color: #e0f2fe; text-align: right; }
+                            .assistant { background-color: #f8fafc; border: 1px solid #e2e8f0; }
+                            .role { font-weight: bold; font-size: 12px; margin-bottom: 4px; color: #64748b; }
+                        </style>
+                    </head>
+                    <body>
+                    <h2>Öşa AI — Çat Tarixi (ULH Online)</h2>
+                `;
+
+                chatHistory.forEach(msg => {
+                    if (msg.role === 'system') return;
+                    const roleName = msg.role === 'user' ? 'Foydalanuvçi' : 'Öşa AI (Öşa)';
+                    const cssClass = msg.role === 'user' ? 'user' : 'assistant';
+                    const formattedText = msg.content.replace(/\n/g, '<br>');
+
+                    htmlContent += `
+                        <div class="msg ${cssClass}">
+                            <div class="role">${roleName}:</div>
+                            <div>${formattedText}</div>
+                        </div>
+                    `;
+                });
+
+                htmlContent += `</body></html>`;
+
+                // Создаем файл и инициируем скачивание
+                const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Öşa_AI_Tarix_${new Date().toISOString().slice(0, 10)}.doc`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                // Закрываем поп-ап
+                if (infoPopup) infoPopup.classList.remove('show');
             });
         }
         
