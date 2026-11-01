@@ -4929,3 +4929,85 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 .dark .osha-info-export-btn:hover { 
     background: rgba(16, 185, 129, 0.25) !important; 
 }
+
+/* === КНОПКА РЕДАКТИРОВАНИЯ (КАРАНДАШ) === */
+.osha-edit-msg-btn {
+    position: absolute;
+    bottom: 36px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(0, 0, 0, 0.04);
+    color: #64748B;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+    z-index: 2;
+}
+
+.osha-msg-container:hover .osha-edit-msg-btn {
+    opacity: 1;
+}
+
+.osha-edit-msg-btn:hover {
+    background: rgba(0, 0, 0, 0.09);
+    color: #0284c7; 
+}
+
+.dark .osha-edit-msg-btn {
+    background: rgba(255, 255, 255, 0.06);
+    color: #94A3B8;
+}
+.dark .osha-edit-msg-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #38bdf8;
+}
+
+/* === ИНДИВИДУАЛЬНЫЕ ТУЛТИПЫ ДЛЯ ЧАТ-БОТА ÖŞA (.osha-tooltip) === */
+.osha-tooltip {
+    position: absolute;
+    right: calc(100% + 8px); /* Появляется строго слева от кнопки */
+    top: 50%;
+    transform: translateY(-50%) translateX(6px) scale(0.95);
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: #F8FAFC;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.18s;
+    z-index: 1200;
+}
+
+/* Стрелочка, указывающая вправо (на саму кнопку) */
+.osha-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+    border-width: 4px;
+    border-style: solid;
+    border-color: transparent transparent transparent rgba(15, 23, 42, 0.92);
+}
+
+/* Анимация при наведении на кнопки чата */
+.osha-copy-msg-btn:hover .osha-tooltip,
+.osha-edit-msg-btn:hover .osha-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(0) scale(1);
+}
