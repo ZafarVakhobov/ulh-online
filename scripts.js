@@ -4050,3 +4050,53 @@ function selectPresetHex(hexVal) {
     const wrap = document.getElementById("qrCustomColorWrap");
     if (wrap) wrap.classList.remove("open");
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Создаем сам элемент тултипа "под капотом" и кидаем его в body
+    const tooltip = document.createElement('div');
+    tooltip.id = 'ulh-tooltip';
+    document.body.appendChild(tooltip);
+
+    // 2. Ищем абсолютно все элементы на сайте, у которых прописан title
+    const elementsWithTitle = document.querySelectorAll('[title]');
+
+    elementsWithTitle.forEach(el => {
+        // Когда мышь заходит на элемент
+        el.addEventListener('mouseenter', function(e) {
+            const titleText = this.getAttribute('title');
+            if (titleText) {
+                // Забираем текст и удаляем атрибут title, чтобы браузер не показывал свой стандартный
+                this.setAttribute('data-ulh-title', titleText);
+                this.removeAttribute('title');
+                
+                tooltip.textContent = titleText;
+                tooltip.classList.add('show');
+                updatePosition(e);
+            }
+        });
+
+        // Когда мышь двигается внутри элемента
+        el.addEventListener('mousemove', (e) => {
+            // Используем requestAnimationFrame для 60fps плавности
+            requestAnimationFrame(() => updatePosition(e));
+        });
+
+        // Когда мышь уходит
+        el.addEventListener('mouseleave', function() {
+            const storedTitle = this.getAttribute('data-ulh-title');
+            if (storedTitle) {
+                // Возвращаем родной атрибут на место
+                this.setAttribute('title', storedTitle);
+                this.removeAttribute('data-ulh-title');
+                
+                tooltip.classList.remove('show');
+            }
+        });
+    });
+
+    // Функция обновления координат
+    function updatePosition(e) {
+        // Добавляем отступ 15px по осям X и Y, чтобы курсор не перекрывал сам текст
+        tooltip.style.transform = `translate(${e.clientX + 15}px, ${e.clientY + 15}px)`;
+    }
+});
