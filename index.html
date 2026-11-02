@@ -2302,16 +2302,27 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
 <!-- ========================================== -->
 <!-- === ПЛАВАЮЩЕЕ ОКНО YOUTUBE ВИДЕО === -->
 <!-- ========================================== -->
+
+<!-- Темный фон для режима кинотеатра -->
+<div id="cinemaOverlay" class="cinema-overlay" onclick="toggleCinemaMode()"></div>
+
 <div id="ytFloatingModal" class="yt-floating-modal hidden-player">
     <div class="yt-modal-header" id="ytModalHeader">
         <div class="yt-modal-drag-area">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
             <span id="ytModalFloatTitle">YouTube Video</span>
         </div>
-        <button type="button" class="yt-modal-close" onclick="closeYtVideoModal()" title="Yopiş">×</button>
+        
+        <!-- Кнопки управления окном (Лампочка и Закрыть) -->
+        <div class="yt-modal-actions">
+            <button type="button" id="cinemaToggleBtn" class="yt-modal-btn" onclick="toggleCinemaMode()" title="Fonni qoraytiriş">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.2 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+            </button>
+            <button type="button" class="yt-modal-btn yt-modal-close" onclick="closeYtVideoModal()" title="Yopish">×</button>
+        </div>
     </div>
+    
     <div class="yt-modal-body">
-        <!-- Вот сюда будет рендериться официальный плеер -->
         <div id="yt-player-container"></div>
     </div>
 </div>
