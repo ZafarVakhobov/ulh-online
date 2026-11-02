@@ -382,30 +382,75 @@
 
                 <!-- Выпадающее окошко плеера -->
                 <div class="nav-dropdown music-dropdown-box" id="musicDropdownBox" onclick="event.stopPropagation()">
+                    
+                    <!-- 1. Верхняя строка: Кнопка Play и Название (теперь на всю ширину) -->
                     <div class="music-player-row">
-                        <!-- Обложка music.svg слева (клик переключает Play / Pause) -->
-                        <button type="button" class="music-cover-btn" id="musicPlayPauseBtn" onclick="toggleAmbientPlayback(event)" title="Ijro etiş / Pauza" aria-label="Ijro etiş yoki pauza">
-                            <img src="/music.svg" alt="Konsentratsiya uçun musiqa" class="music-cover-img" onerror="this.onerror=null;this.src='./music.svg';">
-                            <span class="music-cover-overlay">
-                                <!-- Иконка Play -->
-                                <svg class="play-state-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
-                                <!-- Иконка Pause -->
-                                <svg class="pause-state-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-                            </span>
+                        <!-- Синий квадратик Play / Pause -->
+                        <button type="button" class="music-cover-btn" id="musicPlayPauseBtn" onclick="togglePlaybackHandler(event)" title="Ijro etiş / Pauza" aria-label="Ijro etiş yoki pauza">
+                            <svg class="play-state-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                            <svg class="pause-state-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
                         </button>
-
-                        <!-- Текстовый блок по центру -->
                         <div class="music-meta">
-                            <div class="music-title">Konsentratsiya uçun musiqa</div>
-                            <div class="music-subtitle">AI Generated Music by LANIGIRO</div>
-                        </div>
-
-                        <!-- Капсульный регулятор громкости справа + тултип с % -->
-                        <div class="music-volume-capsule" id="musicVolumeCapsule" role="slider" tabindex="0" aria-label="Ovoz balandligi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
-                            <div class="music-volume-fill" id="musicVolumeFill" style="width: 70%;"></div>
-                            <span class="custom-tooltip" id="musicVolumeTooltip">70%</span>
+                            <div class="music-title" id="musicTitleText">Konsentratsiya uçun musiqa</div>
+                            <div class="music-subtitle" id="musicSubtitleText">AI Generated Music by LANIGIRO</div>
                         </div>
                     </div>
+
+                    <!-- 2. НОВОЕ: Строка контроллеров (70% - время, 30% - громкость) -->
+                    <div class="music-controls-row">
+                        <!-- Левая часть (70%) - Скрывается, когда включен AI-режим -->
+                        <div class="music-progress-wrap" id="musicProgressRow" style="display: none;">
+                            <input type="range" id="musicSeekbar" class="music-seekbar" value="0" min="0" max="100">
+                            <span id="musicTimeDisplay" class="music-time-display">0:00 / 0:00</span>
+                        </div>
+                        
+                        <!-- Правая часть (30%) - Всегда видима -->
+                        <div class="music-volume-wrap">
+                            <div class="music-volume-capsule" id="musicVolumeCapsule" role="slider" tabindex="0" aria-label="Ovoz balandligi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
+                                <div class="music-volume-fill" id="musicVolumeFill" style="width: 70%;"></div>
+                                <span class="custom-tooltip" id="musicVolumeTooltip">70%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Поле ввода своей ссылки (YouTube) -->
+                    <div class="music-custom-input-row" id="musicCustomInputRow">
+                        <input type="url" id="customMusicUrl" placeholder="YouTube havolasini kiriting..." class="music-url-input">
+                        <button type="button" id="loadCustomMusicBtn" class="music-ok-btn" onclick="loadCustomYoutube()">OK</button>
+                    </div>
+
+                    <!-- 4. Кнопка возврата к AI музыке -->
+                    <button type="button" id="backToAiMusicBtn" class="music-back-ai-btn" style="display: none;" onclick="switchToAiMusic()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path></svg>
+                        <span>Konsentratsiya musiqasiga qaytiş</span>
+                    </button>
+
+                    <hr class="dropdown-divider" style="margin-top: 12px; margin-bottom: 8px;">
+
+                    <!-- 5. История прослушиваний -->
+                    <div class="music-history-section">
+                        <div class="music-history-header">
+                            <span style="font-size: 11px; font-weight: 800; color: #64748B; text-transform: uppercase;">Tinglaş tarixi</span>
+                            <div style="position: relative;">
+                                <button type="button" class="music-history-clear-btn" id="musicHistoryClearBtn" onclick="toggleMusicHistoryConfirm(event)" title="Tarixni öçiriş">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </button>
+                                <div id="musicHistoryConfirm" class="music-history-confirm">
+                                    <div class="music-confirm-title">Tarixni butunlay öçirmoqçimisiz?</div>
+                                    <div class="osha-confirm-actions">
+                                        <button type="button" id="musicConfirmYes" class="osha-confirm-btn osha-btn-danger" onclick="clearMusicHistory(event)">Ha, öçiriş!</button>
+                                        <button type="button" id="musicConfirmNo" class="osha-confirm-btn osha-btn-safe" onclick="toggleMusicHistoryConfirm(event)">Saqlaş</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="musicHistoryList" class="music-history-list">
+                            <div style="text-align: center; color: #94A3B8; font-size: 11.5px; padding: 10px 0;">Hozirça böş</div>
+                        </div>
+                    </div>
+
+                    <!-- Скрытый контейнер YouTube -->
+                    <div id="yt-player-container" style="position: absolute; width: 0; height: 0; overflow: hidden; opacity: 0; pointer-events: none;"></div>
                 </div>
             </div>
 
