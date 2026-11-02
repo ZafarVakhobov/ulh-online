@@ -2298,6 +2298,24 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
     </div>
 </div>
 <!-- ========================================== -->
+
+<!-- ========================================== -->
+<!-- === ПЛАВАЮЩЕЕ ОКНО YOUTUBE ВИДЕО === -->
+<!-- ========================================== -->
+<div id="ytFloatingModal" class="yt-floating-modal hidden-player">
+    <div class="yt-modal-header" id="ytModalHeader">
+        <div class="yt-modal-drag-area">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            <span id="ytModalFloatTitle">YouTube Video</span>
+        </div>
+        <button type="button" class="yt-modal-close" onclick="closeYtVideoModal()" title="Yopiş">×</button>
+    </div>
+    <div class="yt-modal-body">
+        <!-- Вот сюда будет рендериться официальный плеер -->
+        <div id="yt-player-container"></div>
+    </div>
+</div>
+<!-- ========================================== -->
     
 </body>
 </html>
