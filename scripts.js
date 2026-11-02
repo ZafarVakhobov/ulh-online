@@ -4542,3 +4542,186 @@ document.addEventListener('DOMContentLoaded', () => {
     // Первичная отрисовка
     updateDisplay();
 });
+
+/* ========================================== */
+/* === ЛОГИКА БЫСТРЫХ ЗАМЕТОК (QORALAMA) === */
+/* ========================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- 1. Открытие/Закрытие окна ---
+    const scBtn = document.getElementById('scratchpad-toggle-btn');
+    const scModal = document.getElementById('scratchpad-modal');
+    const scCloseBtn = document.getElementById('scratchpad-close-btn');
+
+    if (scBtn && scModal && scCloseBtn) {
+        scBtn.addEventListener('click', () => {
+            scModal.classList.add('open');
+            renderNotesList(); 
+        });
+        scCloseBtn.addEventListener('click', () => scModal.classList.remove('open'));
+        scModal.addEventListener('click', (e) => {
+            if (e.target === scModal) scModal.classList.remove('open');
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && scModal.classList.contains('open')) scModal.classList.remove('open');
+        });
+    }
+
+    // --- 2. Логика хранения и данных ---
+    let notes = JSON.parse(localStorage.getItem('ulh-scratch-notes')) || [];
+    let activeNoteId = localStorage.getItem('ulh-scratch-active-id') || null;
+
+    const notesListContainer = document.getElementById('notes-list');
+    const titleInput = document.getElementById('note-title-input');
+    const contentInput = document.getElementById('note-content-input');
+    const statusText = document.getElementById('autosave-status');
+    const addBtn = document.getElementById('add-note-btn');
+
+    if (notes.length === 0) {
+        const defaultNote = {
+            id: Date.now().toString(),
+            title: "Yangi qayd",
+            content: "Bu yerda siz tezkor qaydlarni yozişingiz mumkin. Yozgan matnlaringiz avtomatik tarzda saqlanadi..."
+        };
+        notes.push(defaultNote);
+        activeNoteId = defaultNote.id;
+        localStorage.setItem('ulh-scratch-notes', JSON.stringify(notes));
+        localStorage.setItem('ulh-scratch-active-id', activeNoteId);
+    } else if (!activeNoteId) {
+        activeNoteId = notes[0].id;
+    }
+
+    const renderNotesList = () => {
+        if (!notesListContainer) return;
+        notesListContainer.innerHTML = '';
+
+        [...notes].reverse().forEach(note => {
+            const item = document.createElement('div');
+            item.className = `scratch-item ${note.id === activeNoteId ? 'active' : ''}`;
+            item.dataset.id = note.id;
+
+            const snippet = note.content ? note.content.substring(0, 45) : 'Bo\'sh qayd...';
+
+            item.innerHTML = `
+                <div class="scratch-item-title">${note.title || 'Mavzusiz'}</div>
+                <div class="scratch-item-preview">${snippet}</div>
+                <button class="delete-note-btn" title="Öçiriş" data-id="${note.id}">×</button>
+            `;
+
+            item.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-note-btn')) return;
+                selectNote(note.id);
+            });
+
+            notesListContainer.appendChild(item);
+        });
+
+        document.querySelectorAll('.delete-note-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteNote(e.target.getAttribute('data-id'));
+            });
+        });
+    };
+
+    const selectNote = (id) => {
+        activeNoteId = id;
+        localStorage.setItem('ulh-scratch-active-id', activeNoteId);
+        
+        const activeNote = notes.find(n => n.id === activeNoteId);
+        if (activeNote) {
+            titleInput.value = activeNote.title;
+            contentInput.value = activeNote.content;
+            if (statusText) statusText.innerHTML = "Özgarişlar saqlandi ✓";
+        }
+        renderNotesList();
+    };
+
+    const deleteNote = (id) => {
+        if (notes.length <= 1) {
+            alert("Kamida bitta qayd bölişi kerak!");
+            return;
+        }
+        notes = notes.filter(n => n.id !== id);
+        if (activeNoteId === id) {
+            activeNoteId = notes[0].id;
+            localStorage.setItem('ulh-scratch-active-id', activeNoteId);
+        }
+        localStorage.setItem('ulh-scratch-notes', JSON.stringify(notes));
+        selectNote(activeNoteId);
+    };
+
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            const newNote = { id: Date.now().toString(), title: "Yangi qayd", content: "" };
+            notes.push(newNote);
+            localStorage.setItem('ulh-scratch-notes', JSON.stringify(notes));
+            selectNote(newNote.id);
+        });
+    }
+
+    let autoSaveTimeout = null;
+    const triggerAutoSave = () => {
+        if (statusText) statusText.innerHTML = "Saqlanmoqda... ⏳";
+
+        const activeNoteIndex = notes.findIndex(n => n.id === activeNoteId);
+        if (activeNoteIndex !== -1) {
+            notes[activeNoteIndex].title = titleInput.value;
+            notes[activeNoteIndex].content = contentInput.value;
+        }
+
+        const activeItem = document.querySelector(`.scratch-item[data-id="${activeNoteId}"]`);
+        if (activeItem) {
+            const titleEl = activeItem.querySelector('.scratch-item-title');
+            const previewEl = activeItem.querySelector('.scratch-item-preview');
+            if (titleEl) titleEl.innerText = titleInput.value || 'Mavzusiz';
+            if (previewEl) previewEl.innerText = contentInput.value.substring(0, 45) || 'Böş qayd...';
+        }
+
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(() => {
+            localStorage.setItem('ulh-scratch-notes', JSON.stringify(notes));
+            if (statusText) statusText.innerHTML = "Avtomatik saqlanmoqda... ✓";
+        }, 300);
+    };
+
+    if (titleInput && contentInput) {
+        titleInput.addEventListener('input', triggerAutoSave);
+        contentInput.addEventListener('input', triggerAutoSave);
+    }
+
+    // --- 3. Логика кнопок Markdown форматирования ---
+    const mdButtons = document.querySelectorAll('.md-btn');
+    
+    mdButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (!contentInput) return;
+            
+            const prefix = btn.getAttribute('data-prefix') || '';
+            const suffix = btn.getAttribute('data-suffix') || '';
+            
+            const start = contentInput.selectionStart;
+            const end = contentInput.selectionEnd;
+            const text = contentInput.value;
+            
+            const selectedText = text.substring(start, end);
+            const beforeText = text.substring(0, start);
+            const afterText = text.substring(end, text.length);
+            
+            contentInput.value = beforeText + prefix + selectedText + suffix + afterText;
+            contentInput.focus();
+            
+            if (selectedText.length === 0) {
+                contentInput.selectionStart = start + prefix.length;
+                contentInput.selectionEnd = start + prefix.length;
+            } else {
+                contentInput.selectionStart = start;
+                contentInput.selectionEnd = start + prefix.length + selectedText.length + suffix.length;
+            }
+            
+            triggerAutoSave();
+        });
+    });
+
+    selectNote(activeNoteId);
+});
