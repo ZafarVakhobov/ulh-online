@@ -5133,65 +5133,73 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// === КОНТЕКСТНЫЙ AI-СЛОВАРЬ СИНОНИМОВ ===
+// === УНИВЕРСАЛЬНЫЙ КОНТЕКСТНЫЙ AI-СЛОВАРЬ СИНОНИМОВ ===
 document.addEventListener('DOMContentLoaded', () => {
-    const editor = document.getElementById("editor");
     const floatingMenu = document.getElementById("aiFloatingMenu");
     const dropdown = document.getElementById("aiSynonymDropdown");
     
-    if (!editor || !floatingMenu || !dropdown) return;
+    if (!floatingMenu || !dropdown) return;
 
-    let selectedWordRange = null;
+    let activeElement = null;
+    let selectedData = { text: "", type: "", range: null };
 
-    // Слушаем отпускание мыши или завершение выделения текста в редакторе
-    editor.addEventListener("mouseup", handleTextSelection);
-    editor.addEventListener("keyup", handleTextSelection);
+    // Слушаем выделение текста во всем документе ( textarea, input, contenteditable )
+    document.addEventListener("mouseup", checkGlobalSelection);
+    document.addEventListener("keyup", checkGlobalSelection);
 
-    function handleTextSelection() {
-        const start = editor.selectionStart;
-        const end = editor.selectionEnd;
+    function checkGlobalSelection() {
+        const activeEl = document.activeElement;
+        if (!activeEl) return;
 
-        // Если ничего не выделено или выделен длинный текст (> 3 слов) — скрываем меню
-        if (start === end || (end - start) > 40) {
+        let selectedText = "";
+        let targetType = "";
+
+        // 1. Если текст выделен в обычных полях ввода или textarea
+        if ((activeEl.tagName === "TEXTAREA" || activeEl.tagName === "INPUT") && activeEl.type === "text") {
+            const start = activeEl.selectionStart;
+            const end = activeEl.selectionEnd;
+            if (start !== end && (end - start) <= 40) {
+                selectedText = activeEl.value.substring(start, end).trim();
+                targetType = "input";
+                activeElement = activeEl;
+            }
+        } 
+        // 2. Если текст выделен в визуальном редакторе (contenteditable, например в окне ИИ или блокноте)
+        else if (activeEl.getAttribute("contenteditable") === "true" || activeEl.closest("[contenteditable='true']")) {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const text = selection.toString().trim();
+                if (text.length > 0 && text.length <= 40 && !/\s{2,}/.test(text)) {
+                    selectedText = text;
+                    targetType = "contenteditable";
+                    activeElement = selection.getRangeAt(0); // Сохраняем Range
+                }
+            }
+        }
+
+        if (!selectedText || (selectedText.indexOf(' ') !== -1 && selectedText.length > 25)) {
             hideAiFloatingMenu();
             return;
         }
 
-        const selectedText = editor.value.substring(start, end).trim();
-        if (!selectedText || /\s/.test(selectedText) === false && selectedText.length < 2) {
-            hideAiFloatingMenu();
-            return;
-        }
-
-        // Сохраняем позицию для замены
-        selectedWordRange = { start, end, text: selectedText };
-
-        // Позиционируем плавающую кнопку прямо над textarea (в упрощенном элегантном виде около каретки)
-        showAiFloatingMenu();
+        selectedData = { text: selectedText, type: targetType, element: activeElement };
+        showAiFloatingMenu(activeEl);
     }
 
-    function showAiFloatingMenu() {
-        const selection = window.getSelection();
-        
-        // Если в textarea выделен текст, getSelection() не всегда возвращает стандартный range в DOM, 
-        // поэтому мы проверяем выделение через свойства selectionStart / selectionEnd самого редактора:
-        const start = editor.selectionStart;
-        const end = editor.selectionEnd;
-
-        if (start !== end && (end - start) <= 40) {
-            // Вычисляем примерное положение курсора/выделения внутри textarea
-            // Для идеальной стабильности в textarea используем координаты самого редактора, 
-            // но располагаем кнопку поближе к началу строки ввода или над текстом:
-            const rect = editor.getBoundingClientRect();
-            
-            // Ставим плашку в левом верхнем углу над textarea, чтобы она всегда была на виду и никуда не улетала
+    function showAiFloatingMenu(targetEl) {
+        let rect;
+        if (targetEl.tagName === "TEXTAREA" || targetEl.tagName === "INPUT") {
+            rect = targetEl.getBoundingClientRect();
+            // Ставим аккуратно над верхним краем поля ввода
             floatingMenu.style.top = (window.scrollY + rect.top - 42) + "px";
             floatingMenu.style.left = (window.scrollX + rect.left + 15) + "px";
         } else {
-            // Запасной вариант
-            const rect = editor.getBoundingClientRect();
-            floatingMenu.style.top = (window.scrollY + rect.top - 42) + "px";
-            floatingMenu.style.left = (window.scrollX + rect.left + 15) + "px";
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const rangeRect = selection.getRangeAt(0).getBoundingClientRect();
+                floatingMenu.style.top = (window.scrollY + rangeRect.top - 40) + "px";
+                floatingMenu.style.left = (window.scrollX + rangeRect.left) + "px";
+            }
         }
 
         floatingMenu.classList.add("visible");
@@ -5203,48 +5211,39 @@ document.addEventListener('DOMContentLoaded', () => {
         dropdown.classList.remove("open");
     }
 
-    // Клик мимо скрывает меню
     document.addEventListener("mousedown", (e) => {
-        if (!floatingMenu.contains(e.target) && e.target !== editor) {
+        if (!floatingMenu.contains(e.target) && !e.target.closest("#aiFloatingMenu")) {
             hideAiFloatingMenu();
         }
     });
 
-    // Экспортируем функцию запроса синонимов в глобальную область
+    // Запрос синонимов у ИИ
     window.fetchSynonymsForSelection = async function() {
-        if (!selectedWordRange) return;
+        if (!selectedData.text) return;
 
         dropdown.innerHTML = `<div class="ai-syn-loading">Qidirilmoqda...</div>`;
         dropdown.classList.add("open");
 
-        const targetWord = selectedWordRange.text;
+        const targetWord = selectedData.text;
         const promptText = `Ushbu o'zbekcha so'z uchun 3-4 ta eng yaxshi sinonim (almashtirish varianti) topib ber. Faqat sinonimlarni vergul bilan yoki ro'yxat shaklida yoz, ortiqcha gap yozma: "${targetWord}"`;
 
         try {
-            const response = await AI_PROXY_ENDPOINT ? await fetch(AI_PROXY_ENDPOINT, {
+            const response = await fetch(AI_PROXY_ENDPOINT, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    mode: "custom",
-                    text: targetWord,
-                    customPrompt: promptText
-                })
-            }) : null;
+                body: JSON.stringify({ mode: "custom", text: targetWord, customPrompt: promptText })
+            });
 
-            if (!response || !response.ok) {
-                throw new Error("Server xatosi");
-            }
+            if (!response.ok) throw new Error("Server xatosi");
 
             const data = await response.json();
             const rawResult = (data && data.result) ? data.result : "";
 
-            // Парсим результат от Qwen (очищаем от лишнего текста, разбиваем по строкам или запятым)
             let synonyms = rawResult
                 .split(/[\n,;-]+/)
                 .map(s => s.replace(/^\d+[\.\)]\s*/, '').trim())
                 .filter(s => s.length > 0 && s.toLowerCase() !== targetWord.toLowerCase());
 
-            // Убираем дубликаты и оставляем максимум 4 варианта
             synonyms = [...new Set(synonyms)].slice(0, 4);
 
             if (synonyms.length === 0) {
@@ -5257,11 +5256,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const opt = document.createElement("button");
                 opt.type = "button";
                 opt.className = "ai-syn-option";
-                opt.textContent = enforceNewUzbekAlphabet ? enforceNewUzbekAlphabet(syn) : syn;
+                opt.textContent = typeof enforceNewUzbekAlphabet === "function" ? enforceNewUzbekAlphabet(syn) : syn;
                 
-                // При клике на синоним — мгновенно заменяем слово в тексте
                 opt.onclick = () => {
-                    replaceWordInEditor(opt.textContent);
+                    replaceSelectedWordInDom(syn);
                 };
                 dropdown.appendChild(opt);
             });
@@ -5272,21 +5270,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    function replaceWordInEditor(newWord) {
-        if (!selectedWordRange) return;
-        const { start, end } = selectedWordRange;
-        const val = editor.value;
+    function replaceSelectedWordInDom(newWord) {
+        if (selectedData.type === "input" && selectedData.element) {
+            const el = selectedData.element;
+            const start = el.selectionStart;
+            const end = el.selectionEnd;
+            el.value = el.value.substring(0, start) + newWord + el.value.substring(end);
+            el.focus();
+            el.selectionStart = el.selectionEnd = start + newWord.length;
 
-        editor.value = val.substring(0, start) + newWord + val.substring(end);
-        
-        // Возвращаем фокус и ставим курсор после вставленного слова
-        editor.focus();
-        editor.selectionStart = editor.selectionEnd = start + newWord.length;
-
-        // Триггерим сохранение черновика и счетчик статистики, если они есть на сайте
-        if (typeof saveEditorDraft === "function") saveEditorDraft();
-        if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
-        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Almaştirildi ✓");
+            if (el.id === "editor") {
+                if (typeof saveEditorDraft === "function") saveEditorDraft();
+                if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+                if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Almashtirildi ✓");
+            }
+        } 
+        else if (selectedData.type === "contenteditable") {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(document.createTextNode(newWord));
+                
+                // Триггерим событие input, чтобы модальные окна ИИ или блокнота зафиксировали изменения
+                const editableBox = selection.anchorNode.parentElement.closest("[contenteditable='true']");
+                if (editableBox) {
+                    editableBox.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+        }
 
         hideAiFloatingMenu();
     }
