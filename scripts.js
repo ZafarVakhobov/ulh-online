@@ -5131,3 +5131,148 @@ document.addEventListener('DOMContentLoaded', () => {
     setPlayerUI_Mode('ai');
     renderMusicHistory();
 });
+
+
+// === КОНТЕКСТНЫЙ AI-СЛОВАРЬ СИНОНИМОВ ===
+document.addEventListener('DOMContentLoaded', () => {
+    const editor = document.getElementById("editor");
+    const floatingMenu = document.getElementById("aiFloatingMenu");
+    const dropdown = document.getElementById("aiSynonymDropdown");
+    
+    if (!editor || !floatingMenu || !dropdown) return;
+
+    let selectedWordRange = null;
+
+    // Слушаем отпускание мыши или завершение выделения текста в редакторе
+    editor.addEventListener("mouseup", handleTextSelection);
+    editor.addEventListener("keyup", handleTextSelection);
+
+    function handleTextSelection() {
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+
+        // Если ничего не выделено или выделен длинный текст (> 3 слов) — скрываем меню
+        if (start === end || (end - start) > 40) {
+            hideAiFloatingMenu();
+            return;
+        }
+
+        const selectedText = editor.value.substring(start, end).trim();
+        if (!selectedText || /\s/.test(selectedText) === false && selectedText.length < 2) {
+            hideAiFloatingMenu();
+            return;
+        }
+
+        // Сохраняем позицию для замены
+        selectedWordRange = { start, end, text: selectedText };
+
+        // Позиционируем плавающую кнопку прямо над textarea (в упрощенном элегантном виде около каретки)
+        showAiFloatingMenu();
+    }
+
+    function showAiFloatingMenu() {
+        // Упрощенная позиция: вешаем меню в правый верхний угол над textarea или рядом с курсором
+        const rect = editor.getBoundingClientRect();
+        
+        // Показываем тулбар-кнопку
+        floatingMenu.style.top = (window.scrollY + rect.top - 42) + "px";
+        floatingMenu.style.left = (window.scrollX + rect.right - 100) + "px";
+        floatingMenu.classList.add("visible");
+        
+        // Закрываем выпадающий список вариантов при новом выделении
+        dropdown.classList.remove("open");
+    }
+
+    function hideAiFloatingMenu() {
+        floatingMenu.classList.remove("visible");
+        dropdown.classList.remove("open");
+    }
+
+    // Клик мимо скрывает меню
+    document.addEventListener("mousedown", (e) => {
+        if (!floatingMenu.contains(e.target) && e.target !== editor) {
+            hideAiFloatingMenu();
+        }
+    });
+
+    // Экспортируем функцию запроса синонимов в глобальную область
+    window.fetchSynonymsForSelection = async function() {
+        if (!selectedWordRange) return;
+
+        dropdown.innerHTML = `<div class="ai-syn-loading">Qidirilmoqda...</div>`;
+        dropdown.classList.add("open");
+
+        const targetWord = selectedWordRange.text;
+        const promptText = `Ushbu o'zbekcha so'z uchun 3-4 ta eng yaxshi sinonim (almashtirish varianti) topib ber. Faqat sinonimlarni vergul bilan yoki ro'yxat shaklida yoz, ortiqcha gap yozma: "${targetWord}"`;
+
+        try {
+            const response = await AI_PROXY_ENDPOINT ? await fetch(AI_PROXY_ENDPOINT, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    mode: "custom",
+                    text: targetWord,
+                    customPrompt: promptText
+                })
+            }) : null;
+
+            if (!response || !response.ok) {
+                throw new Error("Server xatosi");
+            }
+
+            const data = await response.json();
+            const rawResult = (data && data.result) ? data.result : "";
+
+            // Парсим результат от Qwen (очищаем от лишнего текста, разбиваем по строкам или запятым)
+            let synonyms = rawResult
+                .split(/[\n,;-]+/)
+                .map(s => s.replace(/^\d+[\.\)]\s*/, '').trim())
+                .filter(s => s.length > 0 && s.toLowerCase() !== targetWord.toLowerCase());
+
+            // Убираем дубликаты и оставляем максимум 4 варианта
+            synonyms = [...new Set(synonyms)].slice(0, 4);
+
+            if (synonyms.length === 0) {
+                dropdown.innerHTML = `<div class="ai-syn-loading">Sinonim topilmadi</div>`;
+                return;
+            }
+
+            dropdown.innerHTML = "";
+            synonyms.forEach(syn => {
+                const opt = document.createElement("button");
+                opt.type = "button";
+                opt.className = "ai-syn-option";
+                opt.textContent = enforceNewUzbekAlphabet ? enforceNewUzbekAlphabet(syn) : syn;
+                
+                // При клике на синоним — мгновенно заменяем слово в тексте
+                opt.onclick = () => {
+                    replaceWordInEditor(opt.textContent);
+                };
+                dropdown.appendChild(opt);
+            });
+
+        } catch (err) {
+            console.error("Synonyms Error:", err);
+            dropdown.innerHTML = `<div class="ai-syn-loading">Xatolik yuz berdi</div>`;
+        }
+    };
+
+    function replaceWordInEditor(newWord) {
+        if (!selectedWordRange) return;
+        const { start, end } = selectedWordRange;
+        const val = editor.value;
+
+        editor.value = val.substring(0, start) + newWord + val.substring(end);
+        
+        // Возвращаем фокус и ставим курсор после вставленного слова
+        editor.focus();
+        editor.selectionStart = editor.selectionEnd = start + newWord.length;
+
+        // Триггерим сохранение черновика и счетчик статистики, если они есть на сайте
+        if (typeof saveEditorDraft === "function") saveEditorDraft();
+        if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Almaştirildi ✓");
+
+        hideAiFloatingMenu();
+    }
+});
