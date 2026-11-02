@@ -5862,24 +5862,3 @@ body.dark-mode .ai-syn-option:hover {
 body.dark-mode .ai-syn-loading {
     color: #94A3B8;
 }
-
-/* ========================================== */
-/* === СТИЛИ ОТЧЕТА АНИМАЦИИ УНИКАЛЬНОСТИ === */
-/* ========================================== */
-.uniqueness-report-card {
-    background: #F8FAFC;
-    border: 1px solid #E2E8F0;
-    border-radius: 12px;
-    padding: 14px;
-    margin-top: 12px;
-    font-family: 'Manrope', sans-serif;
-    animation: fadeInReport 0.25s ease-out;
-}
-body.dark-mode .uniqueness-report-card {
-    background: #0F172A;
-    border-color: #334155;
-}
-@keyframes fadeInReport {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
-}
