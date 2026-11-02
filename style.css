@@ -2987,7 +2987,7 @@ body.dark-mode .custom-tooltip::after {
 .music-dropdown-box {
     left: auto;
     right: 0;
-    min-width: 370px;
+    width: 370px; /* Жестко фиксируем ширину, чтобы не разъезжалось */
     padding: 12px 14px;
     border-radius: 20px;
     transform: translateY(8px) scale(0.98);
@@ -3031,7 +3031,7 @@ body.dark-mode .custom-tooltip::after {
 .music-cover-btn.playing .play-state-icon { display: none; }
 .music-cover-btn.playing .pause-state-icon { display: block; }
 
-/* === БЕГУЩАЯ СТРОКА (MARQUEE) ДЛЯ ТЕКСТОВ === */
+/* === БЛОК ТЕКСТОВ С ОБРЕЗКОЙ МНОГОТОЧИЕМ === */
 .music-meta {
     display: flex;
     flex-direction: column;
@@ -3039,43 +3039,31 @@ body.dark-mode .custom-tooltip::after {
     gap: 2px;
     min-width: 0;
     flex: 1;
-    overflow: hidden;
-}
-.music-title-wrap {
-    width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
 }
 .music-title {
-    display: inline-block;
     font-size: 13.5px;
     font-weight: 700;
     color: #0F172A;
     line-height: 1.25;
-    padding-right: 20px; /* Отступ между повторами текста */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .music-subtitle {
-    display: inline-block;
     font-size: 11px;
     font-weight: 400;
     color: #64748B;
     line-height: 1.25;
-    padding-right: 20px;
-}
-/* Анимация прокрутки включается только если текст длиннее блока (JS добавляет класс) */
-.music-title.marquee-scroll, .music-subtitle.marquee-scroll {
-    animation: marquee 8s linear infinite;
-}
-@keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* === УМНАЯ СЕТКА КОНТРОЛЛЕРОВ (100% или 70/30) === */
 .music-controls-row {
     display: flex;
     align-items: center;
-    gap: 12px; /* Увеличили отступ между временем и громкостью */
+    gap: 12px;
     margin-top: 12px;
 }
 
@@ -3087,7 +3075,6 @@ body.dark-mode .custom-tooltip::after {
     min-width: 0;
 }
 
-/* Обёртка громкости (меняет ширину динамически) */
 .music-volume-wrap {
     display: flex;
     align-items: center;
@@ -3099,15 +3086,15 @@ body.dark-mode .custom-tooltip::after {
 .music-controls-row.ai-mode .music-volume-wrap {
     width: 100%;
 }
-/* Режим YouTube: Громкость занимает 30% ширины */
+/* Режим YouTube: Громкость занимает 35% ширины */
 .music-controls-row.yt-mode .music-volume-wrap {
-    width: 35%; /* Чуть больше 30%, чтобы поместилась иконка динамика */
+    width: 35%; 
     flex-shrink: 0;
 }
 
 .music-volume-capsule {
     position: relative;
-    flex: 1; /* Занимает всё доступное место внутри своей обертки */
+    flex: 1; 
     height: 28px;
     background: #ecfdf5;
     border-radius: 999px;
@@ -3304,7 +3291,7 @@ body.dark-mode .custom-tooltip::after {
         top: 66px;
         left: 14px;
         right: 14px;
-        min-width: 0;
+        width: calc(100% - 28px);
     }
 }
 
@@ -5606,3 +5593,129 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 .dark .md-btn, [data-theme="dark"] .md-btn { color: #94a3b8; }
 .dark .md-btn:hover, [data-theme="dark"] .md-btn:hover { background: rgba(255,255,255,0.1); color: #f8fafc; }
 .dark .md-divider, [data-theme="dark"] .md-divider { background: rgba(255,255,255,0.1); }
+
+/* === КНОПКА YOUTUBE РЯДОМ С НАЗВАНИЕМ === */
+.yt-video-mini-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+    border: none;
+    border-radius: 6px;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+.yt-video-mini-btn:hover {
+    background: #EF4444;
+    color: #FFFFFF;
+    transform: scale(1.1);
+}
+body.dark-mode .yt-video-mini-btn {
+    background: rgba(239, 68, 68, 0.15);
+}
+body.dark-mode .yt-video-mini-btn:hover {
+    background: #EF4444;
+    color: #FFFFFF;
+}
+
+/* === ПЛАВАЮЩЕЕ ОКНО ВИДЕО (DRAGGABLE & RESIZABLE) === */
+.yt-floating-modal {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    width: 400px; /* Стартовая ширина */
+    min-width: 6vw; /* Минимальная ширина */
+    max-width: 60vw; /* Максимальная ширина */
+    background: #0F172A;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.5);
+    z-index: 10500;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    resize: horizontal; /* Позволяет тянуть окно в ширину */
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* ХИТРОСТЬ: Когда окно закрыто, мы не удаляем его из DOM, 
+   а просто выкидываем за экран. Звук продолжает идти! */
+.yt-floating-modal.hidden-player {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    top: -9999px !important;
+    left: -9999px !important;
+    transform: scale(0);
+}
+
+.yt-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1E293B;
+    padding: 8px 12px;
+    cursor: grab;
+    user-select: none;
+    border-bottom: 1px solid #0F172A;
+}
+.yt-modal-header:active {
+    cursor: grabbing;
+}
+.yt-modal-drag-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #94A3B8;
+    font-size: 12px;
+    font-weight: 600;
+    flex: 1;
+    overflow: hidden;
+    pointer-events: none; /* Чтобы мышь цеплялась за хедер, а не за текст */
+}
+.yt-modal-drag-area span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.yt-modal-close {
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color 0.2s;
+}
+.yt-modal-close:hover {
+    color: #EF4444;
+}
+
+/* Контейнер видео всегда держит пропорции 16:9 благодаря CSS */
+.yt-modal-body {
+    width: 100%;
+    aspect-ratio: 16 / 9; 
+    background: #000000;
+    position: relative;
+}
+
+.yt-modal-body iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    pointer-events: auto;
+}
+
+/* Когда пользователь тянет окно (resize), блокируем iframe, 
+   чтобы мышка не проваливалась в видео */
+.yt-floating-modal:active .yt-modal-body iframe {
+    pointer-events: none;
+}
