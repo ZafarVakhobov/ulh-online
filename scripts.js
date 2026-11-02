@@ -4544,7 +4544,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ========================================== */
-/* === ЛОГИКА БЫСТРЫХ ЗАМЕТОК (QORALAMA) === */
+/* === ЛОГИКА БЫСТРЫХ ЗАМЕТОК (RICH TEXT) === */
 /* ========================================== */
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -4567,7 +4567,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 2. Логика хранения и данных ---
+    // --- 2. База данных ---
     let notes = JSON.parse(localStorage.getItem('ulh-scratch-notes')) || [];
     let activeNoteId = localStorage.getItem('ulh-scratch-active-id') || null;
 
@@ -4581,7 +4581,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const defaultNote = {
             id: Date.now().toString(),
             title: "Yangi qayd",
-            content: "Bu yerda siz tezkor qaydlarni yozişingiz mumkin. Yozgan matnlaringiz avtomatik tarzda saqlanadi..."
+            content: "Bu yerda siz tezkor qaydlarni yozişingiz mumkin. Yozgan matnlaringiz <b>avtomatik tarzda saqlanadi...</b>"
         };
         notes.push(defaultNote);
         activeNoteId = defaultNote.id;
@@ -4600,7 +4600,11 @@ document.addEventListener('DOMContentLoaded', () => {
             item.className = `scratch-item ${note.id === activeNoteId ? 'active' : ''}`;
             item.dataset.id = note.id;
 
-            const snippet = note.content ? note.content.substring(0, 45) : 'Böş qayd...';
+            // В превью убираем HTML теги, чтобы показывать чистый текст
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = note.content || '';
+            let plainText = tempDiv.innerText || '';
+            const snippet = plainText ? plainText.substring(0, 45) : 'Böş qayd...';
 
             item.innerHTML = `
                 <div class="scratch-item-title">${note.title || 'Mavzusiz'}</div>
@@ -4631,7 +4635,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeNote = notes.find(n => n.id === activeNoteId);
         if (activeNote) {
             titleInput.value = activeNote.title;
-            contentInput.value = activeNote.content;
+            contentInput.innerHTML = activeNote.content; // ИСПОЛЬЗУЕМ innerHTML
             if (statusText) statusText.innerHTML = "Özgarişlar saqlandi ✓";
         }
         renderNotesList();
@@ -4667,15 +4671,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeNoteIndex = notes.findIndex(n => n.id === activeNoteId);
         if (activeNoteIndex !== -1) {
             notes[activeNoteIndex].title = titleInput.value;
-            notes[activeNoteIndex].content = contentInput.value;
+            notes[activeNoteIndex].content = contentInput.innerHTML; // ИСПОЛЬЗУЕМ innerHTML
         }
 
         const activeItem = document.querySelector(`.scratch-item[data-id="${activeNoteId}"]`);
         if (activeItem) {
             const titleEl = activeItem.querySelector('.scratch-item-title');
             const previewEl = activeItem.querySelector('.scratch-item-preview');
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = contentInput.innerHTML;
+            let plainText = tempDiv.innerText || '';
+
             if (titleEl) titleEl.innerText = titleInput.value || 'Mavzusiz';
-            if (previewEl) previewEl.innerText = contentInput.value.substring(0, 45) || 'Böş qayd...';
+            if (previewEl) previewEl.innerText = plainText.substring(0, 45) || 'Böş qayd...';
         }
 
         clearTimeout(autoSaveTimeout);
@@ -4687,39 +4696,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (titleInput && contentInput) {
         titleInput.addEventListener('input', triggerAutoSave);
-        contentInput.addEventListener('input', triggerAutoSave);
+        contentInput.addEventListener('input', triggerAutoSave); // Слушает ввод текста
     }
 
-    // --- 3. Логика кнопок Markdown форматирования ---
+    // --- 3. Логика кнопок визуального форматирования ---
     const mdButtons = document.querySelectorAll('.md-btn');
     
     mdButtons.forEach(btn => {
+        // Чтобы редактор не терял фокус при клике на кнопку
+        btn.addEventListener('mousedown', (e) => {
+            e.preventDefault(); 
+        });
+        
         btn.addEventListener('click', () => {
             if (!contentInput) return;
             
-            const prefix = btn.getAttribute('data-prefix') || '';
-            const suffix = btn.getAttribute('data-suffix') || '';
+            const cmd = btn.getAttribute('data-cmd');
+            const val = btn.getAttribute('data-val') || null;
             
-            const start = contentInput.selectionStart;
-            const end = contentInput.selectionEnd;
-            const text = contentInput.value;
-            
-            const selectedText = text.substring(start, end);
-            const beforeText = text.substring(0, start);
-            const afterText = text.substring(end, text.length);
-            
-            contentInput.value = beforeText + prefix + selectedText + suffix + afterText;
-            contentInput.focus();
-            
-            if (selectedText.length === 0) {
-                contentInput.selectionStart = start + prefix.length;
-                contentInput.selectionEnd = start + prefix.length;
-            } else {
-                contentInput.selectionStart = start;
-                contentInput.selectionEnd = start + prefix.length + selectedText.length + suffix.length;
+            if (cmd) {
+                // Встроенная функция браузера для форматирования текста
+                document.execCommand(cmd, false, val);
+                triggerAutoSave();
             }
-            
-            triggerAutoSave();
         });
     });
 
