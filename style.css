@@ -5363,3 +5363,86 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 .dark .pom-mode-btn.active, [data-theme="dark"] .pom-mode-btn.active { background: #1e293b; color: #ef4444; }
 .dark .pom-ctrl-btn.secondary, [data-theme="dark"] .pom-ctrl-btn.secondary { background: rgba(255,255,255,0.1); color: #cbd5e1; }
 .dark .pom-ctrl-btn.secondary:hover, [data-theme="dark"] .pom-ctrl-btn.secondary:hover { background: rgba(255,255,255,0.15); }
+
+/* ========================================== */
+/* === СТИЛИ БЫСТРЫХ ЗАМЕТОК (QORALAMA) === */
+/* ========================================== */
+
+/* Кнопка в левом нижнем углу */
+.scratchpad-toggle-btn {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    width: 44px; 
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
+}
+.scratchpad-toggle-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(245, 158, 11, 0.45); background: #d97706; }
+
+/* Каркас окна */
+.scratch-wrapper {
+    display: flex; gap: 20px; flex-grow: 1; overflow: hidden; height: calc(100% - 40px);
+}
+
+/* Левая панель (Список) */
+.scratch-sidebar {
+    width: 240px; min-width: 200px; background: #f8fafc; border-radius: 12px; padding: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 12px;
+}
+.add-note-btn {
+    background: #f59e0b; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: background 0.2s, transform 0.1s; width: 100%;
+}
+.add-note-btn:hover { background: #d97706; }
+.add-note-btn:active { transform: scale(0.98); }
+.notes-list-scroll { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
+
+/* Элемент списка */
+.scratch-item {
+    background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; cursor: pointer; position: relative; transition: all 0.15s ease;
+}
+.scratch-item:hover { border-color: #cbd5e1; transform: translateY(-1px); }
+.scratch-item.active { border-left: 4px solid #f59e0b; background: #fffbeb; border-color: #fde68a; }
+.scratch-item-title { font-size: 13px; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+.scratch-item-preview { font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.delete-note-btn {
+    position: absolute; top: 6px; right: 6px; background: none; border: none; color: #94a3b8; font-size: 14px; font-weight: bold; cursor: pointer; opacity: 0; transition: opacity 0.2s, color 0.2s;
+}
+.scratch-item:hover .delete-note-btn { opacity: 1; }
+.delete-note-btn:hover { color: #ef4444; }
+
+/* Правая панель (Редактор) */
+.scratch-editor-area { flex-grow: 1; display: flex; flex-direction: column; }
+.note-title-field {
+    width: 100% !important; font-family: 'Manrope', sans-serif !important; font-size: 20px !important; font-weight: 800 !important; color: #0f172a !important; border: none !important; border-bottom: 1px solid #e2e8f0 !important; padding: 8px 0 !important; margin-bottom: 12px !important; outline: none !important; background: transparent !important; border-radius: 0 !important; box-shadow: none !important;
+}
+.note-content-area {
+    width: 100% !important; flex-grow: 1 !important; font-family: 'Manrope', sans-serif !important; font-size: 14px !important; color: #334155 !important; border: none !important; padding: 0 !important; outline: none !important; resize: none !important; background: transparent !important; line-height: 1.6 !important; border-radius: 0 !important; box-shadow: none !important; margin-top: 8px !important;
+}
+
+/* Компактная панель Markdown */
+.markdown-toolbar {
+    display: flex; align-items: center; gap: 2px; background: #f1f5f9; padding: 4px 6px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #e2e8f0;
+}
+.md-btn {
+    background: transparent; border: none; color: #475569; width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'Manrope', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s ease;
+}
+.md-btn:hover { background: #e2e8f0; color: #0f172a; }
+.md-divider { width: 1px; height: 14px; background: #cbd5e1; margin: 0 4px; }
+
+/* Темная тема */
+.dark #scratchpad-modal .kanban-modal-content, [data-theme="dark"] #scratchpad-modal .kanban-modal-content { background: #0f172a !important; border-color: rgba(255,255,255,0.08) !important; }
+.dark .scratch-sidebar, [data-theme="dark"] .scratch-sidebar { background: rgba(255,255,255,0.02) !important; border-color: rgba(255,255,255,0.05) !important; }
+.dark .scratch-item, [data-theme="dark"] .scratch-item { background: #1e293b !important; border-color: #334155 !important; }
+.dark .scratch-item-title, [data-theme="dark"] .scratch-item-title { color: #f8fafc !important; }
+.dark .scratch-item.active, [data-theme="dark"] .scratch-item.active { background: #1e1b12 !important; border-color: #451a03 !important; border-left-color: #f59e0b !important; }
+.dark .note-title-field, [data-theme="dark"] .note-title-field { color: #f8fafc !important; border-bottom-color: #334155 !important; }
+.dark .note-content-area, [data-theme="dark"] .note-content-area { color: #cbd5e1 !important; }
+.dark .markdown-toolbar, [data-theme="dark"] .markdown-toolbar { background: rgba(255,255,255,0.03) !important; border-color: rgba(255,255,255,0.08) !important; }
+.dark .md-btn, [data-theme="dark"] .md-btn { color: #94a3b8; }
+.dark .md-btn:hover, [data-theme="dark"] .md-btn:hover { background: rgba(255,255,255,0.1); color: #f8fafc; }
+.dark .md-divider, [data-theme="dark"] .md-divider { background: rgba(255,255,255,0.1); }
