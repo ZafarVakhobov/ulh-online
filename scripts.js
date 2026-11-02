@@ -4898,7 +4898,7 @@ window.loadCustomYoutube = function(urlFromHistory = null) {
 
     const videoId = getYoutubeId(rawUrl);
     if (!videoId) {
-        alert("Noto'g'ri YouTube havolasi! Iltimos, tekshirib qaytadan kiriting.");
+        alert("Notöğri YouTube havolasi! Iltimos, tekşirib qaytadan kiriting.");
         return;
     }
 
