@@ -2024,6 +2024,14 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         </svg>
     </button>
 
+<!-- 3. Кнопка Pomodoro (Иконка часов) -->
+    <button id="pomodoro-toggle-btn" class="pomodoro-toggle-btn" title="Pomodoro taymeri">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+    </button>
+    
 </div>
 
 <!-- Модальное окно доски -->
@@ -2126,6 +2134,36 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+<!-- ========================================== -->
+
+<!-- ========================================== -->
+<!-- === ОКНО POMODORO ТАЙМЕРА === -->
+<!-- ========================================== -->
+<div id="pomodoro-modal" class="kanban-modal-backdrop">
+    <div class="kanban-modal-content" style="max-width: 400px; text-align: center; padding: 32px 24px;">
+        <button id="pomodoro-close-btn" class="kanban-close-btn" title="Yopiş">×</button>
+        
+        <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-top: 0; margin-bottom: 20px;" class="dark:text-white">Fokus vaqti</h3>
+        
+        <!-- Кнопки выбора режима -->
+        <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; background: #f1f5f9; padding: 6px; border-radius: 12px;" class="dark:bg-slate-800">
+            <button class="pom-mode-btn active" data-time="25">Pomodoro</button>
+            <button class="pom-mode-btn" data-time="5">Qisqa tanaffus</button>
+            <button class="pom-mode-btn" data-time="15">Uzoq tanaffus</button>
+        </div>
+
+        <!-- Циферблат -->
+        <div id="pomodoro-display" style="font-size: 64px; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 24px;" class="dark:text-white">
+            25:00
+        </div>
+
+        <!-- Кнопки управления -->
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button id="pom-start-btn" class="pom-ctrl-btn primary">Boşlaş</button>
+            <button id="pom-reset-btn" class="pom-ctrl-btn secondary">Yangilaş</button>
         </div>
     </div>
 </div>
