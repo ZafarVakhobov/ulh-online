@@ -4759,27 +4759,6 @@ let isYtPlaying = false;
 let ytProgressInterval = null;
 const MUSIC_HISTORY_KEY = "ulh_music_history";
 
-// Проверяем ширину текста и включаем бегущую строку, если текст не влезает
-function checkTextOverflow() {
-    const title = document.getElementById("musicTitleText");
-    const sub = document.getElementById("musicSubtitleText");
-    const wrap = document.querySelector(".music-meta");
-    
-    if (!wrap || !title || !sub) return;
-
-    // Сбрасываем стили для пересчета
-    title.classList.remove("marquee-scroll");
-    sub.classList.remove("marquee-scroll");
-
-    // Если ширина текста больше ширины контейнера - запускаем бегущую строку
-    if (title.scrollWidth > wrap.clientWidth + 5) {
-        title.classList.add("marquee-scroll");
-    }
-    if (sub.scrollWidth > wrap.clientWidth + 5) {
-        sub.classList.add("marquee-scroll");
-    }
-}
-
 // Устанавливаем режим контроллеров (AI = 100% громкость, YT = 70/30 с таймлайном)
 function setPlayerUI_Mode(mode) {
     const controlsRow = document.getElementById("musicControlsRow");
@@ -4808,6 +4787,12 @@ function getYoutubeId(url) {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
+}
+
+// Лимит на 40 символов
+function truncateText(str, maxLength = 40) {
+    if (!str) return "";
+    return str.length > maxLength ? str.substring(0, maxLength - 3) + "..." : str;
 }
 
 function formatTime(seconds) {
@@ -4866,7 +4851,6 @@ window.loadCustomYoutube = function(urlFromHistory = null) {
     
     titleEl.textContent = "Yuklanmoqda...";
     subEl.textContent = "YouTube...";
-    checkTextOverflow();
     
     if (ytPlayer && typeof ytPlayer.loadVideoById === "function") {
         ytPlayer.loadVideoById(videoId);
@@ -4914,19 +4898,16 @@ function onPlayerStateChange(event) {
     }
 }
 
-// Вытягиваем название (без жесткой обрезки) и проверяем переполнение
+// Вытягиваем название (с жесткой обрезкой 40 символов)
 function fetchYtMetadata() {
     if (!ytPlayer || typeof ytPlayer.getVideoData !== 'function') return;
     const data = ytPlayer.getVideoData();
     if (data && data.title) {
-        // Больше не обрезаем текст жестко, доверяем CSS
-        const title = data.title; 
-        const author = data.author || "YouTube";
+        const title = truncateText(data.title, 40);
+        const author = truncateText(data.author || "YouTube", 40);
         
         document.getElementById("musicTitleText").textContent = title;
         document.getElementById("musicSubtitleText").textContent = author;
-        
-        checkTextOverflow();
         
         saveToMusicHistory(ytPlayer.getVideoUrl(), title, author);
     }
@@ -4976,8 +4957,6 @@ window.switchToAiMusic = function() {
     
     document.getElementById("musicTitleText").textContent = "Konsentratsiya uçun musiqa";
     document.getElementById("musicSubtitleText").textContent = "AI Generated Music by LANIGIRO";
-    
-    checkTextOverflow(); // Сбрасываем бегущую строку, если она не нужна
     
     if (typeof startAmbientMusic === "function") {
         startAmbientMusic();
