@@ -372,7 +372,6 @@
             <!-- Кнопка и выпадающее окошко генеративного плеера -->
             <div class="nav-music-wrap" id="navMusicWrap">
                 <button type="button" class="theme-toggle-btn music-toggle-btn" id="musicToggleBtn" onclick="toggleMusicDropdown(event)" title="Konsentratsiya uçun musiqa" aria-label="Musiqa pleyerini oçiş" aria-expanded="false">
-                    <!-- Иконка музыкальной ноты -->
                     <svg class="music-note-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M9 18V5l12-2v13"/>
                         <circle cx="6" cy="18" r="3"/>
@@ -383,29 +382,35 @@
                 <!-- Выпадающее окошко плеера -->
                 <div class="nav-dropdown music-dropdown-box" id="musicDropdownBox" onclick="event.stopPropagation()">
                     
-                    <!-- 1. Верхняя строка: Кнопка Play и Название (теперь на всю ширину) -->
                     <div class="music-player-row">
-                        <!-- Синий квадратик Play / Pause -->
                         <button type="button" class="music-cover-btn" id="musicPlayPauseBtn" onclick="togglePlaybackHandler(event)" title="Ijro etiş / Pauza" aria-label="Ijro etiş yoki pauza">
                             <svg class="play-state-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
                             <svg class="pause-state-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
                         </button>
+                        
+                        <!-- Блок с текстами (теперь с бегущей строкой) -->
                         <div class="music-meta">
-                            <div class="music-title" id="musicTitleText">Konsentratsiya uçun musiqa</div>
-                            <div class="music-subtitle" id="musicSubtitleText">AI Generated Music by LANIGIRO</div>
+                            <div class="music-title-wrap">
+                                <div class="music-title" id="musicTitleText">Konsentratsiya uçun musiqa</div>
+                            </div>
+                            <div class="music-title-wrap">
+                                <div class="music-subtitle" id="musicSubtitleText">AI Generated Music by LANIGIRO</div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 2. НОВОЕ: Строка контроллеров (70% - время, 30% - громкость) -->
-                    <div class="music-controls-row">
-                        <!-- Левая часть (70%) - Скрывается, когда включен AI-режим -->
+                    <!-- Строка контроллеров (Умная сетка) -->
+                    <div class="music-controls-row" id="musicControlsRow">
+                        
+                        <!-- Левая часть (Таймлайн) - Скрыта в AI режиме -->
                         <div class="music-progress-wrap" id="musicProgressRow" style="display: none;">
                             <input type="range" id="musicSeekbar" class="music-seekbar" value="0" min="0" max="100">
                             <span id="musicTimeDisplay" class="music-time-display">0:00 / 0:00</span>
                         </div>
                         
-                        <!-- Правая часть (30%) - Всегда видима -->
-                        <div class="music-volume-wrap">
+                        <!-- Правая часть (Громкость с иконкой динамика) -->
+                        <div class="music-volume-wrap" id="musicVolumeWrap">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #64748B;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
                             <div class="music-volume-capsule" id="musicVolumeCapsule" role="slider" tabindex="0" aria-label="Ovoz balandligi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
                                 <div class="music-volume-fill" id="musicVolumeFill" style="width: 70%;"></div>
                                 <span class="custom-tooltip" id="musicVolumeTooltip">70%</span>
@@ -413,13 +418,13 @@
                         </div>
                     </div>
 
-                    <!-- 3. Поле ввода своей ссылки (YouTube) -->
+                    <!-- Поле ввода своей ссылки (YouTube) -->
                     <div class="music-custom-input-row" id="musicCustomInputRow">
                         <input type="url" id="customMusicUrl" placeholder="YouTube havolasini kiriting..." class="music-url-input">
                         <button type="button" id="loadCustomMusicBtn" class="music-ok-btn" onclick="loadCustomYoutube()">OK</button>
                     </div>
 
-                    <!-- 4. Кнопка возврата к AI музыке -->
+                    <!-- Кнопка возврата к AI музыке -->
                     <button type="button" id="backToAiMusicBtn" class="music-back-ai-btn" style="display: none;" onclick="switchToAiMusic()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path></svg>
                         <span>Konsentratsiya musiqasiga qaytiş</span>
@@ -427,7 +432,7 @@
 
                     <hr class="dropdown-divider" style="margin-top: 12px; margin-bottom: 8px;">
 
-                    <!-- 5. История прослушиваний -->
+                    <!-- История прослушиваний -->
                     <div class="music-history-section">
                         <div class="music-history-header">
                             <span style="font-size: 11px; font-weight: 800; color: #64748B; text-transform: uppercase;">Tinglaş tarixi</span>
