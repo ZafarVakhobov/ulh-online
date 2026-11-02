@@ -5133,7 +5133,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// === 100% УНИВЕРСАЛЬНЫЙ AI-СЛОВАРЬ СИНОНИМОВ ===
+// === ТОЧНЫЙ УНИВЕРСАЛЬНЫЙ AI-СЛОВАРЬ СИНОНИМОВ ===
 document.addEventListener('DOMContentLoaded', () => {
     const floatingMenu = document.getElementById("aiFloatingMenu");
     const dropdown = document.getElementById("aiSynonymDropdown");
@@ -5142,7 +5142,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let selectedData = { text: "", element: null, type: "", start: 0, end: 0 };
 
-    // Отслеживаем любые изменения выделения на странице
     document.addEventListener("mouseup", checkActiveSelection);
     document.addEventListener("keyup", checkActiveSelection);
     document.addEventListener("selectionchange", checkActiveSelection);
@@ -5155,8 +5154,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         let selectedText = "";
+        let rect = null;
 
-        // 1. Проверяем текстовые поля ввода (textarea, input)
+        // 1. Проверяем обычные textarea и input
         if (activeEl.tagName === "TEXTAREA" || (activeEl.tagName === "INPUT" && activeEl.type === "text")) {
             const start = activeEl.selectionStart;
             const end = activeEl.selectionEnd;
@@ -5164,46 +5164,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedText = activeEl.value.substring(start, end).trim();
                 if (selectedText.length > 0) {
                     selectedData = { text: selectedText, element: activeEl, type: "textarea", start, end };
-                    showAiFloatingMenu(activeEl);
+                    
+                    // Вычисляем примерные координаты курсора/строки в textarea
+                    rect = activeEl.getBoundingClientRect();
+                    showAiFloatingMenuNearSelection(rect, selectedText);
                     return;
                 }
             }
         } 
-        // 2. Проверяем блоки с возможностью редактирования (contenteditable, например редактор ИИ или блокнот)
+        // 2. Проверяем блоки contenteditable (редакторы, блокноты)
         else if (activeEl.getAttribute("contenteditable") === "true" || activeEl.closest("[contenteditable='true']")) {
             const selection = window.getSelection();
             if (selection.rangeCount > 0) {
                 const text = selection.toString().trim();
                 if (text.length > 0 && text.length <= 40 && !/\s{2,}/.test(text)) {
                     selectedData = { text: text, element: selection.getRangeAt(0), type: "contenteditable" };
-                    showAiFloatingMenu(activeEl);
-                    return;
+                    
+                    // Берем точные координаты выделенного диапазона в документе
+                    const rangeRect = selection.getRangeAt(0).getBoundingClientRect();
+                    if (rangeRect && rangeRect.width > 0) {
+                        showAiFloatingMenuNearSelection(rangeRect, text);
+                        return;
+                    }
                 }
             }
         }
 
-        // Если текст не выделен или выделено слишком много — прячем плашку
         hideAiFloatingMenu();
     }
 
-    function showAiFloatingMenu(targetEl) {
-        const rect = targetEl.getBoundingClientRect();
+    function showAiFloatingMenuNearSelection(targetRect, text) {
+        // Ширина нашей плашки примерно 90-100 пикселей
+        const menuWidth = 95; 
+        
+        // Центрируем плашку строго по горизонтали относительно выделенного текста/области
+        const centerX = targetRect.left + (targetRect.width / 2) - (menuWidth / 2);
+        
+        // Располагаем ровно на 8-12 пикселей выше выделения (не отдаляя далеко)
+        const topPos = targetRect.top - 40;
 
-        // Позиционируем плашку аккуратно над верхним левым краем активного поля
-        floatingMenu.style.top = (window.scrollY + rect.top - 42) + "px";
-        floatingMenu.style.left = (window.scrollX + rect.left + 15) + "px";
+        floatingMenu.style.top = (window.scrollY + topPos) + "px";
+        floatingMenu.style.left = (window.scrollX + centerX) + "px";
 
         floatingMenu.classList.add("visible");
     }
 
     function hideAiFloatingMenu() {
-        // Закрываем плашку только если не открыт сам список вариантов
         if (!dropdown.classList.contains("open")) {
             floatingMenu.classList.remove("visible");
         }
     }
 
-    // Скрываем меню при клике вне плашки
     document.addEventListener("mousedown", (e) => {
         if (!floatingMenu.contains(e.target)) {
             dropdown.classList.remove("open");
@@ -5211,7 +5222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 100% гарантированный запрос и показ вариантов синонимов с автоопределением языка
+    // Запрос синонимов у ИИ с умным определением языка
     window.fetchSynonymsForSelection = async function(event) {
         if (event) {
             event.preventDefault();
@@ -5222,24 +5233,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         dropdown.innerHTML = `<div class="ai-syn-loading">Qidirilmoqda...</div>`;
         dropdown.classList.add("open");
-        floatingMenu.classList.add("visible"); // Держим плашку видимой
+        floatingMenu.classList.add("visible");
 
         const targetWord = selectedData.text;
         
-        // Получаем общий контекст (текст вокруг слова), чтобы ИИ понял язык
         let fullContext = "";
         if (selectedData.type === "textarea" && selectedData.element) {
             fullContext = selectedData.element.value;
         } else if (selectedData.type === "contenteditable" && selectedData.element) {
-            fullContext = selectedData.element.commonAncestorContainer.textContent || "";
+            fullContext = document.activeElement.textContent || "";
         }
-        
-        // Ограничиваем длину контекста, чтобы не перегружать запрос
         if (fullContext.length > 500) fullContext = fullContext.substring(0, 500);
 
-        // Умный промпт с учетом контекста и языка
         const promptText = `Senga umumiy matn konteksti va shu matn ichidan ajratib olingan so'z beriladi. 
-Kontekstga asoslanib, shu so'zning tilini (rus, ingliz, o'zbek yoki boshqa tillar) aniqlagin va aynan o'sha tilda 4-5 ta eng yaxshi sinonim (almashtirish varianti) topib ber. 
+Kontekstga asoslanib, shu so'zning tilini (rus, ingliz, o'zbek yoki boshqa tillar) aniqlagin va aynan o'sha tilda 3-4 ta eng yaxshi sinonim (almashtirish varianti) topib ber. 
 Faqat sinonimlarni vergul bilan yoki ro'yxat shaklida yoz, ortiqcha gap yozma.
 Kontekst: "${fullContext}"
 Ajratib olingan so'z: "${targetWord}"`;
@@ -5268,17 +5275,20 @@ Ajratib olingan so'z: "${targetWord}"`;
                 return;
             }
 
-            // Рендерим варианты в выпадающий список
             dropdown.innerHTML = "";
             synonyms.forEach(syn => {
                 const opt = document.createElement("button");
                 opt.type = "button";
                 opt.className = "ai-syn-option";
                 
-                // Проверяем язык: если текст узбекский, применяем наши правила алфавита, если нет — оставляем как есть
+                // СТРОГАЯ ПРОВЕРКА: Применяем узбекский алфавит (Ş, Ç, Ö, Ğ) ТОЛЬКО если исходный текст на узбекском
                 let finalSyn = syn;
-                const isUzbekText = /[o'g'shchöğşçўқғҳ]/i.test(targetWord) || /[o'g'shchöğşçўқғҳ]/i.test(fullContext);
-                if (isUzbekText && typeof enforceNewUzbekAlphabet === "function") {
+                const isUzbekText = /[o'g'shchöğşçўқғҳ'`]/i.test(targetWord) || /[o'g'shchöğşçўқғҳ'`]/i.test(fullContext);
+                
+                // Дополнительно убедимся, что это не чисто английское слово
+                const isEnglishWord = /^[a-zA-Z]+$/.test(targetWord) && !/[o'g'shchöğşçўқғҳ]/i.test(targetWord);
+
+                if (isUzbekText && !isEnglishWord && typeof enforceNewUzbekAlphabet === "function") {
                     finalSyn = enforceNewUzbekAlphabet(syn);
                 }
 
@@ -5308,7 +5318,6 @@ Ajratib olingan so'z: "${targetWord}"`;
             el.focus();
             el.selectionStart = el.selectionEnd = start + newWord.length;
 
-            // Если это главный редактор, обновляем автосохранение и статистику
             if (el.id === "editor") {
                 if (typeof saveEditorDraft === "function") saveEditorDraft();
                 if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
@@ -5329,7 +5338,6 @@ Ajratib olingan so'z: "${targetWord}"`;
             }
         }
 
-        // Полностью закрываем меню
         dropdown.classList.remove("open");
         floatingMenu.classList.remove("visible");
     }
