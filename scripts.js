@@ -4600,7 +4600,7 @@ document.addEventListener('DOMContentLoaded', () => {
             item.className = `scratch-item ${note.id === activeNoteId ? 'active' : ''}`;
             item.dataset.id = note.id;
 
-            const snippet = note.content ? note.content.substring(0, 45) : 'Bo\'sh qayd...';
+            const snippet = note.content ? note.content.substring(0, 45) : 'Böş qayd...';
 
             item.innerHTML = `
                 <div class="scratch-item-title">${note.title || 'Mavzusiz'}</div>
