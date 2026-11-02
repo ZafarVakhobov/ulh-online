@@ -5028,48 +5028,47 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     z-index: 1000;
 }
 
-/* Зеленая кнопка (Доска) */
-.kanban-toggle-btn {
-    background: #10B981; 
+/* Общий дизайн для всех 4-х кнопок панели */
+.kanban-toggle-btn,
+.sources-toggle-btn,
+.pomodoro-toggle-btn,
+.scratchpad-toggle-btn {
+    background: #2AABEE; 
     color: white;
     border: none;
-    padding: 10px 18px;
-    border-radius: 12px;
-    font-family: 'Manrope', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
-}
-.kanban-toggle-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.45);
-    background: #059669;
-}
-
-/* Синяя кнопка (Источники - только иконка) */
-.sources-toggle-btn {
-    background: #3b82f6;
-    color: white;
-    border: none;
-    width: 44px; /* Делаем идеальный квадрат для иконки */
-    height: 44px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 12px rgba(42, 171, 238, 0.3);
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
 }
-.sources-toggle-btn:hover {
+
+/* Эффект при наведении (Затемненный оттенок #2293CF) */
+.kanban-toggle-btn:hover,
+.sources-toggle-btn:hover,
+.pomodoro-toggle-btn:hover,
+.scratchpad-toggle-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.45);
-    background: #2563eb;
+    box-shadow: 0 6px 16px rgba(42, 171, 238, 0.45);
+    background: #2293CF; 
+}
+
+/* Индивидуальные размеры (Rejalarim с текстом, остальные - квадраты) */
+.kanban-toggle-btn {
+    padding: 10px 18px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    gap: 8px;
+}
+
+.sources-toggle-btn,
+.pomodoro-toggle-btn,
+.scratchpad-toggle-btn {
+    width: 44px; 
+    height: 44px;
 }
 
 /* Фон модального окна */
@@ -5297,27 +5296,6 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 /* === СТИЛИ POMODORO ТАЙМЕРА === */
 /* ========================================== */
 
-/* Кнопка в левом нижнем углу */
-.pomodoro-toggle-btn {
-    background: #ef4444; /* Красный (помидорный) цвет */
-    color: white;
-    border: none;
-    width: 44px; 
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
-}
-.pomodoro-toggle-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.45);
-    background: #dc2626;
-}
-
 /* Кнопки переключения режимов (25 / 5 / 15) */
 .pom-mode-btn {
     flex: 1;
@@ -5367,23 +5345,6 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 /* ========================================== */
 /* === СТИЛИ БЫСТРЫХ ЗАМЕТОК (QORALAMA) === */
 /* ========================================== */
-
-/* Кнопка в левом нижнем углу */
-.scratchpad-toggle-btn {
-    background: #f59e0b;
-    color: white;
-    border: none;
-    width: 44px; 
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
-}
-.scratchpad-toggle-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(245, 158, 11, 0.45); background: #d97706; }
 
 /* Каркас окна */
 .scratch-wrapper {
