@@ -5622,6 +5622,23 @@ body.dark-mode .yt-video-mini-btn:hover {
     color: #FFFFFF;
 }
 
+/* === РЕЖИМ КИНОТЕАТРА (ЗАТЕМНЕНИЕ ФОНА) === */
+.cinema-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85); /* 85% черный цвет */
+    z-index: 10400; /* Выше всего сайта, но ниже видеоплеера (10500) */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+}
+.cinema-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto; /* Клик по черному фону закроет режим кинотеатра */
+}
+
 /* === ПЛАВАЮЩЕЕ ОКНО ВИДЕО (DRAGGABLE & RESIZABLE) === */
 .yt-floating-modal {
     position: fixed;
@@ -5682,18 +5699,37 @@ body.dark-mode .yt-video-mini-btn:hover {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.yt-modal-close {
+
+/* === ГРУППА КНОПОК В ШАПКЕ ВИДЕО (ЛАМПОЧКА И ЗАКРЫТЬ) === */
+.yt-modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.yt-modal-btn {
     background: transparent;
     border: none;
     color: #94A3B8;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    transition: color 0.2s ease, transform 0.15s ease;
+}
+.yt-modal-btn:hover {
+    color: #F8FAFC;
+}
+/* Активная лампочка горит красивым желтым цветом */
+#cinemaToggleBtn.active {
+    color: #F59E0B; 
+}
+.yt-modal-close {
     font-size: 20px;
     line-height: 1;
-    cursor: pointer;
-    padding: 0 4px;
-    transition: color 0.2s;
 }
 .yt-modal-close:hover {
-    color: #EF4444;
+    color: #EF4444; /* Крестик становится красным при наведении */
 }
 
 /* Контейнер видео всегда держит пропорции 16:9 благодаря CSS */
