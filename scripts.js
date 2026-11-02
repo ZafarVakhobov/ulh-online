@@ -5171,15 +5171,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showAiFloatingMenu() {
-        // Упрощенная позиция: вешаем меню в правый верхний угол над textarea или рядом с курсором
-        const rect = editor.getBoundingClientRect();
+        const selection = window.getSelection();
         
-        // Показываем тулбар-кнопку
-        floatingMenu.style.top = (window.scrollY + rect.top - 42) + "px";
-        floatingMenu.style.left = (window.scrollX + rect.right - 100) + "px";
+        // Если в textarea выделен текст, getSelection() не всегда возвращает стандартный range в DOM, 
+        // поэтому мы проверяем выделение через свойства selectionStart / selectionEnd самого редактора:
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+
+        if (start !== end && (end - start) <= 40) {
+            // Вычисляем примерное положение курсора/выделения внутри textarea
+            // Для идеальной стабильности в textarea используем координаты самого редактора, 
+            // но располагаем кнопку поближе к началу строки ввода или над текстом:
+            const rect = editor.getBoundingClientRect();
+            
+            // Ставим плашку в левом верхнем углу над textarea, чтобы она всегда была на виду и никуда не улетала
+            floatingMenu.style.top = (window.scrollY + rect.top - 42) + "px";
+            floatingMenu.style.left = (window.scrollX + rect.left + 15) + "px";
+        } else {
+            // Запасной вариант
+            const rect = editor.getBoundingClientRect();
+            floatingMenu.style.top = (window.scrollY + rect.top - 42) + "px";
+            floatingMenu.style.left = (window.scrollX + rect.left + 15) + "px";
+        }
+
         floatingMenu.classList.add("visible");
-        
-        // Закрываем выпадающий список вариантов при новом выделении
         dropdown.classList.remove("open");
     }
 
