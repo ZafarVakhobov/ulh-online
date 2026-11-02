@@ -5211,7 +5211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 100% гарантированный запрос и показ вариантов синонимов
+    // 100% гарантированный запрос и показ вариантов синонимов с автоопределением языка
     window.fetchSynonymsForSelection = async function(event) {
         if (event) {
             event.preventDefault();
@@ -5225,7 +5225,24 @@ document.addEventListener('DOMContentLoaded', () => {
         floatingMenu.classList.add("visible"); // Держим плашку видимой
 
         const targetWord = selectedData.text;
-        const promptText = `Tilni aniqlab, ushbu so'z uchun 3-4 ta eng yaxshi sinonim (almashtirish varianti) topib ber. Faqat sinonimlarni vergul bilan yoki ro'yxat shaklida yoz, ortiqcha gap yozma: "${targetWord}"`;
+        
+        // Получаем общий контекст (текст вокруг слова), чтобы ИИ понял язык
+        let fullContext = "";
+        if (selectedData.type === "textarea" && selectedData.element) {
+            fullContext = selectedData.element.value;
+        } else if (selectedData.type === "contenteditable" && selectedData.element) {
+            fullContext = selectedData.element.commonAncestorContainer.textContent || "";
+        }
+        
+        // Ограничиваем длину контекста, чтобы не перегружать запрос
+        if (fullContext.length > 500) fullContext = fullContext.substring(0, 500);
+
+        // Умный промпт с учетом контекста и языка
+        const promptText = `Senga umumiy matn konteksti va shu matn ichidan ajratib olingan so'z beriladi. 
+Kontekstga asoslanib, shu so'zning tilini (rus, ingliz, o'zbek yoki boshqa tillar) aniqlagin va aynan o'sha tilda 4-5 ta eng yaxshi sinonim (almashtirish varianti) topib ber. 
+Faqat sinonimlarni vergul bilan yoki ro'yxat shaklida yoz, ortiqcha gap yozma.
+Kontekst: "${fullContext}"
+Ajratib olingan so'z: "${targetWord}"`;
 
         try {
             const response = await fetch(AI_PROXY_ENDPOINT, {
@@ -5257,7 +5274,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const opt = document.createElement("button");
                 opt.type = "button";
                 opt.className = "ai-syn-option";
-                opt.textContent = (typeof enforceNewUzbekAlphabet === "function") ? enforceNewUzbekAlphabet(syn) : syn;
+                
+                // Проверяем язык: если текст узбекский, применяем наши правила алфавита, если нет — оставляем как есть
+                let finalSyn = syn;
+                const isUzbekText = /[o'g'shchöğşçўқғҳ]/i.test(targetWord) || /[o'g'shchöğşçўқғҳ]/i.test(fullContext);
+                if (isUzbekText && typeof enforceNewUzbekAlphabet === "function") {
+                    finalSyn = enforceNewUzbekAlphabet(syn);
+                }
+
+                opt.textContent = finalSyn;
                 
                 opt.onclick = (e) => {
                     e.preventDefault();
