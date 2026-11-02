@@ -4690,7 +4690,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(autoSaveTimeout);
         autoSaveTimeout = setTimeout(() => {
             localStorage.setItem('ulh-scratch-notes', JSON.stringify(notes));
-            if (statusText) statusText.innerHTML = "Avtomatik saqlanmoqda... ✓";
+            if (statusText) statusText.innerHTML = "Saqlandi📋";
         }, 300);
     };
 
@@ -4699,11 +4699,11 @@ document.addEventListener('DOMContentLoaded', () => {
         contentInput.addEventListener('input', triggerAutoSave); // Слушает ввод текста
     }
 
-    // --- 3. Логика кнопок визуального форматирования ---
+    // --- 3. Логика кнопок визуального форматирования (С ТУМБЛЕРОМ) ---
     const mdButtons = document.querySelectorAll('.md-btn');
     
     mdButtons.forEach(btn => {
-        // Чтобы редактор не терял фокус при клике на кнопку
+        // Предотвращаем потерю фокуса с редактора при клике на кнопки панели
         btn.addEventListener('mousedown', (e) => {
             e.preventDefault(); 
         });
@@ -4715,8 +4715,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const val = btn.getAttribute('data-val') || null;
             
             if (cmd) {
-                // Встроенная функция браузера для форматирования текста
-                document.execCommand(cmd, false, val);
+                // Если команда связана с созданием блока (Цитата, Код, Заголовок)
+                if (cmd === 'formatBlock') {
+                    // 1. Проверяем, находится ли курсор уже внутри этого блока
+                    let node = document.getSelection().anchorNode;
+                    let isAlreadyInBlock = false;
+                    
+                    while (node && node !== contentInput) {
+                        if (node.nodeName === val) { 
+                            isAlreadyInBlock = true; 
+                            break; 
+                        }
+                        node = node.parentNode;
+                    }
+                    
+                    // 2. Если внутри — выключаем его (превращаем обратно в обычный текст DIV)
+                    if (isAlreadyInBlock) {
+                        document.execCommand('formatBlock', false, 'DIV');
+                    } 
+                    // 3. Если нет — включаем
+                    else {
+                        document.execCommand('formatBlock', false, val);
+                    }
+                } 
+                // Для всех остальных кнопок (жирный, списки) стандартное поведение
+                else {
+                    document.execCommand(cmd, false, val);
+                }
+                
                 triggerAutoSave();
             }
         });
