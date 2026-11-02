@@ -5133,20 +5133,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// === ТОЧНЫЙ КОНТЕКСТНЫЙ AI-СЛОВАРЬ СИНОНИМОВ ===
+// === 100% УНИВЕРСАЛЬНЫЙ AI-СЛОВАРЬ СИНОНИМОВ ===
 document.addEventListener('DOMContentLoaded', () => {
     const floatingMenu = document.getElementById("aiFloatingMenu");
     const dropdown = document.getElementById("aiSynonymDropdown");
     
     if (!floatingMenu || !dropdown) return;
 
-    let selectedData = { text: "", element: null };
+    let selectedData = { text: "", element: null, type: "", start: 0, end: 0 };
 
-    // Отслеживаем выделение текста в основных текстовых полях и редакторах
-    document.addEventListener("mouseup", checkSelection);
-    document.addEventListener("keyup", checkSelection);
+    // Отслеживаем любые изменения выделения на странице
+    document.addEventListener("mouseup", checkActiveSelection);
+    document.addEventListener("keyup", checkActiveSelection);
+    document.addEventListener("selectionchange", checkActiveSelection);
 
-    function checkSelection() {
+    function checkActiveSelection() {
         const activeEl = document.activeElement;
         if (!activeEl) {
             hideAiFloatingMenu();
@@ -5155,65 +5156,73 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let selectedText = "";
 
-        // Проверяем textarea или input
-        if ((activeEl.tagName === "TEXTAREA" || activeEl.tagName === "INPUT") && activeEl.type === "text") {
+        // 1. Проверяем текстовые поля ввода (textarea, input)
+        if (activeEl.tagName === "TEXTAREA" || (activeEl.tagName === "INPUT" && activeEl.type === "text")) {
             const start = activeEl.selectionStart;
             const end = activeEl.selectionEnd;
-            if (start !== end && (end - start) <= 40) {
+            if (start !== undefined && start !== end && (end - start) <= 40) {
                 selectedText = activeEl.value.substring(start, end).trim();
-                selectedData = { text: selectedText, element: activeEl, start, end, type: "textarea" };
+                if (selectedText.length > 0) {
+                    selectedData = { text: selectedText, element: activeEl, type: "textarea", start, end };
+                    showAiFloatingMenu(activeEl);
+                    return;
+                }
             }
         } 
-        // Проверяем блоки contenteditable (окно ИИ, блокнот)
+        // 2. Проверяем блоки с возможностью редактирования (contenteditable, например редактор ИИ или блокнот)
         else if (activeEl.getAttribute("contenteditable") === "true" || activeEl.closest("[contenteditable='true']")) {
             const selection = window.getSelection();
             if (selection.rangeCount > 0) {
                 const text = selection.toString().trim();
                 if (text.length > 0 && text.length <= 40 && !/\s{2,}/.test(text)) {
-                    selectedText = text;
-                    selectedData = { text: selectedText, element: selection.getRangeAt(0), type: "contenteditable" };
+                    selectedData = { text: text, element: selection.getRangeAt(0), type: "contenteditable" };
+                    showAiFloatingMenu(activeEl);
+                    return;
                 }
             }
         }
 
-        if (!selectedText || (selectedText.indexOf(' ') !== -1 && selectedText.length > 25)) {
-            hideAiFloatingMenu();
-            return;
-        }
-
-        showAiFloatingMenu(activeEl);
+        // Если текст не выделен или выделено слишком много — прячем плашку
+        hideAiFloatingMenu();
     }
 
-    function showAiFloatingMenu(activeEl) {
-        const rect = activeEl.getBoundingClientRect();
+    function showAiFloatingMenu(targetEl) {
+        const rect = targetEl.getBoundingClientRect();
 
-        // Располагаем кнопку аккуратно над верхним левым краем активного поля ввода, 
-        // чтобы она гарантированно была на виду и никуда не улетала
+        // Позиционируем плашку аккуратно над верхним левым краем активного поля
         floatingMenu.style.top = (window.scrollY + rect.top - 42) + "px";
         floatingMenu.style.left = (window.scrollX + rect.left + 15) + "px";
 
         floatingMenu.classList.add("visible");
-        dropdown.classList.remove("open");
     }
 
     function hideAiFloatingMenu() {
-        floatingMenu.classList.remove("visible");
-        dropdown.classList.remove("open");
+        // Закрываем плашку только если не открыт сам список вариантов
+        if (!dropdown.classList.contains("open")) {
+            floatingMenu.classList.remove("visible");
+        }
     }
 
-    // Скрываем меню при клике в любое другое место
+    // Скрываем меню при клике вне плашки
     document.addEventListener("mousedown", (e) => {
-        if (!floatingMenu.contains(e.target) && !e.target.closest("#aiFloatingMenu")) {
-            hideAiFloatingMenu();
+        if (!floatingMenu.contains(e.target)) {
+            dropdown.classList.remove("open");
+            floatingMenu.classList.remove("visible");
         }
     });
 
-    // Запрос синонимов у ИИ
-    window.fetchSynonymsForSelection = async function() {
+    // 100% гарантированный запрос и показ вариантов синонимов
+    window.fetchSynonymsForSelection = async function(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
         if (!selectedData.text) return;
 
         dropdown.innerHTML = `<div class="ai-syn-loading">Qidirilmoqda...</div>`;
         dropdown.classList.add("open");
+        floatingMenu.classList.add("visible"); // Держим плашку видимой
 
         const targetWord = selectedData.text;
         const promptText = `Ushbu o'zbekcha so'z uchun 3-4 ta eng yaxshi sinonim (almashtirish varianti) topib ber. Faqat sinonimlarni vergul bilan yoki ro'yxat shaklida yoz, ortiqcha gap yozma: "${targetWord}"`;
@@ -5242,18 +5251,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Очищаем и заполняем выпадающий список вариантов замен
+            // Рендерим варианты в выпадающий список
             dropdown.innerHTML = "";
             synonyms.forEach(syn => {
                 const opt = document.createElement("button");
                 opt.type = "button";
                 opt.className = "ai-syn-option";
-                opt.textContent = typeof enforceNewUzbekAlphabet === "function" ? enforceNewUzbekAlphabet(syn) : syn;
+                opt.textContent = (typeof enforceNewUzbekAlphabet === "function") ? enforceNewUzbekAlphabet(syn) : syn;
                 
-                // Клик по варианту заменяет слово
                 opt.onclick = (e) => {
+                    e.preventDefault();
                     e.stopPropagation();
-                    replaceWord(opt.textContent);
+                    replaceWordInActiveField(opt.textContent);
                 };
                 dropdown.appendChild(opt);
             });
@@ -5264,7 +5273,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    function replaceWord(newWord) {
+    function replaceWordInActiveField(newWord) {
         if (selectedData.type === "textarea" && selectedData.element) {
             const el = selectedData.element;
             const start = selectedData.start;
@@ -5274,6 +5283,7 @@ document.addEventListener('DOMContentLoaded', () => {
             el.focus();
             el.selectionStart = el.selectionEnd = start + newWord.length;
 
+            // Если это главный редактор, обновляем автосохранение и статистику
             if (el.id === "editor") {
                 if (typeof saveEditorDraft === "function") saveEditorDraft();
                 if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
@@ -5286,9 +5296,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const range = selection.getRangeAt(0);
                 range.deleteContents();
                 range.insertNode(document.createTextNode(newWord));
+
+                const editableBox = selection.anchorNode.parentElement.closest("[contenteditable='true']");
+                if (editableBox) {
+                    editableBox.dispatchEvent(new Event('input', { bubbles: true }));
+                }
             }
         }
 
-        hideAiFloatingMenu();
+        // Полностью закрываем меню
+        dropdown.classList.remove("open");
+        floatingMenu.classList.remove("visible");
     }
 });
