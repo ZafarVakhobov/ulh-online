@@ -4411,3 +4411,134 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderSources();
 });
+
+/* ========================================== */
+/* === ЛОГИКА POMODORO ТАЙМЕРА === */
+/* ========================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. Окно таймера
+    const pomBtn = document.getElementById('pomodoro-toggle-btn');
+    const pomModal = document.getElementById('pomodoro-modal');
+    const pomCloseBtn = document.getElementById('pomodoro-close-btn');
+
+    if (pomBtn && pomModal && pomCloseBtn) {
+        pomBtn.addEventListener('click', () => pomModal.classList.add('open'));
+        pomCloseBtn.addEventListener('click', () => pomModal.classList.remove('open'));
+        pomModal.addEventListener('click', (e) => {
+            if (e.target === pomModal) pomModal.classList.remove('open');
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && pomModal.classList.contains('open')) pomModal.classList.remove('open');
+        });
+    }
+
+    // 2. Логика самого времени
+    let timerInterval = null;
+    let timeLeft = 25 * 60; // 25 минут в секундах
+    let isRunning = false;
+    let currentDuration = 25 * 60;
+
+    const display = document.getElementById('pomodoro-display');
+    const startBtn = document.getElementById('pom-start-btn');
+    const resetBtn = document.getElementById('pom-reset-btn');
+    const modeBtns = document.querySelectorAll('.pom-mode-btn');
+
+    // Функция звукового сигнала (использует встроенный синтезатор браузера)
+    const playBeep = () => {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            osc.type = 'sine'; // Мягкий звук
+            osc.frequency.setValueAtTime(800, ctx.currentTime);
+            osc.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.3); // Звучит 0.3 секунды
+        } catch (e) {
+            console.log("Audio API is not supported in this browser");
+        }
+    };
+
+    const updateDisplay = () => {
+        if (!display) return;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        // Добавляем нули, если цифра меньше 10
+        display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        // Также обновляем заголовок вкладки браузера, чтобы было видно время, даже если окно свернуто!
+        if (isRunning) {
+            document.title = `(${display.textContent}) ULH Online`;
+        } else {
+            document.title = `ULH Online`;
+        }
+    };
+
+    const stopTimer = () => {
+        clearInterval(timerInterval);
+        isRunning = false;
+        if(startBtn) {
+            startBtn.textContent = 'Boşlaş';
+            startBtn.style.background = '#ef4444';
+        }
+        document.title = `ULH Online`;
+    };
+
+    const startTimer = () => {
+        if (isRunning) {
+            stopTimer(); // Если уже идет - ставим на паузу
+            return;
+        }
+        
+        isRunning = true;
+        if(startBtn) {
+            startBtn.textContent = 'Töxtatiş';
+            startBtn.style.background = '#f59e0b'; // Желтый цвет для паузы
+        }
+
+        timerInterval = setInterval(() => {
+            if (timeLeft > 0) {
+                timeLeft--;
+                updateDisplay();
+            } else {
+                // Время вышло!
+                stopTimer();
+                playBeep();
+                // Возвращаем изначальное время текущего режима
+                timeLeft = currentDuration; 
+                updateDisplay();
+                alert("Vaqt tugadi! Dam oling yoki ishni davom ettiring."); // Уведомление
+            }
+        }, 1000);
+    };
+
+    if (startBtn) startBtn.addEventListener('click', startTimer);
+    
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            stopTimer();
+            timeLeft = currentDuration;
+            updateDisplay();
+        });
+    }
+
+    // Переключение режимов (25, 5, 15)
+    modeBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Убираем класс active у всех и даем нажатой
+            modeBtns.forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+
+            // Меняем время
+            const mins = parseInt(e.target.getAttribute('data-time'));
+            currentDuration = mins * 60;
+            timeLeft = currentDuration;
+            
+            stopTimer();
+            updateDisplay();
+        });
+    });
+
+    // Первичная отрисовка
+    updateDisplay();
+});
