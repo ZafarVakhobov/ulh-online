@@ -5133,46 +5133,45 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// === УНИВЕРСАЛЬНЫЙ КОНТЕКСТНЫЙ AI-СЛОВАРЬ СИНОНИМОВ ===
+// === ТОЧНЫЙ КОНТЕКСТНЫЙ AI-СЛОВАРЬ СИНОНИМОВ ===
 document.addEventListener('DOMContentLoaded', () => {
     const floatingMenu = document.getElementById("aiFloatingMenu");
     const dropdown = document.getElementById("aiSynonymDropdown");
     
     if (!floatingMenu || !dropdown) return;
 
-    let activeElement = null;
-    let selectedData = { text: "", type: "", range: null };
+    let selectedData = { text: "", element: null };
 
-    // Слушаем выделение текста во всем документе ( textarea, input, contenteditable )
-    document.addEventListener("mouseup", checkGlobalSelection);
-    document.addEventListener("keyup", checkGlobalSelection);
+    // Отслеживаем выделение текста в основных текстовых полях и редакторах
+    document.addEventListener("mouseup", checkSelection);
+    document.addEventListener("keyup", checkSelection);
 
-    function checkGlobalSelection() {
+    function checkSelection() {
         const activeEl = document.activeElement;
-        if (!activeEl) return;
+        if (!activeEl) {
+            hideAiFloatingMenu();
+            return;
+        }
 
         let selectedText = "";
-        let targetType = "";
 
-        // 1. Если текст выделен в обычных полях ввода или textarea
+        // Проверяем textarea или input
         if ((activeEl.tagName === "TEXTAREA" || activeEl.tagName === "INPUT") && activeEl.type === "text") {
             const start = activeEl.selectionStart;
             const end = activeEl.selectionEnd;
             if (start !== end && (end - start) <= 40) {
                 selectedText = activeEl.value.substring(start, end).trim();
-                targetType = "input";
-                activeElement = activeEl;
+                selectedData = { text: selectedText, element: activeEl, start, end, type: "textarea" };
             }
         } 
-        // 2. Если текст выделен в визуальном редакторе (contenteditable, например в окне ИИ или блокноте)
+        // Проверяем блоки contenteditable (окно ИИ, блокнот)
         else if (activeEl.getAttribute("contenteditable") === "true" || activeEl.closest("[contenteditable='true']")) {
             const selection = window.getSelection();
             if (selection.rangeCount > 0) {
                 const text = selection.toString().trim();
                 if (text.length > 0 && text.length <= 40 && !/\s{2,}/.test(text)) {
                     selectedText = text;
-                    targetType = "contenteditable";
-                    activeElement = selection.getRangeAt(0); // Сохраняем Range
+                    selectedData = { text: selectedText, element: selection.getRangeAt(0), type: "contenteditable" };
                 }
             }
         }
@@ -5182,25 +5181,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        selectedData = { text: selectedText, type: targetType, element: activeElement };
         showAiFloatingMenu(activeEl);
     }
 
-    function showAiFloatingMenu(targetEl) {
-        let rect;
-        if (targetEl.tagName === "TEXTAREA" || targetEl.tagName === "INPUT") {
-            rect = targetEl.getBoundingClientRect();
-            // Ставим аккуратно над верхним краем поля ввода
-            floatingMenu.style.top = (window.scrollY + rect.top - 42) + "px";
-            floatingMenu.style.left = (window.scrollX + rect.left + 15) + "px";
-        } else {
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                const rangeRect = selection.getRangeAt(0).getBoundingClientRect();
-                floatingMenu.style.top = (window.scrollY + rangeRect.top - 40) + "px";
-                floatingMenu.style.left = (window.scrollX + rangeRect.left) + "px";
-            }
-        }
+    function showAiFloatingMenu(activeEl) {
+        const rect = activeEl.getBoundingClientRect();
+
+        // Располагаем кнопку аккуратно над верхним левым краем активного поля ввода, 
+        // чтобы она гарантированно была на виду и никуда не улетала
+        floatingMenu.style.top = (window.scrollY + rect.top - 42) + "px";
+        floatingMenu.style.left = (window.scrollX + rect.left + 15) + "px";
 
         floatingMenu.classList.add("visible");
         dropdown.classList.remove("open");
@@ -5211,6 +5201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dropdown.classList.remove("open");
     }
 
+    // Скрываем меню при клике в любое другое место
     document.addEventListener("mousedown", (e) => {
         if (!floatingMenu.contains(e.target) && !e.target.closest("#aiFloatingMenu")) {
             hideAiFloatingMenu();
@@ -5251,6 +5242,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Очищаем и заполняем выпадающий список вариантов замен
             dropdown.innerHTML = "";
             synonyms.forEach(syn => {
                 const opt = document.createElement("button");
@@ -5258,8 +5250,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.className = "ai-syn-option";
                 opt.textContent = typeof enforceNewUzbekAlphabet === "function" ? enforceNewUzbekAlphabet(syn) : syn;
                 
-                opt.onclick = () => {
-                    replaceSelectedWordInDom(syn);
+                // Клик по варианту заменяет слово
+                opt.onclick = (e) => {
+                    e.stopPropagation();
+                    replaceWord(opt.textContent);
                 };
                 dropdown.appendChild(opt);
             });
@@ -5270,11 +5264,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    function replaceSelectedWordInDom(newWord) {
-        if (selectedData.type === "input" && selectedData.element) {
+    function replaceWord(newWord) {
+        if (selectedData.type === "textarea" && selectedData.element) {
             const el = selectedData.element;
-            const start = el.selectionStart;
-            const end = el.selectionEnd;
+            const start = selectedData.start;
+            const end = selectedData.end;
+            
             el.value = el.value.substring(0, start) + newWord + el.value.substring(end);
             el.focus();
             el.selectionStart = el.selectionEnd = start + newWord.length;
@@ -5291,12 +5286,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const range = selection.getRangeAt(0);
                 range.deleteContents();
                 range.insertNode(document.createTextNode(newWord));
-                
-                // Триггерим событие input, чтобы модальные окна ИИ или блокнота зафиксировали изменения
-                const editableBox = selection.anchorNode.parentElement.closest("[contenteditable='true']");
-                if (editableBox) {
-                    editableBox.dispatchEvent(new Event('input', { bubbles: true }));
-                }
             }
         }
 
