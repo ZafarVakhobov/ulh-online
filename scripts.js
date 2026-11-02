@@ -4824,26 +4824,35 @@ function togglePlaybackHandler(event) {
     }
 }
 
-// --- ЛОГИКА ПЛАВАЮЩЕГО ОКНА ВИДЕО ---
+// --- ЛОГИКА ПЛАВАЮЩЕГО ОКНА ВИДЕО И РЕЖИМА КИНОТЕАТРА ---
 
-// Открываем окно с видео (вызывается по клику на красную иконку YT)
+// Включение / выключение режима кинотеатра
+window.toggleCinemaMode = function(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    const overlay = document.getElementById("cinemaOverlay");
+    const btn = document.getElementById("cinemaToggleBtn");
+    
+    if (overlay) {
+        const isActive = overlay.classList.toggle("active");
+        if (btn) btn.classList.toggle("active", isActive);
+    }
+};
+
+// Открываем окно с видео
 window.openYtVideoModal = function() {
     const modal = document.getElementById("ytFloatingModal");
     const dropdown = document.getElementById("navMusicWrap");
     
     if (modal) {
-        // Убираем класс "hidden-player", чтобы вернуть окно на экран
         modal.classList.remove("hidden-player");
-        
-        // Сбрасываем позицию в правый верхний угол по умолчанию (если окно уехало)
         if (!modal.style.top || modal.style.top === "-9999px") {
             modal.style.top = "80px";
             modal.style.left = "auto";
             modal.style.right = "24px";
         }
     }
-    
-    // Закрываем зеленое меню плеера
     if (dropdown) {
         dropdown.classList.remove("open");
         const btn = document.getElementById("musicToggleBtn");
@@ -4851,11 +4860,21 @@ window.openYtVideoModal = function() {
     }
 };
 
-// Закрываем окно с видео (прячем его за экран, чтобы звук не прерывался)
+// Закрываем окно с видео (прячем его за экран) И ВЫКЛЮЧАЕМ СВЕТ
 window.closeYtVideoModal = function() {
     const modal = document.getElementById("ytFloatingModal");
     if (modal) {
         modal.classList.add("hidden-player");
+    }
+    
+    // Плавное отключение режима кинотеатра, если он был включен
+    const overlay = document.getElementById("cinemaOverlay");
+    const btn = document.getElementById("cinemaToggleBtn");
+    if (overlay && overlay.classList.contains("active")) {
+        overlay.classList.remove("active");
+    }
+    if (btn && btn.classList.contains("active")) {
+        btn.classList.remove("active");
     }
 };
 
@@ -5016,7 +5035,7 @@ window.switchToAiMusic = function() {
     isYtPlaying = false;
     clearInterval(ytProgressInterval);
 
-    // Прячем видео окно
+    // Прячем видео окно и плавно выключаем свет, если он был включен
     closeYtVideoModal();
 
     document.getElementById("musicCustomInputRow").style.display = "flex";
@@ -5107,6 +5126,7 @@ document.addEventListener("click", (e) => {
     }
 });
 
+// Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
     setPlayerUI_Mode('ai');
     renderMusicHistory();
