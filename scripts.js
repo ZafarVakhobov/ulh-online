@@ -5225,7 +5225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         floatingMenu.classList.add("visible"); // Держим плашку видимой
 
         const targetWord = selectedData.text;
-        const promptText = `Ushbu o'zbekcha so'z uchun 3-4 ta eng yaxshi sinonim (almashtirish varianti) topib ber. Faqat sinonimlarni vergul bilan yoki ro'yxat shaklida yoz, ortiqcha gap yozma: "${targetWord}"`;
+        const promptText = `Tilni aniqlab, ushbu so'z uchun 3-4 ta eng yaxshi sinonim (almashtirish varianti) topib ber. Faqat sinonimlarni vergul bilan yoki ro'yxat shaklida yoz, ortiqcha gap yozma: "${targetWord}"`;
 
         try {
             const response = await fetch(AI_PROXY_ENDPOINT, {
