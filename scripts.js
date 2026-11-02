@@ -4762,18 +4762,21 @@ const MUSIC_HISTORY_KEY = "ulh_music_history";
 // Устанавливаем режим контроллеров (AI = 100% громкость, YT = 70/30 с таймлайном)
 function setPlayerUI_Mode(mode) {
     const controlsRow = document.getElementById("musicControlsRow");
+    const ytVideoBtn = document.getElementById("openYtVideoBtn");
     if (!controlsRow) return;
 
     if (mode === 'yt') {
         controlsRow.classList.remove('ai-mode');
         controlsRow.classList.add('yt-mode');
+        if (ytVideoBtn) ytVideoBtn.style.display = "inline-flex";
     } else {
         controlsRow.classList.remove('yt-mode');
         controlsRow.classList.add('ai-mode');
+        if (ytVideoBtn) ytVideoBtn.style.display = "none";
     }
 }
 
-// Инициализация официального YouTube Iframe API
+// Инициализация YouTube API
 function loadYoutubeAPI() {
     if (window.YT) return;
     const tag = document.createElement('script');
@@ -4789,7 +4792,7 @@ function getYoutubeId(url) {
     return (match && match[2].length === 11) ? match[2] : null;
 }
 
-// Лимит на 40 символов
+// Ограничение в 40 символов
 function truncateText(str, maxLength = 40) {
     if (!str) return "";
     return str.length > maxLength ? str.substring(0, maxLength - 3) + "..." : str;
@@ -4821,7 +4824,73 @@ function togglePlaybackHandler(event) {
     }
 }
 
-// Загрузка YouTube
+// --- ЛОГИКА ПЛАВАЮЩЕГО ОКНА ВИДЕО ---
+
+// Открываем окно с видео (вызывается по клику на красную иконку YT)
+window.openYtVideoModal = function() {
+    const modal = document.getElementById("ytFloatingModal");
+    const dropdown = document.getElementById("navMusicWrap");
+    
+    if (modal) {
+        // Убираем класс "hidden-player", чтобы вернуть окно на экран
+        modal.classList.remove("hidden-player");
+        
+        // Сбрасываем позицию в правый верхний угол по умолчанию (если окно уехало)
+        if (!modal.style.top || modal.style.top === "-9999px") {
+            modal.style.top = "80px";
+            modal.style.left = "auto";
+            modal.style.right = "24px";
+        }
+    }
+    
+    // Закрываем зеленое меню плеера
+    if (dropdown) {
+        dropdown.classList.remove("open");
+        const btn = document.getElementById("musicToggleBtn");
+        if (btn) btn.setAttribute("aria-expanded", "false");
+    }
+};
+
+// Закрываем окно с видео (прячем его за экран, чтобы звук не прерывался)
+window.closeYtVideoModal = function() {
+    const modal = document.getElementById("ytFloatingModal");
+    if (modal) {
+        modal.classList.add("hidden-player");
+    }
+};
+
+// Скрипт перетаскивания (Drag & Drop) модального окна за шапку
+(function initDraggableModal() {
+    const modal = document.getElementById("ytFloatingModal");
+    const header = document.getElementById("ytModalHeader");
+    if (!modal || !header) return;
+
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    header.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        // Вычисляем смещение мыши относительно левого верхнего угла модалки
+        const rect = modal.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        modal.style.right = "auto"; // Отключаем привязку к правому краю
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        // Двигаем окно за мышью
+        modal.style.left = (e.clientX - offsetX) + "px";
+        modal.style.top = (e.clientY - offsetY) + "px";
+    });
+
+    document.addEventListener("mouseup", () => {
+        isDragging = false;
+    });
+})();
+
+// --- ЗАГРУЗКА ВИДЕО ---
 window.loadCustomYoutube = function(urlFromHistory = null) {
     const inputEl = document.getElementById("customMusicUrl");
     let rawUrl = urlFromHistory || (inputEl ? inputEl.value.trim() : "");
@@ -4839,27 +4908,25 @@ window.loadCustomYoutube = function(urlFromHistory = null) {
 
     isCustomMusicMode = true;
 
-    // Перестраиваем интерфейс
     document.getElementById("musicCustomInputRow").style.display = "none";
     document.getElementById("musicProgressRow").style.display = "flex"; 
     document.getElementById("backToAiMusicBtn").style.display = "inline-flex";
     
-    setPlayerUI_Mode('yt'); // Включаем режим 70/30
+    setPlayerUI_Mode('yt');
 
-    const titleEl = document.getElementById("musicTitleText");
-    const subEl = document.getElementById("musicSubtitleText");
-    
-    titleEl.textContent = "Yuklanmoqda...";
-    subEl.textContent = "YouTube...";
+    document.getElementById("musicTitleText").textContent = "Yuklanmoqda...";
+    document.getElementById("musicSubtitleText").textContent = "YouTube...";
+    document.getElementById("ytModalFloatTitle").textContent = "Yuklanmoqda...";
     
     if (ytPlayer && typeof ytPlayer.loadVideoById === "function") {
         ytPlayer.loadVideoById(videoId);
     } else {
         ytPlayer = new YT.Player('yt-player-container', {
-            height: '0',
-            width: '0',
+            // Размеры задаст CSS через aspect-ratio (100% ширины модалки)
+            height: '100%',
+            width: '100%',
             videoId: videoId,
-            playerVars: { 'autoplay': 1, 'controls': 0 },
+            playerVars: { 'autoplay': 1, 'controls': 1 }, // Включаем controls, чтобы видео можно было мотать в окне
             events: {
                 'onReady': onPlayerReady,
                 'onStateChange': onPlayerStateChange
@@ -4898,7 +4965,6 @@ function onPlayerStateChange(event) {
     }
 }
 
-// Вытягиваем название (с жесткой обрезкой 40 символов)
 function fetchYtMetadata() {
     if (!ytPlayer || typeof ytPlayer.getVideoData !== 'function') return;
     const data = ytPlayer.getVideoData();
@@ -4908,6 +4974,7 @@ function fetchYtMetadata() {
         
         document.getElementById("musicTitleText").textContent = title;
         document.getElementById("musicSubtitleText").textContent = author;
+        document.getElementById("ytModalFloatTitle").textContent = title; // Заголовок в плавающем окне
         
         saveToMusicHistory(ytPlayer.getVideoUrl(), title, author);
     }
@@ -4949,11 +5016,14 @@ window.switchToAiMusic = function() {
     isYtPlaying = false;
     clearInterval(ytProgressInterval);
 
+    // Прячем видео окно
+    closeYtVideoModal();
+
     document.getElementById("musicCustomInputRow").style.display = "flex";
     document.getElementById("musicProgressRow").style.display = "none";
     document.getElementById("backToAiMusicBtn").style.display = "none";
     
-    setPlayerUI_Mode('ai'); // Возвращаем громкость на 100% ширины
+    setPlayerUI_Mode('ai'); 
     
     document.getElementById("musicTitleText").textContent = "Konsentratsiya uçun musiqa";
     document.getElementById("musicSubtitleText").textContent = "AI Generated Music by LANIGIRO";
@@ -5037,7 +5107,6 @@ document.addEventListener("click", (e) => {
     }
 });
 
-// Устанавливаем AI-режим по умолчанию при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     setPlayerUI_Mode('ai');
     renderMusicHistory();
