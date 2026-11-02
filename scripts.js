@@ -4759,7 +4759,42 @@ let isYtPlaying = false;
 let ytProgressInterval = null;
 const MUSIC_HISTORY_KEY = "ulh_music_history";
 
-// 1. Инициализация официального YouTube Iframe API (скрытый плеер)
+// Проверяем ширину текста и включаем бегущую строку, если текст не влезает
+function checkTextOverflow() {
+    const title = document.getElementById("musicTitleText");
+    const sub = document.getElementById("musicSubtitleText");
+    const wrap = document.querySelector(".music-meta");
+    
+    if (!wrap || !title || !sub) return;
+
+    // Сбрасываем стили для пересчета
+    title.classList.remove("marquee-scroll");
+    sub.classList.remove("marquee-scroll");
+
+    // Если ширина текста больше ширины контейнера - запускаем бегущую строку
+    if (title.scrollWidth > wrap.clientWidth + 5) {
+        title.classList.add("marquee-scroll");
+    }
+    if (sub.scrollWidth > wrap.clientWidth + 5) {
+        sub.classList.add("marquee-scroll");
+    }
+}
+
+// Устанавливаем режим контроллеров (AI = 100% громкость, YT = 70/30 с таймлайном)
+function setPlayerUI_Mode(mode) {
+    const controlsRow = document.getElementById("musicControlsRow");
+    if (!controlsRow) return;
+
+    if (mode === 'yt') {
+        controlsRow.classList.remove('ai-mode');
+        controlsRow.classList.add('yt-mode');
+    } else {
+        controlsRow.classList.remove('yt-mode');
+        controlsRow.classList.add('ai-mode');
+    }
+}
+
+// Инициализация официального YouTube Iframe API
 function loadYoutubeAPI() {
     if (window.YT) return;
     const tag = document.createElement('script');
@@ -4769,20 +4804,12 @@ function loadYoutubeAPI() {
 }
 loadYoutubeAPI();
 
-// Вспомогательная функция: извлечение ID видео из любой YouTube ссылки
 function getYoutubeId(url) {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
 }
 
-// Вспомогательная функция: обрезка текста с многоточием (25 символов)
-function truncateText(str, maxLength = 25) {
-    if (!str) return "";
-    return str.length > maxLength ? str.substring(0, maxLength - 3) + "..." : str;
-}
-
-// Форматирование секунд в М:СС для таймера
 function formatTime(seconds) {
     if (isNaN(seconds)) return "0:00";
     const m = Math.floor(seconds / 60);
@@ -4790,7 +4817,6 @@ function formatTime(seconds) {
     return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-// 2. Обработчик клика по квадрату Play/Pause
 function togglePlaybackHandler(event) {
     if (event) {
         event.preventDefault();
@@ -4804,14 +4830,13 @@ function togglePlaybackHandler(event) {
             ytPlayer.playVideo();
         }
     } else {
-        // Если это наша музыка, вызываем оригинальную функцию
         if (typeof toggleAmbientPlayback === "function") {
             toggleAmbientPlayback();
         }
     }
 }
 
-// 3. Загрузка видео по ссылке (или по клику из истории)
+// Загрузка YouTube
 window.loadCustomYoutube = function(urlFromHistory = null) {
     const inputEl = document.getElementById("customMusicUrl");
     let rawUrl = urlFromHistory || (inputEl ? inputEl.value.trim() : "");
@@ -4823,25 +4848,29 @@ window.loadCustomYoutube = function(urlFromHistory = null) {
         return;
     }
 
-    // Ставим вашу AI-музыку на паузу, если она играет
     if (typeof ambientIsPlaying !== 'undefined' && ambientIsPlaying) {
         pauseAmbientMusic();
     }
 
     isCustomMusicMode = true;
 
-    // Перестраиваем интерфейс (блок 70% становится видимым)
+    // Перестраиваем интерфейс
     document.getElementById("musicCustomInputRow").style.display = "none";
     document.getElementById("musicProgressRow").style.display = "flex"; 
     document.getElementById("backToAiMusicBtn").style.display = "inline-flex";
+    
+    setPlayerUI_Mode('yt'); // Включаем режим 70/30
 
-    document.getElementById("musicTitleText").textContent = "Yuklanmoqda...";
-    document.getElementById("musicSubtitleText").textContent = "YouTube...";
+    const titleEl = document.getElementById("musicTitleText");
+    const subEl = document.getElementById("musicSubtitleText");
+    
+    titleEl.textContent = "Yuklanmoqda...";
+    subEl.textContent = "YouTube...";
+    checkTextOverflow();
     
     if (ytPlayer && typeof ytPlayer.loadVideoById === "function") {
         ytPlayer.loadVideoById(videoId);
     } else {
-        // Создаем плеер с нуля, если это первый запуск
         ytPlayer = new YT.Player('yt-player-container', {
             height: '0',
             width: '0',
@@ -4855,12 +4884,11 @@ window.loadCustomYoutube = function(urlFromHistory = null) {
     }
 
     if (!urlFromHistory && inputEl) {
-        inputEl.value = ""; // Очищаем поле ввода
+        inputEl.value = ""; 
     }
 };
 
 function onPlayerReady(event) {
-    // Выставляем громкость с зеленого капсульного ползунка
     if (typeof ambientVolume !== 'undefined') {
         event.target.setVolume(Math.round(ambientVolume * 100));
     }
@@ -4886,22 +4914,24 @@ function onPlayerStateChange(event) {
     }
 }
 
-// Вытягиваем название и автора
+// Вытягиваем название (без жесткой обрезки) и проверяем переполнение
 function fetchYtMetadata() {
     if (!ytPlayer || typeof ytPlayer.getVideoData !== 'function') return;
     const data = ytPlayer.getVideoData();
     if (data && data.title) {
-        const title = truncateText(data.title, 25);
-        const author = truncateText(data.author || "YouTube", 25);
+        // Больше не обрезаем текст жестко, доверяем CSS
+        const title = data.title; 
+        const author = data.author || "YouTube";
         
         document.getElementById("musicTitleText").textContent = title;
         document.getElementById("musicSubtitleText").textContent = author;
+        
+        checkTextOverflow();
         
         saveToMusicHistory(ytPlayer.getVideoUrl(), title, author);
     }
 }
 
-// 4. Логика ползунка времени (зеленый бар)
 function startProgressInterval() {
     clearInterval(ytProgressInterval);
     const seekbar = document.getElementById("musicSeekbar");
@@ -4920,7 +4950,6 @@ function startProgressInterval() {
     }, 1000);
 }
 
-// Ручная перемотка ползунка
 document.getElementById("musicSeekbar").addEventListener("input", function(e) {
     if (isCustomMusicMode && ytPlayer && typeof ytPlayer.getDuration === 'function') {
         const duration = ytPlayer.getDuration();
@@ -4940,40 +4969,38 @@ window.switchToAiMusic = function() {
     clearInterval(ytProgressInterval);
 
     document.getElementById("musicCustomInputRow").style.display = "flex";
-    document.getElementById("musicProgressRow").style.display = "none"; // Прячем блок времени (70%)
+    document.getElementById("musicProgressRow").style.display = "none";
     document.getElementById("backToAiMusicBtn").style.display = "none";
+    
+    setPlayerUI_Mode('ai'); // Возвращаем громкость на 100% ширины
     
     document.getElementById("musicTitleText").textContent = "Konsentratsiya uçun musiqa";
     document.getElementById("musicSubtitleText").textContent = "AI Generated Music by LANIGIRO";
+    
+    checkTextOverflow(); // Сбрасываем бегущую строку, если она не нужна
     
     if (typeof startAmbientMusic === "function") {
         startAmbientMusic();
     }
 };
 
-// ХИТРЫЙ ХАК: Перехватываем функцию изменения громкости из вашего скрипта,
-// чтобы капсула меняла громкость и для YouTube
 if (typeof setAmbientVolumeRatio === "function") {
     const originalVolumeFunc = setAmbientVolumeRatio;
     window.setAmbientVolumeRatio = function(ratio) {
-        originalVolumeFunc(ratio); // Вызываем оригинальный код
+        originalVolumeFunc(ratio); 
         if (isCustomMusicMode && ytPlayer && typeof ytPlayer.setVolume === 'function') {
-            ytPlayer.setVolume(Math.round(ambientVolume * 100)); // Применяем к YouTube
+            ytPlayer.setVolume(Math.round(ambientVolume * 100)); 
         }
     };
 }
 
-// --- 5. ИСТОРИЯ ПРОСЛУШИВАНИЙ (LOCALSTORAGE, МАКС. 3 ШТУКИ) ---
-
+// --- ИСТОРИЯ ПРОСЛУШИВАНИЙ ---
 function saveToMusicHistory(url, title, author) {
-    const cleanUrl = url.split('&')[0]; // Чистим от таймкодов
+    const cleanUrl = url.split('&')[0]; 
     let history = JSON.parse(localStorage.getItem(MUSIC_HISTORY_KEY)) || [];
     
-    // Удаляем, если трек уже есть в истории
     history = history.filter(item => getYoutubeId(item.url) !== getYoutubeId(cleanUrl));
-    // Ставим на первое место
     history.unshift({ url: cleanUrl, title, author });
-    // Оставляем только 3
     if (history.length > 3) history = history.slice(0, 3);
     
     localStorage.setItem(MUSIC_HISTORY_KEY, JSON.stringify(history));
@@ -5023,7 +5050,6 @@ window.clearMusicHistory = function(event) {
     if (confirmBox) confirmBox.classList.remove("show");
 };
 
-// Скрытие окошка подтверждения при клике мимо
 document.addEventListener("click", (e) => {
     const confirmBox = document.getElementById("musicHistoryConfirm");
     const clearBtn = document.getElementById("musicHistoryClearBtn");
@@ -5032,5 +5058,8 @@ document.addEventListener("click", (e) => {
     }
 });
 
-// Запускаем отрисовку истории при загрузке
-document.addEventListener('DOMContentLoaded', renderMusicHistory);
+// Устанавливаем AI-режим по умолчанию при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    setPlayerUI_Mode('ai');
+    renderMusicHistory();
+});
