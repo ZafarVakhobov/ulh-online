@@ -5755,3 +5755,110 @@ body.dark-mode .yt-video-mini-btn:hover {
 .yt-floating-modal:active .yt-modal-body iframe {
     pointer-events: none;
 }
+
+/* ========================================== */
+/* === СТИЛИ КОНТЕКСТНОГО AI-МЕНЮ (СИНОНИМЫ) === */
+/* ========================================== */
+.ai-floating-menu {
+    position: absolute;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 99999;
+    pointer-events: none; /* Чтобы контейнер не мешал кликам, когда скрыт */
+}
+.ai-floating-menu.visible {
+    display: flex;
+    pointer-events: auto;
+}
+
+.ai-float-trigger-btn {
+    background: linear-gradient(135deg, #0284C7 0%, #6366F1 100%);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11.5px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    white-space: nowrap;
+}
+.ai-float-trigger-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+}
+
+.ai-float-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 150px;
+    max-width: 240px;
+    z-index: 100000;
+}
+.ai-float-dropdown.open {
+    display: flex;
+}
+
+.ai-syn-option {
+    background: #F8FAFC;
+    border: 1px solid #F1F5F9;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1E293B;
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.ai-syn-option:hover {
+    background: #E0F2FE;
+    color: #0284C7;
+    border-color: #BAE6FD;
+}
+.ai-syn-loading {
+    padding: 8px 12px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #64748B;
+    text-align: center;
+}
+
+/* Темная тема для контекстного меню */
+body.dark-mode .ai-float-dropdown {
+    background: #0F172A;
+    border-color: #334155;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+body.dark-mode .ai-syn-option {
+    background: #1E293B;
+    border-color: #334155;
+    color: #E2E8F0;
+}
+body.dark-mode .ai-syn-option:hover {
+    background: rgba(2, 132, 199, 0.2);
+    color: #38BDF8;
+    border-color: rgba(2, 132, 199, 0.4);
+}
+body.dark-mode .ai-syn-loading {
+    color: #94A3B8;
+}
