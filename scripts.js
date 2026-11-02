@@ -4507,7 +4507,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Возвращаем изначальное время текущего режима
                 timeLeft = currentDuration; 
                 updateDisplay();
-                alert("Vaqt tugadi! Dam oling yoki ishni davom ettiring."); // Уведомление
+                alert("Vaqt tugadi! Dam oling yoki işni davom ettiring."); // Уведомление
             }
         }, 1000);
     };
