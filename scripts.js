@@ -4750,3 +4750,287 @@ document.addEventListener('DOMContentLoaded', () => {
 
     selectNote(activeNoteId);
 });
+
+// === ИНТЕГРАЦИЯ YOUTUBE ПЛЕЕРА И ИСТОРИЯ ПРОСЛУШИВАНИЙ ===
+
+let isCustomMusicMode = false;
+let ytPlayer = null;
+let isYtPlaying = false;
+let ytProgressInterval = null;
+const MUSIC_HISTORY_KEY = "ulh_music_history";
+
+// 1. Инициализация официального YouTube Iframe API (скрытый плеер)
+function loadYoutubeAPI() {
+    if (window.YT) return;
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+}
+loadYoutubeAPI();
+
+// Вспомогательная функция: извлечение ID видео из любой YouTube ссылки
+function getYoutubeId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+// Вспомогательная функция: обрезка текста с многоточием (25 символов)
+function truncateText(str, maxLength = 25) {
+    if (!str) return "";
+    return str.length > maxLength ? str.substring(0, maxLength - 3) + "..." : str;
+}
+
+// Форматирование секунд в М:СС для таймера
+function formatTime(seconds) {
+    if (isNaN(seconds)) return "0:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+// 2. Обработчик клика по квадрату Play/Pause
+function togglePlaybackHandler(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    if (isCustomMusicMode && ytPlayer) {
+        if (isYtPlaying) {
+            ytPlayer.pauseVideo();
+        } else {
+            ytPlayer.playVideo();
+        }
+    } else {
+        // Если это наша музыка, вызываем оригинальную функцию
+        if (typeof toggleAmbientPlayback === "function") {
+            toggleAmbientPlayback();
+        }
+    }
+}
+
+// 3. Загрузка видео по ссылке (или по клику из истории)
+window.loadCustomYoutube = function(urlFromHistory = null) {
+    const inputEl = document.getElementById("customMusicUrl");
+    let rawUrl = urlFromHistory || (inputEl ? inputEl.value.trim() : "");
+    if (!rawUrl) return;
+
+    const videoId = getYoutubeId(rawUrl);
+    if (!videoId) {
+        alert("Noto'g'ri YouTube havolasi! Iltimos, tekshirib qaytadan kiriting.");
+        return;
+    }
+
+    // Ставим вашу AI-музыку на паузу, если она играет
+    if (typeof ambientIsPlaying !== 'undefined' && ambientIsPlaying) {
+        pauseAmbientMusic();
+    }
+
+    isCustomMusicMode = true;
+
+    // Перестраиваем интерфейс (блок 70% становится видимым)
+    document.getElementById("musicCustomInputRow").style.display = "none";
+    document.getElementById("musicProgressRow").style.display = "flex"; 
+    document.getElementById("backToAiMusicBtn").style.display = "inline-flex";
+
+    document.getElementById("musicTitleText").textContent = "Yuklanmoqda...";
+    document.getElementById("musicSubtitleText").textContent = "YouTube...";
+    
+    if (ytPlayer && typeof ytPlayer.loadVideoById === "function") {
+        ytPlayer.loadVideoById(videoId);
+    } else {
+        // Создаем плеер с нуля, если это первый запуск
+        ytPlayer = new YT.Player('yt-player-container', {
+            height: '0',
+            width: '0',
+            videoId: videoId,
+            playerVars: { 'autoplay': 1, 'controls': 0 },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    }
+
+    if (!urlFromHistory && inputEl) {
+        inputEl.value = ""; // Очищаем поле ввода
+    }
+};
+
+function onPlayerReady(event) {
+    // Выставляем громкость с зеленого капсульного ползунка
+    if (typeof ambientVolume !== 'undefined') {
+        event.target.setVolume(Math.round(ambientVolume * 100));
+    }
+    event.target.playVideo();
+    fetchYtMetadata();
+}
+
+function onPlayerStateChange(event) {
+    const coverBtn = document.getElementById("musicPlayPauseBtn");
+    const navBtn = document.getElementById("musicToggleBtn");
+    
+    if (event.data == YT.PlayerState.PLAYING) {
+        isYtPlaying = true;
+        coverBtn.classList.add("playing");
+        navBtn.classList.add("is-playing");
+        startProgressInterval();
+        fetchYtMetadata();
+    } else {
+        isYtPlaying = false;
+        coverBtn.classList.remove("playing");
+        navBtn.classList.remove("is-playing");
+        clearInterval(ytProgressInterval);
+    }
+}
+
+// Вытягиваем название и автора
+function fetchYtMetadata() {
+    if (!ytPlayer || typeof ytPlayer.getVideoData !== 'function') return;
+    const data = ytPlayer.getVideoData();
+    if (data && data.title) {
+        const title = truncateText(data.title, 25);
+        const author = truncateText(data.author || "YouTube", 25);
+        
+        document.getElementById("musicTitleText").textContent = title;
+        document.getElementById("musicSubtitleText").textContent = author;
+        
+        saveToMusicHistory(ytPlayer.getVideoUrl(), title, author);
+    }
+}
+
+// 4. Логика ползунка времени (зеленый бар)
+function startProgressInterval() {
+    clearInterval(ytProgressInterval);
+    const seekbar = document.getElementById("musicSeekbar");
+    const timeDisplay = document.getElementById("musicTimeDisplay");
+    
+    ytProgressInterval = setInterval(() => {
+        if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+            const current = ytPlayer.getCurrentTime();
+            const duration = ytPlayer.getDuration();
+            
+            if (duration > 0) {
+                seekbar.value = (current / duration) * 100;
+                timeDisplay.textContent = `${formatTime(current)} / ${formatTime(duration)}`;
+            }
+        }
+    }, 1000);
+}
+
+// Ручная перемотка ползунка
+document.getElementById("musicSeekbar").addEventListener("input", function(e) {
+    if (isCustomMusicMode && ytPlayer && typeof ytPlayer.getDuration === 'function') {
+        const duration = ytPlayer.getDuration();
+        const seekToTime = (e.target.value / 100) * duration;
+        ytPlayer.seekTo(seekToTime, true);
+        document.getElementById("musicTimeDisplay").textContent = `${formatTime(seekToTime)} / ${formatTime(duration)}`;
+    }
+});
+
+// Возврат к оригинальной музыке концентрации
+window.switchToAiMusic = function() {
+    if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
+        ytPlayer.pauseVideo();
+    }
+    isCustomMusicMode = false;
+    isYtPlaying = false;
+    clearInterval(ytProgressInterval);
+
+    document.getElementById("musicCustomInputRow").style.display = "flex";
+    document.getElementById("musicProgressRow").style.display = "none"; // Прячем блок времени (70%)
+    document.getElementById("backToAiMusicBtn").style.display = "none";
+    
+    document.getElementById("musicTitleText").textContent = "Konsentratsiya uçun musiqa";
+    document.getElementById("musicSubtitleText").textContent = "AI Generated Music by LANIGIRO";
+    
+    if (typeof startAmbientMusic === "function") {
+        startAmbientMusic();
+    }
+};
+
+// ХИТРЫЙ ХАК: Перехватываем функцию изменения громкости из вашего скрипта,
+// чтобы капсула меняла громкость и для YouTube
+if (typeof setAmbientVolumeRatio === "function") {
+    const originalVolumeFunc = setAmbientVolumeRatio;
+    window.setAmbientVolumeRatio = function(ratio) {
+        originalVolumeFunc(ratio); // Вызываем оригинальный код
+        if (isCustomMusicMode && ytPlayer && typeof ytPlayer.setVolume === 'function') {
+            ytPlayer.setVolume(Math.round(ambientVolume * 100)); // Применяем к YouTube
+        }
+    };
+}
+
+// --- 5. ИСТОРИЯ ПРОСЛУШИВАНИЙ (LOCALSTORAGE, МАКС. 3 ШТУКИ) ---
+
+function saveToMusicHistory(url, title, author) {
+    const cleanUrl = url.split('&')[0]; // Чистим от таймкодов
+    let history = JSON.parse(localStorage.getItem(MUSIC_HISTORY_KEY)) || [];
+    
+    // Удаляем, если трек уже есть в истории
+    history = history.filter(item => getYoutubeId(item.url) !== getYoutubeId(cleanUrl));
+    // Ставим на первое место
+    history.unshift({ url: cleanUrl, title, author });
+    // Оставляем только 3
+    if (history.length > 3) history = history.slice(0, 3);
+    
+    localStorage.setItem(MUSIC_HISTORY_KEY, JSON.stringify(history));
+    renderMusicHistory();
+}
+
+function renderMusicHistory() {
+    const list = document.getElementById("musicHistoryList");
+    if (!list) return;
+    
+    let history = JSON.parse(localStorage.getItem(MUSIC_HISTORY_KEY)) || [];
+    list.innerHTML = "";
+    
+    if (history.length === 0) {
+        list.innerHTML = `<div style="text-align: center; color: #94A3B8; font-size: 11.5px; padding: 10px 0;">Hozirça böş</div>`;
+        return;
+    }
+    
+    history.forEach(item => {
+        const itemEl = document.createElement("div");
+        itemEl.className = "music-history-item";
+        itemEl.onclick = () => loadCustomYoutube(item.url);
+        itemEl.innerHTML = `
+            <div class="music-history-item-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            </div>
+            <div class="music-history-item-text">
+                <div class="music-history-item-title">${item.title}</div>
+                <div class="music-history-item-sub">${item.author}</div>
+            </div>
+        `;
+        list.appendChild(itemEl);
+    });
+}
+
+window.toggleMusicHistoryConfirm = function(event) {
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    const confirmBox = document.getElementById("musicHistoryConfirm");
+    if (confirmBox) confirmBox.classList.toggle("show");
+};
+
+window.clearMusicHistory = function(event) {
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    localStorage.removeItem(MUSIC_HISTORY_KEY);
+    renderMusicHistory();
+    const confirmBox = document.getElementById("musicHistoryConfirm");
+    if (confirmBox) confirmBox.classList.remove("show");
+};
+
+// Скрытие окошка подтверждения при клике мимо
+document.addEventListener("click", (e) => {
+    const confirmBox = document.getElementById("musicHistoryConfirm");
+    const clearBtn = document.getElementById("musicHistoryClearBtn");
+    if (confirmBox && confirmBox.classList.contains("show") && !confirmBox.contains(e.target) && e.target !== clearBtn && !clearBtn.contains(e.target)) {
+        confirmBox.classList.remove("show");
+    }
+});
+
+// Запускаем отрисовку истории при загрузке
+document.addEventListener('DOMContentLoaded', renderMusicHistory);
