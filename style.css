@@ -5420,9 +5420,50 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 .note-title-field {
     width: 100% !important; font-family: 'Manrope', sans-serif !important; font-size: 20px !important; font-weight: 800 !important; color: #0f172a !important; border: none !important; border-bottom: 1px solid #e2e8f0 !important; padding: 8px 0 !important; margin-bottom: 12px !important; outline: none !important; background: transparent !important; border-radius: 0 !important; box-shadow: none !important;
 }
+/* Обновленное текстовое поле (Rich Text) */
 .note-content-area {
-    width: 100% !important; flex-grow: 1 !important; font-family: 'Manrope', sans-serif !important; font-size: 14px !important; color: #334155 !important; border: none !important; padding: 0 !important; outline: none !important; resize: none !important; background: transparent !important; line-height: 1.6 !important; border-radius: 0 !important; box-shadow: none !important; margin-top: 8px !important;
+    width: 100% !important; flex-grow: 1 !important; font-family: 'Manrope', sans-serif !important; 
+    font-size: 14px !important; color: #334155 !important; border: none !important; padding: 0 !important; 
+    outline: none !important; background: transparent !important; line-height: 1.6 !important; 
+    overflow-y: auto !important; margin-top: 8px !important;
 }
+
+/* Имитация placeholder для div contenteditable */
+.note-content-area:empty:before {
+    content: attr(data-placeholder);
+    color: #94a3b8;
+    pointer-events: none;
+    display: block;
+}
+
+/* Красивое оформление визуальных элементов */
+.note-content-area blockquote {
+    border-left: 4px solid #f59e0b;
+    padding-left: 12px;
+    margin-left: 0;
+    color: #475569;
+    font-style: italic;
+    background: #fffbeb;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    border-radius: 0 4px 4px 0;
+}
+.note-content-area pre {
+    background: #f1f5f9;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 13px;
+    overflow-x: auto;
+}
+.note-content-area ul, .note-content-area ol { padding-left: 20px; margin-top: 4px; margin-bottom: 4px; }
+.note-content-area h3 { margin-top: 8px; margin-bottom: 8px; color: #0f172a; }
+
+/* Темная тема для оформления */
+.dark .note-content-area { color: #cbd5e1 !important; }
+.dark .note-content-area blockquote { background: rgba(245, 158, 11, 0.1); color: #cbd5e1; }
+.dark .note-content-area pre { background: #1e293b; color: #e2e8f0; }
+.dark .note-content-area h3 { color: #f8fafc; }
 
 /* Компактная панель Markdown */
 .markdown-toolbar {
