@@ -1431,6 +1431,12 @@
                             <div class="editor-tools-dropdown" id="editorToolsDropdown" onclick="event.stopPropagation()">
                                 <div class="tools-group-label">MATNNI TAHRIRLAŞ</div>
 
+                                <!-- НОВАЯ КНОПКА: Проверка уникальности / Академические штампы -->
+        <button type="button" class="tools-menu-item" onclick="checkTextUniqueness(); toggleEditorToolsMenu(event);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            <span>Unikallikni tekşiriş</span>
+        </button>
+                                
                                 <button type="button" class="tools-menu-item" onclick="applyEditorTool('clean_spaces')">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
                                     <span>Ortiqça böşliqlarni tozalaş</span>
