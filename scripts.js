@@ -5344,7 +5344,7 @@ Ajratib olingan so'z: "${targetWord}"`;
 });
 
 // ==========================================
-// === МОДУЛЬ ПРОВЕРКИ УНИКАЛЬНОСТИ (АНТИПЛАГИАТ) ===
+// === НАДЕЖНЫЙ МОДУЛЬ ПРОВЕРКИ УНИКАЛЬНОСТИ ===
 // ==========================================
 window.checkTextUniqueness = async function() {
     const editor = document.getElementById("editor");
@@ -5352,11 +5352,10 @@ window.checkTextUniqueness = async function() {
 
     const text = editor.value.trim();
     if (!text) {
-        alert("Tekşiriş uçun matn kiritiş maydonçasi böş bölmasligi kerak!");
+        alert("Tekshirish uchun matn bo'sh bo'lmasligi kerak!");
         return;
     }
 
-    // Создаем или находим блок для вывода результатов анализа под главным редактором
     let reportBox = document.getElementById("uniquenessReportBox");
     if (!reportBox) {
         reportBox = document.createElement("div");
@@ -5366,13 +5365,14 @@ window.checkTextUniqueness = async function() {
 
     reportBox.innerHTML = `<div class="uniqueness-report-card" style="color: #0284C7; font-size: 13px; font-weight: 700; text-align: center;">Matn tahlil qilinmoqda, iltimos kuting...</div>`;
 
-    const promptText = `Sen professional akademik muharrir va matnshunos-ekspertSan. 
-Quyidagi matnni tahlil qilib, undagi eskirgan akademik shtamplar, zerikarli kantselyarizmlar, sun'iy iboralar yoki tez-tez takrorlanadigan qoliplarni top. 
-Har bir topilgan shtamp uchun 2 tadan o'rniga tushadigan noyob, tabiiy va ilmiy uslubga mos muqobil variantlarni taklif qil.
-Javobni quyidagi JSON formatida qaytar (boshqa ortiqcha matn yozma, toza JSON bo'lsin):
+    const promptText = `Sen professional akademik muharrir va matnshunos-ekspertsan. 
+Quyidagi matnni tahlil qilib, undagi eskirgan akademik shtamplar, zerikarli kantselyarizmlar, sun’iy iboralar yoki tez-tez takrorlanadigan qoliplarni top. 
+Har bir topilgan shtamp uchun 2 tadan o‘rniga tushadigan noyob, tabiiy va ilmiy uslubga mos muqobil variantlarni taklif qil.
+Javobni faqat va faqat toza JSON formatida qaytar, hech qanday qo‘shimchamatn yoki markdown teglari (masalan ```json) yozma:
 [
-  { "cliche": "topilgan so'z yoki ibora", "variants": ["variant 1", "variant 2"] }
+  { "cliche": "topilgan so‘z yoki ibora", "variants": ["variant 1", "variant 2"] }
 ]
+Agar shtamplar topilmasa, bo‘sh massiv qaytar: []
 Matn: "${text.substring(0, 2000)}"`;
 
     try {
@@ -5382,35 +5382,59 @@ Matn: "${text.substring(0, 2000)}"`;
             body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
         });
 
-        if (!response.ok) throw new Error("Server xatosi");
+        if (!response.ok) throw new Error("Server xatosi: " + response.status);
 
         const data = await response.json();
-        const rawResult = (data && data.result) ? data.result : "[]";
+        console.log("AI Response Data:", data); // Для отладки в консоли F12
+
+        // Универсальное извлечение текста ответа (подстраивается под разную структуру ответа прокси)
+        let rawResult = "";
+        if (typeof data === "string") {
+            rawResult = data;
+        } else if (data && data.result) {
+            rawResult = data.result;
+        } else if (data && data.response) {
+            rawResult = data.response;
+        } else {
+            rawResult = JSON.stringify(data);
+        }
 
         let clichesList = [];
         try {
-            const cleanJson = rawResult.replace(/```json/g, '').replace(/```/g, '').trim();
+            // Очищаем от возможных markdown-тегов и ищем границы массива JSON
+            let cleanJson = rawResult.replace(/```json/gi, '').replace(/```/g, '').trim();
+            const firstBracket = cleanJson.indexOf('[');
+            const lastBracket = cleanJson.lastIndexOf(']');
+            
+            if (firstBracket !== -1 && lastBracket !== -1) {
+                cleanJson = cleanJson.substring(firstBracket, lastBracket + 1);
+            }
+            
             clichesList = JSON.parse(cleanJson);
         } catch (e) {
-            console.error("JSON parse error:", e);
+            console.error("JSON parse error on raw text:", rawResult, e);
+            clichesList = [];
         }
 
-        if (!clichesList || clichesList.length === 0) {
+        if (!Array.isArray(clichesList) || clichesList.length === 0) {
             reportBox.innerHTML = `<div class="uniqueness-report-card" style="color: #10B981; font-size: 13px; font-weight: 700; text-align: center;">Ajoyib! Matnda eskirgan akademik ştamplar topilmadi, matn mukammal darajada noyob.</div>`;
             setTimeout(() => { reportBox.innerHTML = ""; }, 6000);
             return;
         }
 
-        // Рендерим красивый отчет с результатами под редактором
+        // Рендерим отчет
         let html = `<div class="uniqueness-report-card">
             <div style="font-weight: 800; font-size: 12.5px; color: #1E293B; margin-bottom: 10px;">🔍 Topilgan akademik ştamplar va tavsiyalar:</div>
             <div style="display: flex; flex-direction: column; gap: 6px;">`;
 
         clichesList.forEach(item => {
+            const clicheWord = item.cliche || "Noma'lum";
+            const variantsArr = Array.isArray(item.variants) ? item.variants.join(", ") : "Tavsiya yo'q";
+            
             html += `<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <span style="color: #EF4444; font-weight: 700; text-decoration: line-through;">${item.cliche}</span>
-                    <span style="color: #64748B; font-size: 11.5px; margin-left: 10px;">Tavsiya: <b>${item.variants.join(", ")}</b></span>
+                    <span style="color: #EF4444; font-weight: 700; text-decoration: line-through;">${clicheWord}</span>
+                    <span style="color: #64748B; font-size: 11.5px; margin-left: 10px;">Tavsiya: <b>${variantsArr}</b></span>
                 </div>
             </div>`;
         });
@@ -5419,7 +5443,7 @@ Matn: "${text.substring(0, 2000)}"`;
         reportBox.innerHTML = html;
 
     } catch (err) {
-        console.error("Uniqueness Check Error:", err);
-        reportBox.innerHTML = `<div class="uniqueness-report-card" style="color: #EF4444; font-size: 13px; text-align: center;">Tahlil qilişda xatolik yuz berdi. Keyinroq urinib köring.</div>`;
+        console.error("Uniqueness Check Critical Error:", err);
+        reportBox.innerHTML = `<div class="uniqueness-report-card" style="color: #EF4444; font-size: 13px; text-align: center;">Tahlil qilişda xatolik yuz berdi: ${err.message}</div>`;
     }
 };
