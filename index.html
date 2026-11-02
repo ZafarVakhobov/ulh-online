@@ -388,26 +388,29 @@
                             <svg class="pause-state-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
                         </button>
                         
-                        <!-- Блок с текстами (Вернули стандартный вид без оберток) -->
+                        <!-- Блок с текстами И НОВОЙ КНОПКОЙ YOUTUBE -->
                         <div class="music-meta">
-                            <div class="music-title" id="musicTitleText">Konsentratsiya uçun musiqa</div>
+                            <div class="music-title-wrap" style="display: flex; align-items: center; gap: 6px;">
+                                <div class="music-title" id="musicTitleText" style="flex: 1;">Konsentratsiya uçun musiqa</div>
+                                <!-- НОВОЕ: Кнопка открытия видео (скрыта по умолчанию) -->
+                                <button type="button" id="openYtVideoBtn" class="yt-video-mini-btn" style="display: none;" onclick="openYtVideoModal()" title="Videoni köriş">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                                </button>
+                            </div>
                             <div class="music-subtitle" id="musicSubtitleText">AI Generated Music by LANIGIRO</div>
                         </div>
                     </div>
 
-                    <!-- Строка контроллеров (Умная сетка) -->
+                    <!-- Строка контроллеров (70/30) -->
                     <div class="music-controls-row" id="musicControlsRow">
-                        
-                        <!-- Левая часть (Таймлайн) - Скрыта в AI режиме -->
                         <div class="music-progress-wrap" id="musicProgressRow" style="display: none;">
                             <input type="range" id="musicSeekbar" class="music-seekbar" value="0" min="0" max="100">
                             <span id="musicTimeDisplay" class="music-time-display">0:00 / 0:00</span>
                         </div>
                         
-                        <!-- Правая часть (Громкость с иконкой динамика) -->
                         <div class="music-volume-wrap" id="musicVolumeWrap">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #64748B;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                            <div class="music-volume-capsule" id="musicVolumeCapsule" role="slider" tabindex="0" aria-label="Ovoz balandligi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
+                            <div class="music-volume-capsule" id="musicVolumeCapsule" role="slider" tabindex="0" aria-label="Ovoz balandligi">
                                 <div class="music-volume-fill" id="musicVolumeFill" style="width: 70%;"></div>
                                 <span class="custom-tooltip" id="musicVolumeTooltip">70%</span>
                             </div>
@@ -437,7 +440,7 @@
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                 </button>
                                 <div id="musicHistoryConfirm" class="music-history-confirm">
-                                    <div class="music-confirm-title" style="font-size: 13px;margin-bottom: 10px;">Tarixni butunlay öçirmoqçimisiz?</div>
+                                    <div class="music-confirm-title">Tarixni butunlay öçirmoqçimisiz?</div>
                                     <div class="osha-confirm-actions">
                                         <button type="button" id="musicConfirmYes" class="osha-confirm-btn osha-btn-danger" onclick="clearMusicHistory(event)">Ha, öçiriş!</button>
                                         <button type="button" id="musicConfirmNo" class="osha-confirm-btn osha-btn-safe" onclick="toggleMusicHistoryConfirm(event)">Saqlaş</button>
@@ -449,9 +452,7 @@
                             <div style="text-align: center; color: #94A3B8; font-size: 11.5px; padding: 10px 0;">Hozirça böş</div>
                         </div>
                     </div>
-
-                    <!-- Скрытый контейнер YouTube -->
-                    <div id="yt-player-container" style="position: absolute; width: 0; height: 0; overflow: hidden; opacity: 0; pointer-events: none;"></div>
+                    <!-- ВНИМАНИЕ: Скрытый контейнер YT удален отсюда -->
                 </div>
             </div>
 
