@@ -5342,3 +5342,84 @@ Ajratib olingan so'z: "${targetWord}"`;
         floatingMenu.classList.remove("visible");
     }
 });
+
+// ==========================================
+// === МОДУЛЬ ПРОВЕРКИ УНИКАЛЬНОСТИ (АНТИПЛАГИАТ) ===
+// ==========================================
+window.checkTextUniqueness = async function() {
+    const editor = document.getElementById("editor");
+    if (!editor) return;
+
+    const text = editor.value.trim();
+    if (!text) {
+        alert("Tekşiriş uçun matn kiritiş maydonçasi böş bölmasligi kerak!");
+        return;
+    }
+
+    // Создаем или находим блок для вывода результатов анализа под главным редактором
+    let reportBox = document.getElementById("uniquenessReportBox");
+    if (!reportBox) {
+        reportBox = document.createElement("div");
+        reportBox.id = "uniquenessReportBox";
+        editor.parentNode.insertBefore(reportBox, editor.nextSibling);
+    }
+
+    reportBox.innerHTML = `<div class="uniqueness-report-card" style="color: #0284C7; font-size: 13px; font-weight: 700; text-align: center;">Matn tahlil qilinmoqda, iltimos kuting...</div>`;
+
+    const promptText = `Sen professional akademik muharrir va matnshunos-ekspertSan. 
+Quyidagi matnni tahlil qilib, undagi eskirgan akademik shtamplar, zerikarli kantselyarizmlar, sun'iy iboralar yoki tez-tez takrorlanadigan qoliplarni top. 
+Har bir topilgan shtamp uchun 2 tadan o'rniga tushadigan noyob, tabiiy va ilmiy uslubga mos muqobil variantlarni taklif qil.
+Javobni quyidagi JSON formatida qaytar (boshqa ortiqcha matn yozma, toza JSON bo'lsin):
+[
+  { "cliche": "topilgan so'z yoki ibora", "variants": ["variant 1", "variant 2"] }
+]
+Matn: "${text.substring(0, 2000)}"`;
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
+        });
+
+        if (!response.ok) throw new Error("Server xatosi");
+
+        const data = await response.json();
+        const rawResult = (data && data.result) ? data.result : "[]";
+
+        let clichesList = [];
+        try {
+            const cleanJson = rawResult.replace(/```json/g, '').replace(/```/g, '').trim();
+            clichesList = JSON.parse(cleanJson);
+        } catch (e) {
+            console.error("JSON parse error:", e);
+        }
+
+        if (!clichesList || clichesList.length === 0) {
+            reportBox.innerHTML = `<div class="uniqueness-report-card" style="color: #10B981; font-size: 13px; font-weight: 700; text-align: center;">Ajoyib! Matnda eskirgan akademik ştamplar topilmadi, matn mukammal darajada noyob.</div>`;
+            setTimeout(() => { reportBox.innerHTML = ""; }, 6000);
+            return;
+        }
+
+        // Рендерим красивый отчет с результатами под редактором
+        let html = `<div class="uniqueness-report-card">
+            <div style="font-weight: 800; font-size: 12.5px; color: #1E293B; margin-bottom: 10px;">🔍 Topilgan akademik ştamplar va tavsiyalar:</div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">`;
+
+        clichesList.forEach(item => {
+            html += `<div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="color: #EF4444; font-weight: 700; text-decoration: line-through;">${item.cliche}</span>
+                    <span style="color: #64748B; font-size: 11.5px; margin-left: 10px;">Tavsiya: <b>${item.variants.join(", ")}</b></span>
+                </div>
+            </div>`;
+        });
+
+        html += `</div></div>`;
+        reportBox.innerHTML = html;
+
+    } catch (err) {
+        console.error("Uniqueness Check Error:", err);
+        reportBox.innerHTML = `<div class="uniqueness-report-card" style="color: #EF4444; font-size: 13px; text-align: center;">Tahlil qilişda xatolik yuz berdi. Keyinroq urinib köring.</div>`;
+    }
+};
