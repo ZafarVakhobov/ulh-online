@@ -2970,7 +2970,6 @@ body.dark-mode .custom-tooltip::after {
     align-items: center;
 }
 
-/* Активное состояние кнопки ноты, когда играет музыка */
 .music-toggle-btn.is-playing {
     background: #ECFDF5;
     border-color: #A7F3D0;
@@ -2985,7 +2984,6 @@ body.dark-mode .custom-tooltip::after {
     50% { transform: scale(1.1) rotate(-6deg); }
 }
 
-/* Выпадающее окошко плеера */
 .music-dropdown-box {
     left: auto;
     right: 0;
@@ -3007,7 +3005,6 @@ body.dark-mode .custom-tooltip::after {
     gap: 12px;
 }
 
-/* Синяя кнопка Play/Pause */
 .music-cover-btn {
     position: relative;
     width: 40px; 
@@ -3034,7 +3031,7 @@ body.dark-mode .custom-tooltip::after {
 .music-cover-btn.playing .play-state-icon { display: none; }
 .music-cover-btn.playing .pause-state-icon { display: block; }
 
-/* Тексты: Заголовок и подпись */
+/* === БЕГУЩАЯ СТРОКА (MARQUEE) ДЛЯ ТЕКСТОВ === */
 .music-meta {
     display: flex;
     flex-direction: column;
@@ -3042,36 +3039,46 @@ body.dark-mode .custom-tooltip::after {
     gap: 2px;
     min-width: 0;
     flex: 1;
+    overflow: hidden;
+}
+.music-title-wrap {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
 }
 .music-title {
+    display: inline-block;
     font-size: 13.5px;
     font-weight: 700;
     color: #0F172A;
     line-height: 1.25;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding-right: 20px; /* Отступ между повторами текста */
 }
 .music-subtitle {
+    display: inline-block;
     font-size: 11px;
     font-weight: 400;
     color: #64748B;
     line-height: 1.25;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding-right: 20px;
+}
+/* Анимация прокрутки включается только если текст длиннее блока (JS добавляет класс) */
+.music-title.marquee-scroll, .music-subtitle.marquee-scroll {
+    animation: marquee 8s linear infinite;
+}
+@keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
 }
 
-/* === НОВЫЕ ЭЛЕМЕНТЫ ПЛЕЕРА (РЯД КОНТРОЛЛЕРОВ 70% / 30%) === */
+/* === УМНАЯ СЕТКА КОНТРОЛЛЕРОВ (100% или 70/30) === */
 .music-controls-row {
     display: flex;
     align-items: center;
-    justify-content: flex-end; /* Прижимает громкость вправо, когда скрыто время */
-    gap: 10px;
+    gap: 12px; /* Увеличили отступ между временем и громкостью */
     margin-top: 12px;
 }
 
-/* 70% - Ползунок времени (скрывается в AI режиме) */
 .music-progress-wrap {
     flex: 1;
     display: flex;
@@ -3080,18 +3087,27 @@ body.dark-mode .custom-tooltip::after {
     min-width: 0;
 }
 
-/* 30% - Громкость (всегда видима) */
+/* Обёртка громкости (меняет ширину динамически) */
 .music-volume-wrap {
-    width: 30%;
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+    transition: width 0.3s ease;
+}
+
+/* Режим AI: Громкость занимает 100% ширины */
+.music-controls-row.ai-mode .music-volume-wrap {
+    width: 100%;
+}
+/* Режим YouTube: Громкость занимает 30% ширины */
+.music-controls-row.yt-mode .music-volume-wrap {
+    width: 35%; /* Чуть больше 30%, чтобы поместилась иконка динамика */
     flex-shrink: 0;
 }
 
-/* Капсула громкости заполняет свои 30% */
 .music-volume-capsule {
     position: relative;
-    width: 100%;
+    flex: 1; /* Занимает всё доступное место внутри своей обертки */
     height: 28px;
     background: #ecfdf5;
     border-radius: 999px;
@@ -3105,7 +3121,7 @@ body.dark-mode .custom-tooltip::after {
     transition: transform 0.15s ease, background-color 0.2s ease;
 }
 .music-volume-capsule:hover {
-    transform: scale(1.03);
+    transform: scale(1.02);
 }
 .music-volume-capsule:focus,
 .music-volume-capsule:focus-visible {
@@ -3122,7 +3138,6 @@ body.dark-mode .custom-tooltip::after {
     transition: width 0.06s linear, background-color 0.2s ease;
 }
 
-/* Показ тултипа громкости */
 .music-volume-capsule:hover .custom-tooltip,
 .music-volume-capsule.dragging .custom-tooltip {
     opacity: 1;
@@ -3130,7 +3145,6 @@ body.dark-mode .custom-tooltip::after {
     transform: translateX(-50%) translateY(0) scale(1);
 }
 
-/* Стилизация ползунка перемотки (зеленый) */
 .music-seekbar {
     flex: 1;
     -webkit-appearance: none;
@@ -3174,7 +3188,6 @@ body.dark-mode .custom-tooltip::after {
     white-space: nowrap;
 }
 
-/* Поле ввода ссылки */
 .music-custom-input-row {
     display: flex;
     align-items: center;
@@ -3217,7 +3230,6 @@ body.dark-mode .custom-tooltip::after {
     transform: translateY(-1px);
 }
 
-/* Кнопка возврата к ИИ музыке */
 .music-back-ai-btn {
     width: 100%;
     height: 34px;
@@ -3240,7 +3252,6 @@ body.dark-mode .custom-tooltip::after {
     color: #FFFFFF;
 }
 
-/* История прослушиваний */
 .music-history-section { display: flex; flex-direction: column; gap: 8px; }
 .music-history-header { display: flex; justify-content: space-between; align-items: center; }
 .music-history-clear-btn {
@@ -3279,7 +3290,7 @@ body.dark-mode .custom-tooltip::after {
     width: 26px; height: 26px; border-radius: 6px; background: #E2E8F0;
     color: #64748B; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.music-history-item-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.music-history-item-text { display: flex; flex-direction: column; min-width: 0; flex: 1; overflow: hidden; }
 .music-history-item-title {
     font-size: 11.5px; font-weight: 700; color: #1E293B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
@@ -3287,7 +3298,6 @@ body.dark-mode .custom-tooltip::after {
     font-size: 10px; font-weight: 600; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* Адаптив для мобильных экранов */
 @media (max-width: 640px) {
     .music-dropdown-box {
         position: fixed;
@@ -3298,21 +3308,12 @@ body.dark-mode .custom-tooltip::after {
     }
 }
 
-/* Поддержка тёмной темы (Dark Mode) для мини-плеера */
-body.dark-mode .music-toggle-btn.is-playing {
-    background: rgba(16, 185, 129, 0.18);
-    border-color: rgba(16, 185, 129, 0.45);
-    color: #34D399;
-}
-body.dark-mode .music-cover-btn {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); 
-}
+body.dark-mode .music-toggle-btn.is-playing { background: rgba(16, 185, 129, 0.18); border-color: rgba(16, 185, 129, 0.45); color: #34D399; }
+body.dark-mode .music-cover-btn { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); }
 body.dark-mode .music-title { color: #F8FAFC; }
 body.dark-mode .music-subtitle { color: #94A3B8; }
-body.dark-mode .music-volume-capsule {
-    background: #1E293B; 
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-}
+body.dark-mode .music-volume-wrap svg { color: #94A3B8 !important; }
+body.dark-mode .music-volume-capsule { background: #1E293B; box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3); }
 body.dark-mode .music-volume-fill { background: #0EB87B; }
 body.dark-mode .music-seekbar { background: #334155; }
 body.dark-mode .music-seekbar::-webkit-slider-thumb { background: #10B981; }
