@@ -608,6 +608,10 @@ async function handleSelectedFile(file) {
         // НОВОЕ: Показываем кнопку конспекта
         const summaryBtn = document.getElementById('summaryResultBtn');
         if (summaryBtn) summaryBtn.style.display = 'inline-flex';
+
+// ---> ПРОВЕРЬТЕ ЭТИ ДВЕ СТРОКИ <---
+        const opponentBtn = document.getElementById('opponentBtn');
+        if (opponentBtn) opponentBtn.style.display = 'inline-flex';
         
         if (plagiatToggle && plagiatToggle.checked && plagiatBtn) {
             plagiatBtn.style.display = 'inline-flex';
