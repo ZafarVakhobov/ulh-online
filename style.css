@@ -6299,3 +6299,195 @@ body.dark-mode .plagiat-progress-bar { background: #334155; }
 body.dark-mode .plagiat-source-card { background: #1E293B; border-color: #334155; }
 body.dark-mode .plagiat-source-text { color: #CBD5E1; }
 body.dark-mode .plagiat-source-link { color: #60A5FA; }
+
+/* ========================================== */
+/* === БЕГУЩАЯ СТРОКА И НОВОСТНЫЕ ПОП-АПЫ === */
+/* ========================================== */
+.news-ticker-wrapper {
+    display: flex;
+    align-items: stretch;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 999px;
+    padding: 3px 5px;
+    margin-bottom: 16px; 
+    overflow: visible; /* Чтобы поп-апы могли выходить за пределы */
+    position: relative;
+    z-index: 100;
+}
+.news-ticker-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #E0F2FE;
+    color: #0284C7;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    z-index: 5;
+    box-shadow: 4px 0 10px rgba(248, 250, 252, 0.95);
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+.news-ticker-btn:hover { background: #0284C7; color: #FFFFFF; }
+
+.news-ticker-scroll-area {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.news-ticker-track {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    white-space: nowrap;
+    animation: tickerScroll 40s linear infinite;
+    padding-left: 20px;
+}
+.news-ticker-scroll-area:hover .news-ticker-track {
+    animation-play-state: paused;
+}
+@keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); } /* Скроллим ровно половину (скрипт дублирует контент) */
+}
+
+/* Элемент новости в ленте */
+.news-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    color: #1E293B;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    padding: 6px 0;
+}
+.news-item-source { color: #64748B; font-weight: 800; text-transform: uppercase; font-size: 11px; }
+
+/* 260px Всплывающее окно новости */
+.news-popup {
+    position: absolute;
+    top: calc(100% + 14px);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    width: 24vw; /* Примерно 20-25% экрана */
+    min-width: 320px;
+    max-width: 400px;
+    height: 260px; /* Фиксированная высота как вы и просили */
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.15);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1000;
+    cursor: default;
+    white-space: normal; /* Сбрасываем white-space от родителя */
+}
+.news-item:hover .news-popup {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.news-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+.news-popup-title-col {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.news-popup-source-link {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #0284C7;
+    text-decoration: underline;
+    margin-bottom: 6px;
+    display: inline-block;
+}
+.news-popup-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.news-popup-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.news-popup-image:hover { transform: scale(1.05); }
+
+.news-popup-snippet {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.5;
+    flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4; /* Ограничиваем для интриги */
+    -webkit-box-orient: vertical;
+}
+
+.news-popup-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #F1F5F9;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #94A3B8;
+}
+
+/* Карточки источников в модалке */
+.news-source-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Темная тема */
+body.dark-mode .news-ticker-wrapper { background: #0F172A; border-color: #334155; }
+body.dark-mode .news-ticker-btn { background: rgba(2, 132, 199, 0.2); color: #38BDF8; box-shadow: 4px 0 10px #0F172A; }
+body.dark-mode .news-ticker-btn:hover { background: #0284C7; color: #FFFFFF; }
+body.dark-mode .news-item { color: #F8FAFC; }
+body.dark-mode .news-item-source { color: #94A3B8; }
+body.dark-mode .news-popup { background: #1E293B; border-color: #334155; box-shadow: 0 18px 45px rgba(0,0,0,0.6); }
+body.dark-mode .news-popup-title { color: #F8FAFC; }
+body.dark-mode .news-popup-source-link { color: #38BDF8; }
+body.dark-mode .news-popup-image { border-color: #334155; }
+body.dark-mode .news-popup-snippet { color: #CBD5E1; }
+body.dark-mode .news-popup-footer { border-color: #334155; }
+body.dark-mode .news-source-card { background: #0F172A; border-color: #334155; }
