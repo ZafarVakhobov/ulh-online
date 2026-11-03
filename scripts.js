@@ -6401,7 +6401,7 @@ async function fetchAndRenderNews() {
                 for (let i = 0; i < Math.min(result.items.length, 5); i++) {
                     const item = result.items[i];
                     let snippet = (item.description || "").replace(/<[^>]*>?/gm, '').trim();
-                    let image = item.thumbnail || (item.enclosure && item.enclosure.link) || "./header.png";
+                    let image = item.thumbnail || (item.enclosure && item.enclosure.link) || "./news.png";
                     
                     if (image === "./header.png" && item.description && item.description.includes("<img")) {
                          const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
