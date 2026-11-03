@@ -5969,3 +5969,19 @@ body.dark-mode .variant-badge-btn:hover {
     from { opacity: 0; transform: translateY(-6px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Специальный класс для панели справа (вместо конвертера) */
+.uniqueness-right-panel {
+    margin-top: 0 !important;
+    height: 100%;
+    max-height: 380px; /* Ограничиваем высоту, чтобы было вровень с редактором */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Красивый тонкий скроллбар для панели */
+.uniqueness-right-panel::-webkit-scrollbar { width: 4px; }
+.uniqueness-right-panel::-webkit-scrollbar-track { background: transparent; }
+.uniqueness-right-panel::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+body.dark-mode .uniqueness-right-panel::-webkit-scrollbar-thumb { background: #475569; }
