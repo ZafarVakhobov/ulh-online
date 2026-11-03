@@ -5722,23 +5722,27 @@ window.openTranslatorPanel = function() {
 
     const closeBtnHtml = `<button onclick="closeTranslatorPanel()" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.04); border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748B; transition: all 0.2s ease; z-index: 10;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.color='#EF4444'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='#64748B'" title="Yopish">×</button>`;
 
+    // Внедряем дизайнерский класс bib-custom-input для селекта
     panel.innerHTML = `
         ${closeBtnHtml}
-        <div class="translator-header">
-            <div class="translator-lang-bar">
-                <span id="transSourceLang" style="color: #64748B; font-size: 11.5px; text-transform: uppercase;">Aniqlanmoqda...</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#94A3B8; margin: 0 2px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                <select id="transTargetLang" class="translator-lang-select" onchange="executeFullTranslation()">
-                    <option value="O'zbek tili" selected>Özbekça</option>
-                    <option value="Rus tili">Русский</option>
-                    <option value="Ingliz tili">English</option>
-                    <option value="Xitoy tili">中文 (Xitoy)</option>
-                    <option value="Koreys tili">한국어 (Koreys)</option>
-                    <option value="Yapon tili">日本語 (Yapon)</option>
-                    <option value="Turk tili">Türkçe (Turk)</option>
-                    <option value="Arab tili">العربية (Arab)</option>
-                    <option value="Tojik tili">Тоҷикӣ (Tojik)</option>
-                </select>
+        <div class="translator-header" style="margin-bottom: 12px; padding-right: 28px; display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px; flex: 1;">
+                <span id="transSourceLang" style="color: #64748B; font-size: 11px; font-weight: 800; text-transform: uppercase;">Aniqlanmoqda...</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#94A3B8;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                
+                <div style="flex: 1; max-width: 160px;">
+                    <select id="transTargetLang" class="bib-custom-input" style="height: 34px; padding: 0 32px 0 10px; font-size: 12.5px; border-radius: 8px; margin: 0; color: #0284C7; font-weight: 800; cursor: pointer;" onchange="executeFullTranslation()">
+                        <option value="O'zbek tili" selected>Özbekça</option>
+                        <option value="Rus tili">Русский</option>
+                        <option value="Ingliz tili">English</option>
+                        <option value="Xitoy tili">中文 (Xitoy)</option>
+                        <option value="Koreys tili">한국어 (Koreys)</option>
+                        <option value="Yapon tili">日本語 (Yapon)</option>
+                        <option value="Turk tili">Türkçe (Turk)</option>
+                        <option value="Arab tili">العربية (Arab)</option>
+                        <option value="Tojik tili">Тоҷикӣ (Tojik)</option>
+                    </select>
+                </div>
             </div>
         </div>
         
@@ -5755,6 +5759,11 @@ window.openTranslatorPanel = function() {
             </button>
         </div>
     `;
+
+    // Важно: Инициализируем ваш кастомный скрипт селектов, чтобы превратить обычный <select> в красивое меню
+    if (typeof initCustomSelects === "function") {
+        initCustomSelects();
+    }
 
     executeFullTranslation();
 };
