@@ -6219,7 +6219,7 @@ Matn: "${text.substring(0, 5000)}"`;
 };
 
 // ==========================================
-// === 18. УМНАЯ БЕГУЩАЯ СТРОКА НОВОСТЕЙ (DUAL-ENGINE) ===
+// === 18. УМНАЯ БЕГУЩАЯ СТРОКА НОВОСТЕЙ (DUAL-ENGINE + DRAG SCROLL) ===
 // ==========================================
 
 const RSS_STORAGE_KEY = "ulh_news_sources_v1";
@@ -6230,6 +6230,13 @@ const DEFAULT_RSS_SOURCES = [
     { url: "https://batafsil.uz/rss/", name: "Batafsil.uz" },
     { url: "https://darakchi.uz/uz/yandex-rss", name: "Darakchi.uz" }
 ];
+
+// Глобальные переменные для управления скроллом ленты
+let tickerReqId;
+let isTickerHovered = false;
+let isTickerDragging = false;
+let tickerStartX;
+let tickerScrollLeft;
 
 function getNewsSources() {
     try {
@@ -6247,7 +6254,7 @@ function saveNewsSources(sources) {
 function formatRssDate(dateStr) {
     try {
         const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return dateStr; // Если дата не парсится
+        if (isNaN(d.getTime())) return dateStr;
         const day = d.getDate().toString().padStart(2, '0');
         const month = (d.getMonth() + 1).toString().padStart(2, '0');
         const hours = d.getHours().toString().padStart(2, '0');
@@ -6293,7 +6300,6 @@ function escapeHTML(str) {
 
 // === БРОНЕБОЙНЫЙ DUAL-ENGINE ЗАГРУЗЧИК ===
 async function fetchRssBulletproof(url) {
-    // 1. Основной двигатель: RSS2JSON (Быстрый, обходит Cloudflare, отдает готовый JSON)
     const primaryApi = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`;
     
     try {
@@ -6305,14 +6311,13 @@ async function fetchRssBulletproof(url) {
         if (res.ok) {
             const data = await res.json();
             if (data.status === "ok" && data.items) {
-                return { type: "json", items: data.items }; // Успех!
+                return { type: "json", items: data.items };
             }
         }
     } catch (e) {
         console.warn(`RSS2JSON xatosi (${url}), AllOrigins'ga o'tilmoqda...`);
     }
 
-    // 2. Резервный двигатель: AllOrigins (Отдает сырой XML)
     const fallbackApi = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
     try {
         const controller = new AbortController();
@@ -6323,7 +6328,7 @@ async function fetchRssBulletproof(url) {
         if (res.ok) {
             const data = await res.json();
             if (data.contents && (data.contents.includes('<rss') || data.contents.includes('<feed'))) {
-                return { type: "xml", content: data.contents }; // Успех резерва!
+                return { type: "xml", content: data.contents };
             }
         }
     } catch (e) {
@@ -6333,8 +6338,7 @@ async function fetchRssBulletproof(url) {
     throw new Error("Manbadan ma'lumot olib bölmadi");
 }
 
-// === РЕНДЕР И ЛОГИКА ===
-// === ОБНОВЛЕННЫЙ РЕНДЕР С ДИНАМИЧЕСКОЙ СКОРОСТЬЮ ===
+// === РЕНДЕР И ФИЗИКА ДВИЖЕНИЯ ===
 function renderNewsToDOM(newsArray, trackEl) {
     let htmlContent = "";
     newsArray.forEach(news => {
@@ -6359,17 +6363,85 @@ function renderNewsToDOM(newsArray, trackEl) {
     // Дублируем контент для бесконечной прокрутки
     trackEl.innerHTML = htmlContent + htmlContent;
 
-    // СЕКРЕТНЫЙ ИНГРЕДИЕНТ: Динамическая скорость
-    // Даем ровно по 10 секунд на каждую загруженную новость
-    // Чем больше новостей, тем больше времени будет длиться анимация, а скорость останется постоянной!
-    const timePerItem = 10; 
-    const totalDuration = newsArray.length * timePerItem;
-    
-    // Применяем вычисленное время напрямую к элементу
-    trackEl.style.animationDuration = `${totalDuration}s`;
+    // Запускаем движок перетаскивания и автоскролла
+    initDragAndScrollTicker();
 }
 
+function initDragAndScrollTicker() {
+    const area = document.querySelector('.news-ticker-scroll-area');
+    const track = document.getElementById('newsTickerTrack');
+    if (!area || !track) return;
+
+    if (tickerReqId) cancelAnimationFrame(tickerReqId);
+    area.scrollLeft = 0;
+    isTickerHovered = false;
+    isTickerDragging = false;
+
+    // Логика захвата мышью
+    area.onmousedown = (e) => {
+        isTickerDragging = true;
+        isTickerHovered = true; // Ставим автоскролл на паузу
+        tickerStartX = e.pageX - area.offsetLeft;
+        tickerScrollLeft = area.scrollLeft;
+        area.style.cursor = 'grabbing';
+    };
+    
+    area.onmouseleave = () => {
+        isTickerDragging = false;
+        isTickerHovered = false;
+        area.style.cursor = 'grab';
+    };
+    
+    area.onmouseup = () => {
+        isTickerDragging = false;
+        isTickerHovered = false;
+        area.style.cursor = 'grab';
+    };
+    
+    area.onmousemove = (e) => {
+        if (!isTickerDragging) return;
+        e.preventDefault(); 
+        
+        const x = e.pageX - area.offsetLeft;
+        const walk = (tickerStartX - x) * 1.5; // Скорость тяги мыши
+        area.scrollLeft = tickerScrollLeft + walk;
+        
+        // Магия бесконечности при ручном скролле
+        const halfWidth = track.scrollWidth / 2;
+        if (area.scrollLeft >= halfWidth) {
+            area.scrollLeft -= halfWidth;
+            tickerStartX = e.pageX - area.offsetLeft;
+            tickerScrollLeft = area.scrollLeft;
+        } else if (area.scrollLeft <= 0) {
+            area.scrollLeft += halfWidth;
+            tickerStartX = e.pageX - area.offsetLeft;
+            tickerScrollLeft = area.scrollLeft;
+        }
+    };
+
+    area.onmouseenter = () => {
+        if (!isTickerDragging) isTickerHovered = true;
+    };
+
+    // Движок плавного автоскролла
+    function scrollStep() {
+        if (!isTickerHovered && !isTickerDragging) {
+            area.scrollLeft += 0.7; // Скорость автоматического движения
+            
+            if (area.scrollLeft >= track.scrollWidth / 2) {
+                area.scrollLeft = 0;
+            }
+        }
+        tickerReqId = requestAnimationFrame(scrollStep);
+    }
+    scrollStep(); 
+}
+
+// === УПРАВЛЕНИЕ ПОПАПАМИ ===
 window.showGlobalNewsPopup = function(el, e) {
+    // Блокируем показ окна, если пользователь тянет ленту мышкой!
+    if (isTickerDragging) return;
+
     let popup = document.getElementById("globalNewsPopup");
     
     if (!popup) {
@@ -6381,16 +6453,14 @@ window.showGlobalNewsPopup = function(el, e) {
         popup.onmouseenter = () => {
             popup.style.opacity = "1";
             popup.style.visibility = "visible";
-            const track = document.getElementById("newsTickerTrack");
-            if (track) track.style.animationPlayState = 'paused';
+            isTickerHovered = true; 
         };
         popup.onmouseleave = () => {
             window.hideGlobalNewsPopup();
         };
     }
 
-    const track = document.getElementById("newsTickerTrack");
-    if (track) track.style.animationPlayState = 'paused';
+    isTickerHovered = true; // Останавливаем ленту
 
     popup.innerHTML = `
         <div class="news-popup-header">
@@ -6431,8 +6501,7 @@ window.hideGlobalNewsPopup = function() {
         popup.style.opacity = "0";
         popup.style.visibility = "hidden";
     }
-    const track = document.getElementById("newsTickerTrack");
-    if (track) track.style.animationPlayState = 'running';
+    isTickerHovered = false; // Запускаем ленту дальше
 };
 
 // === СБОРКА НОВОСТЕЙ ===
@@ -6449,7 +6518,7 @@ async function fetchAndRenderNews() {
 
     if (cacheData && cacheTime && cacheSources === sourcesStr) {
         const now = new Date().getTime();
-        if (now - parseInt(cacheTime) < 10 * 60 * 1000) { // 10 минут кэша
+        if (now - parseInt(cacheTime) < 10 * 60 * 1000) { 
             renderNewsToDOM(JSON.parse(cacheData), track);
             return;
         }
@@ -6464,7 +6533,6 @@ async function fetchAndRenderNews() {
             const result = await fetchRssBulletproof(src.url);
             
             if (result.type === "json") {
-                // Если отработал основной API RSS2JSON
                 for (let i = 0; i < Math.min(result.items.length, 5); i++) {
                     const item = result.items[i];
                     let snippet = (item.description || "").replace(/<[^>]*>?/gm, '').trim();
@@ -6486,7 +6554,6 @@ async function fetchAndRenderNews() {
                     });
                 }
             } else if (result.type === "xml") {
-                // Если отработал резервный XML-парсер AllOrigins
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(result.content, "text/xml");
                 const items = xmlDoc.querySelectorAll("item");
@@ -6523,7 +6590,6 @@ async function fetchAndRenderNews() {
         return;
     }
 
-    // Перемешиваем новости случайным образом
     for (let i = allNews.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [allNews[i], allNews[j]] = [allNews[j], allNews[i]];
