@@ -6279,6 +6279,7 @@ async function fetchRssBulletproof(url) {
 }
 
 // === РЕНДЕР И ЛОГИКА ===
+// === ОБНОВЛЕННЫЙ РЕНДЕР С ДИНАМИЧЕСКОЙ СКОРОСТЬЮ ===
 function renderNewsToDOM(newsArray, trackEl) {
     let htmlContent = "";
     newsArray.forEach(news => {
@@ -6299,7 +6300,18 @@ function renderNewsToDOM(newsArray, trackEl) {
             </div>
         `;
     });
+    
+    // Дублируем контент для бесконечной прокрутки
     trackEl.innerHTML = htmlContent + htmlContent;
+
+    // СЕКРЕТНЫЙ ИНГРЕДИЕНТ: Динамическая скорость
+    // Даем ровно по 6 секунд на каждую загруженную новость
+    // Чем больше новостей, тем больше времени будет длиться анимация, а скорость останется постоянной!
+    const timePerItem = 6; 
+    const totalDuration = newsArray.length * timePerItem;
+    
+    // Применяем вычисленное время напрямую к элементу
+    trackEl.style.animationDuration = `${totalDuration}s`;
 }
 
 window.showGlobalNewsPopup = function(el, e) {
