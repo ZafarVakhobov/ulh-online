@@ -6178,3 +6178,124 @@ body.dark-mode .translator-btn-copy:hover { background: #10B981; color: #FFFFFF;
 @media (max-width: 760px) {
     .translator-right-panel { height: 380px; }
 }
+
+/* ========================================== */
+/* === СТИЛИ АНТИПЛАГИАТА (СВИТЧЕР И МОДАЛКА) === */
+/* ========================================== */
+.plagiat-toggle-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    transition: all 0.2s ease;
+}
+.plagiat-toggle-label {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #475569;
+}
+.plagiat-switch {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 22px;
+}
+.plagiat-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.plagiat-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #CBD5E1;
+    transition: .3s;
+    border-radius: 22px;
+}
+.plagiat-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+input:checked + .plagiat-slider { background-color: #8B5CF6; }
+input:checked + .plagiat-slider:before { transform: translateX(16px); }
+
+/* Прогресс-бар в модальном окне */
+.plagiat-progress-wrap {
+    margin-top: 14px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+.plagiat-score-text {
+    font-size: 14px;
+    font-weight: 800;
+    color: #1E293B;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+#plagiatScoreNum { color: #10B981; }
+.plagiat-progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #E2E8F0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+.plagiat-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
+    border-radius: 999px;
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s;
+}
+.plagiat-source-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.plagiat-source-text {
+    font-size: 13px;
+    color: #334155;
+    font-style: italic;
+    border-left: 3px solid #8B5CF6;
+    padding-left: 8px;
+}
+.plagiat-source-link {
+    font-size: 12px;
+    font-weight: 700;
+    color: #2563EB;
+    text-decoration: underline;
+    word-break: break-all;
+}
+
+/* Темная тема */
+body.dark-mode .plagiat-toggle-wrapper { background: #0F172A; border-color: #334155; }
+body.dark-mode .plagiat-toggle-label { color: #E2E8F0; }
+body.dark-mode .plagiat-slider { background-color: #475569; }
+body.dark-mode .plagiat-progress-wrap { background: #0F172A; }
+body.dark-mode .plagiat-score-text { color: #F8FAFC; }
+body.dark-mode .plagiat-progress-bar { background: #334155; }
+body.dark-mode .plagiat-source-card { background: #1E293B; border-color: #334155; }
+body.dark-mode .plagiat-source-text { color: #CBD5E1; }
+body.dark-mode .plagiat-source-link { color: #60A5FA; }
