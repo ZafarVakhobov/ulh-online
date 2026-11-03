@@ -5342,3 +5342,177 @@ Ajratib olingan so'z: "${targetWord}"`;
         floatingMenu.classList.remove("visible");
     }
 });
+
+// ==========================================
+// === 14. МОДУЛЬ ПРОВЕРКИ УНИКАЛЬНОСТИ И КЛИШЕ ===
+// ==========================================
+window.checkTextUniqueness = async function() {
+    if (typeof closeAiMenu === "function") closeAiMenu();
+
+    if (!editor || !editor.value.trim()) {
+        if (typeof showAutosaveIndicator === "function") {
+            showAutosaveIndicator("Avval matn kiriting!");
+        }
+        if (editor) editor.focus();
+        return;
+    }
+
+    const text = editor.value.trim();
+
+    // Создаем или находим блок для карточки отчета
+    let reportBox = document.getElementById("uniquenessReportBox");
+    if (!reportBox) {
+        reportBox = document.createElement("div");
+        reportBox.id = "uniquenessReportBox";
+        editor.parentNode.insertBefore(reportBox, editor.nextSibling);
+    }
+
+    reportBox.innerHTML = `
+        <div class="uniqueness-report-container">
+            <div class="uniqueness-header" style="color: #0284C7; margin: 0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="animation: aiSpinPulse 1.1s linear infinite;"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
+                <span style="margin-left: 6px;">Matn tahlil qilinmoqda, iltimos kuting...</span>
+            </div>
+        </div>
+    `;
+
+    const promptText = `Sen professional ilmiy va akademik muharrirsan. 
+Quyidagi matnni tahlil qilib, undagi eskirgan akademik shtamplar, qolip iboralar (klishelar), kantselyarizmlar va takroriy konstruksiyalarni top.
+Har bir topilgan shtamp uchun matn uslubiga mos keladigan 2-3 ta tabiiy, original muqobil variantlarni taklif qil.
+MUHIM: Javobing FAQAT toza JSON massiv formatida bo'lsin, hech qanday markdown (\`\`\`json) yoki tushuntirish yozma.
+Format:
+[
+  { "cliche": "topilgan ibora", "variants": ["muqobil 1", "muqobil 2"] }
+]
+Agar matnda shtamplar bo'lmasa, bo'sh massiv qaytar: []
+Matn: "${text.substring(0, 3000)}"`;
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
+        });
+
+        if (!response.ok) throw new Error("Server xatosi: " + response.status);
+
+        const data = await response.json();
+        let rawResult = "";
+        if (typeof data === "string") rawResult = data;
+        else if (data && data.result) rawResult = data.result;
+        else if (data && data.response) rawResult = data.response;
+        else rawResult = JSON.stringify(data);
+
+        // Безопасное извлечение JSON из текста ответа
+        let clichesList = [];
+        try {
+            let clean = rawResult.replace(/```json/gi, '').replace(/```/g, '').trim();
+            const startIdx = clean.indexOf('[');
+            const endIdx = clean.lastIndexOf(']');
+            if (startIdx !== -1 && endIdx !== -1) {
+                clean = clean.substring(startIdx, endIdx + 1);
+            }
+            clichesList = JSON.parse(clean);
+        } catch (parseErr) {
+            console.error("JSON parse error:", parseErr, rawResult);
+            clichesList = [];
+        }
+
+        if (!Array.isArray(clichesList) || clichesList.length === 0) {
+            reportBox.innerHTML = `
+                <div class="uniqueness-report-container" style="border-left: 4px solid #10B981;">
+                    <div class="uniqueness-header" style="color: #10B981; margin: 0;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        <span>Ajoyib! Matnda eskirgan akademik ştamplar va klişelar topilmadi.</span>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => { if (reportBox) reportBox.innerHTML = ""; }, 5000);
+            return;
+        }
+
+        // Рендеринг карточек рекомендаций
+        let html = `
+            <div class="uniqueness-report-container">
+                <div class="uniqueness-header" style="color: #D97706;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                    <span>Topilgan akademik ştamplar (Almaştiriş uçun ustiga bosing):</span>
+                </div>
+                <div>
+        `;
+
+        clichesList.forEach((item, index) => {
+            const rawCliche = item.cliche || "";
+            if (!rawCliche) return;
+
+            // Применяем фильтр букв нового узбекского алфавита
+            const displayCliche = (typeof enforceNewUzbekAlphabet === "function") ? enforceNewUzbekAlphabet(rawCliche) : rawCliche;
+
+            let variantsButtons = "";
+            if (Array.isArray(item.variants)) {
+                item.variants.forEach(variant => {
+                    const cleanVariant = (typeof enforceNewUzbekAlphabet === "function") ? enforceNewUzbekAlphabet(variant) : variant;
+                    const safeCliche = rawCliche.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeVar = cleanVariant.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                    variantsButtons += `<button type="button" class="variant-badge-btn" onclick="replaceClicheInEditor('${safeCliche}', '${safeVar}', this)">${cleanVariant}</button>`;
+                });
+            }
+
+            html += `
+                <div class="cliche-item" id="cliche-item-${index}">
+                    <span class="cliche-word">${displayCliche}</span>
+                    <div class="variants-wrapper">
+                        <span style="font-size: 11px; color: #64748B; font-weight: 700;">Tavsiya:</span>
+                        ${variantsButtons}
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `</div></div>`;
+        reportBox.innerHTML = html;
+
+    } catch (err) {
+        console.error("Uniqueness Check Error:", err);
+        reportBox.innerHTML = `
+            <div class="uniqueness-report-container" style="border-left: 4px solid #EF4444;">
+                <div class="uniqueness-header" style="color: #EF4444; margin: 0;">
+                    Tahlil qilişda xatolik yuz berdi: ${err.message}
+                </div>
+            </div>
+        `;
+    }
+};
+
+// Функция замены найденного клише прямо в textarea
+window.replaceClicheInEditor = function(cliche, replacement, btnEl) {
+    if (!editor) return;
+
+    const currentText = editor.value;
+    const escaped = cliche.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escaped, 'i');
+
+    if (regex.test(currentText)) {
+        editor.value = currentText.replace(regex, replacement);
+
+        const card = btnEl.closest('.cliche-item');
+        if (card) {
+            card.style.opacity = '0.65';
+            card.style.pointerEvents = 'none';
+            const wordEl = card.querySelector('.cliche-word');
+            if (wordEl) {
+                wordEl.style.textDecoration = 'none';
+                wordEl.style.background = 'rgba(16, 185, 129, 0.15)';
+                wordEl.style.color = '#10B981';
+                wordEl.textContent = replacement + " (Almaştirildi ✓)";
+            }
+        }
+
+        if (typeof saveEditorDraft === "function") saveEditorDraft();
+        if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Ştamp almaştirildi ✓");
+    } else {
+        alert("Bu söz matnda topilmadi (ehtimol allaqaçon özgartirilgan).");
+    }
+};
