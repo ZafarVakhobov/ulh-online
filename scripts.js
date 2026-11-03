@@ -6403,7 +6403,7 @@ function initDragAndScrollTicker() {
         e.preventDefault(); 
         
         const x = e.pageX - area.offsetLeft;
-        const walk = (tickerStartX - x) * 1.5; // Скорость тяги мыши
+        const walk = (tickerStartX - x) * 1.2; // Скорость тяги мыши
         area.scrollLeft = tickerScrollLeft + walk;
         
         // Магия бесконечности при ручном скролле
@@ -6426,7 +6426,7 @@ function initDragAndScrollTicker() {
     // Движок плавного автоскролла
     function scrollStep() {
         if (!isTickerHovered && !isTickerDragging) {
-            area.scrollLeft += 0.7; // Скорость автоматического движения
+            area.scrollLeft += 0.4; // Скорость автоматического движения
             
             if (area.scrollLeft >= track.scrollWidth / 2) {
                 area.scrollLeft = 0;
