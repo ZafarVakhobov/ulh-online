@@ -598,12 +598,17 @@ async function handleSelectedFile(file) {
             throw new Error("Noto'g'ri format");
         }
 
+        // ... (код конвертации файла) ...
+        
         fileInfo.style.color = "#10B981";
         fileInfo.innerText = "Tayyor: " + processedOutName;
         saveBtn.style.display = 'inline-flex';
         savePdfBtn.style.display = 'inline-flex';
         
-        // ПОКАЗЫВАЕМ КНОПКУ АНТИПЛАГИАТА, ЕСЛИ СВИТЧЕР ВКЛЮЧЕН
+        // НОВОЕ: Показываем кнопку конспекта
+        const summaryBtn = document.getElementById('summaryResultBtn');
+        if (summaryBtn) summaryBtn.style.display = 'inline-flex';
+        
         if (plagiatToggle && plagiatToggle.checked && plagiatBtn) {
             plagiatBtn.style.display = 'inline-flex';
         }
@@ -6050,3 +6055,110 @@ if (pToggle) {
         }
     });
 }
+
+// ==========================================
+// === 17. AI-КОНСПЕКТ ФАЙЛА И ГЕНЕРАТОР ТЕСТОВ ===
+// ==========================================
+
+// Функция 1: Краткое содержание извлеченного файла
+window.executeFileSummary = async function() {
+    const text = (window.extractedFileText || "").substring(0, 10000).trim(); // Берем до 10 000 символов
+    if (!text) {
+        alert("Fayl içidan matn topilmadi!");
+        return;
+    }
+
+    if (typeof setAiLoadingState === "function") setAiLoadingState(true);
+    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Fayl öqilmoqda...");
+
+    // Промпт: просим выделить 5-7 главных мыслей
+    const promptText = `Sen professional tahlilchisan. Har xil tillarni 100 foiz mukammal va erkin bilasan. Quyidagi matnni diqqat bilan o'qib chiqib, uning qisqacha mazmunini (konspekt) 5-7 ta eng muhim tezislar ko'rinishida yozib ber. 
+Javobingni qulay va chiroyli formatda, sarlavha va ro'yxat (bullet points) shaklida taqdim et. Sening javobing berilgan asl matn tilida bo'lishi shart.
+Matn: "${text}"`;
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
+        });
+
+        if (!response.ok) throw new Error("Server xatosi");
+        const data = await response.json();
+        
+        let rawResult = "";
+        if (typeof data === "string") rawResult = data;
+        else if (data && data.result) rawResult = data.result;
+        else if (data && data.response) rawResult = data.response;
+        else rawResult = JSON.stringify(data);
+
+        // Применяем новый алфавит
+        let cleanResult = typeof enforceNewUzbekAlphabet === "function" ? enforceNewUzbekAlphabet(rawResult) : rawResult;
+
+        // Открываем существующее мощное окно результатов ИИ!
+        if (typeof openAiResultModal === "function") {
+            openAiResultModal(cleanResult);
+        }
+
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Xulosa tayyor ✓");
+    } catch (err) {
+        console.error("Summary Error:", err);
+        alert("Tahlil qilişda xatolik yuz berdi. Internetni tekşiring.");
+    } finally {
+        if (typeof setAiLoadingState === "function") setAiLoadingState(false);
+    }
+};
+
+// Функция 2: Генератор тестов и карточек из редактора
+window.generateAiTests = async function() {
+    if (typeof closeAiMenu === "function") closeAiMenu();
+
+    if (!editor || !editor.value.trim()) {
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Avval matn kiriting!");
+        if (editor) editor.focus();
+        return;
+    }
+
+    const text = editor.value.trim();
+    if (typeof setAiLoadingState === "function") setAiLoadingState(true);
+    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Testlar tuzilmoqda...");
+
+    // Промпт: 5 тестов (ABCD) и 5 карточек (вопрос-ответ)
+    const promptText = `Sen tajribali o'qituvchi va repetitorsan. Berilgan matn (xohlagan tilda bo'lishi mumkin) asosida bilimni tekshirish uchun quyidagilarni tuzib ber:
+1. 5 ta yopiq test savoli (A, B, C, D variantlari bilan). To'g'ri javoblarni **qalin (bold)** qilib belgilab ko'rsat.
+2. 5 ta qisqa "Savol - Javob" (flesh-kartochkalar uchun).
+Javobing aniq, tushunarli va Markdown formatida (chiroyli sarlavhalar bilan) bo'lsin.
+Matn: "${text.substring(0, 5000)}"`;
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
+        });
+
+        if (!response.ok) throw new Error("Server xatosi");
+        const data = await response.json();
+        
+        let rawResult = "";
+        if (typeof data === "string") rawResult = data;
+        else if (data && data.result) rawResult = data.result;
+        else if (data && data.response) rawResult = data.response;
+        else rawResult = JSON.stringify(data);
+
+        // Применяем новый алфавит
+        let cleanResult = typeof enforceNewUzbekAlphabet === "function" ? enforceNewUzbekAlphabet(rawResult) : rawResult;
+
+        // Открываем существующее мощное окно результатов ИИ
+        if (typeof openAiResultModal === "function") {
+            openAiResultModal(cleanResult);
+        }
+
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Testlar tayyor ✓");
+    } catch (err) {
+        console.error("Test Gen Error:", err);
+        alert("Test tuzişda xatolik yuz berdi. Internetni tekşiring.");
+    } finally {
+        if (typeof setAiLoadingState === "function") setAiLoadingState(false);
+    }
+};
