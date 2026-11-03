@@ -5667,3 +5667,205 @@ window.replaceClicheInEditor = function(cliche, replacement, btnEl) {
         alert("Bu söz matnda topilmadi (ehtimol allaqaçon özgartirilgan).");
     }
 };
+
+// ==========================================
+// === 15. ПОЛНОЦЕННЫЙ AI-ПЕРЕВОДЧИК В ПРАВОЙ ПАНЕЛИ ===
+// ==========================================
+
+// Закрытие панели переводчика и возврат конвертера
+window.closeTranslatorPanel = function() {
+    const panel = document.getElementById("translatorReportBox");
+    const converterBox = document.getElementById("converterBox");
+    
+    if (panel) {
+        panel.style.display = "none";
+        panel.innerHTML = "";
+    }
+    if (converterBox) {
+        const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+        const isTelegramEnv = Boolean(tg && tg.initData && tg.initData.length > 0);
+        if (!isTelegramEnv) {
+            converterBox.style.display = "flex";
+        }
+    }
+};
+
+// Открытие панели переводчика и запуск перевода
+window.openTranslatorPanel = function() {
+    if (typeof closeAiMenu === "function") closeAiMenu();
+
+    if (!editor || !editor.value.trim()) {
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Avval matn kiriting!");
+        if (editor) editor.focus();
+        return;
+    }
+
+    // Если открыта панель уникальности - прячем её
+    const uniquenessPanel = document.getElementById("uniquenessReportBox");
+    if (uniquenessPanel) uniquenessPanel.style.display = "none";
+
+    const converterBox = document.getElementById("converterBox");
+    const workspace = document.querySelector(".workspace");
+
+    if (converterBox) converterBox.style.display = "none";
+
+    let panel = document.getElementById("translatorReportBox");
+    if (!panel) {
+        panel = document.createElement("div");
+        panel.id = "translatorReportBox";
+        if (workspace) workspace.appendChild(panel);
+        else editor.parentNode.insertBefore(panel, editor.nextSibling);
+    }
+    
+    panel.className = "translator-right-panel";
+    panel.style.display = "flex";
+
+    const closeBtnHtml = `<button onclick="closeTranslatorPanel()" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.04); border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748B; transition: all 0.2s ease; z-index: 10;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.color='#EF4444'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='#64748B'" title="Yopish">×</button>`;
+
+    panel.innerHTML = `
+        ${closeBtnHtml}
+        <div class="translator-header">
+            <div class="translator-lang-bar">
+                <span id="transSourceLang" style="color: #64748B; font-size: 11.5px; text-transform: uppercase;">Aniqlanmoqda...</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#94A3B8; margin: 0 2px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                <select id="transTargetLang" class="translator-lang-select" onchange="executeFullTranslation()">
+                    <option value="O'zbek tili" selected>Özbekça</option>
+                    <option value="Rus tili">Русский</option>
+                    <option value="Ingliz tili">English</option>
+                    <option value="Xitoy tili">中文 (Xitoy)</option>
+                    <option value="Koreys tili">한국어 (Koreys)</option>
+                    <option value="Yapon tili">日本語 (Yapon)</option>
+                    <option value="Turk tili">Türkçe (Turk)</option>
+                    <option value="Arab tili">العربية (Arab)</option>
+                    <option value="Tojik tili">Тоҷикӣ (Tojik)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="transContent" class="translator-content custom-scrollbar"></div>
+        
+        <div class="translator-actions">
+            <button class="translator-btn translator-btn-replace" onclick="replaceWithTranslation()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <span>Matnni almaştirish</span>
+            </button>
+            <button class="translator-btn translator-btn-copy" onclick="copyTranslatedText(this)" title="Nusxalaş">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span>Nusxalaş</span>
+            </button>
+        </div>
+    `;
+
+    executeFullTranslation();
+};
+
+// Функция перевода
+window.executeFullTranslation = async function() {
+    const contentBox = document.getElementById("transContent");
+    const langSelect = document.getElementById("transTargetLang");
+    const sourceLangLabel = document.getElementById("transSourceLang");
+    
+    if (!contentBox || !langSelect || !editor) return;
+
+    const text = editor.value.trim();
+    const targetLang = langSelect.value;
+
+    contentBox.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; color: #0284C7; font-weight: 700; font-size: 13px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" style="animation: aiSpinPulse 1.1s linear infinite;"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
+            Tarjima qilinmoqda, iltimos kuting...
+        </div>
+    `;
+
+    const promptText = `Sen professional tarjimonsan.
+Vazifalar:
+1. Berilgan matn qaysi tilda yozilganini aniqla (masalan: "Rus tili", "Ingliz tili", "O'zbek tili").
+2. Matnni ma'nosi va stilini yo'qotmagan holda "${targetLang}" tiliga aniq tarjima qil.
+Javobni FAQAT toza JSON formatida ber, markdown (\`\`\`json) yoki qo'shimcha so'zlar qo'shma.
+Format:
+{
+  "detected_lang": "aniqlangan til nomi",
+  "translation": "tarjima qilingan matn"
+}
+Matn: "${text.substring(0, 3000)}"`;
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
+        });
+
+        if (!response.ok) throw new Error("Server xatosi");
+
+        const data = await response.json();
+        let rawResult = "";
+        if (typeof data === "string") rawResult = data;
+        else if (data && data.result) rawResult = data.result;
+        else if (data && data.response) rawResult = data.response;
+        else rawResult = JSON.stringify(data);
+
+        let parsed = null;
+        try {
+            let clean = rawResult.replace(/```json/gi, '').replace(/```/g, '').trim();
+            const startIdx = clean.indexOf('{');
+            const endIdx = clean.lastIndexOf('}');
+            if (startIdx !== -1 && endIdx !== -1) {
+                clean = clean.substring(startIdx, endIdx + 1);
+            }
+            parsed = JSON.parse(clean);
+        } catch(e) {
+            console.error("JSON parse error:", e, rawResult);
+            throw new Error("Tarjimani o'qishda xatolik.");
+        }
+
+        if (sourceLangLabel && parsed.detected_lang) {
+            sourceLangLabel.textContent = parsed.detected_lang;
+        }
+
+        let finalTranslation = parsed.translation || "";
+
+        // Применяем новый узбекский алфавит ТОЛЬКО если целевой язык - узбекский
+        if (targetLang === "O'zbek tili" && typeof enforceNewUzbekAlphabet === "function") {
+            finalTranslation = enforceNewUzbekAlphabet(finalTranslation);
+        }
+
+        // Сохраняем "чистый" текст для копирования, а выводим с тегами <br> для переносов
+        contentBox.dataset.rawTranslation = finalTranslation;
+        contentBox.innerHTML = finalTranslation.replace(/\n/g, "<br>");
+
+    } catch (err) {
+        contentBox.innerHTML = `<span style="color: #EF4444; font-weight: 700;">Xatolik yuz berdi: ${err.message}</span>`;
+    }
+};
+
+// Функция копирования
+window.copyTranslatedText = function(btnEl) {
+    const contentBox = document.getElementById("transContent");
+    if (!contentBox) return;
+    const textToCopy = contentBox.dataset.rawTranslation || contentBox.innerText;
+    
+    if (!textToCopy) return;
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const origHtml = btnEl.innerHTML;
+        btnEl.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> <span>Nusxalandi</span>`;
+        setTimeout(() => { btnEl.innerHTML = origHtml; }, 1500);
+    });
+};
+
+// Функция замены текста в редакторе
+window.replaceWithTranslation = function() {
+    const contentBox = document.getElementById("transContent");
+    if (!contentBox || !editor) return;
+    
+    const textToInsert = contentBox.dataset.rawTranslation || contentBox.innerText;
+    if (!textToInsert) return;
+
+    editor.value = textToInsert;
+    if (typeof saveEditorDraft === "function") saveEditorDraft();
+    if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Tarjima joylandi ✓");
+    
+    closeTranslatorPanel();
+};
