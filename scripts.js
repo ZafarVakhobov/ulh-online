@@ -5133,7 +5133,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// === ТОЧНЫЙ УНИВЕРСАЛЬНЫЙ AI-СЛОВАРЬ СИНОНИМОВ ===
+// ==========================================
+// === ТОЧНЫЙ УНИВЕРСАЛЬНЫЙ AI-СЛОВАРЬ СИНОНИМОВ И ПЕРЕВОДЧИК ===
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const floatingMenu = document.getElementById("aiFloatingMenu");
     const dropdown = document.getElementById("aiSynonymDropdown");
@@ -5165,9 +5167,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (selectedText.length > 0) {
                     selectedData = { text: selectedText, element: activeEl, type: "textarea", start, end };
                     
-                    // Вычисляем примерные координаты курсора/строки в textarea
                     rect = activeEl.getBoundingClientRect();
-                    (rect, selectedText);
+                    // ИСПРАВЛЕНИЕ: Добавлено имя функции
+                    showAiFloatingMenuNearSelection(rect, selectedText);
                     return;
                 }
             }
@@ -5180,10 +5182,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (text.length > 0 && text.length <= 40 && !/\s{2,}/.test(text)) {
                     selectedData = { text: text, element: selection.getRangeAt(0), type: "contenteditable" };
                     
-                    // Берем точные координаты выделенного диапазона в документе
                     const rangeRect = selection.getRangeAt(0).getBoundingClientRect();
                     if (rangeRect && rangeRect.width > 0) {
-                        (rangeRect, text);
+                        // ИСПРАВЛЕНИЕ: Добавлено имя функции
+                        showAiFloatingMenuNearSelection(rangeRect, text);
                         return;
                     }
                 }
@@ -5194,7 +5196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showAiFloatingMenuNearSelection(targetRect, text) {
-        // Ширина плашки с ДВУМЯ кнопками стала примерно 195 пикселей
+        // Ширина плашки с ДВУМЯ кнопками (Синоним и Перевод)
         const menuWidth = 195; 
         const centerX = targetRect.left + (targetRect.width / 2) - (menuWidth / 2);
         const topPos = targetRect.top - 40;
@@ -5217,7 +5219,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Запрос синонимов у ИИ с умным определением языка
+    // === ФУНКЦИЯ 1: ЗАПРОС СИНОНИМОВ ===
     window.fetchSynonymsForSelection = async function(event) {
         if (event) {
             event.preventDefault();
@@ -5276,11 +5278,8 @@ Ajratib olingan so'z: "${targetWord}"`;
                 opt.type = "button";
                 opt.className = "ai-syn-option";
                 
-                // СТРОГАЯ ПРОВЕРКА: Применяем узбекский алфавит (Ş, Ç, Ö, Ğ) ТОЛЬКО если исходный текст на узбекском
                 let finalSyn = syn;
                 const isUzbekText = /[o'g'shchöğşçўқғҳ'`]/i.test(targetWord) || /[o'g'shchöğşçўқғҳ'`]/i.test(fullContext);
-                
-                // Дополнительно убедимся, что это не чисто английское слово
                 const isEnglishWord = /^[a-zA-Z]+$/.test(targetWord) && !/[o'g'shchöğşçўқғҳ]/i.test(targetWord);
 
                 if (isUzbekText && !isEnglishWord && typeof enforceNewUzbekAlphabet === "function") {
@@ -5303,7 +5302,7 @@ Ajratib olingan so'z: "${targetWord}"`;
         }
     };
 
-    // Запрос перевода (Inline Translator)
+    // === ФУНКЦИЯ 2: ЗАПРОС ПЕРЕВОДА (ДОБАВЛЕНО) ===
     window.fetchTranslationForSelection = async function(event) {
         if (event) {
             event.preventDefault();
@@ -5318,7 +5317,6 @@ Ajratib olingan so'z: "${targetWord}"`;
 
         const targetText = selectedData.text;
 
-        // Промпт перевода, исключающий лишние символы
         const promptText = `Iltimos, quyidagi matnni O'zbek tiliga tarjima qiling.
 Faqat va faqat tarjimani yozing, hech qanday qo'shimcha so'zlar, izohlar yoki qo'shtirnoqlar ishlatmang.
 Matn: "${targetText}"`;
@@ -5339,7 +5337,6 @@ Matn: "${targetText}"`;
             else if (data && data.response) rawResult = data.response;
             else rawResult = JSON.stringify(data);
 
-            // Очищаем от случайных кавычек в начале и конце
             rawResult = rawResult.replace(/^["']|["']$/g, '').trim();
 
             if (!rawResult) {
@@ -5347,13 +5344,11 @@ Matn: "${targetText}"`;
                 return;
             }
 
-            // Применяем узбекский алфавит
             let finalTranslation = rawResult;
             if (typeof enforceNewUzbekAlphabet === "function") {
                 finalTranslation = enforceNewUzbekAlphabet(finalTranslation);
             }
 
-            // Рендерим красивый результат с заголовком
             dropdown.innerHTML = `
                 <div style="font-size: 10px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 6px 10px 4px; letter-spacing: 0.05em;">
                     Tarjima (Almashtirish uchun bosing):
@@ -5365,7 +5360,6 @@ Matn: "${targetText}"`;
             opt.className = "ai-syn-option";
             opt.textContent = finalTranslation;
             
-            // Замена исходного текста на перевод по клику
             opt.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -5415,15 +5409,10 @@ Matn: "${targetText}"`;
     }
 });
 
-// Функция для закрытия панели антиплагиата
-window.closeUniquenessReport = function() {
-    const reportBox = document.getElementById("uniquenessReportBox");
-    if (reportBox) {
-        reportBox.innerHTML = "";
-    }
-};
-
+// ==========================================
 // Функция для закрытия панели антиплагиата и ВОЗВРАТА конвертера файлов
+// (Оставляем только одну правильную версию функции)
+// ==========================================
 window.closeUniquenessReport = function() {
     const reportBox = document.getElementById("uniquenessReportBox");
     const converterBox = document.getElementById("converterBox");
