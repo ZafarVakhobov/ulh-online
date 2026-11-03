@@ -5343,6 +5343,14 @@ Ajratib olingan so'z: "${targetWord}"`;
     }
 });
 
+// Функция для закрытия панели антиплагиата
+window.closeUniquenessReport = function() {
+    const reportBox = document.getElementById("uniquenessReportBox");
+    if (reportBox) {
+        reportBox.innerHTML = "";
+    }
+};
+
 // ==========================================
 // === 14. МОДУЛЬ ПРОВЕРКИ УНИКАЛЬНОСТИ И КЛИШЕ ===
 // ==========================================
@@ -5367,16 +5375,21 @@ window.checkTextUniqueness = async function() {
         editor.parentNode.insertBefore(reportBox, editor.nextSibling);
     }
 
+    // HTML код для кнопки закрытия (переиспользуем во всех состояниях)
+    const closeBtnHtml = `<button onclick="closeUniquenessReport()" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.04); border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748B; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.color='#EF4444'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='#64748B'" title="Yopish">×</button>`;
+
+    // Состояние 1: Загрузка
     reportBox.innerHTML = `
-        <div class="uniqueness-report-container">
-            <div class="uniqueness-header" style="color: #0284C7; margin: 0;">
+        <div class="uniqueness-report-container" style="position: relative;">
+            ${closeBtnHtml}
+            <div class="uniqueness-header" style="color: #0284C7; margin: 0; padding-right: 32px;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="animation: aiSpinPulse 1.1s linear infinite;"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
                 <span style="margin-left: 6px;">Matn tahlil qilinmoqda, iltimos kuting...</span>
             </div>
         </div>
     `;
 
-    const promptText = `Sen professional ilmiy va akademik muharrirsan. 
+    const promptText = `Sen professional ilmiy va akademik muharrirsan. Xohlagan tilda tahrir qila olasan.
 Quyidagi matnni tahlil qilib, undagi eskirgan akademik shtamplar, qolip iboralar (klishelar), kantselyarizmlar va takroriy konstruksiyalarni top.
 Har bir topilgan shtamp uchun matn uslubiga mos keladigan 2-3 ta tabiiy, original muqobil variantlarni taklif qil.
 MUHIM: Javobing FAQAT toza JSON massiv formatida bo'lsin, hech qanday markdown (\`\`\`json) yoki tushuntirish yozma.
@@ -5418,23 +5431,26 @@ Matn: "${text.substring(0, 3000)}"`;
             clichesList = [];
         }
 
+        // Состояние 2: Идеальный текст (нет штампов)
         if (!Array.isArray(clichesList) || clichesList.length === 0) {
             reportBox.innerHTML = `
-                <div class="uniqueness-report-container" style="border-left: 4px solid #10B981;">
-                    <div class="uniqueness-header" style="color: #10B981; margin: 0;">
+                <div class="uniqueness-report-container" style="border-left: 4px solid #10B981; position: relative;">
+                    ${closeBtnHtml}
+                    <div class="uniqueness-header" style="color: #10B981; margin: 0; padding-right: 32px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                         <span>Ajoyib! Matnda eskirgan akademik ştamplar va klişelar topilmadi.</span>
                     </div>
                 </div>
             `;
-            setTimeout(() => { if (reportBox) reportBox.innerHTML = ""; }, 5000);
+            // Не скрываем автоматически, пусть пользователь закроет сам
             return;
         }
 
-        // Рендеринг карточек рекомендаций
+        // Состояние 3: Результаты найдены
         let html = `
-            <div class="uniqueness-report-container">
-                <div class="uniqueness-header" style="color: #D97706;">
+            <div class="uniqueness-report-container" style="position: relative;">
+                ${closeBtnHtml}
+                <div class="uniqueness-header" style="color: #D97706; padding-right: 32px;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
                     <span>Topilgan akademik ştamplar (Almaştiriş uçun ustiga bosing):</span>
                 </div>
@@ -5445,7 +5461,6 @@ Matn: "${text.substring(0, 3000)}"`;
             const rawCliche = item.cliche || "";
             if (!rawCliche) return;
 
-            // Применяем фильтр букв нового узбекского алфавита
             const displayCliche = (typeof enforceNewUzbekAlphabet === "function") ? enforceNewUzbekAlphabet(rawCliche) : rawCliche;
 
             let variantsButtons = "";
@@ -5474,10 +5489,12 @@ Matn: "${text.substring(0, 3000)}"`;
         reportBox.innerHTML = html;
 
     } catch (err) {
+        // Состояние 4: Ошибка
         console.error("Uniqueness Check Error:", err);
         reportBox.innerHTML = `
-            <div class="uniqueness-report-container" style="border-left: 4px solid #EF4444;">
-                <div class="uniqueness-header" style="color: #EF4444; margin: 0;">
+            <div class="uniqueness-report-container" style="border-left: 4px solid #EF4444; position: relative;">
+                ${closeBtnHtml}
+                <div class="uniqueness-header" style="color: #EF4444; margin: 0; padding-right: 32px;">
                     Tahlil qilişda xatolik yuz berdi: ${err.message}
                 </div>
             </div>
