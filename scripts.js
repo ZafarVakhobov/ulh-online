@@ -6360,10 +6360,7 @@ function renderNewsToDOM(newsArray, trackEl) {
         `;
     });
     
-    // Дублируем контент для бесконечной прокрутки
     trackEl.innerHTML = htmlContent + htmlContent;
-
-    // Запускаем движок перетаскивания и автоскролла
     initDragAndScrollTicker();
 }
 
@@ -6374,15 +6371,20 @@ function initDragAndScrollTicker() {
 
     if (tickerReqId) cancelAnimationFrame(tickerReqId);
     area.scrollLeft = 0;
+    
+    // Секретное оружие против бага с дробными пикселями:
+    let exactScroll = 0; 
+    
     isTickerHovered = false;
     isTickerDragging = false;
 
     // Логика захвата мышью
     area.onmousedown = (e) => {
         isTickerDragging = true;
-        isTickerHovered = true; // Ставим автоскролл на паузу
+        isTickerHovered = true; 
         tickerStartX = e.pageX - area.offsetLeft;
         tickerScrollLeft = area.scrollLeft;
+        exactScroll = area.scrollLeft;
         area.style.cursor = 'grabbing';
     };
     
@@ -6403,34 +6405,39 @@ function initDragAndScrollTicker() {
         e.preventDefault(); 
         
         const x = e.pageX - area.offsetLeft;
-        const walk = (tickerStartX - x) * 1.2; // Скорость тяги мыши
-        area.scrollLeft = tickerScrollLeft + walk;
+        const walk = (tickerStartX - x) * 1.2; // Чувствительность перетаскивания
+        exactScroll = tickerScrollLeft + walk;
         
-        // Магия бесконечности при ручном скролле
         const halfWidth = track.scrollWidth / 2;
-        if (area.scrollLeft >= halfWidth) {
-            area.scrollLeft -= halfWidth;
+        if (exactScroll >= halfWidth) {
+            exactScroll -= halfWidth;
             tickerStartX = e.pageX - area.offsetLeft;
-            tickerScrollLeft = area.scrollLeft;
-        } else if (area.scrollLeft <= 0) {
-            area.scrollLeft += halfWidth;
+            tickerScrollLeft = exactScroll;
+        } else if (exactScroll <= 0) {
+            exactScroll += halfWidth;
             tickerStartX = e.pageX - area.offsetLeft;
-            tickerScrollLeft = area.scrollLeft;
+            tickerScrollLeft = exactScroll;
         }
+        area.scrollLeft = exactScroll;
     };
 
     area.onmouseenter = () => {
         if (!isTickerDragging) isTickerHovered = true;
     };
 
-    // Движок плавного автоскролла
+    // Движок плавного автоскролла (теперь работает с любыми дробями!)
     function scrollStep() {
         if (!isTickerHovered && !isTickerDragging) {
-            area.scrollLeft += 0.4; // Скорость автоматического движения
             
-            if (area.scrollLeft >= track.scrollWidth / 2) {
-                area.scrollLeft = 0;
+            exactScroll += 0.4; // ВАША СКОРОСТЬ ЗДЕСЬ (меняйте как угодно: 0.3, 0.5, 1.2)
+            
+            if (exactScroll >= track.scrollWidth / 2) {
+                exactScroll = 0;
             }
+            area.scrollLeft = exactScroll; 
+        } else {
+            // Если мы остановили ленту, синхронизируем значения
+            exactScroll = area.scrollLeft;
         }
         tickerReqId = requestAnimationFrame(scrollStep);
     }
@@ -6439,7 +6446,6 @@ function initDragAndScrollTicker() {
 
 // === УПРАВЛЕНИЕ ПОПАПАМИ ===
 window.showGlobalNewsPopup = function(el, e) {
-    // Блокируем показ окна, если пользователь тянет ленту мышкой!
     if (isTickerDragging) return;
 
     let popup = document.getElementById("globalNewsPopup");
@@ -6460,7 +6466,7 @@ window.showGlobalNewsPopup = function(el, e) {
         };
     }
 
-    isTickerHovered = true; // Останавливаем ленту
+    isTickerHovered = true; 
 
     popup.innerHTML = `
         <div class="news-popup-header">
@@ -6501,7 +6507,7 @@ window.hideGlobalNewsPopup = function() {
         popup.style.opacity = "0";
         popup.style.visibility = "hidden";
     }
-    isTickerHovered = false; // Запускаем ленту дальше
+    isTickerHovered = false;
 };
 
 // === СБОРКА НОВОСТЕЙ ===
