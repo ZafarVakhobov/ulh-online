@@ -6066,16 +6066,16 @@ if (pToggle) {
 
 // Функция 1: Краткое содержание извлеченного файла
 window.executeFileSummary = async function() {
-    const text = (window.extractedFileText || "").substring(0, 10000).trim(); // Берем до 10 000 символов
+    // ИСПРАВЛЕНИЕ: Вернули оптимальный лимит 4500. 10000 символов "вешали" сервер по таймауту
+    const text = (window.extractedFileText || "").substring(0, 4500).trim(); 
     if (!text) {
         alert("Fayl içidan matn topilmadi!");
         return;
     }
 
     if (typeof setAiLoadingState === "function") setAiLoadingState(true);
-    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Fayl öqilmoqda...");
+    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Fayl o'qilmoqda...");
 
-    // Промпт: просим выделить 5-7 главных мыслей
     const promptText = `Sen professional tahlilchisan. Har xil tillarni 100 foiz mukammal va erkin bilasan. Quyidagi matnni diqqat bilan o'qib chiqib, uning qisqacha mazmunini (konspekt) 5-7 ta eng muhim tezislar ko'rinishida yozib ber. 
 Javobingni qulay va chiroyli formatda, sarlavha va ro'yxat (bullet points) shaklida taqdim et. Sening javobing berilgan asl matn tilida bo'lishi shart.
 Matn: "${text}"`;
@@ -6087,7 +6087,12 @@ Matn: "${text}"`;
             body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
         });
 
-        if (!response.ok) throw new Error("Server xatosi");
+        // Улучшенный перехват ошибок
+        if (!response.ok) {
+            const errInfo = await response.text();
+            throw new Error(`${response.status} - ${errInfo}`);
+        }
+        
         const data = await response.json();
         
         let rawResult = "";
@@ -6096,10 +6101,8 @@ Matn: "${text}"`;
         else if (data && data.response) rawResult = data.response;
         else rawResult = JSON.stringify(data);
 
-        // Применяем новый алфавит
         let cleanResult = typeof enforceNewUzbekAlphabet === "function" ? enforceNewUzbekAlphabet(rawResult) : rawResult;
 
-        // Открываем существующее мощное окно результатов ИИ!
         if (typeof openAiResultModal === "function") {
             openAiResultModal(cleanResult);
         }
@@ -6107,7 +6110,7 @@ Matn: "${text}"`;
         if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Xulosa tayyor ✓");
     } catch (err) {
         console.error("Summary Error:", err);
-        alert("Tahlil qilişda xatolik yuz berdi. Internetni tekşiring.");
+        alert(`Tahlil qilişda xatolik yuz berdi.\nSabab: ${err.message}\nInternetni tekşiring yoki server band bölişi mumkin.`);
     } finally {
         if (typeof setAiLoadingState === "function") setAiLoadingState(false);
     }
@@ -6115,20 +6118,20 @@ Matn: "${text}"`;
 
 // Функция: AI-Оппонент (Тренажер защиты статьи)
 window.runAiOpponent = async function() {
-    const text = (window.extractedFileText || "").substring(0, 10000).trim(); 
+    // ИСПРАВЛЕНИЕ: Снизили лимит до 4500 символов
+    const text = (window.extractedFileText || "").substring(0, 4500).trim(); 
     if (!text) {
-        alert("Fayl içidan matn topilmadi!");
+        alert("Fayl ichidan matn topilmadi!");
         return;
     }
 
     if (typeof setAiLoadingState === "function") setAiLoadingState(true);
-    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Opponent matnni örganmoqda...");
+    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Opponent matnni o'rganmoqda...");
 
-    // Промпт: Задаем жесткую ролевую модель члена комиссии ВАК
-    const promptText = `Sen Oliy Attestatsiya Komissiyasining (VAK) juda qattiqqo'l, talabchan va tanqidiy fikrlaydigan a'zosisan (opponent). Quyidagi ilmiy matnni (maqola, dissertatsiya yoki tezis)  diqqat bilan o'qib chiq. 
+    const promptText = `Sen Oliy Attestatsiya Komissiyasining (VAK) juda qattiqqo'l, talabchan va tanqidiy fikrlaydigan a'zosisan (opponent). Quyidagi ilmiy matnni diqqat bilan o'qib chiq. 
 Sening vazifang — muallifni ilmiy himoyaga tayyorlash uchun matndagi metodologiya, xulosalar, dalillar yoki mantiqiy zaif tomonlarini topish.
-Shu matn asosida muallifga 3 ta eng qiyin, noqulay va bahsli savol ber. Savollar shunday tuzilsinki, muallif o'z tadqiqotining yangiligi va amaliy ahamiyatini chuqur himoya qilishga majbur bo'lsin.
-Javobingni sarlavha va ro'yxat shaklida, fayldagi matnning tilida taqdim et. Har bir savoldan so'ng qisqacha "Nima uchun bu savol berildi? (Zaif nuqta)" degan izoh qo'sh. Ushbu izoh ham fayldagi matnning tiliga asosan, sening javobing ham aynan shu tilda berilishi lozim!
+Shu matn asosida muallifga 3 ta eng qiyin, noqulay va bahsli savol ber.
+Javobingni sarlavha va ro'yxat shaklida, fayldagi matnning tilida taqdim et. Har bir savoldan so'ng qisqacha "Nima uchun bu savol berildi? (Zaif nuqta)" degan izoh qo'sh. Ushbu izoh ham fayldagi matnning tiliga asosan berilishi lozim!
 Matn: "${text}"`;
 
     try {
@@ -6138,7 +6141,11 @@ Matn: "${text}"`;
             body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
         });
 
-        if (!response.ok) throw new Error("Server xatosi");
+        if (!response.ok) {
+            const errInfo = await response.text();
+            throw new Error(`${response.status} - ${errInfo}`);
+        }
+        
         const data = await response.json();
         
         let rawResult = "";
@@ -6147,10 +6154,8 @@ Matn: "${text}"`;
         else if (data && data.response) rawResult = data.response;
         else rawResult = JSON.stringify(data);
 
-        // Применяем стандарты нового алфавита
         let cleanResult = typeof enforceNewUzbekAlphabet === "function" ? enforceNewUzbekAlphabet(rawResult) : rawResult;
 
-        // Открываем результат в уже готовом окне чата
         if (typeof openAiResultModal === "function") {
             openAiResultModal(cleanResult);
         }
@@ -6158,7 +6163,7 @@ Matn: "${text}"`;
         if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Savollar tayyor ✓");
     } catch (err) {
         console.error("Opponent Error:", err);
-        alert("Tahlil qilişda xatolik yuz berdi. Internetni tekşiring.");
+        alert(`Tahlil qilişda xatolik yuz berdi.\nSabab: ${err.message}\nInternetni tekşiring yoki server band bölişi mumkin.`);
     } finally {
         if (typeof setAiLoadingState === "function") setAiLoadingState(false);
     }
@@ -6178,12 +6183,11 @@ window.generateAiTests = async function() {
     if (typeof setAiLoadingState === "function") setAiLoadingState(true);
     if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Testlar tuzilmoqda...");
 
-    // Промпт: 5 тестов (ABCD) и 5 карточек (вопрос-ответ)
     const promptText = `Sen tajribali o'qituvchi va repetitorsan. Berilgan matn (xohlagan tilda bo'lishi mumkin) asosida bilimni tekshirish uchun quyidagilarni tuzib ber:
 1. 5 ta yopiq test savoli (A, B, C, D variantlari bilan). To'g'ri javoblarni **qalin (bold)** qilib belgilab ko'rsat.
 2. 5 ta qisqa "Savol - Javob" (flesh-kartochkalar uchun).
-Javobing aniq, tushunarli va Markdown formatida (chiroyli sarlavhalar bilan) bo'lsin.
-Matn: "${text.substring(0, 5000)}"`;
+Javobing aniq, tushunarli va Markdown formatida bo'lsin.
+Matn: "${text.substring(0, 4500)}"`;
 
     try {
         const response = await fetch(AI_PROXY_ENDPOINT, {
@@ -6192,7 +6196,11 @@ Matn: "${text.substring(0, 5000)}"`;
             body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
         });
 
-        if (!response.ok) throw new Error("Server xatosi");
+        if (!response.ok) {
+            const errInfo = await response.text();
+            throw new Error(`${response.status} - ${errInfo}`);
+        }
+        
         const data = await response.json();
         
         let rawResult = "";
@@ -6201,10 +6209,8 @@ Matn: "${text.substring(0, 5000)}"`;
         else if (data && data.response) rawResult = data.response;
         else rawResult = JSON.stringify(data);
 
-        // Применяем новый алфавит
         let cleanResult = typeof enforceNewUzbekAlphabet === "function" ? enforceNewUzbekAlphabet(rawResult) : rawResult;
 
-        // Открываем существующее мощное окно результатов ИИ
         if (typeof openAiResultModal === "function") {
             openAiResultModal(cleanResult);
         }
@@ -6212,7 +6218,7 @@ Matn: "${text.substring(0, 5000)}"`;
         if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Testlar tayyor ✓");
     } catch (err) {
         console.error("Test Gen Error:", err);
-        alert("Test tuzişda xatolik yuz berdi. Internetni tekşiring.");
+        alert(`Test tuzishda xatolik yuz berdi.\nSabab: ${err.message}`);
     } finally {
         if (typeof setAiLoadingState === "function") setAiLoadingState(false);
     }
