@@ -2344,13 +2344,19 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
 <!-- ========================================== -->
 
 <!-- ========================================== -->
-<!-- === УНИВЕРСАЛЬНЫЙ AI-СЛОВАРЬ (СИНОНИМЫ) === -->
+<!-- === КОНТЕКСТНЫЙ AI-СЛОВАРЬ И ПЕРЕВОДЧИК === -->
 <!-- ========================================== -->
 <div id="aiFloatingMenu" class="ai-floating-menu">
-    <button type="button" id="aiSynonymTriggerBtn" class="ai-float-trigger-btn" onclick="fetchSynonymsForSelection(event)">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
-        <span>Sinonim</span>
-    </button>
+    <div class="ai-float-triggers-wrap">
+        <button type="button" id="aiSynonymTriggerBtn" class="ai-float-trigger-btn" onclick="fetchSynonymsForSelection(event)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
+            <span>Sinonim</span>
+        </button>
+        <button type="button" id="aiTranslateTriggerBtn" class="ai-float-trigger-btn translate-btn" onclick="fetchTranslationForSelection(event)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>
+            <span>Tarjima</span>
+        </button>
+    </div>
     <div id="aiSynonymDropdown" class="ai-float-dropdown"></div>
 </div>
     
