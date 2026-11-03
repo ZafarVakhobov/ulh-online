@@ -6063,3 +6063,118 @@ body.dark-mode .ai-syn-copy-btn:hover {
     color: #38BDF8;
     border-color: rgba(2, 132, 199, 0.4);
 }
+
+/* ========================================== */
+/* === ПАНЕЛЬ AI-ПЕРЕВОДЧИКА (СПРАВА) === */
+/* ========================================== */
+.translator-right-panel {
+    margin-top: 0 !important;
+    height: 260px; /* Идеально вровень с редактором */
+    display: flex;
+    flex-direction: column;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+    animation: reportFadeSlide 0.25s ease-out forwards;
+    position: relative;
+}
+
+.translator-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-right: 28px;
+}
+
+.translator-lang-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.translator-lang-select {
+    border: none;
+    background: transparent;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    color: #0284C7;
+    outline: none;
+    cursor: pointer;
+    font-size: 13.5px;
+}
+
+.translator-content {
+    flex: 1;
+    overflow-y: auto;
+    background: #F8FAFC;
+    border: 1px solid #F1F5F9;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    color: #1E293B;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.translator-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.translator-btn {
+    flex: 1;
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.translator-btn-replace {
+    background: #E0F2FE;
+    color: #0284C7;
+}
+.translator-btn-replace:hover {
+    background: #0284C7;
+    color: #FFFFFF;
+}
+
+.translator-btn-copy {
+    background: #ECFDF5;
+    color: #10B981;
+}
+.translator-btn-copy:hover {
+    background: #10B981;
+    color: #FFFFFF;
+}
+
+/* Темная тема */
+body.dark-mode .translator-right-panel { background: #0F172A; border-color: #334155; }
+body.dark-mode .translator-lang-bar { background: #1E293B; border-color: #334155; color: #E2E8F0; }
+body.dark-mode .translator-lang-select { color: #38BDF8; }
+body.dark-mode .translator-lang-select option { background: #0F172A; color: #F8FAFC; }
+body.dark-mode .translator-content { background: #1E293B; border-color: #334155; color: #F8FAFC; }
+body.dark-mode .translator-btn-replace { background: rgba(2, 132, 199, 0.2); color: #38BDF8; }
+body.dark-mode .translator-btn-replace:hover { background: #0284C7; color: #FFFFFF; }
+body.dark-mode .translator-btn-copy { background: rgba(16, 185, 129, 0.2); color: #34D399; }
+body.dark-mode .translator-btn-copy:hover { background: #10B981; color: #FFFFFF; }
+
+@media (max-width: 760px) {
+    .translator-right-panel { height: 380px; }
+}
