@@ -6466,7 +6466,7 @@ function renderNewsSourcesList() {
         card.className = "news-source-card";
         card.innerHTML = `
             <div style="display:flex; flex-direction:column; gap:2px; flex:1; min-width:0;">
-                <span style="font-size:13px; font-weight:800; color:#1E293B;" class="dark:text-slate-100">${src.name}</span>
+                <span style="font-size:13px; font-weight:800;" class="dark:text-slate-100">${src.name}</span>
                 <span style="font-size:11px; color:#64748B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${src.url}</span>
             </div>
             <button onclick="removeNewsSource(${index})" style="background:rgba(239,68,68,0.1); border:none; width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#EF4444; cursor:pointer; flex-shrink:0;">
