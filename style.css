@@ -6018,3 +6018,48 @@ body.dark-mode .uniqueness-right-panel::-webkit-scrollbar-thumb { background: #4
     white-space: normal; /* Разрешаем перенос текста для перевода предложений */
     line-height: 1.45;
 }
+
+/* === КНОПКА КОПИРОВАНИЯ В AI-СЛОВАРЕ === */
+.ai-syn-option-wrap {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+}
+
+/* Изменяем существующий класс, чтобы он занимал все свободное место */
+.ai-syn-option {
+    flex: 1;
+}
+
+.ai-syn-copy-btn {
+    width: 32px;
+    flex-shrink: 0;
+    background: #F8FAFC;
+    border: 1px solid #F1F5F9;
+    border-radius: 8px;
+    color: #64748B;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.ai-syn-copy-btn:hover {
+    background: #E0F2FE;
+    color: #0284C7;
+    border-color: #BAE6FD;
+}
+
+/* Темная тема */
+body.dark-mode .ai-syn-copy-btn {
+    background: #1E293B;
+    border-color: #334155;
+    color: #94A3B8;
+}
+
+body.dark-mode .ai-syn-copy-btn:hover {
+    background: rgba(2, 132, 199, 0.2);
+    color: #38BDF8;
+    border-color: rgba(2, 132, 199, 0.4);
+}
