@@ -5926,15 +5926,21 @@ async function runPlagiarismCheck() {
         return;
     }
 
+    // Обновленный промпт: жестко требуем URL
     const promptText = `Sen professional antiplagiat tizimisan. Berilgan matnni chuqur tahlil qilib, uning qanchalik original ekanligini (foizda) va qaysi qismlari boshqa manbalardan (internet, kitoblar, maqolalar) olinganini aniqla. Matn har qanday tilda bo'lishi mumkin.
 Javobni FAQAT toza JSON formatida qaytar, hech qanday qo'shimcha so'z qo'shma.
 Format:
 {
   "originality_percentage": 75,
   "sources": [
-    { "fragment": "köçirilgan matn qismi...", "source_name": "Manba nomi yoki URL havola" }
+    { 
+      "fragment": "köçirilgan matn qismi...", 
+      "source_name": "Manba nomi (masalan: Wikipedia, Kun.uz)",
+      "source_url": "https://..."
+    }
   ]
 }
+Agar aniq URL manzil topolmasang, "source_url" maydonini bo'sh qoldir.
 Matn: "${textToCheck}"`;
 
     try {
@@ -5974,20 +5980,20 @@ Matn: "${textToCheck}"`;
         
         // Цвет в зависимости от процента оригинальности
         if (score >= 80) {
-            scoreNum.style.color = "#10B981"; // Зеленый (Хорошо)
+            scoreNum.style.color = "#10B981"; 
             fillBar.style.background = "linear-gradient(90deg, #10B981 0%, #34D399 100%)";
         } else if (score >= 50) {
-            scoreNum.style.color = "#F59E0B"; // Желтый (Средне)
+            scoreNum.style.color = "#F59E0B"; 
             fillBar.style.background = "linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%)";
         } else {
-            scoreNum.style.color = "#EF4444"; // Красный (Плохо/Плагиат)
+            scoreNum.style.color = "#EF4444"; 
             fillBar.style.background = "linear-gradient(90deg, #EF4444 0%, #F87171 100%)";
         }
 
         listEl.innerHTML = "";
         
         if (!parsed.sources || parsed.sources.length === 0) {
-            listEl.innerHTML = `<div style="text-align:center; color:#10B981; font-weight:700; padding:10px;">Ajoyib! Hech qanday ko'chirma topilmadi. Matn noyob.</div>`;
+            listEl.innerHTML = `<div style="text-align:center; color:#10B981; font-weight:700; padding:10px;">Ajoyib! Heç qanday köçirma topilmadi. Matn noyob.</div>`;
             return;
         }
 
@@ -5995,17 +6001,31 @@ Matn: "${textToCheck}"`;
             const card = document.createElement("div");
             card.className = "plagiat-source-card";
             
-            // Если источник похож на ссылку, делаем кликабельным
-            let sourceHtml = `<span style="font-weight:800; font-size: 13px; color:#0F172A;">${src.source_name}</span>`;
-            if (src.source_name && src.source_name.startsWith("http")) {
-                sourceHtml = `<a href="${src.source_name}" target="_blank" rel="noopener" class="plagiat-source-link">${src.source_name}</a>`;
+            let sourceHtml = "";
+            
+            // Если ИИ выдал точную ссылку
+            if (src.source_url && src.source_url.startsWith("http")) {
+                sourceHtml = `<a href="${src.source_url}" target="_blank" rel="noopener" class="plagiat-source-link">${src.source_name || src.source_url}</a>`;
+            } 
+            // Если ссылки нет (или она битая), генерируем поиск фразы в Google
+            else {
+                // Берем первые 20 слов фрагмента для точного поиска в кавычках
+                const searchSnippet = src.fragment.split(" ").slice(0, 20).join(" ");
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent('"' + searchSnippet + '"')}`;
+                
+                sourceHtml = `
+                    <span style="font-weight:800; font-size: 13px; color:#0F172A;">${src.source_name || "Noma'lum manba"}</span>
+                    <a href="${searchUrl}" target="_blank" rel="noopener" class="plagiat-source-link" style="margin-left: 8px; font-weight: 600;">(Google'dan qidirish ↗)</a>
+                `;
             }
 
             card.innerHTML = `
                 <div class="plagiat-source-text">"${src.fragment}"</div>
                 <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                    ${sourceHtml}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5" style="flex-shrink: 0;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    <div style="min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${sourceHtml}
+                    </div>
                 </div>
             `;
             listEl.appendChild(card);
