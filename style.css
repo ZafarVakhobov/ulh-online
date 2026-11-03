@@ -6371,16 +6371,13 @@ body.dark-mode .plagiat-source-link { color: #60A5FA; }
 }
 .news-item-source { color: #64748B; font-weight: 800; text-transform: uppercase; font-size: 11px; }
 
-/* 260px Всплывающее окно новости */
-.news-popup {
+/* === ГЛОБАЛЬНОЕ 260px ВСПЛЫВАЮЩЕЕ ОКНО НОВОСТИ === */
+.news-popup-global {
     position: absolute;
-    top: calc(100% + 14px);
-    left: 50%;
-    transform: translateX(-50%) translateY(10px);
-    width: 24vw; /* Примерно 20-25% экрана */
+    width: 24vw; 
     min-width: 320px;
     max-width: 400px;
-    height: 260px; /* Фиксированная высота как вы и просили */
+    height: 260px; /* Строго 260px */
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
     border-radius: 16px;
@@ -6390,15 +6387,10 @@ body.dark-mode .plagiat-source-link { color: #60A5FA; }
     flex-direction: column;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 1000;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 999999; /* Поверх абсолютно всего сайта */
     cursor: default;
-    white-space: normal; /* Сбрасываем white-space от родителя */
-}
-.news-item:hover .news-popup {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
+    white-space: normal;
 }
 
 .news-popup-header {
@@ -6451,7 +6443,7 @@ body.dark-mode .plagiat-source-link { color: #60A5FA; }
     flex: 1;
     overflow: hidden;
     display: -webkit-box;
-    -webkit-line-clamp: 4; /* Ограничиваем для интриги */
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
 }
 
@@ -6466,6 +6458,8 @@ body.dark-mode .plagiat-source-link { color: #60A5FA; }
     font-weight: 700;
     color: #94A3B8;
 }
+
+
 
 /* Карточки источников в модалке */
 .news-source-card {
@@ -6484,10 +6478,11 @@ body.dark-mode .news-ticker-btn { background: rgba(2, 132, 199, 0.2); color: #38
 body.dark-mode .news-ticker-btn:hover { background: #0284C7; color: #FFFFFF; }
 body.dark-mode .news-item { color: #F8FAFC; }
 body.dark-mode .news-item-source { color: #94A3B8; }
-body.dark-mode .news-popup { background: #1E293B; border-color: #334155; box-shadow: 0 18px 45px rgba(0,0,0,0.6); }
-body.dark-mode .news-popup-title { color: #F8FAFC; }
-body.dark-mode .news-popup-source-link { color: #38BDF8; }
-body.dark-mode .news-popup-image { border-color: #334155; }
-body.dark-mode .news-popup-snippet { color: #CBD5E1; }
-body.dark-mode .news-popup-footer { border-color: #334155; }
+/* Темная тема для глобального попапа */
+body.dark-mode .news-popup-global { background: #1E293B; border-color: #334155; box-shadow: 0 18px 45px rgba(0,0,0,0.6); }
+body.dark-mode .news-popup-global .news-popup-title { color: #F8FAFC; }
+body.dark-mode .news-popup-global .news-popup-source-link { color: #38BDF8; }
+body.dark-mode .news-popup-global .news-popup-image { border-color: #334155; }
+body.dark-mode .news-popup-global .news-popup-snippet { color: #CBD5E1; }
+body.dark-mode .news-popup-global .news-popup-footer { border-color: #334155; }
 body.dark-mode .news-source-card { background: #0F172A; border-color: #334155; }
