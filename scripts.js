@@ -6305,9 +6305,9 @@ function renderNewsToDOM(newsArray, trackEl) {
     trackEl.innerHTML = htmlContent + htmlContent;
 
     // СЕКРЕТНЫЙ ИНГРЕДИЕНТ: Динамическая скорость
-    // Даем ровно по 6 секунд на каждую загруженную новость
+    // Даем ровно по 10 секунд на каждую загруженную новость
     // Чем больше новостей, тем больше времени будет длиться анимация, а скорость останется постоянной!
-    const timePerItem = 6; 
+    const timePerItem = 10; 
     const totalDuration = newsArray.length * timePerItem;
     
     // Применяем вычисленное время напрямую к элементу
