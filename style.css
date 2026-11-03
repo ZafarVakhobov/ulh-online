@@ -5992,3 +5992,29 @@ body.dark-mode .variant-badge-btn:hover {
 .uniqueness-right-panel::-webkit-scrollbar-track { background: transparent; }
 .uniqueness-right-panel::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
 body.dark-mode .uniqueness-right-panel::-webkit-scrollbar-thumb { background: #475569; }
+
+
+/* === ДОПОЛНЕНИЯ ДЛЯ AI-ПЕРЕВОДЧИКА В ПЛАВАЮЩЕМ МЕНЮ === */
+.ai-float-triggers-wrap {
+    display: flex;
+    gap: 6px;
+}
+
+.ai-float-trigger-btn.translate-btn {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.ai-float-trigger-btn.translate-btn:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+}
+
+.ai-float-dropdown {
+    max-width: 340px; /* Увеличиваем ширину для длинных переводов */
+}
+
+.ai-syn-option {
+    white-space: normal; /* Разрешаем перенос текста для перевода предложений */
+    line-height: 1.45;
+}
