@@ -6220,7 +6220,7 @@ function extractImageFromNode(itemNode) {
         const imgMatch = descNode.textContent.match(/<img[^>]+src="([^">]+)"/);
         if (imgMatch && imgMatch[1]) return imgMatch[1];
     }
-    return "./header.png"; 
+    return "./news.png"; 
 }
 
 function extractSnippet(itemNode) {
@@ -6415,7 +6415,7 @@ async function fetchAndRenderNews() {
                     let snippet = (item.description || "").replace(/<[^>]*>?/gm, '').trim();
                     let image = item.thumbnail || (item.enclosure && item.enclosure.link) || "./news.png";
                     
-                    if (image === "./header.png" && item.description && item.description.includes("<img")) {
+                    if (image === "./news.png" && item.description && item.description.includes("<img")) {
                          const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
                          if (imgMatch && imgMatch[1]) image = imgMatch[1];
                     }
