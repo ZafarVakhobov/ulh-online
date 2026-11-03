@@ -5351,6 +5351,27 @@ window.closeUniquenessReport = function() {
     }
 };
 
+// Функция для закрытия панели антиплагиата и ВОЗВРАТА конвертера файлов
+window.closeUniquenessReport = function() {
+    const reportBox = document.getElementById("uniquenessReportBox");
+    const converterBox = document.getElementById("converterBox");
+    
+    // Прячем отчет
+    if (reportBox) {
+        reportBox.style.display = "none";
+        reportBox.innerHTML = "";
+    }
+    
+    // Возвращаем конвертер (учитываем, что в Telegram Mini App он должен быть скрыт)
+    if (converterBox) {
+        const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+        const isTelegramEnv = Boolean(tg && tg.initData && tg.initData.length > 0);
+        if (!isTelegramEnv) {
+            converterBox.style.display = "flex";
+        }
+    }
+};
+
 // ==========================================
 // === 14. МОДУЛЬ ПРОВЕРКИ УНИКАЛЬНОСТИ И КЛИШЕ ===
 // ==========================================
@@ -5366,21 +5387,33 @@ window.checkTextUniqueness = async function() {
     }
 
     const text = editor.value.trim();
+    const converterBox = document.getElementById("converterBox");
+    const workspace = document.querySelector(".workspace");
 
-    // Создаем или находим блок для карточки отчета
+    // Прячем блок загрузки файлов
+    if (converterBox) {
+        converterBox.style.display = "none";
+    }
+
+    // Создаем блок отчета и помещаем его в правую колонку (.workspace)
     let reportBox = document.getElementById("uniquenessReportBox");
     if (!reportBox) {
         reportBox = document.createElement("div");
         reportBox.id = "uniquenessReportBox";
-        editor.parentNode.insertBefore(reportBox, editor.nextSibling);
+        if (workspace) {
+            workspace.appendChild(reportBox);
+        } else {
+            editor.parentNode.insertBefore(reportBox, editor.nextSibling);
+        }
     }
+    reportBox.style.display = "block";
 
-    // HTML код для кнопки закрытия (переиспользуем во всех состояниях)
-    const closeBtnHtml = `<button onclick="closeUniquenessReport()" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.04); border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748B; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.color='#EF4444'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='#64748B'" title="Yopish">×</button>`;
+    // HTML код для кнопки закрытия (использует новую функцию)
+    const closeBtnHtml = `<button onclick="closeUniquenessReport()" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.04); border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748B; transition: all 0.2s ease; z-index: 10;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.color='#EF4444'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='#64748B'" title="Yopish">×</button>`;
 
-    // Состояние 1: Загрузка
+    // Состояние 1: Загрузка (добавлен класс uniqueness-right-panel)
     reportBox.innerHTML = `
-        <div class="uniqueness-report-container" style="position: relative;">
+        <div class="uniqueness-report-container uniqueness-right-panel" style="position: relative;">
             ${closeBtnHtml}
             <div class="uniqueness-header" style="color: #0284C7; margin: 0; padding-right: 32px;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="animation: aiSpinPulse 1.1s linear infinite;"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
@@ -5416,7 +5449,6 @@ Matn: "${text.substring(0, 3000)}"`;
         else if (data && data.response) rawResult = data.response;
         else rawResult = JSON.stringify(data);
 
-        // Безопасное извлечение JSON из текста ответа
         let clichesList = [];
         try {
             let clean = rawResult.replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -5434,7 +5466,7 @@ Matn: "${text.substring(0, 3000)}"`;
         // Состояние 2: Идеальный текст (нет штампов)
         if (!Array.isArray(clichesList) || clichesList.length === 0) {
             reportBox.innerHTML = `
-                <div class="uniqueness-report-container" style="border-left: 4px solid #10B981; position: relative;">
+                <div class="uniqueness-report-container uniqueness-right-panel" style="border-left: 4px solid #10B981; position: relative;">
                     ${closeBtnHtml}
                     <div class="uniqueness-header" style="color: #10B981; margin: 0; padding-right: 32px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -5442,19 +5474,18 @@ Matn: "${text.substring(0, 3000)}"`;
                     </div>
                 </div>
             `;
-            // Не скрываем автоматически, пусть пользователь закроет сам
             return;
         }
 
         // Состояние 3: Результаты найдены
         let html = `
-            <div class="uniqueness-report-container" style="position: relative;">
+            <div class="uniqueness-report-container uniqueness-right-panel" style="position: relative;">
                 ${closeBtnHtml}
-                <div class="uniqueness-header" style="color: #D97706; padding-right: 32px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                <div class="uniqueness-header" style="color: #D97706; padding-right: 32px; margin-bottom: 16px; flex-shrink: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
                     <span>Topilgan akademik ştamplar (Almaştiriş uçun ustiga bosing):</span>
                 </div>
-                <div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
         `;
 
         clichesList.forEach((item, index) => {
@@ -5492,7 +5523,7 @@ Matn: "${text.substring(0, 3000)}"`;
         // Состояние 4: Ошибка
         console.error("Uniqueness Check Error:", err);
         reportBox.innerHTML = `
-            <div class="uniqueness-report-container" style="border-left: 4px solid #EF4444; position: relative;">
+            <div class="uniqueness-report-container uniqueness-right-panel" style="border-left: 4px solid #EF4444; position: relative;">
                 ${closeBtnHtml}
                 <div class="uniqueness-header" style="color: #EF4444; margin: 0; padding-right: 32px;">
                     Tahlil qilişda xatolik yuz berdi: ${err.message}
