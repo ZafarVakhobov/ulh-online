@@ -6203,7 +6203,7 @@ function formatRssDate(dateStr) {
     }
 }
 
-// Извлечение картинки из RSS-элемента
+// Извлечение картинки
 function extractImageFromNode(itemNode) {
     const enclosure = itemNode.querySelector("enclosure[type^='image']");
     if (enclosure && enclosure.getAttribute("url")) return enclosure.getAttribute("url");
@@ -6223,7 +6223,7 @@ function extractImageFromNode(itemNode) {
     return "./header.png"; 
 }
 
-// Извлечение чистого текста без HTML
+// Извлечение чистого текста
 function extractSnippet(itemNode) {
     const descNode = itemNode.querySelector("description");
     if (!descNode) return "";
@@ -6232,7 +6232,7 @@ function extractSnippet(itemNode) {
     return text.trim();
 }
 
-// Функция экранирования HTML (чтобы кавычки в заголовках не ломали верстку)
+// Экранирование HTML
 function escapeHTML(str) {
     if(!str) return "";
     return str.replace(/[&<>'"]/g, tag => ({
@@ -6240,41 +6240,44 @@ function escapeHTML(str) {
     }[tag]));
 }
 
-// === БРОНЕБОЙНАЯ ФУНКЦИЯ ЗАГРУЗКИ С УВЕЛИЧЕННЫМ ТАЙМАУТОМ ===
+// === БРОНЕБОЙНАЯ ФУНКЦИЯ ЗАГРУЗКИ (БЕЗ ТАЙМАУТОВ-УБИЙЦ) ===
 async function fetchRssWithFallback(url) {
+    // Используем метод /get для AllOrigins (он надежнее)
     const proxies = [
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
         `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
         `https://corsproxy.io/?${encodeURIComponent(url)}`
     ];
 
     for (let proxy of proxies) {
         try {
-            const controller = new AbortController();
-            // ТАЙМАУТ 8 СЕКУНД
-            const timeoutId = setTimeout(() => controller.abort(), 8000); 
-            
-            const res = await fetch(proxy, { signal: controller.signal });
-            clearTimeout(timeoutId);
-
+            const res = await fetch(proxy, { cache: "no-store" });
             if (res.ok) {
-                const text = await res.text();
-                if (text.includes('<rss') || text.includes('<feed') || text.includes('xml')) {
-                    return text; 
+                let text = "";
+                // Если это allorigins, достаем XML из JSON поля contents
+                if (proxy.includes("allorigins.win/get")) {
+                    const data = await res.json();
+                    text = data.contents || "";
+                } else {
+                    text = await res.text();
+                }
+                
+                // Проверяем, что ответ не пустой и похож на XML
+                if (text && text.length > 100 && (text.includes('<rss') || text.includes('<feed') || text.includes('xml'))) {
+                    return text;
                 }
             }
         } catch (err) {
-            console.warn(`Proksi xatosi: ${proxy}. Keyingisiga ötilmoqda...`);
+            console.warn(`Proksi kutishda xatolik: ${proxy}`);
         }
     }
     throw new Error("Barcha proksilar ishlamay qoldi");
 }
 
-// === ОБНОВЛЕННЫЙ РЕНДЕР (БЕЗ ВНУТРЕННИХ ПОПАПОВ) ===
+// === РЕНДЕР (БЕЗ ВНУТРЕННИХ ПОПАПОВ) ===
 function renderNewsToDOM(newsArray, trackEl) {
     let htmlContent = "";
     newsArray.forEach(news => {
-        // Данные хранятся в атрибутах data-* для передачи в глобальный попап
         htmlContent += `
             <div class="news-item"
                 data-title="${escapeHTML(news.title)}"
@@ -6362,7 +6365,7 @@ window.hideGlobalNewsPopup = function() {
     if (track) track.style.animationPlayState = 'running';
 };
 
-// === ОСНОВНАЯ ФУНКЦИЯ СБОРА НОВОСТЕЙ (С КЭШИРОВАНИЕМ) ===
+// === ОСНОВНАЯ ФУНКЦИЯ СБОРА НОВОСТЕЙ ===
 async function fetchAndRenderNews() {
     const track = document.getElementById("newsTickerTrack");
     if (!track) return;
@@ -6382,6 +6385,8 @@ async function fetchAndRenderNews() {
         }
     }
 
+    track.innerHTML = `<div style="color: #64748B; font-size: 13px; font-weight: 700; padding-left: 14px;">Yangiliklar yuklanmoqda... Kuting...</div>`;
+    
     let allNews = [];
 
     const fetchPromises = sources.map(async (src) => {
@@ -6472,19 +6477,15 @@ function renderNewsSourcesList() {
     });
 }
 
-// Удаляем источник и сбрасываем кэш
 window.removeNewsSource = function(index) {
     let sources = getNewsSources();
     sources.splice(index, 1);
     saveNewsSources(sources);
     sessionStorage.removeItem("ulh_news_time"); 
     renderNewsSourcesList();
-    
-    document.getElementById("newsTickerTrack").innerHTML = `<div style="color: #64748B; font-size: 13px; font-weight: 700; padding-left: 14px;">Yangilanmoqda...</div>`;
     fetchAndRenderNews(); 
 };
 
-// Добавляем источник и сбрасываем кэш
 window.addCustomNewsSource = function() {
     const input = document.getElementById("newRssInput");
     if (!input || !input.value.trim()) return;
@@ -6506,8 +6507,6 @@ window.addCustomNewsSource = function() {
     
     input.value = "";
     renderNewsSourcesList();
-    
-    document.getElementById("newsTickerTrack").innerHTML = `<div style="color: #64748B; font-size: 13px; font-weight: 700; padding-left: 14px;">Yangilanmoqda...</div>`;
     fetchAndRenderNews(); 
 };
 
@@ -6515,5 +6514,5 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeNewsModal();
 });
 
-// Запускаем сборку ленты при старте сайта
+// Запуск
 fetchAndRenderNews();
