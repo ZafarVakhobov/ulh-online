@@ -1547,22 +1547,40 @@
             <div class="converter-box" id="converterBox">
                 <div class="section-title" style="margin:0;">Office formatidagi fayllar konverteri</div>
                 <div class="file-info" id="fileInfo">Yuklab bölaydigan fayllar formati: .docx, .xlsx, .pptx, .txt</div>
-                <div class="drop-hint">Faylni tanlang yoki şu yerga tortib taşlang (Drop file)</div>
-                <input type="file" id="fileInput" style="display: none;" accept=".docx,.xlsx,.pptx,.txt" onchange="processFile(event)">
-                <div class="btn-row">
-                    <button class="pill-btn" onclick="document.getElementById('fileInput').click()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                        Faylni yuklaş
-                    </button>
-                    <button id="saveBtn" class="pill-btn" style="display:none; background-color: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);" onclick="downloadFile()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Saqlaş
-                    </button>
-                    <button id="savePdfBtn" class="pill-btn" style="display:none; background-color: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);" onclick="downloadPdfFile()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
-                        PDF saqlaş
-                    </button>
-                </div>
+               <!-- ... -->
+<div class="drop-hint">Faylni tanlang yoki şu yerga tortib taşlang (Drop file)</div>
+
+<!-- НОВЫЙ БЛОК: Свитчер антиплагиата -->
+<div class="plagiat-toggle-wrapper">
+    <span class="plagiat-toggle-label">Plagiatni tekshirishni yoqish</span>
+    <label class="plagiat-switch">
+        <input type="checkbox" id="plagiatToggleInput">
+        <span class="plagiat-slider round"></span>
+    </label>
+</div>
+
+<input type="file" id="fileInput" style="display: none;" accept=".docx,.xlsx,.pptx,.txt" onchange="processFile(event)">
+<div class="btn-row">
+    <button class="pill-btn" onclick="document.getElementById('fileInput').click()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Faylni yuklaş
+    </button>
+    <button id="saveBtn" class="pill-btn" style="display:none; background-color: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);" onclick="downloadFile()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Saqlaş
+    </button>
+    <button id="savePdfBtn" class="pill-btn" style="display:none; background-color: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);" onclick="downloadPdfFile()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+        PDF saqlaş
+    </button>
+    
+    <!-- НОВАЯ КНОПКА: Результат антиплагиата -->
+    <button id="plagiatResultBtn" class="pill-btn" style="display:none; background-color: #8B5CF6; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.28);" onclick="openPlagiatModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        Antiplagiat natijasi
+    </button>
+</div>
+<!-- ... -->
             </div>
         </div>
 
@@ -2361,6 +2379,40 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         </button>
     </div>
     <div id="aiSynonymDropdown" class="ai-float-dropdown"></div>
+</div>
+
+<!-- === МОДАЛЬНОЕ ОКНО РЕЗУЛЬТАТОВ АНТИПЛАГИАТА === -->
+<div class="weather-modal-backdrop" id="plagiatModalBackdrop" onclick="closePlagiatModal(event)">
+    <div class="weather-modal-card alphabet-modal-card" style="max-width: 600px;" onclick="event.stopPropagation()">
+        <div class="calc-input-banner">
+            <div class="calc-banner-top">
+                <div class="weather-selected-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                    <span>ANTIPLAGIAT NATIJASI</span>
+                </div>
+            </div>
+            <div class="ads-banner-title">Hujjatning öziga xosligi (Unikalligi)</div>
+            
+            <!-- Прогресс-бар плагиата -->
+            <div class="plagiat-progress-wrap">
+                <div class="plagiat-score-text">Asl matn: <span id="plagiatScoreNum">0%</span></div>
+                <div class="plagiat-progress-bar">
+                    <div id="plagiatProgressFill" class="plagiat-progress-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="weather-other-title" style="margin-top: 16px; margin-bottom: 8px;">TOPILGAN MANBALAR VA KÖÇIRMALAR</div>
+        
+        <div id="plagiatSourcesList" class="custom-scrollbar" style="max-height: 280px; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 8px;">
+            <!-- Результаты будут здесь -->
+        </div>
+
+        <div class="weather-modal-footer" style="margin-top: 14px;">
+            <span>AI orqali har qanday tilda tekşiriladi</span>
+            <button type="button" class="weather-modal-close" onclick="closePlagiatModal()">Yopiş</button>
+        </div>
+    </div>
 </div>
     
 </body>
