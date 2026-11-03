@@ -5274,10 +5274,6 @@ Ajratib olingan so'z: "${targetWord}"`;
 
             dropdown.innerHTML = "";
             synonyms.forEach(syn => {
-                const opt = document.createElement("button");
-                opt.type = "button";
-                opt.className = "ai-syn-option";
-                
                 let finalSyn = syn;
                 const isUzbekText = /[o'g'shchöğşçўқғҳ'`]/i.test(targetWord) || /[o'g'shchöğşçўқғҳ'`]/i.test(fullContext);
                 const isEnglishWord = /^[a-zA-Z]+$/.test(targetWord) && !/[o'g'shchöğşçўқғҳ]/i.test(targetWord);
@@ -5286,14 +5282,39 @@ Ajratib olingan so'z: "${targetWord}"`;
                     finalSyn = enforceNewUzbekAlphabet(syn);
                 }
 
+                // Обертка для двух кнопок
+                const optWrap = document.createElement("div");
+                optWrap.className = "ai-syn-option-wrap";
+
+                // Кнопка 1: Замена текста
+                const opt = document.createElement("button");
+                opt.type = "button";
+                opt.className = "ai-syn-option";
                 opt.textContent = finalSyn;
-                
                 opt.onclick = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault(); e.stopPropagation();
                     replaceWordInActiveField(opt.textContent);
                 };
-                dropdown.appendChild(opt);
+
+                // Кнопка 2: Копирование в буфер
+                const copyBtn = document.createElement("button");
+                copyBtn.type = "button";
+                copyBtn.className = "ai-syn-copy-btn";
+                copyBtn.title = "Nusxalaş";
+                copyBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+                copyBtn.onclick = (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    navigator.clipboard.writeText(finalSyn).then(() => {
+                        copyBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
+                        setTimeout(() => {
+                            copyBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+                        }, 1500);
+                    });
+                };
+
+                optWrap.appendChild(opt);
+                optWrap.appendChild(copyBtn);
+                dropdown.appendChild(optWrap);
             });
 
         } catch (err) {
@@ -5355,18 +5376,39 @@ Matn: "${targetText}"`;
                 </div>
             `;
             
+            // Обертка
+            const optWrap = document.createElement("div");
+            optWrap.className = "ai-syn-option-wrap";
+
+            // Кнопка 1: Замена текста
             const opt = document.createElement("button");
             opt.type = "button";
             opt.className = "ai-syn-option";
             opt.textContent = finalTranslation;
-            
             opt.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+                e.preventDefault(); e.stopPropagation();
                 replaceWordInActiveField(opt.textContent);
             };
+
+            // Кнопка 2: Копирование в буфер
+            const copyBtn = document.createElement("button");
+            copyBtn.type = "button";
+            copyBtn.className = "ai-syn-copy-btn";
+            copyBtn.title = "Nusxalaş";
+            copyBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+            copyBtn.onclick = (e) => {
+                e.preventDefault(); e.stopPropagation();
+                navigator.clipboard.writeText(finalTranslation).then(() => {
+                    copyBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
+                    setTimeout(() => {
+                        copyBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+                    }, 1500);
+                });
+            };
             
-            dropdown.appendChild(opt);
+            optWrap.appendChild(opt);
+            optWrap.appendChild(copyBtn);
+            dropdown.appendChild(optWrap);
 
         } catch (err) {
             console.error("Translation Error:", err);
