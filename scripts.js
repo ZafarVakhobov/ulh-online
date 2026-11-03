@@ -6205,11 +6205,9 @@ function formatRssDate(dateStr) {
 
 // Извлечение картинки из RSS-элемента
 function extractImageFromNode(itemNode) {
-    // 1. Ищем тег enclosure с атрибутом url
     const enclosure = itemNode.querySelector("enclosure[type^='image']");
     if (enclosure && enclosure.getAttribute("url")) return enclosure.getAttribute("url");
     
-    // 2. Ищем media:content
     const mediaContent = itemNode.getElementsByTagNameNS("*", "content");
     for (let i = 0; i < mediaContent.length; i++) {
         if (mediaContent[i].getAttribute("url") && mediaContent[i].getAttribute("medium") === "image") {
@@ -6217,13 +6215,12 @@ function extractImageFromNode(itemNode) {
         }
     }
     
-    // 3. Ищем <img> внутри description
     const descNode = itemNode.querySelector("description");
     if (descNode) {
         const imgMatch = descNode.textContent.match(/<img[^>]+src="([^">]+)"/);
         if (imgMatch && imgMatch[1]) return imgMatch[1];
     }
-    return "./header.png"; // Фолбэк картинка, если ничего не найдено
+    return "./header.png"; 
 }
 
 // Извлечение чистого текста без HTML
@@ -6231,31 +6228,170 @@ function extractSnippet(itemNode) {
     const descNode = itemNode.querySelector("description");
     if (!descNode) return "";
     let text = descNode.textContent;
-    // Очищаем от HTML тегов
     text = text.replace(/<[^>]*>?/gm, '');
     return text.trim();
 }
 
+// Функция экранирования HTML (чтобы кавычки в заголовках не ломали верстку)
+function escapeHTML(str) {
+    if(!str) return "";
+    return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag]));
+}
+
+// === БРОНЕБОЙНАЯ ФУНКЦИЯ ЗАГРУЗКИ С УВЕЛИЧЕННЫМ ТАЙМАУТОМ ===
+async function fetchRssWithFallback(url) {
+    const proxies = [
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+        `https://corsproxy.io/?${encodeURIComponent(url)}`
+    ];
+
+    for (let proxy of proxies) {
+        try {
+            const controller = new AbortController();
+            // ТАЙМАУТ 8 СЕКУНД
+            const timeoutId = setTimeout(() => controller.abort(), 8000); 
+            
+            const res = await fetch(proxy, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+                const text = await res.text();
+                if (text.includes('<rss') || text.includes('<feed') || text.includes('xml')) {
+                    return text; 
+                }
+            }
+        } catch (err) {
+            console.warn(`Proksi xatosi: ${proxy}. Keyingisiga ötilmoqda...`);
+        }
+    }
+    throw new Error("Barcha proksilar ishlamay qoldi");
+}
+
+// === ОБНОВЛЕННЫЙ РЕНДЕР (БЕЗ ВНУТРЕННИХ ПОПАПОВ) ===
+function renderNewsToDOM(newsArray, trackEl) {
+    let htmlContent = "";
+    newsArray.forEach(news => {
+        // Данные хранятся в атрибутах data-* для передачи в глобальный попап
+        htmlContent += `
+            <div class="news-item"
+                data-title="${escapeHTML(news.title)}"
+                data-link="${escapeHTML(news.link)}"
+                data-source="${escapeHTML(news.sourceName)}"
+                data-image="${escapeHTML(news.image)}"
+                data-snippet="${escapeHTML(news.snippet)}"
+                data-date="${escapeHTML(news.date)}"
+                data-category="${escapeHTML(news.category)}"
+                onmouseenter="showGlobalNewsPopup(this, event)"
+                onmouseleave="hideGlobalNewsPopup()"
+            >
+                <span class="news-item-source">${news.sourceName}</span>
+                <span>— ${news.title.substring(0, 60)}${news.title.length > 60 ? '...' : ''}</span>
+            </div>
+        `;
+    });
+    trackEl.innerHTML = htmlContent + htmlContent;
+}
+
+// === ЛОГИКА ГЛОБАЛЬНОГО ВСПЛЫВАЮЩЕГО ОКНА ===
+window.showGlobalNewsPopup = function(el, e) {
+    let popup = document.getElementById("globalNewsPopup");
+    
+    if (!popup) {
+        popup = document.createElement("div");
+        popup.id = "globalNewsPopup";
+        popup.className = "news-popup-global";
+        document.body.appendChild(popup);
+
+        popup.onmouseenter = () => {
+            popup.style.opacity = "1";
+            popup.style.visibility = "visible";
+            const track = document.getElementById("newsTickerTrack");
+            if (track) track.style.animationPlayState = 'paused';
+        };
+        popup.onmouseleave = () => {
+            window.hideGlobalNewsPopup();
+        };
+    }
+
+    const track = document.getElementById("newsTickerTrack");
+    if (track) track.style.animationPlayState = 'paused';
+
+    popup.innerHTML = `
+        <div class="news-popup-header">
+            <div class="news-popup-title-col">
+                <a href="${el.dataset.link}" target="_blank" rel="noopener" class="news-popup-source-link">${el.dataset.source} ↗</a>
+                <div class="news-popup-title">${el.dataset.title}</div>
+            </div>
+            <a href="${el.dataset.link}" target="_blank" rel="noopener">
+                <img src="${el.dataset.image}" alt="Rasm" class="news-popup-image" onerror="this.src='./news.png'">
+            </a>
+        </div>
+        <div class="news-popup-snippet">${el.dataset.snippet || "Batafsil ma'lumotni saytda öqing..."}</div>
+        <div class="news-popup-footer">
+            <span>${el.dataset.date}</span>
+            <span style="color:#0284C7; background:#E0F2FE; padding:3px 8px; border-radius:6px;">${el.dataset.category}</span>
+        </div>
+    `;
+
+    const wrapper = document.querySelector(".news-ticker-wrapper");
+    const rect = wrapper.getBoundingClientRect();
+
+    let leftPos = e.clientX;
+    const popupWidth = 350; 
+    
+    if (leftPos < popupWidth / 2 + 20) leftPos = popupWidth / 2 + 20;
+    if (leftPos > window.innerWidth - popupWidth / 2 - 20) leftPos = window.innerWidth - popupWidth / 2 - 20;
+
+    popup.style.top = (rect.bottom + window.scrollY + 8) + "px"; 
+    popup.style.left = leftPos + "px";
+    popup.style.transform = "translateX(-50%)"; 
+    popup.style.opacity = "1";
+    popup.style.visibility = "visible";
+};
+
+window.hideGlobalNewsPopup = function() {
+    const popup = document.getElementById("globalNewsPopup");
+    if (popup) {
+        popup.style.opacity = "0";
+        popup.style.visibility = "hidden";
+    }
+    const track = document.getElementById("newsTickerTrack");
+    if (track) track.style.animationPlayState = 'running';
+};
+
+// === ОСНОВНАЯ ФУНКЦИЯ СБОРА НОВОСТЕЙ (С КЭШИРОВАНИЕМ) ===
 async function fetchAndRenderNews() {
     const track = document.getElementById("newsTickerTrack");
     if (!track) return;
 
     const sources = getNewsSources();
+    const sourcesStr = JSON.stringify(sources);
+    
+    const cacheData = sessionStorage.getItem("ulh_news_cache");
+    const cacheTime = sessionStorage.getItem("ulh_news_time");
+    const cacheSources = sessionStorage.getItem("ulh_news_sources");
+
+    if (cacheData && cacheTime && cacheSources === sourcesStr) {
+        const now = new Date().getTime();
+        if (now - parseInt(cacheTime) < 10 * 60 * 1000) {
+            renderNewsToDOM(JSON.parse(cacheData), track);
+            return;
+        }
+    }
+
     let allNews = [];
 
-    // Загружаем все источники параллельно
     const fetchPromises = sources.map(async (src) => {
         try {
-            // Используем allorigins для обхода CORS
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(src.url)}`;
-            const res = await fetch(proxyUrl);
-            const data = await res.json();
+            const xmlText = await fetchRssWithFallback(src.url);
             
             const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
             const items = xmlDoc.querySelectorAll("item");
             
-            // Берем 5 самых свежих новостей из каждого источника
             for (let i = 0; i < Math.min(items.length, 5); i++) {
                 const item = items[i];
                 const titleNode = item.querySelector("title");
@@ -6283,49 +6419,20 @@ async function fetchAndRenderNews() {
     await Promise.all(fetchPromises);
 
     if (allNews.length === 0) {
-        track.innerHTML = `<div style="color: #EF4444; font-size: 13px; font-weight: 700; padding-left: 14px;">Yangiliklarni yuklaşda xatolik yuz berdi.</div>`;
+        track.innerHTML = `<div style="color: #EF4444; font-size: 13px; font-weight: 700; padding-left: 14px;">Yangiliklarni yuklaşda xatolik yuz berdi. Internetni tekşiring yoki manbalarni yangilang.</div>`;
         return;
     }
 
-    // Перемешиваем новости случайным образом (Fisher-Yates shuffle)
     for (let i = allNews.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [allNews[i], allNews[j]] = [allNews[j], allNews[i]];
     }
 
-    // Рендерим ленту
-    let htmlContent = "";
-    allNews.forEach(news => {
-        htmlContent += `
-            <div class="news-item">
-                <span class="news-item-source">${news.sourceName}</span>
-                <span>— ${news.title.substring(0, 60)}${news.title.length > 60 ? '...' : ''}</span>
-                
-                <!-- Всплывающее окно новости -->
-                <div class="news-popup" onclick="event.stopPropagation()">
-                    <div class="news-popup-header">
-                        <div class="news-popup-title-col">
-                            <a href="${news.link}" target="_blank" rel="noopener" class="news-popup-source-link">${news.sourceName} ↗</a>
-                            <div class="news-popup-title">${news.title}</div>
-                        </div>
-                        <a href="${news.link}" target="_blank" rel="noopener">
-                            <img src="${news.image}" alt="Rasm" class="news-popup-image" onerror="this.src='./news.png'">
-                        </a>
-                    </div>
-                    
-                    <div class="news-popup-snippet">${news.snippet || "Batafsil ma'lumotni saytda öqing..."}</div>
-                    
-                    <div class="news-popup-footer">
-                        <span>${news.date}</span>
-                        <span style="color:#0284C7; background:#E0F2FE; padding:3px 8px; border-radius:6px;">${news.category}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
+    sessionStorage.setItem("ulh_news_cache", JSON.stringify(allNews));
+    sessionStorage.setItem("ulh_news_time", new Date().getTime().toString());
+    sessionStorage.setItem("ulh_news_sources", sourcesStr);
 
-    // Дублируем контент, чтобы обеспечить бесшовный бесконечный скролл (marquee)
-    track.innerHTML = htmlContent + htmlContent;
+    renderNewsToDOM(allNews, track);
 }
 
 // === УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ ИСТОЧНИКОВ ===
@@ -6365,14 +6472,19 @@ function renderNewsSourcesList() {
     });
 }
 
+// Удаляем источник и сбрасываем кэш
 window.removeNewsSource = function(index) {
     let sources = getNewsSources();
     sources.splice(index, 1);
     saveNewsSources(sources);
+    sessionStorage.removeItem("ulh_news_time"); 
     renderNewsSourcesList();
-    fetchAndRenderNews(); // Пересобираем ленту
+    
+    document.getElementById("newsTickerTrack").innerHTML = `<div style="color: #64748B; font-size: 13px; font-weight: 700; padding-left: 14px;">Yangilanmoqda...</div>`;
+    fetchAndRenderNews(); 
 };
 
+// Добавляем источник и сбрасываем кэш
 window.addCustomNewsSource = function() {
     const input = document.getElementById("newRssInput");
     if (!input || !input.value.trim()) return;
@@ -6380,7 +6492,6 @@ window.addCustomNewsSource = function() {
     let url = input.value.trim();
     if (!url.startsWith("http")) url = "https://" + url;
 
-    // Пытаемся вытащить имя сайта из URL (например, из gazeta.uz/news.rss достать Gazeta.uz)
     let domain = url;
     try {
         const urlObj = new URL(url);
@@ -6391,10 +6502,13 @@ window.addCustomNewsSource = function() {
     let sources = getNewsSources();
     sources.push({ url: url, name: domain });
     saveNewsSources(sources);
+    sessionStorage.removeItem("ulh_news_time"); 
     
     input.value = "";
     renderNewsSourcesList();
-    fetchAndRenderNews(); // Пересобираем ленту
+    
+    document.getElementById("newsTickerTrack").innerHTML = `<div style="color: #64748B; font-size: 13px; font-weight: 700; padding-left: 14px;">Yangilanmoqda...</div>`;
+    fetchAndRenderNews(); 
 };
 
 document.addEventListener("keydown", (e) => {
