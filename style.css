@@ -6336,19 +6336,32 @@ body.dark-mode .plagiat-source-link { color: #60A5FA; }
 
 .news-ticker-scroll-area {
     flex: 1;
-    overflow: hidden;
+    overflow-x: auto; /* Включаем физический скролл */
+    overflow-y: hidden;
     position: relative;
     display: flex;
     align-items: center;
+    scrollbar-width: none; /* Прячем ползунок (Firefox) */
+    -ms-overflow-style: none; /* Прячем ползунок (IE/Edge) */
+    cursor: grab; /* Курсор-лапка */
 }
+.news-ticker-scroll-area::-webkit-scrollbar {
+    display: none; /* Прячем ползунок (Chrome/Safari/Opera) */
+}
+.news-ticker-scroll-area:active {
+    cursor: grabbing; /* Сжатая лапка при удержании */
+}
+
 .news-ticker-track {
     display: flex;
     align-items: center;
     gap: 36px;
     white-space: nowrap;
-    animation: tickerScroll 240s linear infinite;
     padding-left: 20px;
+    width: max-content; /* Важно: заставляем блок растянуться по длине новостей */
+    /* CSS-анимация удалена! Теперь всем управляет JavaScript */
 }
+
 .news-ticker-scroll-area:hover .news-ticker-track {
     animation-play-state: paused;
 }
