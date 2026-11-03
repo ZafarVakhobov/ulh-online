@@ -6346,7 +6346,7 @@ body.dark-mode .plagiat-source-link { color: #60A5FA; }
     align-items: center;
     gap: 36px;
     white-space: nowrap;
-    animation: tickerScroll 40s linear infinite;
+    animation: tickerScroll 240s linear infinite;
     padding-left: 20px;
 }
 .news-ticker-scroll-area:hover .news-ticker-track {
