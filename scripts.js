@@ -6429,7 +6429,7 @@ function initDragAndScrollTicker() {
     function scrollStep() {
         if (!isTickerHovered && !isTickerDragging) {
             
-            exactScroll += 0.4; // ВАША СКОРОСТЬ ЗДЕСЬ (меняйте как угодно: 0.3, 0.5, 1.2)
+            exactScroll += 0.5; // ВАША СКОРОСТЬ ЗДЕСЬ (меняйте как угодно: 0.3, 0.5, 1.2)
             
             if (exactScroll >= track.scrollWidth / 2) {
                 exactScroll = 0;
