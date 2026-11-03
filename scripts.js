@@ -6164,7 +6164,7 @@ Matn: "${text.substring(0, 5000)}"`;
 };
 
 // ==========================================
-// === 18. УМНАЯ БЕГУЩАЯ СТРОКА НОВОСТЕЙ (RSS TICKER) ===
+// === 18. УМНАЯ БЕГУЩАЯ СТРОКА НОВОСТЕЙ (DUAL-ENGINE) ===
 // ==========================================
 
 const RSS_STORAGE_KEY = "ulh_news_sources_v1";
@@ -6189,10 +6189,10 @@ function saveNewsSources(sources) {
     localStorage.setItem(RSS_STORAGE_KEY, JSON.stringify(sources));
 }
 
-// Форматирование даты
 function formatRssDate(dateStr) {
     try {
         const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr; // Если дата не парсится
         const day = d.getDate().toString().padStart(2, '0');
         const month = (d.getMonth() + 1).toString().padStart(2, '0');
         const hours = d.getHours().toString().padStart(2, '0');
@@ -6203,7 +6203,7 @@ function formatRssDate(dateStr) {
     }
 }
 
-// Извлечение картинки
+// === УТИЛИТЫ ДЛЯ РЕЗЕРВНОГО XML-ПАРСЕРА ===
 function extractImageFromNode(itemNode) {
     const enclosure = itemNode.querySelector("enclosure[type^='image']");
     if (enclosure && enclosure.getAttribute("url")) return enclosure.getAttribute("url");
@@ -6223,16 +6223,12 @@ function extractImageFromNode(itemNode) {
     return "./header.png"; 
 }
 
-// Извлечение чистого текста
 function extractSnippet(itemNode) {
     const descNode = itemNode.querySelector("description");
     if (!descNode) return "";
-    let text = descNode.textContent;
-    text = text.replace(/<[^>]*>?/gm, '');
-    return text.trim();
+    return descNode.textContent.replace(/<[^>]*>?/gm, '').trim();
 }
 
-// Экранирование HTML
 function escapeHTML(str) {
     if(!str) return "";
     return str.replace(/[&<>'"]/g, tag => ({
@@ -6240,41 +6236,49 @@ function escapeHTML(str) {
     }[tag]));
 }
 
-// === БРОНЕБОЙНАЯ ФУНКЦИЯ ЗАГРУЗКИ (БЕЗ ТАЙМАУТОВ-УБИЙЦ) ===
-async function fetchRssWithFallback(url) {
-    // Используем метод /get для AllOrigins (он надежнее)
-    const proxies = [
-        `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-        `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
-        `https://corsproxy.io/?${encodeURIComponent(url)}`
-    ];
-
-    for (let proxy of proxies) {
-        try {
-            const res = await fetch(proxy, { cache: "no-store" });
-            if (res.ok) {
-                let text = "";
-                // Если это allorigins, достаем XML из JSON поля contents
-                if (proxy.includes("allorigins.win/get")) {
-                    const data = await res.json();
-                    text = data.contents || "";
-                } else {
-                    text = await res.text();
-                }
-                
-                // Проверяем, что ответ не пустой и похож на XML
-                if (text && text.length > 100 && (text.includes('<rss') || text.includes('<feed') || text.includes('xml'))) {
-                    return text;
-                }
+// === БРОНЕБОЙНЫЙ DUAL-ENGINE ЗАГРУЗЧИК ===
+async function fetchRssBulletproof(url) {
+    // 1. Основной двигатель: RSS2JSON (Быстрый, обходит Cloudflare, отдает готовый JSON)
+    const primaryApi = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`;
+    
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const res = await fetch(primaryApi, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (res.ok) {
+            const data = await res.json();
+            if (data.status === "ok" && data.items) {
+                return { type: "json", items: data.items }; // Успех!
             }
-        } catch (err) {
-            console.warn(`Proksi kutishda xatolik: ${proxy}`);
         }
+    } catch (e) {
+        console.warn(`RSS2JSON xatosi (${url}), AllOrigins'ga o'tilmoqda...`);
     }
-    throw new Error("Barcha proksilar ishlamay qoldi");
+
+    // 2. Резервный двигатель: AllOrigins (Отдает сырой XML)
+    const fallbackApi = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(fallbackApi, { signal: controller.signal, cache: "no-store" });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.contents && (data.contents.includes('<rss') || data.contents.includes('<feed'))) {
+                return { type: "xml", content: data.contents }; // Успех резерва!
+            }
+        }
+    } catch (e) {
+        console.warn(`AllOrigins xatosi (${url})`);
+    }
+
+    throw new Error("Manbadan ma'lumot olib bölmadi");
 }
 
-// === РЕНДЕР (БЕЗ ВНУТРЕННИХ ПОПАПОВ) ===
+// === РЕНДЕР И ЛОГИКА ===
 function renderNewsToDOM(newsArray, trackEl) {
     let htmlContent = "";
     newsArray.forEach(news => {
@@ -6298,7 +6302,6 @@ function renderNewsToDOM(newsArray, trackEl) {
     trackEl.innerHTML = htmlContent + htmlContent;
 }
 
-// === ЛОГИКА ГЛОБАЛЬНОГО ВСПЛЫВАЮЩЕГО ОКНА ===
 window.showGlobalNewsPopup = function(el, e) {
     let popup = document.getElementById("globalNewsPopup");
     
@@ -6365,7 +6368,7 @@ window.hideGlobalNewsPopup = function() {
     if (track) track.style.animationPlayState = 'running';
 };
 
-// === ОСНОВНАЯ ФУНКЦИЯ СБОРА НОВОСТЕЙ ===
+// === СБОРКА НОВОСТЕЙ ===
 async function fetchAndRenderNews() {
     const track = document.getElementById("newsTickerTrack");
     if (!track) return;
@@ -6379,7 +6382,7 @@ async function fetchAndRenderNews() {
 
     if (cacheData && cacheTime && cacheSources === sourcesStr) {
         const now = new Date().getTime();
-        if (now - parseInt(cacheTime) < 10 * 60 * 1000) {
+        if (now - parseInt(cacheTime) < 10 * 60 * 1000) { // 10 минут кэша
             renderNewsToDOM(JSON.parse(cacheData), track);
             return;
         }
@@ -6391,29 +6394,54 @@ async function fetchAndRenderNews() {
 
     const fetchPromises = sources.map(async (src) => {
         try {
-            const xmlText = await fetchRssWithFallback(src.url);
+            const result = await fetchRssBulletproof(src.url);
             
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-            const items = xmlDoc.querySelectorAll("item");
-            
-            for (let i = 0; i < Math.min(items.length, 5); i++) {
-                const item = items[i];
-                const titleNode = item.querySelector("title");
-                const linkNode = item.querySelector("link");
-                const pubDateNode = item.querySelector("pubDate");
-                const categoryNode = item.querySelector("category");
+            if (result.type === "json") {
+                // Если отработал основной API RSS2JSON
+                for (let i = 0; i < Math.min(result.items.length, 5); i++) {
+                    const item = result.items[i];
+                    let snippet = (item.description || "").replace(/<[^>]*>?/gm, '').trim();
+                    let image = item.thumbnail || (item.enclosure && item.enclosure.link) || "./header.png";
+                    
+                    if (image === "./header.png" && item.description && item.description.includes("<img")) {
+                         const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
+                         if (imgMatch && imgMatch[1]) image = imgMatch[1];
+                    }
 
-                if (titleNode && linkNode) {
                     allNews.push({
                         sourceName: src.name,
-                        title: titleNode.textContent,
-                        link: linkNode.textContent,
-                        date: pubDateNode ? formatRssDate(pubDateNode.textContent) : "",
-                        category: categoryNode ? categoryNode.textContent : "Yangiliklar",
-                        image: extractImageFromNode(item),
-                        snippet: extractSnippet(item)
+                        title: item.title,
+                        link: item.link,
+                        date: item.pubDate ? formatRssDate(item.pubDate) : "",
+                        category: (item.categories && item.categories.length > 0) ? item.categories[0] : "Yangiliklar",
+                        image: image,
+                        snippet: snippet
                     });
+                }
+            } else if (result.type === "xml") {
+                // Если отработал резервный XML-парсер AllOrigins
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(result.content, "text/xml");
+                const items = xmlDoc.querySelectorAll("item");
+                
+                for (let i = 0; i < Math.min(items.length, 5); i++) {
+                    const item = items[i];
+                    const titleNode = item.querySelector("title");
+                    const linkNode = item.querySelector("link");
+                    
+                    if (titleNode && linkNode) {
+                        const pubDateNode = item.querySelector("pubDate");
+                        const categoryNode = item.querySelector("category");
+                        allNews.push({
+                            sourceName: src.name,
+                            title: titleNode.textContent,
+                            link: linkNode.textContent,
+                            date: pubDateNode ? formatRssDate(pubDateNode.textContent) : "",
+                            category: categoryNode ? categoryNode.textContent : "Yangiliklar",
+                            image: extractImageFromNode(item),
+                            snippet: extractSnippet(item)
+                        });
+                    }
                 }
             }
         } catch (err) {
@@ -6424,10 +6452,11 @@ async function fetchAndRenderNews() {
     await Promise.all(fetchPromises);
 
     if (allNews.length === 0) {
-        track.innerHTML = `<div style="color: #EF4444; font-size: 13px; font-weight: 700; padding-left: 14px;">Yangiliklarni yuklaşda xatolik yuz berdi. Internetni tekşiring yoki manbalarni yangilang.</div>`;
+        track.innerHTML = `<div style="color: #EF4444; font-size: 13px; font-weight: 700; padding-left: 14px;">Yangiliklarni yuklaşda xatolik yuz berdi. Internetni tekşiring.</div>`;
         return;
     }
 
+    // Перемешиваем новости случайным образом
     for (let i = allNews.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [allNews[i], allNews[j]] = [allNews[j], allNews[i]];
@@ -6440,7 +6469,7 @@ async function fetchAndRenderNews() {
     renderNewsToDOM(allNews, track);
 }
 
-// === УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ ИСТОЧНИКОВ ===
+// === УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ ===
 window.openNewsModal = function(event) {
     if (event) { event.preventDefault(); event.stopPropagation(); }
     const modal = document.getElementById("newsModalBackdrop");
@@ -6466,7 +6495,7 @@ function renderNewsSourcesList() {
         card.className = "news-source-card";
         card.innerHTML = `
             <div style="display:flex; flex-direction:column; gap:2px; flex:1; min-width:0;">
-                <span style="font-size:13px; font-weight:800;" class="dark:text-slate-100">${src.name}</span>
+                <span style="font-size:13px; font-weight:800;">${src.name}</span>
                 <span style="font-size:11px; color:#64748B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${src.url}</span>
             </div>
             <button onclick="removeNewsSource(${index})" style="background:rgba(239,68,68,0.1); border:none; width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#EF4444; cursor:pointer; flex-shrink:0;">
@@ -6483,6 +6512,8 @@ window.removeNewsSource = function(index) {
     saveNewsSources(sources);
     sessionStorage.removeItem("ulh_news_time"); 
     renderNewsSourcesList();
+    
+    document.getElementById("newsTickerTrack").innerHTML = `<div style="color: #64748B; font-size: 13px; font-weight: 700; padding-left: 14px;">Yangilanmoqda...</div>`;
     fetchAndRenderNews(); 
 };
 
@@ -6507,6 +6538,8 @@ window.addCustomNewsSource = function() {
     
     input.value = "";
     renderNewsSourcesList();
+    
+    document.getElementById("newsTickerTrack").innerHTML = `<div style="color: #64748B; font-size: 13px; font-weight: 700; padding-left: 14px;">Yangilanmoqda...</div>`;
     fetchAndRenderNews(); 
 };
 
