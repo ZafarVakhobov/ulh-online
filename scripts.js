@@ -6109,6 +6109,57 @@ Matn: "${text}"`;
     }
 };
 
+// Функция: AI-Оппонент (Тренажер защиты статьи)
+window.runAiOpponent = async function() {
+    const text = (window.extractedFileText || "").substring(0, 10000).trim(); 
+    if (!text) {
+        alert("Fayl içidan matn topilmadi!");
+        return;
+    }
+
+    if (typeof setAiLoadingState === "function") setAiLoadingState(true);
+    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Opponent matnni örganmoqda...");
+
+    // Промпт: Задаем жесткую ролевую модель члена комиссии ВАК
+    const promptText = `Sen Oliy Attestatsiya Komissiyasining (VAK) juda qattiqqo'l, talabchan va tanqidiy fikrlaydigan a'zosisan (opponent). Quyidagi ilmiy matnni (maqola, dissertatsiya yoki tezis)  diqqat bilan o'qib chiq. 
+Sening vazifang — muallifni ilmiy himoyaga tayyorlash uchun matndagi metodologiya, xulosalar, dalillar yoki mantiqiy zaif tomonlarini topish.
+Shu matn asosida muallifga 3 ta eng qiyin, noqulay va bahsli savol ber. Savollar shunday tuzilsinki, muallif o'z tadqiqotining yangiligi va amaliy ahamiyatini chuqur himoya qilishga majbur bo'lsin.
+Javobingni sarlavha va ro'yxat shaklida, fayldagi matnning tilida taqdim et. Har bir savoldan so'ng qisqacha "Nima uchun bu savol berildi? (Zaif nuqta)" degan izoh qo'sh. Ushbu izoh ham fayldagi matnning tiliga asosan, sening javobing ham aynan shu tilda berilishi lozim!
+Matn: "${text}"`;
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
+        });
+
+        if (!response.ok) throw new Error("Server xatosi");
+        const data = await response.json();
+        
+        let rawResult = "";
+        if (typeof data === "string") rawResult = data;
+        else if (data && data.result) rawResult = data.result;
+        else if (data && data.response) rawResult = data.response;
+        else rawResult = JSON.stringify(data);
+
+        // Применяем стандарты нового алфавита
+        let cleanResult = typeof enforceNewUzbekAlphabet === "function" ? enforceNewUzbekAlphabet(rawResult) : rawResult;
+
+        // Открываем результат в уже готовом окне чата
+        if (typeof openAiResultModal === "function") {
+            openAiResultModal(cleanResult);
+        }
+
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Savollar tayyor ✓");
+    } catch (err) {
+        console.error("Opponent Error:", err);
+        alert("Tahlil qilişda xatolik yuz berdi. Internetni tekşiring.");
+    } finally {
+        if (typeof setAiLoadingState === "function") setAiLoadingState(false);
+    }
+};
+
 // Функция 2: Генератор тестов и карточек из редактора
 window.generateAiTests = async function() {
     if (typeof closeAiMenu === "function") closeAiMenu();
