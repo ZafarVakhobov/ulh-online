@@ -5167,7 +5167,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Вычисляем примерные координаты курсора/строки в textarea
                     rect = activeEl.getBoundingClientRect();
-                    showAiFloatingMenuNearSelection(rect, selectedText);
+                    (rect, selectedText);
                     return;
                 }
             }
@@ -5183,7 +5183,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Берем точные координаты выделенного диапазона в документе
                     const rangeRect = selection.getRangeAt(0).getBoundingClientRect();
                     if (rangeRect && rangeRect.width > 0) {
-                        showAiFloatingMenuNearSelection(rangeRect, text);
+                        (rangeRect, text);
                         return;
                     }
                 }
@@ -5194,18 +5194,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showAiFloatingMenuNearSelection(targetRect, text) {
-        // Ширина нашей плашки примерно 90-100 пикселей
-        const menuWidth = 95; 
-        
-        // Центрируем плашку строго по горизонтали относительно выделенного текста/области
+        // Ширина плашки с ДВУМЯ кнопками стала примерно 195 пикселей
+        const menuWidth = 195; 
         const centerX = targetRect.left + (targetRect.width / 2) - (menuWidth / 2);
-        
-        // Располагаем ровно на 8-12 пикселей выше выделения (не отдаляя далеко)
         const topPos = targetRect.top - 40;
 
         floatingMenu.style.top = (window.scrollY + topPos) + "px";
         floatingMenu.style.left = (window.scrollX + centerX) + "px";
-
         floatingMenu.classList.add("visible");
     }
 
@@ -5304,6 +5299,83 @@ Ajratib olingan so'z: "${targetWord}"`;
 
         } catch (err) {
             console.error("Synonyms Error:", err);
+            dropdown.innerHTML = `<div class="ai-syn-loading">Xatolik yuz berdi</div>`;
+        }
+    };
+
+    // Запрос перевода (Inline Translator)
+    window.fetchTranslationForSelection = async function(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        if (!selectedData.text) return;
+
+        dropdown.innerHTML = `<div class="ai-syn-loading">Tarjima qilinmoqda...</div>`;
+        dropdown.classList.add("open");
+        floatingMenu.classList.add("visible");
+
+        const targetText = selectedData.text;
+
+        // Промпт перевода, исключающий лишние символы
+        const promptText = `Iltimos, quyidagi matnni O'zbek tiliga tarjima qiling.
+Faqat va faqat tarjimani yozing, hech qanday qo'shimcha so'zlar, izohlar yoki qo'shtirnoqlar ishlatmang.
+Matn: "${targetText}"`;
+
+        try {
+            const response = await fetch(AI_PROXY_ENDPOINT, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ mode: "custom", text: targetText, customPrompt: promptText })
+            });
+
+            if (!response.ok) throw new Error("Server xatosi");
+
+            const data = await response.json();
+            let rawResult = "";
+            if (typeof data === "string") rawResult = data;
+            else if (data && data.result) rawResult = data.result;
+            else if (data && data.response) rawResult = data.response;
+            else rawResult = JSON.stringify(data);
+
+            // Очищаем от случайных кавычек в начале и конце
+            rawResult = rawResult.replace(/^["']|["']$/g, '').trim();
+
+            if (!rawResult) {
+                dropdown.innerHTML = `<div class="ai-syn-loading">Tarjima topilmadi</div>`;
+                return;
+            }
+
+            // Применяем узбекский алфавит
+            let finalTranslation = rawResult;
+            if (typeof enforceNewUzbekAlphabet === "function") {
+                finalTranslation = enforceNewUzbekAlphabet(finalTranslation);
+            }
+
+            // Рендерим красивый результат с заголовком
+            dropdown.innerHTML = `
+                <div style="font-size: 10px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 6px 10px 4px; letter-spacing: 0.05em;">
+                    Tarjima (Almashtirish uchun bosing):
+                </div>
+            `;
+            
+            const opt = document.createElement("button");
+            opt.type = "button";
+            opt.className = "ai-syn-option";
+            opt.textContent = finalTranslation;
+            
+            // Замена исходного текста на перевод по клику
+            opt.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                replaceWordInActiveField(opt.textContent);
+            };
+            
+            dropdown.appendChild(opt);
+
+        } catch (err) {
+            console.error("Translation Error:", err);
             dropdown.innerHTML = `<div class="ai-syn-loading">Xatolik yuz berdi</div>`;
         }
     };
