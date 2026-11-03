@@ -5889,3 +5889,144 @@ window.replaceWithTranslation = function() {
     
     closeTranslatorPanel();
 };
+
+// ==========================================
+// === 16. МОДУЛЬ АНТИПЛАГИАТА ДЛЯ ФАЙЛОВ ===
+// ==========================================
+
+window.openPlagiatModal = function() {
+    const modal = document.getElementById('plagiatModalBackdrop');
+    if (!modal) return;
+    modal.classList.add('open');
+    runPlagiarismCheck();
+};
+
+window.closePlagiatModal = function(event) {
+    const modal = document.getElementById('plagiatModalBackdrop');
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove('open');
+};
+
+async function runPlagiarismCheck() {
+    const listEl = document.getElementById("plagiatSourcesList");
+    const scoreNum = document.getElementById("plagiatScoreNum");
+    const fillBar = document.getElementById("plagiatProgressFill");
+    
+    // Очистка и лоадер
+    listEl.innerHTML = `<div style="text-align:center; color:#0284C7; font-weight:700; padding:20px;">AI faylni öqimoqda va manbalarni qidirmoqda... Kuting...</div>`;
+    scoreNum.textContent = "Hisoblanmoqda...";
+    scoreNum.style.color = "#94A3B8";
+    fillBar.style.width = "0%";
+    fillBar.style.background = "#CBD5E1";
+
+    const textToCheck = (window.extractedFileText || "").substring(0, 4500).trim();
+    if (!textToCheck) {
+        listEl.innerHTML = `<div style="text-align:center; color:#EF4444; font-weight:700;">Fayl içidan matn topilmadi.</div>`;
+        return;
+    }
+
+    const promptText = `Sen professional antiplagiat tizimisan. Berilgan matnni chuqur tahlil qilib, uning qanchalik original ekanligini (foizda) va qaysi qismlari boshqa manbalardan (internet, kitoblar, maqolalar) olinganini aniqla. Matn har qanday tilda bo'lishi mumkin.
+Javobni FAQAT toza JSON formatida qaytar, hech qanday qo'shimcha so'z qo'shma.
+Format:
+{
+  "originality_percentage": 75,
+  "sources": [
+    { "fragment": "köçirilgan matn qismi...", "source_name": "Manba nomi yoki URL havola" }
+  ]
+}
+Matn: "${textToCheck}"`;
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: textToCheck, customPrompt: promptText })
+        });
+
+        if (!response.ok) throw new Error("Server xatosi");
+
+        const data = await response.json();
+        let rawResult = "";
+        if (typeof data === "string") rawResult = data;
+        else if (data && data.result) rawResult = data.result;
+        else if (data && data.response) rawResult = data.response;
+        else rawResult = JSON.stringify(data);
+
+        let parsed = null;
+        try {
+            let clean = rawResult.replace(/```json/gi, '').replace(/```/g, '').trim();
+            const startIdx = clean.indexOf('{');
+            const endIdx = clean.lastIndexOf('}');
+            if (startIdx !== -1 && endIdx !== -1) {
+                clean = clean.substring(startIdx, endIdx + 1);
+            }
+            parsed = JSON.parse(clean);
+        } catch(e) {
+            throw new Error("AI javobini öqişda xatolik.");
+        }
+
+        const score = parseInt(parsed.originality_percentage) || 0;
+        
+        // Анимация прогресс-бара
+        scoreNum.textContent = score + "%";
+        fillBar.style.width = score + "%";
+        
+        // Цвет в зависимости от процента оригинальности
+        if (score >= 80) {
+            scoreNum.style.color = "#10B981"; // Зеленый (Хорошо)
+            fillBar.style.background = "linear-gradient(90deg, #10B981 0%, #34D399 100%)";
+        } else if (score >= 50) {
+            scoreNum.style.color = "#F59E0B"; // Желтый (Средне)
+            fillBar.style.background = "linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%)";
+        } else {
+            scoreNum.style.color = "#EF4444"; // Красный (Плохо/Плагиат)
+            fillBar.style.background = "linear-gradient(90deg, #EF4444 0%, #F87171 100%)";
+        }
+
+        listEl.innerHTML = "";
+        
+        if (!parsed.sources || parsed.sources.length === 0) {
+            listEl.innerHTML = `<div style="text-align:center; color:#10B981; font-weight:700; padding:10px;">Ajoyib! Hech qanday ko'chirma topilmadi. Matn noyob.</div>`;
+            return;
+        }
+
+        parsed.sources.forEach(src => {
+            const card = document.createElement("div");
+            card.className = "plagiat-source-card";
+            
+            // Если источник похож на ссылку, делаем кликабельным
+            let sourceHtml = `<span style="font-weight:800; font-size: 13px; color:#0F172A;">${src.source_name}</span>`;
+            if (src.source_name && src.source_name.startsWith("http")) {
+                sourceHtml = `<a href="${src.source_name}" target="_blank" rel="noopener" class="plagiat-source-link">${src.source_name}</a>`;
+            }
+
+            card.innerHTML = `
+                <div class="plagiat-source-text">"${src.fragment}"</div>
+                <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    ${sourceHtml}
+                </div>
+            `;
+            listEl.appendChild(card);
+        });
+
+    } catch (err) {
+        scoreNum.textContent = "Xato";
+        fillBar.style.width = "0%";
+        listEl.innerHTML = `<div style="text-align:center; color:#EF4444; font-weight:700;">Tahlil qilişda xatolik yuz berdi: ${err.message}</div>`;
+    }
+}
+
+// Слушатель для свитчера, чтобы прятать/показывать кнопку динамически, если файл уже загружен
+const pToggle = document.getElementById('plagiatToggleInput');
+if (pToggle) {
+    pToggle.addEventListener('change', (e) => {
+        const pBtn = document.getElementById('plagiatResultBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        // Показываем кнопку антиплагиата только если свитчер включен И файл уже обработан (кнопка сохранения видна)
+        if (pBtn && saveBtn && saveBtn.style.display !== 'none') {
+            pBtn.style.display = e.target.checked ? 'inline-flex' : 'none';
+        }
+    });
+}
