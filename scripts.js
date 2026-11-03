@@ -513,24 +513,29 @@ function processFile(e) {
     e.target.value = "";
 }
 
+window.extractedFileText = ""; // Глобальная переменная для хранения текста
+
 async function handleSelectedFile(file) {
     const fileInfo = document.getElementById('fileInfo');
     const saveBtn = document.getElementById('saveBtn');
     const savePdfBtn = document.getElementById('savePdfBtn');
+    const plagiatBtn = document.getElementById('plagiatResultBtn');
+    const plagiatToggle = document.getElementById('plagiatToggleInput');
     const pdfStage = document.getElementById('pdfRenderStage');
 
     if (!fileInfo || !saveBtn || !savePdfBtn || !pdfStage) return;
 
     saveBtn.style.display = 'none';
     savePdfBtn.style.display = 'none';
+    if (plagiatBtn) plagiatBtn.style.display = 'none';
+    
     processedBlob = null;
+    window.extractedFileText = ""; // Очищаем перед новым файлом
     pdfStage.innerHTML = "";
 
     const dotIndex = file.name.lastIndexOf('.');
     const baseName = (dotIndex !== -1) ? file.name.substring(0, dotIndex) : file.name;
-    processedOutName = (dotIndex !== -1)
-        ? baseName + "_yangi" + file.name.substring(dotIndex)
-        : "yangi_" + file.name;
+    processedOutName = (dotIndex !== -1) ? baseName + "_yangi" + file.name.substring(dotIndex) : "yangi_" + file.name;
     processedPdfName = baseName + "_yangi.pdf";
 
     const ext = file.name.split('.').pop().toLowerCase();
@@ -540,14 +545,14 @@ async function handleSelectedFile(file) {
     try {
         if (ext === 'txt') {
             const text = await file.text();
+            window.extractedFileText = text; // Сохраняем для антиплагиата
             const converted = applyReplacements(text);
             processedMimeType = "text/plain;charset=utf-8";
             processedBlob = new Blob([converted], { type: processedMimeType });
 
             const txtDiv = document.createElement('div');
             txtDiv.className = "pdf-page-section";
-            txtDiv.dataset.orientation = "portrait";
-            txtDiv.style.cssText = "width: 595.3pt; min-height: 841.9pt; padding: 42pt 48pt; background: #FFFFFF; white-space: pre-wrap; font-family: 'Manrope', Arial, sans-serif; font-size: 12pt; line-height: 1.6; color: #0F172A;";
+            txtDiv.style.cssText = "width: 595.3pt; min-height: 841.9pt; padding: 42pt 48pt; background: #FFFFFF; white-space: pre-wrap; color: #0F172A;";
             txtDiv.textContent = converted;
             pdfStage.appendChild(txtDiv);
 
@@ -560,6 +565,13 @@ async function handleSelectedFile(file) {
                 if (relativePath.endsWith('.xml') && !relativePath.startsWith('word/embeddings/') && !relativePath.startsWith('ppt/embeddings/')) {
                     tasks.push(
                         zipEntry.async("string").then(xmlContent => {
+                            // ИЗВЛЕЧЕНИЕ ТЕКСТА: Собираем текст из XML тегов без разметки
+                            const textMatches = xmlContent.match(/>([^<]+)</g);
+                            if (textMatches && window.extractedFileText.length < 8000) { 
+                                // Ограничиваем до 8000 символов, чтобы не перегрузить ИИ
+                                window.extractedFileText += textMatches.map(m => m.slice(1, -1)).join(' ') + " ";
+                            }
+
                             let normalizedXml = xmlContent
                                 .replace(/(<[a-zA-Z0-9]+:t[^>]*>[^<]*?[SsCc])(<\/[a-zA-Z0-9]+:t>[\s\S]*?<[a-zA-Z0-9]+:t[^>]*>)([Hh])/g, "$1$3$2")
                                 .replace(/(<[a-zA-Z0-9]+:t[^>]*>[^<]*?[OoGg])(<\/[a-zA-Z0-9]+:t>[\s\S]*?<[a-zA-Z0-9]+:t[^>]*>)(['`\u02BB\u2018\u2019\u02BC])/g, "$1$3$2");
@@ -580,26 +592,25 @@ async function handleSelectedFile(file) {
             if (ext === 'xlsx') processedMimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             if (ext === 'pptx') processedMimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
 
-            processedBlob = await zip.generateAsync({
-                type: "blob",
-                mimeType: processedMimeType,
-                compression: "DEFLATE"
-            });
-
+            processedBlob = await zip.generateAsync({ type: "blob", mimeType: processedMimeType, compression: "DEFLATE" });
             await prepareOfficePdfStage(ext, processedBlob, zip, pdfStage);
         } else {
-            fileInfo.style.color = "#E11D48";
-            fileInfo.innerText = "Faqat .docx, .xlsx, .pptx yoki .txt fayllarni tanlang";
-            return;
+            throw new Error("Noto'g'ri format");
         }
 
         fileInfo.style.color = "#10B981";
         fileInfo.innerText = "Tayyor: " + processedOutName;
         saveBtn.style.display = 'inline-flex';
         savePdfBtn.style.display = 'inline-flex';
+        
+        // ПОКАЗЫВАЕМ КНОПКУ АНТИПЛАГИАТА, ЕСЛИ СВИТЧЕР ВКЛЮЧЕН
+        if (plagiatToggle && plagiatToggle.checked && plagiatBtn) {
+            plagiatBtn.style.display = 'inline-flex';
+        }
+
     } catch (err) {
         fileInfo.style.color = "#E11D48";
-        fileInfo.innerText = "Xatolik yuz berdi: " + err.message;
+        fileInfo.innerText = "Xatolik: " + err.message;
     }
 }
 
