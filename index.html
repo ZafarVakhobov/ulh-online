@@ -1510,13 +1510,16 @@
                                         <span class="ai-item-sub">Telegram va Instagram uçun jozibali matn</span>
                                     </div>
                                 </button>
-                                <button type="button" class="ai-menu-item" onclick="runAiPreset('generate_titles')">
-                                    <span class="ai-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg></span>
-                                    <div class="ai-item-text">
-                                        <span class="ai-item-title">Maqolaga sarlavha tanlaş</span>
-                                        <span class="ai-item-sub">Matn asosida 5 ta kuchli sarlavha</span>
-                                    </div>
-                                </button>
+                                <!-- НОВАЯ КНОПКА: AI Переводчик (вместо генератора заголовков) -->
+<button type="button" class="ai-menu-item" onclick="openTranslatorPanel()">
+    <span class="ai-item-icon" style="background: rgba(16, 185, 129, 0.14); color: #10B981;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>
+    </span>
+    <div class="ai-item-text">
+        <span class="ai-item-title">Tarjima qiliş</span>
+        <span class="ai-item-sub">Matnni 10+ tillarga aniq tarjima qiliş</span>
+    </div>
+</button>
                                 <hr class="dropdown-divider">
                                 <button type="button" class="ai-menu-item ai-custom-trigger" onclick="openAiCustomModal(event)">
                                     <span class="ai-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
