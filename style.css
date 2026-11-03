@@ -6310,7 +6310,7 @@ body.dark-mode .plagiat-source-link { color: #60A5FA; }
     border: 1px solid #E2E8F0;
     border-radius: 999px;
     padding: 3px 5px;
-    margin-bottom: 16px; 
+    margin-bottom: 3px; 
     overflow: visible; /* Чтобы поп-апы могли выходить за пределы */
     position: relative;
     z-index: 100;
