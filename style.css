@@ -1353,7 +1353,7 @@ textarea:focus {
     height: 52px;
     border-radius: 26px; /* Овальная форма */
     padding: 2px; /* Место для обводки */
-    background: linear-gradient(180deg, #A78BFA 0%, #7C3AED 100%); /* Мягкий фиолетовый */
+    background: linear-gradient(45deg, #2692ff 0%, #d406ff 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1396,10 +1396,10 @@ textarea:focus {
 
 .dock-main-btn.music-active {
     /* 5 ваших цветов + 1 повтор первого для бесшовного зацикливания анимации */
-    background: linear-gradient(270deg, #7f4ae1, #2aabee, #1bbda3, #4f46e5, #a328ff, #7f4ae1) !important;
+    background: linear-gradient(270deg, #bd19ff, #3c81ff, #1bbda3, #FF9800, #a328ff, #bd19ff) !important;
     background-size: 300% 300% !important;
     animation: dockMusicGradient 5s ease infinite;
-    box-shadow: 0 8px 24px rgba(42, 171, 238, 0.5) !important;
+    box-shadow: 0 8px 24px rgb(137 42 238 / 50%) !important;
 }
 
 body.dark-mode .dock-main-btn.music-active {
