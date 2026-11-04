@@ -2732,12 +2732,25 @@ function toggleAmbientPlayback(event) {
 function updateMusicPlayerUI() {
     const navBtn = document.getElementById("musicToggleBtn");
     const coverBtn = document.getElementById("musicPlayPauseBtn");
+    const dockBtn = document.getElementById("dockMainBtn"); // <--- Находим кнопку Ö
 
     if (navBtn) {
         navBtn.classList.toggle("is-playing", ambientIsPlaying);
     }
     if (coverBtn) {
         coverBtn.classList.toggle("playing", ambientIsPlaying);
+    }
+    
+    // Управление центральной кнопкой (если играет AI музыка)
+    if (dockBtn && !isCustomMusicMode) {
+        dockBtn.classList.toggle("music-active", ambientIsPlaying);
+        
+        // Меняем подсказку при наведении на кнопку
+        if (ambientHasStartedOnce) {
+            const titleText = ambientIsPlaying ? "Musiqani töxtatiş" : "Musiqani davom ettiriş";
+            dockBtn.title = titleText;
+            dockBtn.setAttribute('data-ulh-title', titleText); // Для кастомного тултипа
+        }
     }
 }
 
@@ -4995,17 +5008,34 @@ function onPlayerReady(event) {
 function onPlayerStateChange(event) {
     const coverBtn = document.getElementById("musicPlayPauseBtn");
     const navBtn = document.getElementById("musicToggleBtn");
+    const dockBtn = document.getElementById("dockMainBtn"); // <--- Находим кнопку Ö
     
     if (event.data == YT.PlayerState.PLAYING) {
         isYtPlaying = true;
         coverBtn.classList.add("playing");
         navBtn.classList.add("is-playing");
+        
+        // Включаем светомузыку
+        if (dockBtn) {
+            dockBtn.classList.add("music-active");
+            dockBtn.title = "Musiqani töxtatiş";
+            dockBtn.setAttribute('data-ulh-title', "Musiqani töxtatiş");
+        }
+        
         startProgressInterval();
         fetchYtMetadata();
     } else {
         isYtPlaying = false;
         coverBtn.classList.remove("playing");
         navBtn.classList.remove("is-playing");
+        
+        // Ставим светомузыку на паузу
+        if (dockBtn) {
+            dockBtn.classList.remove("music-active");
+            dockBtn.title = "Musiqani davom ettiriş";
+            dockBtn.setAttribute('data-ulh-title', "Musiqani davom ettiriş");
+        }
+        
         clearInterval(ytProgressInterval);
     }
 }
@@ -7073,6 +7103,30 @@ window.executeMiniSearch = function() {
         frame.style.opacity = "1";
     };
 };
+
+// ==========================================
+// === ПЕРЕХВАТ КЛИКА ЦЕНТРАЛЬНОЙ КНОПКИ Ö ===
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const dockMainBtn = document.getElementById("dockMainBtn");
+    if (dockMainBtn) {
+        dockMainBtn.addEventListener("click", function(e) {
+            // Проверяем: если музыка ХОТЯ БЫ РАЗ была включена (AI или YouTube)
+            if ((typeof ambientHasStartedOnce !== 'undefined' && ambientHasStartedOnce) || 
+                (typeof isCustomMusicMode !== 'undefined' && isCustomMusicMode)) {
+                
+                // Блокируем стандартный переход по ссылке на главную
+                e.preventDefault(); 
+                
+                // Переключаем плей/паузу
+                if (typeof togglePlaybackHandler === "function") {
+                    togglePlaybackHandler(e);
+                }
+            }
+            // В противном случае ничего не блокируем, и ссылка работает как обычно
+        });
+    }
+});
 
 // ==========================================
 // === 23. ÖŞA AI WIDGET (ЧАТ-БОТ) ===
