@@ -3472,6 +3472,39 @@ body.dark-mode .editor-ai-wrap.open .ai-icon-btn {
     background: #F5F3FF;
     transform: translateX(2px);
 }
+
+/* Специальная обертка для кнопок ИИ в один ряд */
+.ai-menu-row-split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px; /* Расстояние между кнопками */
+    width: 100%;
+}
+
+/* Компактный стиль для кнопок внутри ряда */
+.ai-menu-row-split .ai-menu-item {
+    padding: 8px; /* Немного уменьшаем отступы для компактности */
+    gap: 8px;
+    align-items: flex-start; /* Выравниваем по верхнему краю */
+}
+
+.ai-menu-row-split .ai-item-icon {
+    width: 26px; /* Уменьшаем иконку */
+    height: 26px;
+    border-radius: 7px;
+}
+
+.ai-menu-row-split .ai-item-title {
+    font-size: 11.5px; /* Уменьшаем заголовок */
+    line-height: 1.2;
+}
+
+.ai-menu-row-split .ai-item-sub {
+    font-size: 9.5px; /* Уменьшаем подзаголовок */
+    line-height: 1.2;
+    white-space: normal; /* Разрешаем перенос текста, если не влезает */
+}
+
 .ai-item-icon {
     width: 30px;
     height: 30px;
