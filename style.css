@@ -6544,22 +6544,23 @@ body.zen-mode-active .container {
 body.zen-mode-active .workspace {
     display: flex !important;
     flex-direction: column !important;
-    flex: 1 !important; 
-    min-height: 0 !important; /* Критично для идеального растягивания */
+    flex: 1 1 100% !important; /* Усиливаем растягивание */
+    height: 100% !important;
+    min-height: 0 !important; 
 }
 
 body.zen-mode-active .editor-wrapper {
     display: flex !important;
     flex-direction: column !important;
-    flex: 1 !important; /* Обертка занимает всё свободное место */
-    height: auto !important; 
+    flex: 1 1 100% !important;
+    height: 100% !important; 
     min-height: 0 !important; 
 }
 
 /* Настройки самого текстового поля в Zen Mode */
 body.zen-mode-active textarea#editor {
-    flex: 1 !important; /* Текстовое поле растягивается внутри обертки */
-    height: auto !important;
+    flex: 1 1 100% !important; 
+    height: 100% !important; /* <--- ИСПРАВЛЕНИЕ: 100% вместо auto */
     min-height: 0 !important; 
     margin-bottom: 0 !important;
     font-size: 16px !important;
@@ -6577,9 +6578,9 @@ body.zen-mode-active #translatorReportBox {
     display: flex !important;
     flex-direction: column !important;
     margin-top: 16px !important;
-    height: 35vh !important; /* Занимают 35% высоты экрана */
+    height: 35vh !important; 
     min-height: 250px !important;
-    flex-shrink: 0 !important; /* Запрещаем им сжиматься */
+    flex-shrink: 0 !important; 
 }
 
 body.zen-mode-active .translator-right-panel {
