@@ -1290,16 +1290,118 @@ textarea:focus {
     }
 }
 
+/* ========================================== */
+/* === ЦЕНТРАЛЬНАЯ ПАНЕЛЬ ИНСТРУМЕНТОВ (GLASS DOCK) === */
+/* ========================================== */
+
 .footer {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 0px;
-    padding-top: 10px;
-    border-top: 0px dashed #CBD5E1; /* Красивая пунктирная линия сверху */
     width: 100%;
+    margin-top: 14px;
+    padding-top: 16px;
+    border-top: none; /* Убираем пунктир, он больше не нужен */
+}
+
+/* Овальная стеклянная подложка */
+.glass-dock-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.85); /* Полупрозрачный белый */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 999px; /* Идеальный овал */
+    padding: 8px 24px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05), inset 0 2px 4px rgba(255, 255, 255, 0.9);
+}
+
+.dock-side-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Боковые прозрачные кнопки (Иконки) */
+.dock-icon-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: #64748B; /* Мягкий серый цвет, как на референсе */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dock-icon-btn:hover {
+    background: #F1F5F9;
+    color: #0F172A; /* При наведении иконка темнеет */
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* Главная центральная кнопка (Объемный фиолетовый градиент) */
+.dock-main-btn {
+    position: relative;
+    width: 76px;
+    height: 52px;
+    border-radius: 26px; /* Овальная форма */
+    padding: 2px; /* Место для обводки */
+    background: linear-gradient(180deg, #A78BFA 0%, #7C3AED 100%); /* Мягкий фиолетовый */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    /* Мягкое фиолетовое свечение вокруг кнопки */
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Внутренняя часть для создания эффекта стекла и 3D-блика */
+.dock-main-btn-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,0.1) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+}
+
+.dock-main-btn:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 12px 28px rgba(124, 58, 237, 0.45);
+}
+.dock-main-btn:active {
+    transform: translateY(1px) scale(0.97);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+/* ========================================== */
+/* === ТЕМНАЯ ТЕМА ДЛЯ DOCK (DARK MODE) === */
+/* ========================================== */
+body.dark-mode .glass-dock-container {
+    background: rgba(15, 23, 42, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.05);
+}
+body.dark-mode .dock-icon-btn {
+    color: #94A3B8;
+}
+body.dark-mode .dock-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F8FAFC;
+}
+/* В темной теме фиолетовая кнопка чуть более насыщенная */
+body.dark-mode .dock-main-btn {
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
 }
 
 body.dark-mode .footer {
@@ -5201,41 +5303,6 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 /* === СТИЛИ ДЛЯ KANBAN ДОСКИ И ЕЁ ОКНА === */
 /* ========================================== */
 
-
-
-/* Размеры для ВСЕХ кнопок в центральной панели */
-.kanban-toggle-btn,
-.sources-toggle-btn,
-.pomodoro-toggle-btn,
-.scratchpad-toggle-btn,
-.clipboard-toggle-btn,
-.browser-toggle-btn {
-    width: 44px; 
-    height: 44px;
-    padding: 0; /* Убиваем старые отступы у Rejalarim */
-    background: #2AABEE; 
-    color: white;
-    border: none;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(42, 171, 238, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
-}
-
-/* Эффект при наведении для всех кнопок */
-.kanban-toggle-btn:hover,
-.sources-toggle-btn:hover,
-.pomodoro-toggle-btn:hover,
-.scratchpad-toggle-btn:hover,
-.clipboard-toggle-btn:hover,
-.browser-toggle-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(42, 171, 238, 0.45);
-    background: #2293CF; 
-}
 
 
 /* Фон модального окна */
