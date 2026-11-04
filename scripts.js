@@ -6881,3 +6881,144 @@ Matn: "${text.substring(0, 3000)}"`;
         btnIcon.style.animation = "none";
     }
 };
+
+// ==========================================
+// === 21. УМНЫЙ БУФЕР ОБМЕНА (SMART CLIPBOARD) ===
+// ==========================================
+
+const CLIPBOARD_STORAGE_KEY = "ulh_clipboard_history_v1";
+const MAX_CLIP_ITEMS = 15; // Храним последние 15 копирований
+
+// 1. Открытие / Закрытие панели
+const clipToggleBtn = document.getElementById('clipboard-toggle-btn');
+if (clipToggleBtn) {
+    clipToggleBtn.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        document.getElementById('clipboard-panel').classList.add('open');
+        document.getElementById('clipboard-overlay').classList.add('open');
+        renderClipboardHistory();
+    });
+}
+
+window.closeClipboardPanel = function(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    document.getElementById('clipboard-panel').classList.remove('open');
+    document.getElementById('clipboard-overlay').classList.remove('open');
+};
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeClipboardPanel();
+});
+
+// 2. Хак-перехватчик: ловим всё, что копируется кнопками на сайте
+const originalWriteText = navigator.clipboard.writeText;
+navigator.clipboard.writeText = function(text) {
+    if (text && text.trim().length > 0) {
+        saveToClipboardDB(text.trim());
+    }
+    // Выполняем оригинальное копирование в систему
+    return originalWriteText.apply(this, arguments);
+};
+
+// 3. Ловим обычное копирование мышкой (Ctrl+C) внутри редактора и окон ИИ
+document.addEventListener('copy', (e) => {
+    const selection = document.getSelection().toString().trim();
+    if (selection.length > 0) {
+        saveToClipboardDB(selection);
+    }
+});
+
+// 4. Логика сохранения в базу LocalStorage
+function saveToClipboardDB(text) {
+    let history = [];
+    try {
+        const stored = localStorage.getItem(CLIPBOARD_STORAGE_KEY);
+        if (stored) history = JSON.parse(stored);
+    } catch(e) {}
+
+    // Если такой текст уже есть в начале списка, не дублируем
+    if (history.length > 0 && history[0].text === text) return;
+
+    // Иначе добавляем в начало с текущим временем
+    history.unshift({
+        id: Date.now(),
+        time: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
+        text: text
+    });
+
+    // Обрезаем до 15 элементов
+    if (history.length > MAX_CLIP_ITEMS) {
+        history = history.slice(0, MAX_CLIP_ITEMS);
+    }
+
+    localStorage.setItem(CLIPBOARD_STORAGE_KEY, JSON.stringify(history));
+    
+    // Если панель открыта прямо сейчас — обновляем в реальном времени
+    if (document.getElementById('clipboard-panel').classList.contains('open')) {
+        renderClipboardHistory();
+    }
+}
+
+// 5. Отрисовка списка
+function renderClipboardHistory() {
+    const container = document.getElementById('clipboard-list');
+    if (!container) return;
+    
+    let history = [];
+    try {
+        const stored = localStorage.getItem(CLIPBOARD_STORAGE_KEY);
+        if (stored) history = JSON.parse(stored);
+    } catch(e) {}
+
+    container.innerHTML = "";
+
+    if (history.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:#94A3B8; font-size:12px; margin-top:20px;">Hali heç narsa nusxalanmadi.</div>`;
+        return;
+    }
+
+    history.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "clip-item-card";
+        
+        // Защита от HTML-инъекций при выводе
+        const safeText = item.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const charCount = item.text.length;
+
+        card.innerHTML = `
+            <div class="clip-item-text">${safeText}</div>
+            <div class="clip-item-meta">
+                <span>${charCount} ta belgi</span>
+                <span>${item.time}</span>
+            </div>
+        `;
+
+        // При клике на карточку — вставляем текст прямо в редактор
+        card.onclick = () => {
+            const editorEl = document.getElementById('editor');
+            if (editorEl) {
+                const start = editorEl.selectionStart;
+                const end = editorEl.selectionEnd;
+                editorEl.value = editorEl.value.substring(0, start) + item.text + editorEl.value.substring(end);
+                
+                editorEl.focus();
+                editorEl.selectionStart = editorEl.selectionEnd = start + item.text.length;
+                
+                // Триггерим события для счетчика слов и автосохранения
+                if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+                if (typeof saveEditorDraft === "function") saveEditorDraft();
+                if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Matn joylandi ✓");
+                
+                closeClipboardPanel();
+            }
+        };
+
+        container.appendChild(card);
+    });
+}
+
+// 6. Очистка истории
+window.clearClipboardHistory = function() {
+    localStorage.removeItem(CLIPBOARD_STORAGE_KEY);
+    renderClipboardHistory();
+};
