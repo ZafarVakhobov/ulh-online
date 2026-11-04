@@ -1386,6 +1386,27 @@ textarea:focus {
 }
 
 /* ========================================== */
+/* === АНИМАЦИЯ ЦЕНТРАЛЬНОЙ КНОПКИ (МУЗЫКА) === */
+/* ========================================== */
+@keyframes dockMusicGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.dock-main-btn.music-active {
+    /* 5 ваших цветов + 1 повтор первого для бесшовного зацикливания анимации */
+    background: linear-gradient(270deg, #7f4ae1, #2aabee, #1bbda3, #4f46e5, #a328ff, #7f4ae1) !important;
+    background-size: 300% 300% !important;
+    animation: dockMusicGradient 5s ease infinite;
+    box-shadow: 0 8px 24px rgba(42, 171, 238, 0.5) !important;
+}
+
+body.dark-mode .dock-main-btn.music-active {
+    box-shadow: 0 8px 30px rgba(42, 171, 238, 0.35) !important;
+}
+
+/* ========================================== */
 /* === ТЕМНАЯ ТЕМА ДЛЯ DOCK (DARK MODE) === */
 /* ========================================== */
 body.dark-mode .glass-dock-container {
