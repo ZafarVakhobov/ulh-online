@@ -1516,28 +1516,6 @@
                             <div class="editor-ai-dropdown" id="editorAiDropdown" onclick="event.stopPropagation()">
                                 <div class="tools-group-label">AI YORDAMÇI FUNKSIYALARI</div>
 
-<!-- НОВАЯ КНОПКА: Проверка уникальности и клише (Первый пункт) -->
-<button type="button" class="ai-menu-item" onclick="checkTextUniqueness()">
-    <span class="ai-item-icon" style="background: rgba(245, 158, 11, 0.14); color: #F59E0B;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            <path d="M9 12l2 2 4-4"></path>
-        </svg>
-    </span>
-    <div class="ai-item-text">
-        <span class="ai-item-title">Matn unikalligini tekşiriş</span>
-        <span class="ai-item-sub">Akademik ştamplar va klişelarni aniqlaş</span>
-    </div>
-</button>
-                                
-                               <button type="button" class="ai-menu-item" onclick="runAiPreset('social_post')">
-                                    <span class="ai-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
-                                    <div class="ai-item-text">
-                                        <span class="ai-item-title">Ijtimoiy tarmoqlar uçun post</span>
-                                        <span class="ai-item-sub">Telegram va Instagram uçun jozibali matn</span>
-                                    </div>
-                                </button>
-                                
 <!-- === КНОПКИ В ОДИН РЯД: ТЕРЕВОД И ГЛОССАРИЙ === -->
 <div class="ai-menu-row-split">
     
@@ -1560,12 +1538,36 @@
         </span>
         <div class="ai-item-text">
             <span class="ai-item-title">Atamalar</span>
-            <span class="ai-item-sub">Lug'ati</span>
+            <span class="ai-item-sub">Luğati</span>
         </div>
     </button>
     
 </div>
 <!-- ============================================== -->
+                                
+<!-- НОВАЯ КНОПКА: Проверка уникальности и клише (Первый пункт) -->
+<button type="button" class="ai-menu-item" onclick="checkTextUniqueness()">
+    <span class="ai-item-icon" style="background: rgba(245, 158, 11, 0.14); color: #F59E0B;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <path d="M9 12l2 2 4-4"></path>
+        </svg>
+    </span>
+    <div class="ai-item-text">
+        <span class="ai-item-title">Matn unikalligini tekşiriş</span>
+        <span class="ai-item-sub">Akademik ştamplar va klişelarni aniqlaş</span>
+    </div>
+</button>
+                                
+                               <button type="button" class="ai-menu-item" onclick="runAiPreset('social_post')">
+                                    <span class="ai-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+                                    <div class="ai-item-text">
+                                        <span class="ai-item-title">Ijtimoiy tarmoqlar uçun post</span>
+                                        <span class="ai-item-sub">Telegram va Instagram uçun jozibali matn</span>
+                                    </div>
+                                </button>
+                                
+
 
 <!-- НОВАЯ КНОПКА: Генератор тестов и карточек -->
 <button type="button" class="ai-menu-item" onclick="generateAiTests()">
