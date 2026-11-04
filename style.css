@@ -1296,9 +1296,9 @@ textarea:focus {
     align-items: center;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px dashed #CBD5E1; /* Красивая пунктирная линия сверху */
+    margin-top: 0px;
+    padding-top: 10px;
+    border-top: 0px dashed #CBD5E1; /* Красивая пунктирная линия сверху */
     width: 100%;
 }
 
