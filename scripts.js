@@ -6694,3 +6694,44 @@ document.addEventListener("keydown", (e) => {
 
 // Запуск
 fetchAndRenderNews();
+
+
+
+// ==========================================
+// === 19. ZEN MODE (РЕЖИМ ГЛУБОКОГО ПОГРУЖЕНИЯ) ===
+// ==========================================
+
+window.toggleZenMode = function() {
+    const isZen = document.body.classList.toggle('zen-mode-active');
+    
+    const iconExpand = document.getElementById('zenIconExpand');
+    const iconCollapse = document.getElementById('zenIconCollapse');
+    const tooltip = document.getElementById('zenTooltip'); // Наш span.custom-tooltip
+
+    if (isZen) {
+        // Режим включен: показываем иконку сужения
+        if (iconExpand) iconExpand.style.display = 'none';
+        if (iconCollapse) iconCollapse.style.display = 'block';
+        
+        // Меняем текст внутри красивого тултипа
+        if (tooltip) tooltip.textContent = 'Oddiy rejimga qaytiş';
+        
+        // Фокусируемся на тексте
+        const editor = document.getElementById('editor');
+        if (editor) editor.focus();
+    } else {
+        // Режим выключен: показываем иконку расширения
+        if (iconExpand) iconExpand.style.display = 'block';
+        if (iconCollapse) iconCollapse.style.display = 'none';
+        
+        // Возвращаем исходный текст тултипу
+        if (tooltip) tooltip.textContent = 'Zen rejimi';
+    }
+};
+
+// Выход из Zen Mode по нажатию клавиши Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.body.classList.contains('zen-mode-active')) {
+        window.toggleZenMode();
+    }
+});
