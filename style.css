@@ -5203,12 +5203,16 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 
 
 
-/* Общий дизайн для всех 4-х кнопок панели */
+/* Размеры для ВСЕХ кнопок в центральной панели */
 .kanban-toggle-btn,
 .sources-toggle-btn,
 .pomodoro-toggle-btn,
 .scratchpad-toggle-btn,
-.clipboard-toggle-btn {
+.clipboard-toggle-btn,
+.browser-toggle-btn {
+    width: 44px; 
+    height: 44px;
+    padding: 0; /* Убиваем старые отступы у Rejalarim */
     background: #2AABEE; 
     color: white;
     border: none;
@@ -5221,7 +5225,7 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
 }
 
-/* Эффект при наведении (Затемненный оттенок #2293CF) */
+/* Эффект при наведении для всех кнопок */
 .kanban-toggle-btn:hover,
 .sources-toggle-btn:hover,
 .pomodoro-toggle-btn:hover,
@@ -5233,21 +5237,6 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
     background: #2293CF; 
 }
 
-/* Индивидуальные размеры (Rejalarim с текстом, остальные - квадраты) */
-.kanban-toggle-btn {
-    padding: 10px 18px;
-    font-family: 'Manrope', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    gap: 8px;
-}
-
-.sources-toggle-btn,
-.pomodoro-toggle-btn,
-.scratchpad-toggle-btn {
-    width: 44px; 
-    height: 44px;
-}
 
 /* Фон модального окна */
 .kanban-modal-backdrop {
@@ -6777,15 +6766,11 @@ body.dark-mode .clip-item-meta {
 /* ========================================== */
 /* === МИНИ-БРАУЗЕР (TEZKOR QIDIRUV) === */
 /* ========================================== */
-.browser-toggle-btn {
-    width: 44px; 
-    height: 44px;
-}
 
 /* Делаем панель браузера шире, чем буфер обмена (450px вместо 320px) */
 .browser-panel-wide {
     width: 450px !important;
-    left: -470px; /* Прячем за экран с учетом новой ширины */
+    left: -470px; 
 }
 
 /* Строка поиска */
@@ -6830,13 +6815,8 @@ body.dark-mode .clip-item-meta {
     transition: background 0.2s, transform 0.1s;
 }
 
-.browser-search-btn:hover {
-    background: #0369A1;
-}
-
-.browser-search-btn:active {
-    transform: scale(0.95);
-}
+.browser-search-btn:hover { background: #0369A1; }
+.browser-search-btn:active { transform: scale(0.95); }
 
 /* Блок с iframe */
 .browser-frame-wrapper {
@@ -6864,7 +6844,6 @@ body.dark-mode .clip-item-meta {
     color: #64748B;
     display: flex;
     align-items: center;
-    gap: 8px;
 }
 
 /* --- ТЕМНАЯ ТЕМА ДЛЯ БРАУЗЕРА --- */
@@ -6881,12 +6860,8 @@ body.dark-mode .browser-input:focus {
     border-color: #38BDF8;
     box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
 }
-body.dark-mode .browser-frame-wrapper {
-    background: #0F172A;
-}
-body.dark-mode .browser-loader {
-    color: #94A3B8;
-}
+body.dark-mode .browser-frame-wrapper { background: #0F172A; }
+body.dark-mode .browser-loader { color: #94A3B8; }
 
 /* Адаптация под смартфоны */
 @media (max-width: 500px) {
