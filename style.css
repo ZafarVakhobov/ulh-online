@@ -6530,15 +6530,16 @@ body.dark-mode.zen-mode-active {
     background-image: linear-gradient(rgba(11, 17, 32, 0.97), rgba(11, 17, 32, 0.97)), url("./back.png") !important;
 }
 
-/* 2. Прячем всё лишнее (Меню, Баннеры, Помощника, Подвал, Боковые виджеты) */
+/* 2. Прячем всё лишнее (ИСПРАВЛЕНО: добавлена закрывающая скобка и убрана запятая) */
 body.zen-mode-active .top-navbar,
 body.zen-mode-active .news-ticker-wrapper,
 body.zen-mode-active .hero-slider,
 body.zen-mode-active .converter-box,
 body.zen-mode-active .footer,
 body.zen-mode-active .bottom-left-tools,
-body.zen-mode-active #osha-ai-widget-root,
-
+body.zen-mode-active #osha-ai-widget-root {
+    display: none !important;
+}
 
 /* 3. Делаем контейнер и редактор на весь экран */
 body.zen-mode-active .container {
