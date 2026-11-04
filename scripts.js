@@ -7073,3 +7073,334 @@ window.executeMiniSearch = function() {
         frame.style.opacity = "1";
     };
 };
+
+// ==========================================
+// === 23. ÖŞA AI WIDGET (ЧАТ-БОТ) ===
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const chatBtn = document.getElementById('osha-btn');
+    const closeBtn = document.getElementById('osha-close');
+    const chatModal = document.getElementById('osha-chat');
+    const bubble = document.getElementById('osha-bubble');
+    const messagesContainer = document.getElementById('osha-messages');
+    const inputField = document.getElementById('osha-input');
+    const sendBtn = document.getElementById('osha-send');
+    const infoBtn = document.getElementById('osha-info-btn');
+    const infoPopup = document.getElementById('osha-info-popup');
+    const infoOkBtn = document.getElementById('osha-info-ok');
+
+    const WORKER_URL = 'https://ulh-ai-helper.lanigirodesigner.workers.dev/'; 
+    const SYSTEM_PROMPT = "Sen ULH (Uzbek Latin Helper) loyihasining rasmiy yordamchisi - Öşa'san. Ushbu loyihaning yaratuvchisi va dasturchisi Zafar Vakhobov (LANIGIRO) hisoblanadi. Foydalanuvchilar loyiha muallifi yoki yaratuvchisi haqida so'rashsa, har doim faxr bilan Zafar Vakhobov ekanligini aytasan. Matnlarni tahrirlaysan, xatolarni to'g'rilaysan. Doim do'stona, qisqa va aniq javob ber.";
+
+    let chatHistory = JSON.parse(localStorage.getItem('oshaChatHistory')) || [];
+
+    if (!chatBtn) return; // Защита на случай отсутствия виджета
+
+    chatBtn.addEventListener('click', () => {
+        chatModal.classList.remove('osha-hidden');
+        bubble.style.opacity = '0';
+        bubble.style.visibility = 'hidden';
+        renderMessages();
+        setTimeout(() => inputField.focus(), 300);
+    });
+
+    closeBtn.addEventListener('click', () => {
+        chatModal.classList.add('osha-hidden');
+        setTimeout(() => {
+            bubble.style.opacity = '1';
+            bubble.style.visibility = 'visible';
+        }, 300);
+    });
+
+    inputField.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight < 96 ? this.scrollHeight : 96) + 'px';
+    });
+
+    function renderMessages() {
+        messagesContainer.innerHTML = '';
+        if (chatHistory.length === 0) {
+            appendMessage('assistant', "Salom! Men Öşaman. Matningizni tekşiriş, xatolarni töğrilaş yoki yangi alifbo böyiça savollaringiz bölsa, yozing!");
+        }
+        chatHistory.forEach(msg => {
+            if (msg.role !== 'system') appendMessage(msg.role, msg.content, false);
+        });
+        scrollToBottom();
+    }
+
+    function appendMessage(role, content, save = true) {
+        const wrapDiv = document.createElement('div');
+        wrapDiv.className = `osha-msg-wrapper ${role === 'user' ? 'osha-msg-user-wrap' : 'osha-msg-bot-wrap'}`;
+        
+        const containerDiv = document.createElement('div');
+        containerDiv.className = 'osha-msg-container';
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `osha-msg ${role === 'user' ? 'osha-msg-user' : 'osha-msg-bot'}`;
+        
+        let formattedContent = content
+            .replace(/^###\s+(.*?)(?:\r?\n|$)/gm, '<div style="font-size: 14px; font-weight: 800; margin-top: 8px; margin-bottom: 4px;">$1</div>')
+            .replace(/^##\s+(.*?)(?:\r?\n|$)/gm, '<div style="font-size: 15px; font-weight: 800; margin-top: 10px; margin-bottom: 4px;">$1</div>')
+            .replace(/^#\s+(.*?)(?:\r?\n|$)/gm, '<div style="font-size: 16.5px; font-weight: 800; margin-top: 12px; margin-bottom: 6px;">$1</div>')
+            .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color: #3b82f6; text-decoration: underline;">$1</a>')
+            .replace(/(^|[^"'])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener" style="color: #3b82f6; text-decoration: underline;">$2</a>')
+            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+            .replace(/__(.*?)__/g, '<u>$1</u>')
+            .replace(/\*(.*?)\*/g, '<i>$1</i>')
+            .replace(/~~(.*?)~~/g, '<strike>$1</strike>')
+            .replace(/\n/g, '<br>');
+
+        msgDiv.innerHTML = formattedContent;
+        containerDiv.appendChild(msgDiv);
+
+        if (role === 'assistant') {
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'osha-copy-msg-btn';
+            copyBtn.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span class="osha-tooltip">Nusxa oliş</span>
+            `;
+
+            copyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(content).then(() => {
+                    const tooltip = copyBtn.querySelector('.osha-tooltip');
+                    if (tooltip) {
+                        tooltip.textContent = "Nusxalandi ✓";
+                        setTimeout(() => { tooltip.textContent = "Nusxa oliş"; }, 1400);
+                    }
+                }).catch(() => {});
+            });
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'osha-edit-msg-btn';
+            editBtn.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                <span class="osha-tooltip">Tahrirlaş</span>
+            `;
+
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const editorField = document.getElementById('aiResultContent'); 
+                if (editorField) {
+                    editorField.innerHTML = content.replace(/\n/g, '<br>'); 
+                }
+                const editorModal = document.getElementById('aiResultModalBackdrop');
+                if (editorModal) {
+                    editorModal.classList.add('open'); 
+                }
+            });
+
+            containerDiv.appendChild(editBtn);
+            containerDiv.appendChild(copyBtn);
+        }
+        
+        wrapDiv.appendChild(containerDiv);
+        messagesContainer.appendChild(wrapDiv);
+        scrollToBottom();
+
+        if (save) {
+            chatHistory.push({ role, content });
+            localStorage.setItem('oshaChatHistory', JSON.stringify(chatHistory));
+        }
+    }
+
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    async function handleSend() {
+        const text = inputField.value.trim();
+        if (!text) return;
+
+        inputField.value = '';
+        inputField.style.height = '42px';
+        sendBtn.disabled = true;
+
+        // Используем глобальную функцию из Модуля 13
+        appendMessage('user', enforceNewUzbekAlphabet(text));
+
+        const typingId = 'typing-' + Date.now();
+        const wrapDiv = document.createElement('div');
+        wrapDiv.id = typingId;
+        wrapDiv.className = 'osha-msg-wrapper osha-msg-bot-wrap';
+        
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'osha-msg osha-msg-bot';
+        typingDiv.style.display = 'flex';
+        typingDiv.style.gap = '4px';
+        typingDiv.style.alignItems = 'center';
+        typingDiv.style.padding = '14px';
+        typingDiv.innerHTML = `
+            <div class="typing-dot"></div>
+            <div class="typing-dot" style="animation-delay: 0.15s"></div>
+            <div class="typing-dot" style="animation-delay: 0.3s"></div>
+        `;
+        wrapDiv.appendChild(typingDiv);
+        messagesContainer.appendChild(wrapDiv);
+        scrollToBottom();
+
+        let apiMessages = [{ role: 'system', content: SYSTEM_PROMPT }];
+        const recentHistory = chatHistory.slice(-10);
+        apiMessages = apiMessages.concat(recentHistory);
+
+        let fallbackTextFormat = apiMessages.map(m => `${m.role}: ${m.content}`).join('\n');
+
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'qwen/qwen3.8-27b',
+                    messages: apiMessages,
+                    temperature: 0.6,
+                    max_tokens: 16384,
+                    mode: 'chat',
+                    text: fallbackTextFormat,
+                    customPrompt: SYSTEM_PROMPT
+                })
+            });
+
+            const data = await response.json();
+            document.getElementById(typingId).remove();
+            
+            // Используем глобальную функцию из Модуля 13
+            if (data.choices && data.choices[0] && data.choices[0].message) {
+                appendMessage('assistant', enforceNewUzbekAlphabet(data.choices[0].message.content));
+            } else if (data.result) {
+                appendMessage('assistant', enforceNewUzbekAlphabet(data.result));
+            } else if (data.error) {
+                const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
+                appendMessage('assistant', "Xatolik yuz berdi: " + errMsg);
+            } else if (data.message) {
+                appendMessage('assistant', enforceNewUzbekAlphabet(data.message));
+            } else {
+                appendMessage('assistant', "Keçirasiz, noma'lum xatolik yuz berdi. Server javobi: " + JSON.stringify(data).substring(0, 50));
+            }
+        } catch (error) {
+            document.getElementById(typingId).remove();
+            appendMessage('assistant', "Internet ulanişida xatolik: " + error.message);
+        }
+
+        sendBtn.disabled = false;
+        inputField.focus();
+    }
+
+    sendBtn.addEventListener('click', handleSend);
+    inputField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    });
+
+    const clearBtn = document.getElementById('osha-clear-btn');
+    const clearConfirm = document.getElementById('osha-clear-confirm');
+    const confirmYes = document.getElementById('osha-confirm-yes');
+    const confirmNo = document.getElementById('osha-confirm-no');
+
+    if (clearBtn && clearConfirm) {
+        clearBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearConfirm.classList.toggle('show');
+        });
+
+        confirmNo.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearConfirm.classList.remove('show');
+        });
+
+        confirmYes.addEventListener('click', (e) => {
+            e.stopPropagation();
+            chatHistory = [];
+            localStorage.removeItem('oshaChatHistory');
+            clearConfirm.classList.remove('show');
+            renderMessages();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (clearConfirm.classList.contains('show') && !clearConfirm.contains(e.target) && e.target !== clearBtn) {
+                clearConfirm.classList.remove('show');
+            }
+        });
+    }
+    
+    if (infoBtn && infoPopup) {
+        infoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (clearConfirm) clearConfirm.classList.remove('show');
+            infoPopup.classList.toggle('show');
+        });
+
+        if (infoOkBtn) {
+            infoOkBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                infoPopup.classList.remove('show');
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (infoPopup.classList.contains('show') && !infoPopup.contains(e.target) && e.target !== infoBtn) {
+                infoPopup.classList.remove('show');
+            }
+        });
+    }
+
+    const exportBtn = document.getElementById('osha-export-btn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            if (!chatHistory || chatHistory.length === 0) {
+                alert("Chat tarixi hozircha bo'sh!");
+                return;
+            }
+
+            let htmlContent = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <meta charset='utf-8'>
+                    <title>Öşa AI - Çat Tarixi</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.5; color: #1e293b; padding: 20px; }
+                        h2 { color: #0284c7; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+                        .msg { margin-bottom: 14px; padding: 10px 14px; border-radius: 8px; }
+                        .user { background-color: #e0f2fe; text-align: right; }
+                        .assistant { background-color: #f8fafc; border: 1px solid #e2e8f0; }
+                        .role { font-weight: bold; font-size: 12px; margin-bottom: 4px; color: #64748b; }
+                    </style>
+                </head>
+                <body>
+                <h2>Öşa AI — Çat Tarixi (ULH Online)</h2>
+            `;
+
+            chatHistory.forEach(msg => {
+                if (msg.role === 'system') return;
+                const roleName = msg.role === 'user' ? 'Foydalanuvçi' : 'Öşa AI (Öşa)';
+                const cssClass = msg.role === 'user' ? 'user' : 'assistant';
+                const formattedText = msg.content.replace(/\n/g, '<br>');
+
+                htmlContent += `
+                    <div class="msg ${cssClass}">
+                        <div class="role">${roleName}:</div>
+                        <div>${formattedText}</div>
+                    </div>
+                `;
+            });
+
+            htmlContent += `</body></html>`;
+
+            const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Öşa_AI_Tarix_${new Date().toISOString().slice(0, 10)}.doc`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            if (infoPopup) infoPopup.classList.remove('show');
+        });
+    }
+});
