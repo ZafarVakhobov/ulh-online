@@ -7022,3 +7022,54 @@ window.clearClipboardHistory = function() {
     localStorage.removeItem(CLIPBOARD_STORAGE_KEY);
     renderClipboardHistory();
 };
+
+// ==========================================
+// === 22. МИНИ-БРАУЗЕР (TEZKOR QIDIRUV) ===
+// ==========================================
+
+// 1. Открытие / Закрытие панели
+const browserToggleBtn = document.getElementById('browser-toggle-btn');
+if (browserToggleBtn) {
+    browserToggleBtn.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        
+        if (typeof closeClipboardPanel === 'function') closeClipboardPanel();
+        
+        document.getElementById('browser-panel').classList.add('open');
+        document.getElementById('browser-overlay').classList.add('open');
+        
+        setTimeout(() => document.getElementById('browserSearchInput').focus(), 350);
+    });
+}
+
+window.closeBrowserPanel = function(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    document.getElementById('browser-panel').classList.remove('open');
+    document.getElementById('browser-overlay').classList.remove('open');
+};
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeBrowserPanel();
+});
+
+// 2. Логика выполнения поиска (Wikipedia)
+window.executeMiniSearch = function() {
+    const inputEl = document.getElementById('browserSearchInput');
+    const query = inputEl.value.trim();
+    if (!query) return;
+    
+    const frame = document.getElementById('miniBrowserFrame');
+    const loader = document.getElementById('browserLoader');
+    
+    loader.style.display = "flex";
+    frame.style.opacity = "0.2";
+    
+    const searchUrl = `https://uz.m.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(query)}`;
+    
+    frame.src = searchUrl;
+    
+    frame.onload = function() {
+        loader.style.display = "none";
+        frame.style.opacity = "1";
+    };
+};
