@@ -1292,12 +1292,18 @@ textarea:focus {
 
 .footer {
     display: flex;
-    justify-content: center; /* <-- Изменили только эту строчку */
+    justify-content: center;
     align-items: center;
-    margin-top: 4px;
-    padding-top: 12px;
-    border-top: 0px solid #E2E8F0;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #CBD5E1; /* Красивая пунктирная линия сверху */
+    width: 100%;
+}
+
+body.dark-mode .footer {
+    border-top-color: #334155;
 }
 
 .footer-left {
@@ -5195,15 +5201,7 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 /* === СТИЛИ ДЛЯ KANBAN ДОСКИ И ЕЁ ОКНА === */
 /* ========================================== */
 
-/* === ПАНЕЛЬ ИНСТРУМЕНТОВ (ЛЕВЫЙ НИЖНИЙ УГОЛ) === */
-.bottom-left-tools {
-    position: fixed;
-    bottom: 24px;
-    left: 24px;
-    display: flex;
-    gap: 12px; /* Расстояние между кнопками */
-    z-index: 1000;
-}
+
 
 /* Общий дизайн для всех 4-х кнопок панели */
 .kanban-toggle-btn,
@@ -5228,7 +5226,8 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 .sources-toggle-btn:hover,
 .pomodoro-toggle-btn:hover,
 .scratchpad-toggle-btn:hover,
-.clipboard-toggle-btn:hover {
+.clipboard-toggle-btn:hover,
+.browser-toggle-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(42, 171, 238, 0.45);
     background: #2293CF; 
@@ -6773,4 +6772,126 @@ body.dark-mode .clip-item-text {
 }
 body.dark-mode .clip-item-meta {
     color: #64748B;
+}
+
+/* ========================================== */
+/* === МИНИ-БРАУЗЕР (TEZKOR QIDIRUV) === */
+/* ========================================== */
+.browser-toggle-btn {
+    width: 44px; 
+    height: 44px;
+}
+
+/* Делаем панель браузера шире, чем буфер обмена (450px вместо 320px) */
+.browser-panel-wide {
+    width: 450px !important;
+    left: -470px; /* Прячем за экран с учетом новой ширины */
+}
+
+/* Строка поиска */
+.browser-search-row {
+    display: flex;
+    gap: 8px;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.browser-input {
+    flex: 1;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid #CBD5E1;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1E293B;
+    background: #FFFFFF;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.browser-input:focus {
+    border-color: #0284C7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.browser-search-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: none;
+    background: #0284C7;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.browser-search-btn:hover {
+    background: #0369A1;
+}
+
+.browser-search-btn:active {
+    transform: scale(0.95);
+}
+
+/* Блок с iframe */
+.browser-frame-wrapper {
+    flex: 1;
+    position: relative;
+    background: #F8FAFC;
+}
+
+#miniBrowserFrame {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: opacity 0.3s ease;
+}
+
+.browser-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* --- ТЕМНАЯ ТЕМА ДЛЯ БРАУЗЕРА --- */
+body.dark-mode .browser-search-row {
+    border-color: rgba(255, 255, 255, 0.05);
+    background: transparent;
+}
+body.dark-mode .browser-input {
+    background: #1E293B;
+    border-color: #334155;
+    color: #F8FAFC;
+}
+body.dark-mode .browser-input:focus {
+    border-color: #38BDF8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+body.dark-mode .browser-frame-wrapper {
+    background: #0F172A;
+}
+body.dark-mode .browser-loader {
+    color: #94A3B8;
+}
+
+/* Адаптация под смартфоны */
+@media (max-width: 500px) {
+    .browser-panel-wide {
+        width: 100% !important;
+        left: -100%;
+    }
 }
