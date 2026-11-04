@@ -6620,3 +6620,18 @@ body.zen-mode-active .translator-right-panel {
     display: flex !important;
     flex-direction: column !important;
 }
+
+/* ========================================== */
+/* === ТЕМНАЯ ТЕМА ДЛЯ AI-СТАТИСТИКИ ТЕКСТА === */
+/* ========================================== */
+body.dark-mode #aiStatsResults div[style*="background: #E2E8F0"] {
+    background: #334155 !important;
+}
+body.dark-mode #aiStatsResults span[style*="color: #1E293B"] {
+    color: #F8FAFC !important;
+}
+body.dark-mode #aiStatsAdvice {
+    background: #0F172A !important;
+    color: #CBD5E1 !important;
+    border-left-color: #818CF8 !important;
+}
