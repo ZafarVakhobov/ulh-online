@@ -1820,6 +1820,12 @@ function openStatsModal(event) {
     }
     document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
     calculateAndRenderTextStats();
+
+    // === СБРОС ===
+    const aiResultsBox = document.getElementById('aiStatsResults');
+    if (aiResultsBox) aiResultsBox.style.display = 'none';
+    // ===================================
+    
     const modal = document.getElementById('statsModalBackdrop');
     if (modal) {
         modal.classList.add('open');
@@ -6776,3 +6782,102 @@ document.addEventListener('keydown', function(e) {
         window.toggleZenMode();
     }
 });
+
+// ==========================================
+// === 20. ИИ-АНАЛИЗ КАЧЕСТВА ТЕКСТА (READABILITY & TONE) ===
+// ==========================================
+
+window.runTextQualityAnalysis = async function() {
+    const editorEl = document.getElementById("editor");
+    const btn = document.getElementById('runAiStatsBtn');
+    const resultsBox = document.getElementById('aiStatsResults');
+    const adviceBox = document.getElementById('aiStatsAdvice');
+    const btnText = btn.querySelector('span');
+    const btnIcon = btn.querySelector('svg');
+    
+    if (!editorEl || !editorEl.value.trim()) {
+        alert("Iltimos, tahlil qiliş uçun avval matn kiriting!");
+        return;
+    }
+    
+    const text = editorEl.value.trim();
+
+    // 1. Включаем UI загрузки
+    btn.style.pointerEvents = "none";
+    btnText.textContent = "Tahlil qilinmoqda... Kuting";
+    btnIcon.style.animation = "aiSpinPulse 1.1s linear infinite";
+    
+    // Показываем блок результатов, но сбрасываем ползунки на 0%
+    resultsBox.style.display = "flex";
+    ['Acad', 'Water', 'Read'].forEach(type => {
+        document.getElementById(`bar${type}`).style.width = "0%";
+        document.getElementById(`score${type}`).textContent = "0%";
+    });
+    adviceBox.textContent = "AI matnni öqimoqda va baholamoqda...";
+
+    // 2. Строгий промпт, требующий ТОЛЬКО JSON ответ
+    const promptText = `Sen professional ilmiy redaktorsan. Har bir tilda tahlil qilaolasan. Poliglotsan. Quyidagi matnni tahlil qilib, uning 3 ta ko'rsatkichini foizda (0 dan 100 gacha) bahola:
+1. "academic" - Matnning ilmiylik, rasmiylik va jiddiylik darajasi.
+2. "water" - Matndagi ortiqcha so'zlar, takroriylik va ma'nosiz jumlalar ("suv") darajasi.
+3. "readability" - Matnning o'qishga qulayligi va oson tushunilishi.
+Shuningdek, matnni yaxshilash uchun 1 ta qisqa gap bilan "advice" (tavsiya) yoz.
+Javobni FAQAT toza JSON formatida ber. Hech qanday markdown (\`\`\`json) yoki boshqa so'z ishlatma.
+Format: {"academic": 85, "water": 10, "readability": 90, "advice": "Matnni yaxşilaş uçun tavsiya..."}
+Matn: "${text.substring(0, 3000)}"`;
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
+        });
+
+        if (!response.ok) throw new Error("Server xatosi");
+
+        const data = await response.json();
+        let rawResult = data.result || data.response || (typeof data === "string" ? data : JSON.stringify(data));
+        
+        // 3. Безопасный парсинг JSON из ответа ИИ
+        let cleanJson = rawResult.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const startIdx = cleanJson.indexOf('{');
+        const endIdx = cleanJson.lastIndexOf('}');
+        if (startIdx !== -1 && endIdx !== -1) {
+            cleanJson = cleanJson.substring(startIdx, endIdx + 1);
+        }
+        
+        const parsed = JSON.parse(cleanJson);
+        
+        // Переводим совет в новый алфавит, если это узбекский язык
+        let finalAdvice = parsed.advice || "Tahlil yakunlandi.";
+        if (typeof enforceNewUzbekAlphabet === "function") {
+            finalAdvice = enforceNewUzbekAlphabet(finalAdvice);
+        }
+        
+        // 4. Плавно анимируем заполнение ползунков
+        setTimeout(() => {
+            const acad = parseInt(parsed.academic) || 0;
+            const water = parseInt(parsed.water) || 0;
+            const read = parseInt(parsed.readability) || 0;
+
+            document.getElementById('barAcad').style.width = `${acad}%`;
+            document.getElementById('scoreAcad').textContent = `${acad}%`;
+            
+            document.getElementById('barWater').style.width = `${water}%`;
+            document.getElementById('scoreWater').textContent = `${water}%`;
+            
+            document.getElementById('barRead').style.width = `${read}%`;
+            document.getElementById('scoreRead').textContent = `${read}%`;
+            
+            adviceBox.textContent = finalAdvice;
+        }, 100);
+
+    } catch (err) {
+        console.error("Stats AI Error:", err);
+        adviceBox.textContent = "Tahlil qilişda xatolik yuz berdi. Internetni tekşiring yoki qayta urinib köring.";
+    } finally {
+        // 5. Возвращаем кнопку в исходное состояние
+        btn.style.pointerEvents = "auto";
+        btnText.textContent = "Qayta tahlil qiliş";
+        btnIcon.style.animation = "none";
+    }
+};
