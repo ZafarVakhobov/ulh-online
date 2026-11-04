@@ -5227,7 +5227,8 @@ body.dark-mode .user-social-link:hover .social-icon { color: #38BDF8; }
 .kanban-toggle-btn:hover,
 .sources-toggle-btn:hover,
 .pomodoro-toggle-btn:hover,
-.scratchpad-toggle-btn:hover {
+.scratchpad-toggle-btn:hover,
+.clipboard-toggle-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(42, 171, 238, 0.45);
     background: #2293CF; 
