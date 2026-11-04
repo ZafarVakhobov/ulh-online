@@ -6538,10 +6538,7 @@ body.zen-mode-active .converter-box,
 body.zen-mode-active .footer,
 body.zen-mode-active .bottom-left-tools,
 body.zen-mode-active #osha-ai-widget-root,
-body.zen-mode-active #uniquenessReportBox,
-body.zen-mode-active #translatorReportBox {
-    display: none !important;
-}
+
 
 /* 3. Делаем контейнер и редактор на весь экран */
 body.zen-mode-active .container {
@@ -6568,4 +6565,42 @@ body.zen-mode-active textarea#editor {
     font-size: 16px;
     padding: 24px 32px;
     line-height: 1.6;
+}
+
+/* ========================================== */
+/* === АДАПТАЦИЯ ПАНЕЛЕЙ ОТЧЕТОВ ДЛЯ ZEN MODE === */
+/* ========================================== */
+
+/* В Zen Mode меняем логику отображения панелей (Антиплагиат и Переводчик) */
+body.zen-mode-active .workspace {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+body.zen-mode-active .editor-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+}
+
+body.zen-mode-active textarea#editor {
+    flex: 1; /* Редактор занимает все доступное место */
+    margin-bottom: 0;
+}
+
+/* Стили для панелей, когда они появляются в Zen Mode */
+body.zen-mode-active #uniquenessReportBox,
+body.zen-mode-active #translatorReportBox {
+    display: block !important; /* Принудительно показываем, если вызваны */
+    margin-top: 16px;
+    height: 35vh !important; /* Занимают примерно треть высоты под редактором */
+    min-height: 250px;
+    flex-shrink: 0; /* Не даем им сжиматься меньше 250px */
+}
+
+/* В Zen Mode панель перевода должна растягиваться корректно */
+body.zen-mode-active .translator-right-panel {
+    display: flex !important;
+    flex-direction: column !important;
 }
