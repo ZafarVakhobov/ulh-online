@@ -1537,16 +1537,35 @@
                                         <span class="ai-item-sub">Telegram va Instagram uçun jozibali matn</span>
                                     </div>
                                 </button>
-                                <!-- НОВАЯ КНОПКА: AI Переводчик (вместо генератора заголовков) -->
-<button type="button" class="ai-menu-item" onclick="openTranslatorPanel()">
-    <span class="ai-item-icon" style="background: rgba(16, 185, 129, 0.14); color: #10B981;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>
-    </span>
-    <div class="ai-item-text">
-        <span class="ai-item-title">Tarjima qiliş</span>
-        <span class="ai-item-sub">Matnni 5+ tillarga aniq tarjima qiliş</span>
-    </div>
-</button>
+                                
+<!-- === КНОПКИ В ОДИН РЯД: ТЕРЕВОД И ГЛОССАРИЙ === -->
+<div class="ai-menu-row-split">
+    
+    <!-- Левая кнопка: Переводчик -->
+    <button type="button" class="ai-menu-item" onclick="openTranslatorPanel()">
+        <span class="ai-item-icon" style="background: rgba(16, 185, 129, 0.14); color: #10B981;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>
+        </span>
+        <div class="ai-item-text">
+            <span class="ai-item-title">Tarjima qiliş</span>
+            <span class="ai-item-sub">AI Translate</span>
+        </div>
+    </button>
+
+    <!-- Правая кнопка: Глоссарий -->
+    <button type="button" class="ai-menu-item" onclick="generateGlossary()">
+        <span class="ai-item-icon" style="background: rgba(16, 185, 129, 0.14); color: #10B981;">
+            <!-- Иконка глоссария (похожа на перевод, но другая) -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+        </span>
+        <div class="ai-item-text">
+            <span class="ai-item-title">Atamalar</span>
+            <span class="ai-item-sub">Lug'ati</span>
+        </div>
+    </button>
+    
+</div>
+<!-- ============================================== -->
 
 <!-- НОВАЯ КНОПКА: Генератор тестов и карточек -->
 <button type="button" class="ai-menu-item" onclick="generateAiTests()">
