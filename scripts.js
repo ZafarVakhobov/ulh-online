@@ -6224,6 +6224,47 @@ Matn: "${text.substring(0, 4500)}"`;
     }
 };
 
+// Функция 3: Авто-Глоссарий (Словарь терминов)
+window.generateGlossary = async function() {
+    if (typeof closeAiMenu === "function") closeAiMenu();
+
+    if (!editor || !editor.value.trim()) {
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Avval matn kiriting!");
+        if (editor) editor.focus();
+        return;
+    }
+
+    const text = editor.value.trim();
+    if (typeof setAiLoadingState === "function") setAiLoadingState(true);
+    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Luğat tuzilmoqda...");
+
+    const promptText = `Sen ilmiy va akademik muharrirsan. Berilgan matnni o'qib chiqib (xohlagan tilda bo'lishi mumkin), ichidan 10-15 ta eng murakkab, ilmiy yoki tor doiradagi (termin) so'zlarni ajratib ol va ularning qisqacha, tushunarli ilmiy izohini (glossariy) yozib ber. 
+Javobing qulay Markdown formatida (sarlavha va ro'yxat) bo'lsin. Matn tili qanday bo'lsa, izohlar ham shu tilda bo'lsin (agar matn rus tilida bo'lsa, rus tilida javob ber).
+Matn: "${text.substring(0, 4500)}"`;
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
+        });
+
+        if (!response.ok) throw new Error("Server xatosi");
+        
+        const data = await response.json();
+        let rawResult = data.result || data.response || (typeof data === "string" ? data : JSON.stringify(data));
+        let cleanResult = typeof enforceNewUzbekAlphabet === "function" ? enforceNewUzbekAlphabet(rawResult) : rawResult;
+
+        if (typeof openAiResultModal === "function") openAiResultModal(cleanResult);
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Luğat tayyor ✓");
+    } catch (err) {
+        console.error("Glossary Error:", err);
+        alert(`Lug'at tuzishda xatolik yuz berdi.\nSabab: ${err.message}`);
+    } finally {
+        if (typeof setAiLoadingState === "function") setAiLoadingState(false);
+    }
+};
+
 // ==========================================
 // === 18. УМНАЯ БЕГУЩАЯ СТРОКА НОВОСТЕЙ (DUAL-ENGINE + DRAG SCROLL) ===
 // ==========================================
