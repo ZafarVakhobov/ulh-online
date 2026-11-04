@@ -2805,8 +2805,8 @@ function setAmbientVolumeRatio(ratio) {
         ambientMasterGain.gain.setTargetAtTime(clamped * 0.45, ambientAudioCtx.currentTime, 0.04);
     }
 
-    // Если пользователь прибавил громкость с 0, когда музыка еще не играла — запускаем
-    if (percent > 0 && !ambientIsPlaying && ambientHasStartedOnce) {
+    // ИСПРАВЛЕНИЕ: Запускаем эмбиент только если НЕ включен режим YouTube-плеера!
+    if (percent > 0 && !ambientIsPlaying && ambientHasStartedOnce && !isCustomMusicMode) {
         startAmbientMusic();
     } else if (percent === 0 && ambientIsPlaying) {
         pauseAmbientMusic();
