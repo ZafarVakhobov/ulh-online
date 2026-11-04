@@ -6505,32 +6505,21 @@ body.dark-mode .news-source-card { background: #0F172A; border-color: #334155; }
 /* ========================================== */
 
 /* Дизайн самой кнопки Zen */
-.zen-icon-btn {
-    background-color: #F1F5F9;
-    color: #475569;
-}
-.zen-icon-btn:hover {
-    background-color: #0F172A;
-    color: #FFFFFF;
-}
-body.dark-mode .zen-icon-btn {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #94A3B8;
-}
-body.dark-mode .zen-icon-btn:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: #F8FAFC;
-}
+.zen-icon-btn { background-color: #F1F5F9; color: #475569; }
+.zen-icon-btn:hover { background-color: #0F172A; color: #FFFFFF; }
+body.dark-mode .zen-icon-btn { background-color: rgba(255, 255, 255, 0.06); color: #94A3B8; }
+body.dark-mode .zen-icon-btn:hover { background-color: rgba(255, 255, 255, 0.15); color: #F8FAFC; }
 
 /* 1. Затемняем общий фон сайта при активации Zen Mode */
 body.zen-mode-active {
     background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), url("./back.png") !important;
+    overflow: hidden !important; /* Убираем двойной скролл на странице */
 }
 body.dark-mode.zen-mode-active {
     background-image: linear-gradient(rgba(11, 17, 32, 0.97), rgba(11, 17, 32, 0.97)), url("./back.png") !important;
 }
 
-/* 2. Прячем всё лишнее (ИСПРАВЛЕНО: добавлена закрывающая скобка и убрана запятая) */
+/* 2. Прячем всё лишнее */
 body.zen-mode-active .top-navbar,
 body.zen-mode-active .news-ticker-wrapper,
 body.zen-mode-active .hero-slider,
@@ -6541,66 +6530,58 @@ body.zen-mode-active #osha-ai-widget-root {
     display: none !important;
 }
 
-/* 3. Делаем контейнер и редактор на весь экран */
+/* 3. Контейнер на весь экран */
 body.zen-mode-active .container {
     max-width: 960px !important;
-    height: calc(100vh - 32px); /* Растягиваем на всю высоту экрана */
+    height: calc(100vh - 32px) !important; 
     margin: 0 auto;
     transition: all 0.3s ease;
     box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 body.zen-mode-active .workspace {
-    grid-template-columns: 1fr !important; /* Убираем правую колонку */
-    flex: 1; /* Заставляем workspace заполнить доступную высоту */
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important; 
+    min-height: 0 !important; /* Критично для идеального растягивания */
 }
 
 body.zen-mode-active .editor-wrapper {
-    height: 100% !important; 
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important; /* Обертка занимает всё свободное место */
+    height: auto !important; 
+    min-height: 0 !important; 
 }
 
-/* Увеличиваем размер шрифта и отступы в самом текстовом поле для удобства чтения */
+/* Настройки самого текстового поля в Zen Mode */
 body.zen-mode-active textarea#editor {
-    flex: 1;
-    height: 100% !important;
-    font-size: 16px;
-    padding: 24px 32px;
-    line-height: 1.6;
+    flex: 1 !important; /* Текстовое поле растягивается внутри обертки */
+    height: auto !important;
+    min-height: 0 !important; 
+    margin-bottom: 0 !important;
+    font-size: 16px !important;
+    padding: 24px 32px !important;
+    line-height: 1.6 !important;
 }
 
 /* ========================================== */
 /* === АДАПТАЦИЯ ПАНЕЛЕЙ ОТЧЕТОВ ДЛЯ ZEN MODE === */
 /* ========================================== */
 
-/* В Zen Mode меняем логику отображения панелей (Антиплагиат и Переводчик) */
-body.zen-mode-active .workspace {
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-body.zen-mode-active .editor-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100% !important;
-}
-
-body.zen-mode-active textarea#editor {
-    flex: 1; /* Редактор занимает все доступное место */
-    margin-bottom: 0;
-}
-
 /* Стили для панелей, когда они появляются в Zen Mode */
 body.zen-mode-active #uniquenessReportBox,
 body.zen-mode-active #translatorReportBox {
-    display: block !important; /* Принудительно показываем, если вызваны */
-    margin-top: 16px;
-    height: 35vh !important; /* Занимают примерно треть высоты под редактором */
-    min-height: 250px;
-    flex-shrink: 0; /* Не даем им сжиматься меньше 250px */
+    display: flex !important;
+    flex-direction: column !important;
+    margin-top: 16px !important;
+    height: 35vh !important; /* Занимают 35% высоты экрана */
+    min-height: 250px !important;
+    flex-shrink: 0 !important; /* Запрещаем им сжиматься */
 }
 
-/* В Zen Mode панель перевода должна растягиваться корректно */
 body.zen-mode-active .translator-right-panel {
     display: flex !important;
     flex-direction: column !important;
