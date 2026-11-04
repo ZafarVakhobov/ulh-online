@@ -6499,3 +6499,73 @@ body.dark-mode .news-popup-global .news-popup-image { border-color: #334155; }
 body.dark-mode .news-popup-global .news-popup-snippet { color: #CBD5E1; }
 body.dark-mode .news-popup-global .news-popup-footer { border-color: #334155; }
 body.dark-mode .news-source-card { background: #0F172A; border-color: #334155; }
+
+/* ========================================== */
+/* === ZEN MODE (РЕЖИМ ПОГРУЖЕНИЯ) === */
+/* ========================================== */
+
+/* Дизайн самой кнопки Zen */
+.zen-icon-btn {
+    background-color: #F1F5F9;
+    color: #475569;
+}
+.zen-icon-btn:hover {
+    background-color: #0F172A;
+    color: #FFFFFF;
+}
+body.dark-mode .zen-icon-btn {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #94A3B8;
+}
+body.dark-mode .zen-icon-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #F8FAFC;
+}
+
+/* 1. Затемняем общий фон сайта при активации Zen Mode */
+body.zen-mode-active {
+    background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), url("./back.png") !important;
+}
+body.dark-mode.zen-mode-active {
+    background-image: linear-gradient(rgba(11, 17, 32, 0.97), rgba(11, 17, 32, 0.97)), url("./back.png") !important;
+}
+
+/* 2. Прячем всё лишнее (Меню, Баннеры, Помощника, Подвал, Боковые виджеты) */
+body.zen-mode-active .top-navbar,
+body.zen-mode-active .news-ticker-wrapper,
+body.zen-mode-active .hero-slider,
+body.zen-mode-active .converter-box,
+body.zen-mode-active .footer,
+body.zen-mode-active .bottom-left-tools,
+body.zen-mode-active #osha-ai-widget-root,
+body.zen-mode-active #uniquenessReportBox,
+body.zen-mode-active #translatorReportBox {
+    display: none !important;
+}
+
+/* 3. Делаем контейнер и редактор на весь экран */
+body.zen-mode-active .container {
+    max-width: 960px !important;
+    height: calc(100vh - 32px); /* Растягиваем на всю высоту экрана */
+    margin: 0 auto;
+    transition: all 0.3s ease;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+}
+
+body.zen-mode-active .workspace {
+    grid-template-columns: 1fr !important; /* Убираем правую колонку */
+    flex: 1; /* Заставляем workspace заполнить доступную высоту */
+}
+
+body.zen-mode-active .editor-wrapper {
+    height: 100% !important; 
+}
+
+/* Увеличиваем размер шрифта и отступы в самом текстовом поле для удобства чтения */
+body.zen-mode-active textarea#editor {
+    flex: 1;
+    height: 100% !important;
+    font-size: 16px;
+    padding: 24px 32px;
+    line-height: 1.6;
+}
