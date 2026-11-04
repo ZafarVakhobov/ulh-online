@@ -6858,8 +6858,8 @@ body.dark-mode .clip-item-meta {
 
 /* Делаем панель браузера шире, чем буфер обмена (450px вместо 320px) */
 .browser-panel-wide {
-    width: 450px !important;
-    left: -470px; 
+    width: 33% !important;
+    left: -35%; 
 }
 
 /* Строка поиска */
