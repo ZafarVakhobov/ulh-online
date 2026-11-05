@@ -7752,3 +7752,29 @@ body.dark-mode #tmPreview {
     border-color: #334155 !important;
     color: #CBD5E1 !important;
 }
+
+/* ========================================== */
+/* === ИСПРАВЛЕНИЕ: КАРТОЧКИ ИСТОЧНИКОВ В ТЕМНОЙ ТЕМЕ === */
+/* ========================================== */
+
+/* Перекрашиваем фон и рамку самой карточки */
+body.dark-mode .source-card {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+}
+
+/* Перекрашиваем основной текст источника внутри карточки */
+body.dark-mode .source-card > div:first-child {
+    color: #F8FAFC !important;
+}
+
+/* Адаптируем кнопку удаления (крестик), чтобы она гармонировала с темным фоном */
+body.dark-mode .delete-src-btn {
+    background: rgba(225, 29, 72, 0.15) !important;
+    color: #FB7185 !important;
+}
+
+body.dark-mode .delete-src-btn:hover {
+    background: rgba(225, 29, 72, 0.25) !important;
+    color: #FFFFFF !important;
+}
