@@ -7985,3 +7985,187 @@ function playCalendarBeepSequence() {
         }
     }, 2000); // Раз в 2 секунды
 }
+
+
+// ==========================================
+// === 26. СТУДИЯ КАСТОМИЗАЦИИ (MENING USLUBIM) ===
+// ==========================================
+const THEME_ACCENT_KEY = "ulh_custom_accent_v1";
+const THEME_BG_KEY = "ulh_custom_bg_v1";
+
+// 1. Открытие / закрытие панели
+const themeStudioBtn = document.getElementById('themeStudioBtn');
+if (themeStudioBtn) {
+    themeStudioBtn.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        
+        // Закрываем другие выезжающие панели
+        if (typeof closeClipboardPanel === 'function') closeClipboardPanel();
+        if (typeof closeBrowserPanel === 'function') closeBrowserPanel();
+        
+        document.getElementById('themeStudioPanel').classList.add('open');
+        document.getElementById('themeStudioOverlay').classList.add('open');
+    });
+}
+
+window.closeThemeStudioPanel = function(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    const panel = document.getElementById('themeStudioPanel');
+    const overlay = document.getElementById('themeStudioOverlay');
+    if (panel) panel.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
+};
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeThemeStudioPanel();
+});
+
+// 2. Установка акцентного цвета
+window.setAccentColor = function(color, hoverColor, lightBgColor) {
+    try {
+        localStorage.setItem(THEME_ACCENT_KEY, JSON.stringify({ color, hoverColor, lightBgColor }));
+    } catch(_) {}
+
+    applyAccentColorToDOM(color, hoverColor, lightBgColor);
+
+    // Обновляем визуальное состояние кнопок (кружков)
+    document.querySelectorAll('.theme-color-option').forEach(btn => {
+        const isActive = btn.getAttribute('data-color') === color;
+        btn.classList.toggle('active', isActive);
+        // Обновляем цвет рамки активного кружка, чтобы он соответствовал цвету
+        if (isActive) {
+            btn.style.boxShadow = `0 0 0 3px var(--bg-color, #FFFFFF), 0 0 0 5px ${color}`;
+        } else {
+            btn.style.boxShadow = `0 2px 6px rgba(0,0,0,0.1)`;
+        }
+    });
+};
+
+// 3. Динамическая инъекция CSS-переменных и стилей
+function applyAccentColorToDOM(color, hoverColor, lightBgColor) {
+    let customStyleTag = document.getElementById("dynamicAccentStyles");
+    if (!customStyleTag) {
+        customStyleTag = document.createElement("style");
+        customStyleTag.id = "dynamicAccentStyles";
+        document.head.appendChild(customStyleTag);
+    }
+
+    // Здесь мы переопределяем цвета ключевых элементов сайта
+    customStyleTag.innerHTML = `
+        .copy-link { background-color: ${lightBgColor} !important; color: ${color} !important; }
+        .copy-link:hover, .copy-link.copied { background-color: ${color} !important; color: #FFFFFF !important; }
+        .copy-icon-btn { background-color: ${lightBgColor} !important; color: ${color} !important; }
+        .copy-icon-btn:hover, .copy-icon-btn.copied { background-color: ${color} !important; color: #FFFFFF !important; }
+        .browser-input:focus { border-color: ${color} !important; box-shadow: 0 0 0 3px ${lightBgColor} !important; }
+        .browser-search-btn { background: ${color} !important; }
+        .browser-search-btn:hover { background: ${hoverColor} !important; }
+        .calc-input-row:focus-within { border-color: ${color} !important; box-shadow: 0 0 0 3px ${lightBgColor} !important; }
+        .calc-curr-tab.active { background: ${color} !important; border-color: ${color} !important; }
+        .calc-result-card.uzs-main-card .calc-result-value { color: ${color} !important; }
+        textarea:focus { border-color: ${color} !important; }
+        .pill-btn { background-color: ${color} !important; box-shadow: 0 4px 12px ${lightBgColor} !important; }
+        .pill-btn:hover { opacity: 0.85; }
+        .nav-link-btn.active { background-color: ${lightBgColor} !important; color: ${color} !important; }
+        .dropdown-link:hover { color: ${color} !important; }
+        .alpha-letter-pill:hover { background: ${color} !important; border-color: ${color} !important; }
+        .alpha-copy-btn:hover { background: ${color} !important; border-color: ${color} !important; }
+        .ads-tg-order-btn { background-color: ${lightBgColor} !important; color: ${color} !important; }
+        .ads-tg-order-btn:hover { background-color: ${color} !important; color: #FFFFFF !important; }
+        .cal-day-cell.selected { background: ${color} !important; box-shadow: 0 4px 10px ${lightBgColor} !important; }
+        .cal-day-cell.selected:hover { background: ${hoverColor} !important; }
+        .cal-event-dot { background: ${color} !important; }
+        .clipboard-header svg { stroke: ${color} !important; }
+    `;
+}
+
+// 4. Установка фоновых обоев
+window.setCustomBackground = function(bgValue, nameKey) {
+    try {
+        localStorage.setItem(THEME_BG_KEY, JSON.stringify({ bgValue, nameKey }));
+    } catch(_) {}
+
+    applyBackgroundToDOM(bgValue);
+
+    document.querySelectorAll('.theme-bg-option').forEach(btn => {
+        const isMatch = btn.textContent.includes(nameKey);
+        btn.classList.toggle('active', isMatch);
+        const statusSpan = btn.querySelector('span:last-child');
+        if (statusSpan) {
+            statusSpan.textContent = isMatch ? "Tanlangan" : "Oçiş";
+        }
+    });
+};
+
+function applyBackgroundToDOM(bgValue) {
+    // В зависимости от того, изображение это, градиент или сплошной цвет, применяем нужный стиль
+    if (bgValue.includes("back.png") || bgValue.startsWith("url(")) {
+        // Если это наша дефолтная картинка
+        const cleanUrl = bgValue.replace(/url\(['"]?([^'"]+)['"]?\)/, '$1').replace(/['"]/g, '');
+        document.body.style.backgroundImage = `url("${cleanUrl}")`;
+        document.body.style.backgroundColor = "#F8FAFC";
+    } else if (bgValue.startsWith("linear-gradient")) {
+        document.body.style.backgroundImage = bgValue;
+    } else {
+        // Сплошной цвет
+        document.body.style.backgroundImage = "none";
+        document.body.style.backgroundColor = bgValue;
+    }
+}
+
+// 5. Сброс к настройкам по умолчанию (Голубой цвет, стандартные обои)
+window.resetThemeDefaults = function() {
+    localStorage.removeItem(THEME_ACCENT_KEY);
+    localStorage.removeItem(THEME_BG_KEY);
+    
+    const customStyleTag = document.getElementById("dynamicAccentStyles");
+    if (customStyleTag) customStyleTag.remove();
+
+    // Сбрасываем фон
+    document.body.style.backgroundImage = 'url("./back.png")';
+    document.body.style.backgroundColor = "#F8FAFC";
+
+    // Обновляем UI панели на значения по умолчанию
+    setAccentColor('#0284C7', '#0369A1', '#D9F0FC');
+    setCustomBackground('./back.png', 'Default');
+    
+    // Перезагружаем страницу для надежности, чтобы сбросились все inline-стили
+    setTimeout(() => {
+        window.location.reload();
+    }, 150);
+};
+
+// 6. Автозагрузка сохраненных настроек при старте сайта
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const savedAccent = localStorage.getItem(THEME_ACCENT_KEY);
+        if (savedAccent) {
+            const parsed = JSON.parse(savedAccent);
+            applyAccentColorToDOM(parsed.color, parsed.hoverColor, parsed.lightBgColor);
+            
+            // Подсветка нужного кружка
+            document.querySelectorAll('.theme-color-option').forEach(btn => {
+                const isActive = btn.getAttribute('data-color') === parsed.color;
+                btn.classList.toggle('active', isActive);
+                if (isActive) {
+                    btn.style.boxShadow = `0 0 0 3px var(--bg-color, #FFFFFF), 0 0 0 5px ${parsed.color}`;
+                }
+            });
+        }
+
+        const savedBg = localStorage.getItem(THEME_BG_KEY);
+        if (savedBg) {
+            const parsed = JSON.parse(savedBg);
+            applyBackgroundToDOM(parsed.bgValue);
+            
+            // Подсветка нужной кнопки обоев
+            document.querySelectorAll('.theme-bg-option').forEach(btn => {
+                const isMatch = btn.textContent.includes(parsed.nameKey);
+                btn.classList.toggle('active', isMatch);
+                const statusSpan = btn.querySelector('span:last-child');
+                if (statusSpan) {
+                    statusSpan.textContent = isMatch ? "Tanlangan" : "Oçiş";
+                }
+            });
+        }
+    } catch(_) {}
+});
