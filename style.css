@@ -2755,7 +2755,6 @@ body.dark-mode .weather-modal-close:hover {
     border-radius: 999px;
     opacity: 0;
     transform: translateY(2px);
-    pointer-events: none;
     transition: opacity 0.25s ease, transform 0.25s ease;
 }
 .autosave-badge.visible {
