@@ -1388,22 +1388,48 @@ textarea:focus {
 /* ========================================== */
 /* === АНИМАЦИЯ ЦЕНТРАЛЬНОЙ КНОПКИ (МУЗЫКА) === */
 /* ========================================== */
+
+/* Плавный перелив цветов фона */
 @keyframes dockMusicGradient {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
 
+/* Ритмичная физическая пульсация (подъем, увеличение и расширение тени) */
+@keyframes dockMusicPulse {
+    0%, 100% { 
+        transform: translateY(0) scale(1); 
+        box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+    }
+    50% { 
+        transform: translateY(-3px) scale(1.04); 
+        box-shadow: 0 14px 28px rgba(42, 171, 238, 0.5); /* Тень становится шире и отдает голубым */
+    }
+}
+
+/* Пульсация с адаптированной яркостью тени для темной темы */
+@keyframes dockMusicPulseDark {
+    0%, 100% { 
+        transform: translateY(0) scale(1); 
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+    }
+    50% { 
+        transform: translateY(-3px) scale(1.04); 
+        box-shadow: 0 14px 32px rgba(42, 171, 238, 0.6); 
+    }
+}
+
 .dock-main-btn.music-active {
-    /* 5 ваших цветов + 1 повтор первого для бесшовного зацикливания анимации */
-    background: linear-gradient(270deg, #bd19ff, #3c81ff, #1bbda3, #FF9800, #a328ff, #bd19ff) !important;
+    background: linear-gradient(270deg, #7f4ae1, #2aabee, #1bbda3, #4f46e5, #a328ff, #7f4ae1) !important;
     background-size: 300% 300% !important;
-    animation: dockMusicGradient 5s ease infinite;
-    box-shadow: 0 8px 24px rgb(137 42 238 / 50%) !important;
+    
+    /* Запускаем две анимации одновременно: градиент (5 сек) и ритм (1.2 сек) */
+    animation: dockMusicGradient 5s ease infinite, dockMusicPulse 1.2s ease-in-out infinite !important;
 }
 
 body.dark-mode .dock-main-btn.music-active {
-    box-shadow: 0 8px 30px rgba(42, 171, 238, 0.35) !important;
+    animation: dockMusicGradient 5s ease infinite, dockMusicPulseDark 1.2s ease-in-out infinite !important;
 }
 
 /* ========================================== */
