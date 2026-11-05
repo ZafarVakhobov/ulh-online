@@ -3978,7 +3978,7 @@ async function submitAdOrder(event) {
             // Отправляем пакет на наш безопасный Cloudflare Worker
             const response = await fetch(AD_WORKER_URL, {
                 method: 'POST',
-                body: formData // Браузер сам установит правильный Content-Type для файла
+                body: formData // Браузер сам установит правильный Content-Type файла
             });
             
             if (!response.ok) {
