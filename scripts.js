@@ -8194,3 +8194,149 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     } catch(_) {}
 });
+
+
+
+// ==========================================
+// === 27. AQLLI ANDOZALAR (КОНСТРУКТОР ДОКУМЕНТОВ) ===
+// ==========================================
+
+// Конфигурация полей для каждого типа документа
+const ANDOZA_FIELDS = {
+    ariza: [
+        { id: "andTo", placeholder: "Kimning nomiga (masalan: Universitet rektori F.I.Ş.)" },
+        { id: "andFrom", placeholder: "Kimdan (Sizning F.I.Ş. va lavozimingiz/guruh)" },
+        { id: "andReason", placeholder: "Nima maqsadda? (masalan: Betobligim sababli 3 kunga javob)" }
+    ],
+    tushuntirish: [
+        { id: "andTo", placeholder: "Kimning nomiga (Rahbar F.I.Ş.)" },
+        { id: "andFrom", placeholder: "Kimdan (Sizning F.I.Ş.)" },
+        { id: "andReason", placeholder: "Nima yuz berdi? (masalan: Darsga keç qoldim, sababi transport)" }
+    ],
+    malumotnoma: [
+        { id: "andTo", placeholder: "Qayerga taqdim etiladi? (masalan: İşt joyiga)" },
+        { id: "andFrom", placeholder: "Kimga berilmoqda? (Şaxsning F.I.Ş.)" },
+        { id: "andReason", placeholder: "Qanday ma'lumot? (masalan: Haqiqatan ham universitetda öqiydi)" }
+    ],
+    tavsiyanoma: [
+        { id: "andFrom", placeholder: "Kimga tavsiyanoma yozilmoqda? (F.I.Ş. va lavozim)" },
+        { id: "andReason", placeholder: "Xodimning yutuqlari va xarakteri (qisqaça)" }
+    ]
+};
+
+window.openAndozaModal = function(event) {
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    
+    // Инициализируем кастомный селект, если он еще не готов
+    const sel = document.getElementById('andozaType');
+    if (sel && typeof initCustomSelects === 'function' && !sel.nextElementSibling?.classList.contains('custom-select-wrapper')) {
+        initCustomSelects();
+    }
+    
+    toggleAndozaFields();
+    const modal = document.getElementById('andozaModalBackdrop');
+    if (modal) modal.classList.add('open');
+};
+
+window.closeAndozaModal = function(event) {
+    const modal = document.getElementById('andozaModalBackdrop');
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove('open');
+};
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeAndozaModal();
+});
+
+// Динамическое обновление полей ввода
+window.toggleAndozaFields = function() {
+    const type = document.getElementById("andozaType").value;
+    const container = document.getElementById("andozaDynamicFields");
+    if (!container) return;
+
+    container.innerHTML = "";
+    const fields = ANDOZA_FIELDS[type];
+    
+    fields.forEach(field => {
+        let input;
+        if (field.id === "andReason") {
+            input = document.createElement("textarea");
+            input.style.height = "70px";
+            input.style.resize = "none";
+        } else {
+            input = document.createElement("input");
+            input.type = "text";
+        }
+        input.id = field.id;
+        input.className = "bib-custom-input";
+        input.placeholder = field.placeholder;
+        container.appendChild(input);
+    });
+};
+
+window.generateAndozaDocument = async function() {
+    const type = document.getElementById("andozaType").value;
+    const btnText = document.getElementById("andozaBtnText");
+    const submitBtn = document.getElementById("andozaSubmitBtn");
+    const sparkleIcon = submitBtn.querySelector(".ai-sparkle-icon");
+
+    // Сбор данных из полей
+    const to = document.getElementById("andTo") ? document.getElementById("andTo").value.trim() : "";
+    const from = document.getElementById("andFrom") ? document.getElementById("andFrom").value.trim() : "";
+    const reason = document.getElementById("andReason") ? document.getElementById("andReason").value.trim() : "";
+
+    if (!from || !reason) {
+        alert("Iltimos, kerakli ma'lumotlarni kiriting!");
+        return;
+    }
+
+    // Состояние загрузки
+    submitBtn.style.pointerEvents = "none";
+    btnText.textContent = "Hujjat şakllantirilmoqda...";
+    if (sparkleIcon) sparkleIcon.style.animation = "aiSpinPulse 1.1s linear infinite";
+
+    // Формирование точного промпта для ИИ
+    const promptText = `Sen professional yurist va kadrlari bo'limi mutaxassisisan. Quyidagi ma'lumotlar (kiritilgan matn tilidan qat'i nazar) asosida rasmiy idoraviy hujjat tuzib ber.
+Hujjat turi: ${type.toUpperCase()}.
+KIMGA: ${to}
+KIMDAN / KIM HAQIDA: ${from}
+MAZMUNI / SABABI: ${reason}
+
+QOIDALAR:
+1. Hujjat rasmiy, sipo va xatosiz o'zbek tilida yozilsin (yangi alifbo asosida).
+2. Sahifaning o'ng yuqori burchagida yoziladigan qismni (Kimga va Kimdan) to'g'ri joylashtir.
+3. Hujjat nomi (ARIZA, TUSHUNTIRISH XATI) matn o'rtasida katta harflar bilan yozilsin.
+4. Javobni chiroyli Markdown formatida ber (bold va abzaslar bilan).
+5. Imzo va sana uchun matn oxirida joy qoldir. Hujjat tayyor bo'lgach, faqat hujjat matnini yubor, ortiqcha izoh yozma.`;
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: "Hujjat yarating", customPrompt: promptText })
+        });
+
+        if (!response.ok) throw new Error("Server xatosi");
+
+        const data = await response.json();
+        let rawResult = data.result || data.response || (typeof data === "string" ? data : JSON.stringify(data));
+        
+        let cleanResult = typeof enforceNewUzbekAlphabet === "function" ? enforceNewUzbekAlphabet(rawResult) : rawResult;
+
+        // Открываем готовый ИИ-редактор с нашим документом
+        closeAndozaModal();
+        if (typeof openAiResultModal === "function") {
+            openAiResultModal(cleanResult);
+        }
+
+    } catch (err) {
+        console.error("Andoza Error:", err);
+        alert(`Hujjat yaratishda xatolik: ${err.message}`);
+    } finally {
+        submitBtn.style.pointerEvents = "auto";
+        btnText.textContent = "Hujjatni yaratiş";
+        if (sparkleIcon) sparkleIcon.style.animation = "none";
+    }
+};
