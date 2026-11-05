@@ -3083,6 +3083,11 @@ async function executeAiRequest(mode, customInstruction) {
     }
 
     const sourceText = editor.value.trim();
+    
+    // ДЕЛАЕМ СНИМОК ДЛЯ МАШИНЫ ВРЕМЕНИ ПЕРЕД РАБОТОЙ ИИ
+    if (typeof saveTimeMachineSnapshot === "function") {
+        saveTimeMachineSnapshot(true);
+    }
 
     setAiLoadingState(true);
     if (typeof showAutosaveIndicator === "function") {
@@ -5756,6 +5761,13 @@ window.replaceClicheInEditor = function(cliche, replacement, btnEl) {
     const regex = new RegExp(escaped, 'i');
 
     if (regex.test(currentText)) {
+        
+        // === VAQT MASHINASI UCHUN MATNNI SAQLASH ===
+        if (typeof saveTimeMachineSnapshot === "function") {
+            saveTimeMachineSnapshot(true);
+        }
+        // ============================================
+
         editor.value = currentText.replace(regex, replacement);
 
         const card = btnEl.closest('.cliche-item');
@@ -5981,6 +5993,12 @@ window.replaceWithTranslation = function() {
     
     const textToInsert = contentBox.dataset.rawTranslation || contentBox.innerText;
     if (!textToInsert) return;
+
+    // === VAQT MASHINASI UCHUN MATNNI SAQLASH ===
+    if (typeof saveTimeMachineSnapshot === "function") {
+        saveTimeMachineSnapshot(true);
+    }
+    // ============================================
 
     editor.value = textToInsert;
     if (typeof saveEditorDraft === "function") saveEditorDraft();
