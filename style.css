@@ -7738,3 +7738,17 @@ body.dark-mode .scratch-item.active,
     border-color: #FDE68A !important;
     border-left-color: #F59E0B !important;
 }
+
+/* === ИСПРАВЛЕНИЕ: ФОН КОЛОНКИ КАНБАН ПРИ ПЕРЕНОСЕ В ТЁМНОЙ ТЕМЕ === */
+body.dark-mode .task-list.drag-over,
+[data-theme="dark"] .task-list.drag-over {
+    background: rgba(51, 65, 85, 0.5) !important;
+    border: 2px dashed #64748B !important;
+}
+
+/* === ИСПРАВЛЕНИЕ: ТЕКСТОВОЕ ПОЛЕ В МАШИНЕ ВРЕМЕНИ ДЛЯ ТЕМНОЙ ТЕМЫ === */
+body.dark-mode #tmPreview {
+    background: #0F172A !important;
+    border-color: #334155 !important;
+    color: #CBD5E1 !important;
+}
