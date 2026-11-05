@@ -7253,6 +7253,22 @@ body.dark-mode .browser-loader { color: #94A3B8; }
 }
 .cal-jump-btn:hover { background: #0284C7; color: #FFFFFF; border-color: #0284C7; }
 
+/* Кнопка редактирования (Карандаш) */
+.cal-edit-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: #CBD5E1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.cal-edit-btn:hover { color: #0284C7; background: #E0F2FE; }
+
 .cal-del-btn {
     width: 32px;
     height: 32px;
@@ -7322,6 +7338,10 @@ body.dark-mode .cal-evt-d, body.dark-mode .cal-evt-m { color: #F8FAFC; }
 body.dark-mode .cal-evt-title { color: #F8FAFC; }
 body.dark-mode .cal-jump-btn { background: #0F172A; border-color: #334155; color: #94A3B8; }
 body.dark-mode .cal-jump-btn:hover { background: #38BDF8; color: #0F172A; border-color: #38BDF8; }
+
+body.dark-mode .cal-edit-btn { color: #475569; }
+body.dark-mode .cal-edit-btn:hover { color: #38BDF8; background: rgba(2, 132, 199, 0.15); }
+
 body.dark-mode .cal-del-btn { color: #475569; }
 body.dark-mode .cal-del-btn:hover { color: #FB7185; background: rgba(225,29,72,0.15); }
 body.dark-mode .cal-page-btn { color: #94A3B8; }
