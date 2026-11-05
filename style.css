@@ -7347,3 +7347,71 @@ body.dark-mode .cal-del-btn:hover { color: #FB7185; background: rgba(225,29,72,0
 body.dark-mode .cal-page-btn { color: #94A3B8; }
 body.dark-mode .cal-page-btn:hover { background: #1E293B; color: #F8FAFC; }
 body.dark-mode .cal-page-btn.active { background: #38BDF8; color: #0F172A; }
+
+/* ========================================== */
+/* === СТУДИЯ КАСТОМИЗАЦИИ (MENING USLUBIM) === */
+/* ========================================== */
+#themeStudioPanel {
+    left: auto !important;
+    right: -340px !important;
+    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+#themeStudioPanel.open {
+    right: 0 !important;
+    left: auto !important;
+}
+
+/* Кнопки выбора цвета */
+.theme-color-option {
+    transform: scale(1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.theme-color-option:hover {
+    transform: scale(1.08);
+}
+.theme-color-option.active {
+    box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px #0284C7;
+    transform: scale(1.08);
+}
+
+/* Кнопки выбора обоев */
+.theme-bg-option {
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.theme-bg-option:hover {
+    background: #FFFFFF !important;
+    border-color: #CBD5E1 !important;
+}
+.theme-bg-option.active {
+    background: #EFF6FF !important;
+    border-color: #0284C7 !important;
+}
+.theme-bg-option.active span:last-child {
+    color: #0284C7 !important;
+    font-weight: 850 !important;
+}
+
+/* Поддержка Темной Темы */
+body.dark-mode #themeStudioPanel {
+    border-left-color: rgba(255, 255, 255, 0.1) !important;
+}
+body.dark-mode .theme-color-option.active {
+    box-shadow: 0 0 0 3px #0F172A, 0 0 0 5px #38BDF8;
+}
+body.dark-mode .theme-bg-option {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+    color: #E2E8F0 !important;
+}
+body.dark-mode .theme-bg-option:hover {
+    background: #0F172A !important;
+    border-color: #475569 !important;
+}
+body.dark-mode .theme-bg-option.active {
+    background: rgba(2, 132, 199, 0.15) !important;
+    border-color: #0284C7 !important;
+}
+body.dark-mode .theme-bg-option.active span:last-child {
+    color: #38BDF8 !important;
+}
