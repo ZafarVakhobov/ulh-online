@@ -8846,7 +8846,7 @@ window.generateWordCloud = function() {
 
     const text = editorEl.value.trim();
 
-    // 1. Очищаем текст и разбиваем на слова
+    // 1. Очищаем текст и собираем слова (используем тот же массив стоп-слов)
     const wordsArray = text.toLowerCase()
         .replace(/[0-9.,/#!$%^&*;:{}=\-_`~()«»""''?![\]+]/g, " ")
         .split(/\s+/)
@@ -8854,50 +8854,45 @@ window.generateWordCloud = function() {
         .filter(w => w.length > 2 && !STOP_WORDS_UZ_RU.has(w));
 
     if (wordsArray.length === 0) {
-        alert("Matnda tahlil qiliş uçun yetarli sözlar topilmadi.");
+        alert("Matnda tahlil qilish uchun yetarli so'zlar topilmadi.");
         return;
     }
 
-    // 2. Считаем частоту каждого слова
     const frequencyMap = {};
     wordsArray.forEach(word => {
         frequencyMap[word] = (frequencyMap[word] || 0) + 1;
     });
 
-    // Превращаем в массив формата WordCloud2: [ [word, weight], ... ]
     let wordList = Object.keys(frequencyMap).map(word => {
-        // Применяем новый алфавит к словам, если это узбекский текст
         const cleanWord = (typeof enforceNewUzbekAlphabet === "function") ? enforceNewUzbekAlphabet(word) : word;
-        return [cleanWord, frequencyMap[word] * 12]; // Умножаем на веса для красивого масштаба
+        // Увеличиваем базовый вес слов, так как холст стал в разы больше (1920px)
+        return [cleanWord, frequencyMap[word] * 45]; 
     });
 
-    // Сортируем по популярности и берем топ-60 слов
     wordList.sort((a, b) => b[1] - a[1]);
-    wordList = wordList.slice(0, 60);
+    wordList = wordList.slice(0, 80); // Берем больше слов (топ-80) для большого экрана
 
-    // Показываем контейнер и кнопку скачивания
     container.style.display = "flex";
     downloadBtn.style.display = "inline-flex";
 
-    // 3. Настройки и запуск генерации WordCloud2 на canvas
     const isDark = document.body.classList.contains("dark-mode");
     
+    // 2. Запуск генерации WordCloud2 с адаптацией под 1920x1080
     WordCloud(canvas, {
         list: wordList,
-        gridSize: Math.round(16 * canvas.width / 500),
-        weightFactor: 1.2,
+        gridSize: Math.round(18 * canvas.width / 1920), // Масштабируем сетку под 1920px
+        weightFactor: 1.5,
         fontFamily: 'Manrope, Arial, sans-serif',
         color: function() {
-            // Фирменная палитра ULH Online (синий, изумрудный, фиолетовый, бирюзовый)
             const palette = isDark 
                 ? ['#38BDF8', '#34D399', '#A5B4FC', '#F472B6', '#FBBF24'] 
                 : ['#0284C7', '#10B981', '#7C3AED', '#0D9488', '#2563EB'];
             return palette[Math.floor(Math.random() * palette.length)];
         },
-        rotateRatio: 0.35, // 35% слов будут повернуты вертикально для красоты
+        rotateRatio: 0.35,
         rotationSteps: 2,
         backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
-        shape: 'cardioid' // Форма облака в виде сердечка/овала
+        shape: 'cardioid'
     });
 };
 
