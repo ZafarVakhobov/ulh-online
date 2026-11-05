@@ -6985,3 +6985,306 @@ body.dark-mode .browser-loader { color: #94A3B8; }
         left: -100%;
     }
 }
+
+
+/* ========================================== */
+/* === КАЛЕНДАРЬ И МЕРОПРИЯТИЯ === */
+/* ========================================== */
+
+.calendar-modal-card {
+    max-width: 900px !important;
+    padding: 24px !important;
+}
+
+.calendar-layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 32px;
+}
+
+@media (max-width: 768px) {
+    .calendar-layout {
+        grid-template-columns: 1fr;
+    }
+    .calendar-left-col { border-right: none; border-bottom: 1px solid #E2E8F0; padding-bottom: 24px; }
+}
+
+/* Шапка календаря */
+.cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.cal-month-year {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0F172A;
+}
+.cal-nav-btns {
+    display: flex;
+    gap: 6px;
+}
+.cal-nav-btns button {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s;
+}
+.cal-nav-btns button:hover {
+    background: #F1F5F9;
+    color: #0F172A;
+    border-color: #CBD5E1;
+}
+
+/* Сетка календаря */
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+}
+.cal-day-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94A3B8;
+    margin-bottom: 8px;
+}
+.cal-day-cell {
+    position: relative;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E293B;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.cal-day-cell:hover:not(.empty) {
+    background: #F1F5F9;
+}
+.cal-day-cell.empty {
+    cursor: default;
+    color: #CBD5E1;
+}
+.cal-day-cell.selected {
+    background: #0284C7;
+    color: #FFFFFF;
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+}
+.cal-day-cell.today {
+    border: 2px solid #E2E8F0;
+}
+/* Точка под датой (индикатор события) */
+.cal-event-dot {
+    position: absolute;
+    bottom: 4px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #0284C7; /* Синий для обычных */
+}
+.cal-event-dot.birthday {
+    background: #D97706; /* Оранжевый для ДР */
+}
+
+/* Поля ввода (Input) */
+.cal-form-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.cal-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 0 12px;
+    height: 38px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    flex: 1;
+}
+.cal-input-wrap:focus-within {
+    border-color: #0284C7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+.cal-clean-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+    width: 100%;
+}
+.cal-clean-input::placeholder { color: #94A3B8; font-weight: 600; }
+
+/* Кнопка уведомлений */
+.cal-notify-btn {
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    color: #64748B;
+    font-size: 12px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.cal-notify-btn.active {
+    background: #ECFDF5;
+    border-color: #10B981;
+    color: #10B981;
+}
+
+/* Правая колонка: Карточки событий */
+.calendar-right-col {
+    display: flex;
+    flex-direction: column;
+}
+.cal-event-card {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+    padding: 12px 14px;
+    background: #F8FAFC;
+    border: 1px solid #F1F5F9;
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.cal-event-card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+    background: #FFFFFF;
+    border-color: #E2E8F0;
+}
+.cal-event-date-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 60px;
+}
+.cal-evt-d { font-size: 16px; font-weight: 800; color: #0F172A; line-height: 1.1; }
+.cal-evt-m { font-size: 12px; font-weight: 800; color: #0F172A; }
+.cal-evt-t { font-size: 11px; font-weight: 700; color: #94A3B8; margin-top: 4px; }
+.cal-evt-bell { font-size: 11px; font-weight: 800; margin-top: 2px; }
+
+.cal-event-content-col {
+    flex: 1;
+    border-left: 2px solid #0284C7; /* Синий по умолчанию */
+    padding-left: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.cal-event-card.birthday .cal-event-content-col {
+    border-left-color: #D97706; /* Оранжевый для ДР */
+}
+.cal-evt-title { font-size: 14px; font-weight: 800; color: #1E293B; margin-bottom: 4px; }
+.cal-evt-note { font-size: 12px; color: #64748B; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.cal-evt-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.cal-jump-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.cal-jump-btn:hover { background: #0284C7; color: #FFFFFF; border-color: #0284C7; }
+
+.cal-del-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: #CBD5E1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.cal-del-btn:hover { color: #EF4444; background: #FEE2E2; }
+
+/* Пагинация */
+.cal-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #E2E8F0;
+}
+.cal-page-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #64748B;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.cal-page-btn:hover { background: #F1F5F9; color: #0F172A; }
+.cal-page-btn.active { background: #0284C7; color: #FFFFFF; }
+
+/* Цвет иконки дока при наличии события СЕГОДНЯ */
+.dock-icon-btn.has-event-other { color: #0284C7 !important; background: #E0F2FE; }
+.dock-icon-btn.has-event-birthday { color: #D97706 !important; background: #FEF3C7; }
+
+/* Темная тема (Dark Mode) */
+body.dark-mode .cal-month-year { color: #F8FAFC; }
+body.dark-mode .cal-nav-btns button { background: #1E293B; border-color: #334155; color: #94A3B8; }
+body.dark-mode .cal-nav-btns button:hover { background: #334155; color: #F8FAFC; }
+body.dark-mode .cal-day-cell { color: #E2E8F0; }
+body.dark-mode .cal-day-cell:hover:not(.empty) { background: #1E293B; }
+body.dark-mode .cal-day-cell.today { border-color: #334155; }
+body.dark-mode .cal-day-cell.selected { background: #38BDF8; color: #0F172A; }
+body.dark-mode .cal-input-wrap { background: #0F172A; border-color: #334155; }
+body.dark-mode .cal-input-wrap:focus-within { border-color: #38BDF8; box-shadow: 0 0 0 3px rgba(56,189,248,0.15); }
+body.dark-mode .cal-clean-input { color: #F8FAFC; }
+body.dark-mode .cal-notify-btn { background: #1E293B; border-color: #334155; color: #94A3B8; }
+body.dark-mode .cal-notify-btn.active { background: rgba(16,185,129,0.15); border-color: #10B981; color: #34D399; }
+body.dark-mode .cal-event-card { background: #1E293B; border-color: #334155; }
+body.dark-mode .cal-event-card:hover { background: #0F172A; border-color: #475569; }
+body.dark-mode .cal-evt-d, body.dark-mode .cal-evt-m { color: #F8FAFC; }
+body.dark-mode .cal-evt-title { color: #F8FAFC; }
+body.dark-mode .cal-jump-btn { background: #0F172A; border-color: #334155; color: #94A3B8; }
+body.dark-mode .cal-jump-btn:hover { background: #38BDF8; color: #0F172A; border-color: #38BDF8; }
+body.dark-mode .cal-del-btn { color: #475569; }
+body.dark-mode .cal-del-btn:hover { color: #FB7185; background: rgba(225,29,72,0.15); }
+body.dark-mode .cal-page-btn { color: #94A3B8; }
+body.dark-mode .cal-page-btn:hover { background: #1E293B; color: #F8FAFC; }
+body.dark-mode .cal-page-btn.active { background: #38BDF8; color: #0F172A; }
