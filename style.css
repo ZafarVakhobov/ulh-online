@@ -7778,3 +7778,126 @@ body.dark-mode .delete-src-btn:hover {
     background: rgba(225, 29, 72, 0.25) !important;
     color: #FFFFFF !important;
 }
+
+/* ========================================== */
+/* === ЦЕНТР УВЕДОМЛЕНИЙ (NOTIFICATIONS) === */
+/* ========================================== */
+
+/* Пульсирующая синяя точка */
+.notify-dot {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background-color: #2aabee;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #FFFFFF;
+    animation: notifyPulse 1.5s infinite;
+}
+@keyframes notifyPulse {
+    0% { box-shadow: 0 0 0 0 rgba(42, 171, 238, 0.7), 0 0 0 2px #FFFFFF; }
+    70% { box-shadow: 0 0 0 6px rgba(42, 171, 238, 0), 0 0 0 2px #FFFFFF; }
+    100% { box-shadow: 0 0 0 0 rgba(42, 171, 238, 0), 0 0 0 2px #FFFFFF; }
+}
+body.dark-mode .notify-dot { box-shadow: 0 0 0 2px #1E293B; }
+body.dark-mode .notify-toggle-btn.has-new { background: rgba(42, 171, 238, 0.15); color: #2aabee; border-color: rgba(42, 171, 238, 0.3); }
+
+/* Окно уведомлений (чуть шире профиля) */
+.notify-dropdown-box {
+    width: 340px;
+    padding: 14px;
+}
+@media (max-width: 760px) {
+    .notify-dropdown-box { width: calc(100vw - 20px) !important; left: -60px !important; right: auto !important; }
+}
+
+.notify-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.notify-tabs {
+    display: flex;
+    background: #F1F5F9;
+    border-radius: 8px;
+    padding: 2px;
+}
+.notify-tab {
+    background: transparent; border: none; font-size: 11px; font-weight: 700; color: #64748B; padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: 0.2s;
+}
+.notify-tab.active { background: #FFFFFF; color: #0F172A; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+/* Скролл для списка */
+.notify-list-container {
+    max-height: 380px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 4px;
+}
+
+/* Карточка уведомления */
+.notify-card {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    background: #F8FAFC;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    transition: 0.2s;
+    position: relative;
+}
+.notify-card:hover { background: #F1F5F9; border-color: #E2E8F0; }
+
+.notify-icon {
+    width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px;
+}
+.notify-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.notify-title-row { display: flex; justify-content: space-between; align-items: flex-start; }
+.notify-title { font-size: 12.5px; font-weight: 800; color: #1E293B; line-height: 1.3; }
+.notify-time { font-size: 9.5px; color: #94A3B8; font-weight: 600; flex-shrink: 0; margin-left: 6px; }
+.notify-desc { font-size: 11.5px; color: #475569; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Кнопки внутри уведомлений (Файлы, Действия) */
+.notify-actions { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.notify-btn {
+    padding: 5px 10px; border-radius: 6px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: 0.15s;
+}
+/* Цвета кнопок из палитры */
+.n-btn-docx { background: #E0F2FE; color: #0284C7; } .n-btn-docx:hover { background: #0284C7; color: #FFF; }
+.n-btn-xlsx { background: #ECFDF5; color: #10B981; } .n-btn-xlsx:hover { background: #10B981; color: #FFF; }
+.n-btn-pptx { background: #FFEDD5; color: #EA580C; } .n-btn-pptx:hover { background: #EA580C; color: #FFF; }
+.n-btn-txt { background: #F3E8FF; color: #7C3AED; }  .n-btn-txt:hover { background: #7C3AED; color: #FFF; }
+.n-btn-pdf { background: #FEE2E2; color: #EF4444; }  .n-btn-pdf:hover { background: #EF4444; color: #FFF; }
+.n-btn-neutral { background: #E2E8F0; color: #334155; } .n-btn-neutral:hover { background: #CBD5E1; }
+.n-btn-play { background: #2AABEE; color: #FFF; } .n-btn-play:hover { background: #1E8CBF; }
+
+/* Кнопки "Прочитать" и "Удалить" (справа) */
+.notify-mark-btn {
+    position: absolute; right: 10px; top: 10px; width: 24px; height: 24px; border-radius: 6px; border: none; background: transparent; color: #94A3B8; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: 0.2s;
+}
+.notify-card:hover .notify-mark-btn { opacity: 1; }
+.notify-mark-btn:hover { background: #E2E8F0; color: #0284C7; }
+.notify-del-btn:hover { background: #FEE2E2; color: #EF4444; }
+
+/* Тёмная тема */
+body.dark-mode .notify-dropdown-box { background: #0F172A; border-color: #1E293B; box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7); }
+body.dark-mode .notify-header span { color: #F8FAFC !important; }
+body.dark-mode .notify-tabs { background: #1E293B; }
+body.dark-mode .notify-tab { color: #94A3B8; }
+body.dark-mode .notify-tab.active { background: #334155; color: #F8FAFC; box-shadow: none; }
+body.dark-mode .notify-card { background: #1E293B; }
+body.dark-mode .notify-card:hover { background: #0F172A; border-color: #334155; }
+body.dark-mode .notify-title { color: #F8FAFC; }
+body.dark-mode .notify-desc { color: #94A3B8; }
+body.dark-mode .notify-mark-btn:hover { background: #334155; color: #38BDF8; }
+body.dark-mode .notify-del-btn:hover { background: rgba(225,29,72,0.2); color: #FB7185; }
+
+body.dark-mode .n-btn-docx { background: rgba(2,132,199,0.2); color: #38BDF8; }
+body.dark-mode .n-btn-xlsx { background: rgba(16,185,129,0.2); color: #34D399; }
+body.dark-mode .n-btn-pptx { background: rgba(234,88,12,0.2); color: #FDBA74; }
+body.dark-mode .n-btn-txt { background: rgba(124,58,237,0.2); color: #C4B5FD; }
+body.dark-mode .n-btn-pdf { background: rgba(239,68,104,0.2); color: #FCA5A5; }
+body.dark-mode .n-btn-neutral { background: #334155; color: #E2E8F0; }
