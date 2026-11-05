@@ -1763,6 +1763,13 @@
                     <button id="pomodoro-toggle-btn" class="dock-icon-btn custom-tooltip-trigger" title="Pomodoro taymeri">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-clock-pause"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M20.942 13.018a9 9 0 1 0 -7.909 7.922"></path><path d="M12 7v5l2 2"></path><path d="M17 17v5"></path><path d="M21 17v5"></path></svg>
                     </button>
+                    <!-- 7. Студия кастомизации (Mening Uslubim) -->
+    <button id="themeStudioBtn" class="dock-icon-btn custom-tooltip-trigger" title="Sayt dizayni">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle>
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.55-2.5 5.55-5.5V9.5C22 5.358 17.414 2 12 2z"></path>
+        </svg>
+    </button>
                 </div>
                 
             </div>
@@ -2213,6 +2220,61 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
     </div>
 </div>
 
+<!-- === СТУДИЯ КАСТОМИЗАЦИИ (MENING USLUBIM) === -->
+<div id="themeStudioOverlay" class="clipboard-overlay" onclick="closeThemeStudioPanel(event)"></div>
+<div id="themeStudioPanel" class="clipboard-panel" style="left: auto; right: -340px; border-right: none; border-left: 1px solid rgba(226, 232, 240, 0.8);">
+    <div class="clipboard-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.55-2.5 5.55-5.5V9.5C22 5.358 17.414 2 12 2z"></path></svg>
+            <h3 style="margin:0; font-size:16px; font-weight:800; color:#0F172A;" class="clip-title">Sayt dizayni</h3>
+        </div>
+        <button class="kanban-close-btn" style="position:static; width:28px; height:28px; font-size:18px;" onclick="closeThemeStudioPanel(event)">×</button>
+    </div>
+    
+    <div class="clipboard-body custom-scrollbar" style="display: flex; flex-direction: column; gap: 18px;">
+        
+        <!-- Блок 1: Акцентный цвет -->
+        <div>
+            <div style="font-size: 12px; font-weight: 800; color: #64748B; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.05em;">Aktsent rang</div>
+            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
+                <button type="button" class="theme-color-option active" data-color="#0284C7" data-hover="#0369A1" data-bg="#D9F0FC" style="background: #0284C7; height: 36px; border-radius: 10px; border: none; cursor: pointer; transition: transform 0.15s;" onclick="setAccentColor('#0284C7', '#0369A1', '#D9F0FC')" title="Klassik Havorang"></button>
+                <button type="button" class="theme-color-option" data-color="#10B981" data-hover="#059669" data-bg="#D1FAE5" style="background: #10B981; height: 36px; border-radius: 10px; border: none; cursor: pointer; transition: transform 0.15s;" onclick="setAccentColor('#10B981', '#059669', '#D1FAE5')" title="Zumrad (Emerald)"></button>
+                <button type="button" class="theme-color-option" data-color="#7C3AED" data-hover="#6D28D9" data-bg="#EDE9FE" style="background: #7C3AED; height: 36px; border-radius: 10px; border: none; cursor: pointer; transition: transform 0.15s;" onclick="setAccentColor('#7C3AED', '#6D28D9', '#EDE9FE')" title="Binafsha (Purple)"></button>
+                <button type="button" class="theme-color-option" data-color="#EC4899" data-hover="#DB2777" data-bg="#FCE7F3" style="background: #EC4899; height: 36px; border-radius: 10px; border: none; cursor: pointer; transition: transform 0.15s;" onclick="setAccentColor('#EC4899', '#DB2777', '#FCE7F3')" title="Pushti (Pink)"></button>
+                <button type="button" class="theme-color-option" data-color="#F97316" data-hover="#EA580C" data-bg="#FFEDD5" style="background: #F97316; height: 36px; border-radius: 10px; border: none; cursor: pointer; transition: transform 0.15s;" onclick="setAccentColor('#F97316', '#EA580C', '#FFEDD5')" title="Olovrang (Orange)"></button>
+            </div>
+        </div>
+
+        <hr class="dropdown-divider" style="margin: 4px 0;">
+
+        <!-- Блок 2: Фоновые обои -->
+        <div>
+            <div style="font-size: 12px; font-weight: 800; color: #64748B; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.05em;">Fon oboylari</div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button type="button" class="theme-bg-option active" onclick="setCustomBackground('./back.png', 'Default')" style="padding: 10px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; font-size: 13px; font-weight: 700; color: #1E293B; cursor: pointer; text-align: left; display:flex; justify-content:space-between; align-items:center;">
+                    <span>🌲 Klassik Landşaft (Asl)</span>
+                    <span style="font-size: 11px; color: #0284C7; font-weight: 850;">Tanlangan</span>
+                </button>
+                <button type="button" class="theme-bg-option" onclick="setCustomBackground('linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)', 'Gradient')" style="padding: 10px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; font-size: 13px; font-weight: 700; color: #1E293B; cursor: pointer; text-align: left; display:flex; justify-content:space-between; align-items:center;">
+                    <span>🌌 Abstrakt Gradient (Tungi)</span>
+                    <span style="font-size: 11px; color: #64748B; font-weight: 600;">Oçiş</span>
+                </button>
+                <button type="button" class="theme-bg-option" onclick="setCustomBackground('#F1F5F9', 'Minimalism')" style="padding: 10px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; font-size: 13px; font-weight: 700; color: #1E293B; cursor: pointer; text-align: left; display:flex; justify-content:space-between; align-items:center;">
+                    <span>⬜ Minimalizm (Oç rang)</span>
+                    <span style="font-size: 11px; color: #64748B; font-weight: 600;">Oçiş</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+    
+    <div class="clipboard-footer">
+        <button class="bib-clear-btn" style="width:100%; justify-content:center; height: 38px; background: #F1F5F9; color: #475569;" onclick="resetThemeDefaults()">
+            <span>Asl holatga qaytiş</span>
+        </button>
+    </div>
+</div>
+    
 <!-- === МИНИ-БРАУЗЕР (TEZKOR QIDIRUV) === -->
 <div id="browser-overlay" class="clipboard-overlay" onclick="closeBrowserPanel(event)"></div>
 <div id="browser-panel" class="clipboard-panel browser-panel-wide">
