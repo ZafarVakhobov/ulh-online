@@ -7574,19 +7574,25 @@ function renderCalendar() {
             dayDiv.classList.add("today");
         }
 
-        // Проверка на "Выбранный день"
-        if (day === calSelectedDate.getDate() && month === calSelectedDate.getMonth() && year === calSelectedDate.getFullYear()) {
-            dayDiv.classList.add("selected");
-        }
-
-        // Проверка наличия событий в этот день (Точки)
+        // Проверка наличия событий в этот день (чтобы нарисовать точки и определить тип)
         const dateStr = `${String(day).padStart(2, '0')}.${String(month + 1).padStart(2, '0')}.${year}`;
         const dayEvents = calEvents.filter(e => e.dateStr === dateStr);
+        let hasBirthday = false;
+
         if (dayEvents.length > 0) {
-            const hasBirthday = dayEvents.some(e => e.type === "birthday");
+            hasBirthday = dayEvents.some(e => e.type === "birthday");
             const dot = document.createElement("div");
             dot.className = `cal-event-dot ${hasBirthday ? 'birthday' : ''}`;
             dayDiv.appendChild(dot);
+        }
+
+        // Проверка на "Выбранный день"
+        if (day === calSelectedDate.getDate() && month === calSelectedDate.getMonth() && year === calSelectedDate.getFullYear()) {
+            dayDiv.classList.add("selected");
+            // Если выбранный день содержит День Рождения, добавляем класс для оранжевого цвета
+            if (hasBirthday) {
+                dayDiv.classList.add("birthday-event");
+            }
         }
 
         dayDiv.onclick = () => {
