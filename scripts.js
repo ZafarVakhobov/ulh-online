@@ -8835,9 +8835,10 @@ const STOP_WORDS_UZ_RU = new Set([
 
 window.generateWordCloud = function() {
     const editorEl = document.getElementById("editor");
-    const container = document.getElementById("wordCloudContainer");
+    const previewBox = document.getElementById("wordCloudPreviewBox");
     const downloadBtn = document.getElementById("downloadCloudBtn");
     const canvas = document.getElementById("wordCloudCanvas");
+    const miniCanvas = document.getElementById("wordCloudMiniCanvas");
 
     if (!editorEl || !editorEl.value.trim()) {
         alert("Iltimos, avval matn kiriting!");
@@ -8846,7 +8847,6 @@ window.generateWordCloud = function() {
 
     const text = editorEl.value.trim();
 
-    // 1. Очищаем текст и собираем слова (используем тот же массив стоп-слов)
     const wordsArray = text.toLowerCase()
         .replace(/[0-9.,/#!$%^&*;:{}=\-_`~()«»""''?![\]+]/g, " ")
         .split(/\s+/)
@@ -8854,7 +8854,7 @@ window.generateWordCloud = function() {
         .filter(w => w.length > 2 && !STOP_WORDS_UZ_RU.has(w));
 
     if (wordsArray.length === 0) {
-        alert("Matnda tahlil qilish uchun yetarli so'zlar topilmadi.");
+        alert("Matnda tahlil qiliş uçun yetarli sözlar topilmadi.");
         return;
     }
 
@@ -8865,22 +8865,22 @@ window.generateWordCloud = function() {
 
     let wordList = Object.keys(frequencyMap).map(word => {
         const cleanWord = (typeof enforceNewUzbekAlphabet === "function") ? enforceNewUzbekAlphabet(word) : word;
-        // Увеличиваем базовый вес слов, так как холст стал в разы больше (1920px)
-        return [cleanWord, frequencyMap[word] * 45]; 
+        return [cleanWord, frequencyMap[word] * 45];
     });
 
     wordList.sort((a, b) => b[1] - a[1]);
-    wordList = wordList.slice(0, 80); // Берем больше слов (топ-80) для большого экрана
+    wordList = wordList.slice(0, 80);
 
-    container.style.display = "flex";
+    previewBox.style.display = "flex";
     downloadBtn.style.display = "inline-flex";
 
     const isDark = document.body.classList.contains("dark-mode");
-    
-    // 2. Запуск генерации WordCloud2 с адаптацией под 1920x1080
+    const bgCol = isDark ? '#0F172A' : '#FFFFFF';
+
+    // 1. Генерируем полноразмерное облако для скачивания (1920x1080)
     WordCloud(canvas, {
         list: wordList,
-        gridSize: Math.round(18 * canvas.width / 1920), // Масштабируем сетку под 1920px
+        gridSize: Math.round(18 * canvas.width / 1920),
         weightFactor: 1.5,
         fontFamily: 'Manrope, Arial, sans-serif',
         color: function() {
@@ -8891,9 +8891,44 @@ window.generateWordCloud = function() {
         },
         rotateRatio: 0.35,
         rotationSteps: 2,
-        backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+        backgroundColor: bgCol,
         shape: 'cardioid'
     });
+
+    // 2. Денерерируем уменьшенную копию для мини-превью квадратика (100x100)
+    WordCloud(miniCanvas, {
+        list: wordList,
+        gridSize: Math.round(8 * miniCanvas.width / 100),
+        weightFactor: 0.7,
+        fontFamily: 'Manrope, Arial, sans-serif',
+        color: function() {
+            const palette = isDark 
+                ? ['#38BDF8', '#34D399', '#A5B4FC', '#F472B6', '#FBBF24'] 
+                : ['#0284C7', '#10B981', '#7C3AED', '#0D9488', '#2563EB'];
+            return palette[Math.floor(Math.random() * palette.length)];
+        },
+        rotateRatio: 0.3,
+        rotationSteps: 2,
+        backgroundColor: bgCol,
+        shape: 'cardioid'
+    });
+};
+
+// Функция скачивания (берет данные из большого скрытого холста 1920x1080)
+window.downloadWordCloud = function() {
+    const canvas = document.getElementById("wordCloudCanvas");
+    if (!canvas) return;
+
+    const link = document.createElement('a');
+    link.download = 'ulh_soz_buluti.png';
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    if (typeof showAutosaseIndicator === "function" || typeof showAutosaveIndicator === "function") {
+        showAutosaveIndicator("Söz buluti yuklab olindi ✓");
+    }
 };
 
 // Функция скачивания облака слов в формате PNG
