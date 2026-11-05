@@ -3917,11 +3917,9 @@ function clearBiblioFields() {
     }, 1500);
 }
 
-// === ЛОГИКА ФОРМЫ ЗАКАЗА РЕКЛАМЫ (TELEGRAM BOT) ===
+// === ЛОГИКА ФОРМЫ ЗАКАЗА РЕКЛАМЫ (SECURE WORKER) ===
 
-// Ваши точные данные
-const TG_BOT_TOKEN = "8720893006:AAGSev8YHwdFTyBd1y7frEeOAQDEd9ZuVnw";
-const TG_CHAT_ID = "1674718";
+const AD_WORKER_URL = "https://ulh-tg-sender.lanigirodesigner.workers.dev/"; 
 
 function openAdOrderModal(event) {
     if (event) event.preventDefault();
@@ -3967,50 +3965,25 @@ async function submitAdOrder(event) {
         submitBtn.style.opacity = "0.7";
         submitBtn.disabled = true;
 
-        const name = document.getElementById('adName').value;
-        const phone = document.getElementById('adPhone').value;
-        const org = document.getElementById('adOrg').value;
-        const url = document.getElementById('adUrl').value; // <-- Получаем ссылку
-        const tariff = document.getElementById('adTariff').value;
-
-        const messageText = `🔥 <b>YANGI REKLAMA BUYURTMASI</b>\n\n` +
-                            `👤 <b>Ism:</b> ${name}\n` +
-                            `📞 <b>Aloqa:</b> ${phone}\n` + 
-                            `🏢 <b>Taşkilot:</b> ${org}\n` +
-                            `🔗 <b>Havola:</b> ${url}\n` + // <-- Вставляем ссылку в сообщение 
-                            `💰 <b>Tarif:</b> ${tariff}\n\n` +
-                            `✅ <i>Şartlarga rozi böldi va javobgarlikni oldi.</i>`;
+        // Собираем все данные из формы в один пакет (FormData)
+        const formData = new FormData();
+        formData.append('name', document.getElementById('adName').value);
+        formData.append('phone', document.getElementById('adPhone').value);
+        formData.append('org', document.getElementById('adOrg').value);
+        formData.append('url', document.getElementById('adUrl').value);
+        formData.append('tariff', document.getElementById('adTariff').value);
+        formData.append('file', file); // Прикрепляем картинку
 
         try {
-            // Отправляем текст
-            const textResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+            // Отправляем пакет на наш безопасный Cloudflare Worker
+            const response = await fetch(AD_WORKER_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: TG_CHAT_ID,
-                    text: messageText,
-                    parse_mode: 'HTML'
-                })
+                body: formData // Браузер сам установит правильный Content-Type для файла
             });
             
-            if (!textResponse.ok) {
-                const errData = await textResponse.json();
-                throw new Error(`Telegram API xatosi (Matn): ${errData.description}`);
-            }
-
-            // Отправляем файл
-            const formData = new FormData();
-            formData.append('chat_id', TG_CHAT_ID);
-            formData.append('document', file);
-
-            const fileResponse = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendDocument`, {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (!fileResponse.ok) {
-                const errData = await fileResponse.json();
-                throw new Error(`Telegram API xatosi (Fayl): ${errData.description}`);
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || "Server xatosi");
             }
 
             // Визуальный успех
@@ -4022,16 +3995,16 @@ async function submitAdOrder(event) {
                 handleAdFileSelect(fileInput);
                 closeAdOrderModal();
                 
-                submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg><span>So'rovni yuborish</span>`;
+                submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg><span>Sörovni yuboriş</span>`;
                 submitBtn.style.background = "#0284C7";
                 submitBtn.style.opacity = "1";
                 submitBtn.disabled = false;
             }, 2500);
 
         } catch (error) {
-            console.error("Yuborishda xatolik:", error);
+            console.error("Yuborişda xatolik:", error);
             alert("Xatolik yuz berdi. Iltimos qaytadan urinib köring.\nSabab: " + error.message);
-            submitBtn.innerHTML = `<span>Sörovni yuborish</span>`;
+            submitBtn.innerHTML = `<span>Sörovni yuboriş</span>`;
             submitBtn.style.opacity = "1";
             submitBtn.disabled = false;
         }
