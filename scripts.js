@@ -8947,3 +8947,30 @@ window.downloadWordCloud = function() {
         showAutosaveIndicator("Söz buluti yuklab olindi ✓");
     }
 };
+
+// Открытие модального окна просмотра облака слов
+window.openWordCloudModal = function() {
+    const modal = document.getElementById("wordCloudModalBackdrop");
+    const sourceCanvas = document.getElementById("wordCloudCanvas");
+    const modalCanvas = document.getElementById("wordCloudModalCanvas");
+    
+    if (!modal || !sourceCanvas || !modalCanvas) return;
+
+    // Копируем картинку из скрытого Full HD холста на холст модального окна
+    const ctx = modalCanvas.getContext("2d");
+    ctx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
+    ctx.drawImage(sourceCanvas, 0, 0);
+
+    modal.classList.add("open");
+};
+
+window.closeWordCloudModal = function(event) {
+    const modal = document.getElementById("wordCloudModalBackdrop");
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove("open");
+};
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeWordCloudModal();
+});
