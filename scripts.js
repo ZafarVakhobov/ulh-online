@@ -9086,18 +9086,14 @@ function updateBellIcon() {
     const unreadCount = notifications.filter(n => !n.isRead).length;
     const btn = document.getElementById('notifyToggleBtn');
     const dot = document.getElementById('notifyDot');
-    const outline = btn.querySelector('.bell-outline');
-    const filled = btn.querySelector('.bell-filled');
 
     if (unreadCount > 0) {
+        // Показываем точку и подсвечиваем кнопку синим
         dot.style.display = 'block';
-        outline.style.display = 'none';
-        filled.style.display = 'block';
         btn.classList.add('has-new');
     } else {
+        // Прячем точку и возвращаем стандартный вид кнопки
         dot.style.display = 'none';
-        outline.style.display = 'block';
-        filled.style.display = 'none';
         btn.classList.remove('has-new');
     }
 }
