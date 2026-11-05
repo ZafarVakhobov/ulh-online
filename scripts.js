@@ -8050,28 +8050,55 @@ function applyAccentColorToDOM(color, hoverColor, lightBgColor) {
         document.head.appendChild(customStyleTag);
     }
 
-    // Здесь мы переопределяем цвета ключевых элементов сайта
+    // ВАЖНО: Конвертируем HEX в RGB, чтобы делать красивые тени и прозрачность
+    const hexToRgb = (hex) => {
+        let r = 0, g = 0, b = 0;
+        if (hex.length === 7) {
+            r = parseInt(hex.substring(1, 3), 16);
+            g = parseInt(hex.substring(3, 5), 16);
+            b = parseInt(hex.substring(5, 7), 16);
+        }
+        return `${r}, ${g}, ${b}`;
+    };
+    const rgb = hexToRgb(color);
+
+    // Разделяем стили для светлой и тёмной темы, используем rgba для гармонии
     customStyleTag.innerHTML = `
-        .copy-link { background-color: ${lightBgColor} !important; color: ${color} !important; }
-        .copy-link:hover, .copy-link.copied { background-color: ${color} !important; color: #FFFFFF !important; }
-        .copy-icon-btn { background-color: ${lightBgColor} !important; color: ${color} !important; }
-        .copy-icon-btn:hover, .copy-icon-btn.copied { background-color: ${color} !important; color: #FFFFFF !important; }
-        .browser-input:focus { border-color: ${color} !important; box-shadow: 0 0 0 3px ${lightBgColor} !important; }
+        /* СВЕТЛАЯ ТЕМА */
+        body:not(.dark-mode) .copy-link { background-color: ${lightBgColor} !important; color: ${color} !important; }
+        body:not(.dark-mode) .copy-link:hover, body:not(.dark-mode) .copy-link.copied { background-color: ${color} !important; color: #FFFFFF !important; }
+        body:not(.dark-mode) .copy-icon-btn { background-color: ${lightBgColor} !important; color: ${color} !important; }
+        body:not(.dark-mode) .copy-icon-btn:hover, body:not(.dark-mode) .copy-icon-btn.copied { background-color: ${color} !important; color: #FFFFFF !important; }
+        body:not(.dark-mode) .ads-tg-order-btn { background-color: ${lightBgColor} !important; color: ${color} !important; }
+        body:not(.dark-mode) .ads-tg-order-btn:hover { background-color: ${color} !important; color: #FFFFFF !important; }
+        body:not(.dark-mode) .nav-link-btn.active { background-color: ${lightBgColor} !important; color: ${color} !important; }
+
+        /* ТЁМНАЯ ТЕМА */
+        body.dark-mode .copy-link { background-color: rgba(${rgb}, 0.18) !important; color: ${color} !important; }
+        body.dark-mode .copy-link:hover, body.dark-mode .copy-link.copied { background-color: ${color} !important; color: #FFFFFF !important; }
+        body.dark-mode .copy-icon-btn { background-color: rgba(${rgb}, 0.18) !important; color: ${color} !important; }
+        body.dark-mode .copy-icon-btn:hover, body.dark-mode .copy-icon-btn.copied { background-color: ${color} !important; color: #FFFFFF !important; }
+        body.dark-mode .ads-tg-order-btn { background-color: rgba(${rgb}, 0.18) !important; color: ${color} !important; }
+        body.dark-mode .ads-tg-order-btn:hover { background-color: ${color} !important; color: #FFFFFF !important; }
+        body.dark-mode .nav-link-btn.active { background-color: rgba(${rgb}, 0.15) !important; color: ${color} !important; }
+
+        /* ОБЩИЕ ЭЛЕМЕНТЫ (Тени и обводки) */
+        .browser-input:focus { border-color: ${color} !important; box-shadow: 0 0 0 3px rgba(${rgb}, 0.15) !important; }
         .browser-search-btn { background: ${color} !important; }
         .browser-search-btn:hover { background: ${hoverColor} !important; }
-        .calc-input-row:focus-within { border-color: ${color} !important; box-shadow: 0 0 0 3px ${lightBgColor} !important; }
+        .calc-input-row:focus-within { border-color: ${color} !important; box-shadow: 0 0 0 3px rgba(${rgb}, 0.15) !important; }
         .calc-curr-tab.active { background: ${color} !important; border-color: ${color} !important; }
         .calc-result-card.uzs-main-card .calc-result-value { color: ${color} !important; }
-        textarea:focus { border-color: ${color} !important; }
-        .pill-btn { background-color: ${color} !important; box-shadow: 0 4px 12px ${lightBgColor} !important; }
+        textarea:focus { border-color: ${color} !important; box-shadow: 0 0 0 3px rgba(${rgb}, 0.12) !important; }
+        
+        /* Кнопки с тенью (Тень теперь формируется из акцентного цвета) */
+        .pill-btn { background-color: ${color} !important; box-shadow: 0 4px 12px rgba(${rgb}, 0.28) !important; }
         .pill-btn:hover { opacity: 0.85; }
-        .nav-link-btn.active { background-color: ${lightBgColor} !important; color: ${color} !important; }
+        
         .dropdown-link:hover { color: ${color} !important; }
         .alpha-letter-pill:hover { background: ${color} !important; border-color: ${color} !important; }
         .alpha-copy-btn:hover { background: ${color} !important; border-color: ${color} !important; }
-        .ads-tg-order-btn { background-color: ${lightBgColor} !important; color: ${color} !important; }
-        .ads-tg-order-btn:hover { background-color: ${color} !important; color: #FFFFFF !important; }
-        .cal-day-cell.selected { background: ${color} !important; box-shadow: 0 4px 10px ${lightBgColor} !important; }
+        .cal-day-cell.selected { background: ${color} !important; box-shadow: 0 4px 10px rgba(${rgb}, 0.3) !important; }
         .cal-day-cell.selected:hover { background: ${hoverColor} !important; }
         .cal-event-dot { background: ${color} !important; }
         .clipboard-header svg { stroke: ${color} !important; }
@@ -8097,12 +8124,10 @@ window.setCustomBackground = function(bgValue, nameKey) {
 };
 
 function applyBackgroundToDOM(bgValue) {
-    // В зависимости от того, изображение это, градиент или сплошной цвет, применяем нужный стиль
-    if (bgValue.includes("back.png") || bgValue.startsWith("url(")) {
-        // Если это наша дефолтная картинка
-        const cleanUrl = bgValue.replace(/url\(['"]?([^'"]+)['"]?\)/, '$1').replace(/['"]/g, '');
-        document.body.style.backgroundImage = `url("${cleanUrl}")`;
-        document.body.style.backgroundColor = "#F8FAFC";
+    if (bgValue.includes("back.png") || bgValue === "default") {
+        // Очищаем инлайн стили! CSS сам подхватит нужный фон для тёмной или светлой темы
+        document.body.style.backgroundImage = "";
+        document.body.style.backgroundColor = "";
     } else if (bgValue.startsWith("linear-gradient")) {
         document.body.style.backgroundImage = bgValue;
     } else {
@@ -8112,23 +8137,23 @@ function applyBackgroundToDOM(bgValue) {
     }
 }
 
-// 5. Сброс к настройкам по умолчанию (Голубой цвет, стандартные обои)
+// 5. Сброс к настройкам по умолчанию
 window.resetThemeDefaults = function() {
     localStorage.removeItem(THEME_ACCENT_KEY);
     localStorage.removeItem(THEME_BG_KEY);
     
+    // Очищаем инлайн-стили перед перезагрузкой
+    document.body.style.backgroundImage = "";
+    document.body.style.backgroundColor = "";
+
     const customStyleTag = document.getElementById("dynamicAccentStyles");
     if (customStyleTag) customStyleTag.remove();
-
-    // Сбрасываем фон
-    document.body.style.backgroundImage = 'url("./back.png")';
-    document.body.style.backgroundColor = "#F8FAFC";
 
     // Обновляем UI панели на значения по умолчанию
     setAccentColor('#0284C7', '#0369A1', '#D9F0FC');
     setCustomBackground('./back.png', 'Default');
     
-    // Перезагружаем страницу для надежности, чтобы сбросились все inline-стили
+    // Перезагружаем страницу для идеального сброса
     setTimeout(() => {
         window.location.reload();
     }, 150);
