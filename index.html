@@ -1620,6 +1620,15 @@
                                 </button>
 
                                 <hr class="dropdown-divider">
+                                <div class="tools-group-label">SMM KONTENT</div>
+                                <button type="button" class="tools-menu-item" onclick="openQuoteModal()">
+                                    <span class="tools-text-badge" style="background: #FEF3C7; color: #D97706;">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                    </span>
+                                    <span>Iqtibos dizayneri (SMM)</span>
+                                </button>
+                                
+                                <div style="display:none;"><hr class="dropdown-divider">
                                 <div class="tools-group-label">MATNNI FAYL SIFATIDA SAQLAŞ</div>
 
                                 <div class="tools-export-row">
@@ -1632,6 +1641,7 @@
                                         <span>.PDF saqlaş</span>
                                     </button>
                                 </div>
+                                    </div>
                             </div>
                         </div>
 
@@ -2602,7 +2612,59 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         </div>
     </div>
 </div>
-    
+
+<!-- === МОДАЛЬНОЕ ОКНО: ГЕНЕРАТОР ЦИТАТ (SMM) === -->
+<div class="weather-modal-backdrop" id="quoteModalBackdrop" onclick="closeQuoteModal(event)">
+    <div class="weather-modal-card alphabet-modal-card" style="max-width: 480px; text-align: center;" onclick="event.stopPropagation()">
+        <div class="calc-input-banner" style="margin-bottom: 12px;">
+            <div class="calc-banner-top">
+                <div class="weather-selected-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    <span>SMM IQTIBOS DIZAYNERI</span>
+                </div>
+            </div>
+            <div class="ads-banner-title">Iqtibos kartoçkasi tayyor</div>
+        </div>
+
+        <!-- Контейнер превью -->
+        <div class="quote-preview-container" id="quotePreviewContainer">
+            <img id="quotePreviewImg" src="" alt="Iqtibos" style="display: none;">
+            <div id="quoteLoader" style="color: #0284C7; font-size: 13px; font-weight: 700; padding: 40px 0;">Kartoçka yasalmoqda...</div>
+        </div>
+
+        <div class="weather-modal-footer" style="margin-top: 14px;">
+            <button type="button" class="pill-btn" onclick="downloadQuotePng()" style="background: #10B981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28); height: 38px; font-size: 13px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>PNG yuklab oliş</span>
+            </button>
+            <button type="button" class="weather-modal-close" onclick="closeQuoteModal()">Yopiş</button>
+        </div>
+    </div>
+</div>
+
+<!-- Скрытая сцена для HTML2Canvas (строго 1080x1080 px для Instagram/Telegram) -->
+<div id="quoteRenderOverlay" style="position: fixed; top: -9999px; left: -9999px; width: 1080px; height: 1080px; z-index: -1; pointer-events: none;">
+    <div id="quoteRenderStage" style="width: 1080px; height: 1080px; position: relative; display: flex; align-items: center; justify-content: center; padding: 90px; box-sizing: border-box; background: linear-gradient(135deg, #0284C7 0%, #4F46E5 100%); font-family: 'Manrope', sans-serif;">
+        <!-- Абстрактные свечения на фоне -->
+        <div style="position: absolute; top: -150px; left: -150px; width: 700px; height: 700px; background: rgba(255,255,255,0.15); filter: blur(100px); border-radius: 50%;"></div>
+        <div style="position: absolute; bottom: -100px; right: -100px; width: 600px; height: 600px; background: rgba(56, 189, 248, 0.25); filter: blur(120px); border-radius: 50%;"></div>
+
+        <!-- Glassmorphism Карточка -->
+        <div style="position: relative; z-index: 2; background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(24px); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 48px; padding: 70px; width: 100%; max-height: 100%; display: flex; flex-direction: column; box-shadow: 0 40px 80px rgba(0,0,0,0.15);">
+            <svg width="70" height="70" viewBox="0 0 24 24" fill="rgba(255,255,255,0.85)" style="margin-bottom: 24px;"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+            <div id="quoteRenderText" style="font-size: 46px; font-weight: 700; color: #FFFFFF; line-height: 1.55; text-align: left; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 10;">
+                <!-- Сюда попадет выделенный текст -->
+            </div>
+        </div>
+
+        <!-- Водяной знак -->
+        <div style="position: absolute; bottom: 45px; left: 0; width: 100%; text-align: center; color: rgba(255,255,255,0.6); font-size: 26px; font-weight: 800; letter-spacing: 3px; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"></path><circle cx="9.5" cy="1.5" r="1.5"></circle><circle cx="14.5" cy="1.5" r="1.5"></circle></svg>
+            ULH ONLINE
+        </div>
+    </div>
+</div>
+        
 <!-- === 20-20-20 QOIDASI (SOG'LOM KO'ZLAR) === -->
 <div id="eyeCareOverlay" class="eye-care-overlay">
     <div class="eye-care-content">
