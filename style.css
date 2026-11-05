@@ -7901,3 +7901,32 @@ body.dark-mode .n-btn-pptx { background: rgba(234,88,12,0.2); color: #FDBA74; }
 body.dark-mode .n-btn-txt { background: rgba(124,58,237,0.2); color: #C4B5FD; }
 body.dark-mode .n-btn-pdf { background: rgba(239,68,104,0.2); color: #FCA5A5; }
 body.dark-mode .n-btn-neutral { background: #334155; color: #E2E8F0; }
+
+/* ========================================== */
+/* === SMM IQTIBOS DIZAYNERI === */
+/* ========================================== */
+.quote-preview-container {
+    width: 100%;
+    background: #F8FAFC;
+    border-radius: 16px;
+    border: 1px dashed #CBD5E1;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.quote-preview-container img {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+body.dark-mode .quote-preview-container {
+    background: #0F172A;
+    border-color: #334155;
+}
+body.dark-mode .quote-preview-container img {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
