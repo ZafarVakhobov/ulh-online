@@ -8554,3 +8554,164 @@ document.addEventListener("keydown", (e) => {
 
 // Запускаем движок при загрузке
 document.addEventListener('DOMContentLoaded', initTimeMachine);
+
+// ==========================================
+// === 29. ASMR MEXANIK KLAVIATURA OVOZI ===
+// ==========================================
+const ASMR_STORAGE_KEY = "ulh_asmr_mode_v1";
+let isAsmrEnabled = false;
+let asmrAudioCtx = null;
+
+// Инициализируем аудио движок только после первого взаимодействия пользователя
+function initAsmrAudio() {
+    if (!asmrAudioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) asmrAudioCtx = new AudioContextClass();
+    }
+    if (asmrAudioCtx && asmrAudioCtx.state === 'suspended') {
+        asmrAudioCtx.resume();
+    }
+}
+
+// Загрузка сохраненного состояния при старте
+document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem(ASMR_STORAGE_KEY);
+    const checkbox = document.getElementById("asmrToggleInput");
+    if (saved === "1") {
+        isAsmrEnabled = true;
+        if (checkbox) checkbox.checked = true;
+    }
+});
+
+// Кнопка-переключатель в студии кастомизации
+window.toggleAsmrMode = function(checkbox) {
+    isAsmrEnabled = checkbox.checked;
+    localStorage.setItem(ASMR_STORAGE_KEY, isAsmrEnabled ? "1" : "0");
+    
+    if (isAsmrEnabled) {
+        initAsmrAudio();
+        playAsmrSound('enter'); // Тестовый звук при включении
+    }
+};
+
+// Процедурный генератор звука механического свитча (White Noise + Oscillator)
+function playAsmrSound(keyType) {
+    if (!isAsmrEnabled || !asmrAudioCtx) return;
+
+    const time = asmrAudioCtx.currentTime;
+    
+    // 1. Создаем буфер белого шума (имитация трения пластика)
+    const bufferSize = asmrAudioCtx.sampleRate * 0.1; 
+    const buffer = asmrAudioCtx.createBuffer(1, bufferSize, asmrAudioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+    }
+    
+    const noise = asmrAudioCtx.createBufferSource();
+    noise.buffer = buffer;
+    const noiseFilter = asmrAudioCtx.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    const noiseGain = asmrAudioCtx.createGain();
+    
+    // 2. Создаем осциллятор (имитация удара пластика о плату - "Thock")
+    const osc = asmrAudioCtx.createOscillator();
+    const oscGain = asmrAudioCtx.createGain();
+    
+    // Подключения
+    osc.connect(oscGain);
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    
+    oscGain.connect(asmrAudioCtx.destination);
+    noiseGain.connect(asmrAudioCtx.destination);
+
+    // 3. Формируем звук в зависимости от клавиши
+    if (keyType === 'space') {
+        // Пробел - глубокий "thock"
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(80, time);
+        osc.frequency.exponentialRampToValueAtTime(40, time + 0.05);
+        oscGain.gain.setValueAtTime(0.5, time);
+        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.06);
+        
+        noiseFilter.frequency.value = 800;
+        noiseGain.gain.setValueAtTime(0.3, time);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.04);
+        
+        osc.start(time); osc.stop(time + 0.1);
+        noise.start(time); noise.stop(time + 0.1);
+        
+    } else if (keyType === 'enter') {
+        // Enter - тяжелый и чуть звонкий щелчок
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(100, time);
+        osc.frequency.exponentialRampToValueAtTime(50, time + 0.05);
+        oscGain.gain.setValueAtTime(0.4, time);
+        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
+        
+        noiseFilter.frequency.value = 1200;
+        noiseGain.gain.setValueAtTime(0.4, time);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+        
+        osc.start(time); osc.stop(time + 0.1);
+        noise.start(time); noise.stop(time + 0.1);
+        
+    } else if (keyType === 'backspace') {
+        // Backspace - высокий резкий клик
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(250, time);
+        osc.frequency.exponentialRampToValueAtTime(100, time + 0.03);
+        oscGain.gain.setValueAtTime(0.15, time);
+        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.04);
+        
+        noiseFilter.frequency.value = 3500;
+        noiseGain.gain.setValueAtTime(0.25, time);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.03);
+        
+        osc.start(time); osc.stop(time + 0.1);
+        noise.start(time); noise.stop(time + 0.1);
+        
+    } else {
+        // Обычные буквы (Cherry MX) - короткий четкий пластиковый клик
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, time);
+        osc.frequency.exponentialRampToValueAtTime(100, time + 0.02);
+        oscGain.gain.setValueAtTime(0.15, time);
+        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.03);
+        
+        noiseFilter.frequency.value = 4000; 
+        noiseFilter.Q.value = 1;
+        noiseGain.gain.setValueAtTime(0.2, time);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.02);
+        
+        osc.start(time); osc.stop(time + 0.05);
+        noise.start(time); noise.stop(time + 0.05);
+    }
+}
+
+// 4. Перехватчик нажатий клавиш для главного редактора и блока заметок
+document.addEventListener('keydown', (e) => {
+    if (!isAsmrEnabled) return;
+    
+    // Проверяем, находится ли фокус в текстовом поле, чтобы не щелкать просто так
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'INPUT' || activeEl.getAttribute('contenteditable') === 'true')) {
+        
+        if (!asmrAudioCtx) initAsmrAudio();
+
+        if (e.code === 'Space') {
+            playAsmrSound('space');
+        } else if (e.code === 'Enter' || e.code === 'NumpadEnter') {
+            playAsmrSound('enter');
+        } else if (e.code === 'Backspace' || e.code === 'Delete') {
+            playAsmrSound('backspace');
+        } else {
+            // Исключаем системные беззвучные клавиши (Shift, Ctrl, Alt и т.д.)
+            if (!['ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight', 'CapsLock'].includes(e.code)) {
+                // Создаем легкий рандом для обычных букв, чтобы звук не сливался в одну ноту
+                setTimeout(() => playAsmrSound('normal'), Math.random() * 5);
+            }
+        }
+    }
+});
