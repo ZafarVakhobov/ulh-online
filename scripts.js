@@ -8385,3 +8385,154 @@ QOIDALAR:
         if (sparkleIcon) sparkleIcon.style.animation = "none";
     }
 };
+
+
+// ==========================================
+// === 28. МАШИНА ВРЕМЕНИ (MATN TARIXI) ===
+// ==========================================
+const TIME_MACHINE_KEY = "ulh_time_machine_v1";
+const TM_MAX_SNAPSHOTS = 50; // Храним до 50 версий текста (этого хватит на несколько дней)
+let tmSnapshots = [];
+let tmSaveInterval = null;
+
+function initTimeMachine() {
+    try {
+        const stored = localStorage.getItem(TIME_MACHINE_KEY);
+        tmSnapshots = stored ? JSON.parse(stored) : [];
+    } catch(e) {
+        tmSnapshots = [];
+    }
+
+    // Незаметно делаем снимок текста каждые 5 минут, ЕСЛИ он изменился
+    tmSaveInterval = setInterval(() => {
+        saveTimeMachineSnapshot(false);
+    }, 5 * 60 * 1000);
+
+    // Делаем первый снимок через 3 секунды после открытия сайта (если там есть текст)
+    setTimeout(() => {
+        if (editor && editor.value.trim().length > 0 && tmSnapshots.length === 0) {
+            saveTimeMachineSnapshot(true);
+        }
+    }, 3000);
+}
+
+// Функция создания слепка текста
+window.saveTimeMachineSnapshot = function(force = false) {
+    if (!editor) return;
+    const currentText = editor.value.trim();
+    if (!currentText) return;
+
+    // Не плодим одинаковые слепки, если текст не менялся
+    if (tmSnapshots.length > 0 && !force) {
+        const lastSnapshot = tmSnapshots[tmSnapshots.length - 1];
+        if (lastSnapshot.text === currentText) return;
+    }
+
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const dateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}`;
+    
+    tmSnapshots.push({
+        time: `${timeStr} (${dateStr})`,
+        timestamp: now.getTime(),
+        text: currentText
+    });
+
+    // Удаляем самые старые версии, чтобы не перегружать память
+    if (tmSnapshots.length > TM_MAX_SNAPSHOTS) {
+        tmSnapshots.shift(); 
+    }
+
+    try {
+        localStorage.setItem(TIME_MACHINE_KEY, JSON.stringify(tmSnapshots));
+    } catch(e) {
+        console.error("Time machine save error:", e);
+    }
+};
+
+window.openTimeMachineModal = function(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    
+    // Делаем актуальный снимок прямо перед открытием окна, на всякий случай
+    saveTimeMachineSnapshot(false);
+
+    if (tmSnapshots.length === 0) {
+        alert("Hali saqlangan tarix yöq. Matn yozilgaç, har 5 daqiqada avtomatik saqlanadi.");
+        return;
+    }
+
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    
+    const modal = document.getElementById("timeMachineModalBackdrop");
+    const slider = document.getElementById("tmSlider");
+    
+    if (modal && slider) {
+        slider.max = tmSnapshots.length - 1;
+        slider.value = tmSnapshots.length - 1; // Устанавливаем ползунок в конец (самая свежая версия)
+        updateTimeMachinePreview();
+        modal.classList.add("open");
+    }
+};
+
+window.closeTimeMachineModal = function(e) {
+    const modal = document.getElementById("timeMachineModalBackdrop");
+    if (!modal) return;
+    if (e && e.target && e.target !== modal) return;
+    modal.classList.remove("open");
+};
+
+// Обновление предпросмотра при движении ползунка
+window.updateTimeMachinePreview = function() {
+    const slider = document.getElementById("tmSlider");
+    const preview = document.getElementById("tmPreview");
+    const timeLabel = document.getElementById("tmTimeLabel");
+    const charCount = document.getElementById("tmCharCount");
+
+    if (!slider || !preview || !timeLabel || tmSnapshots.length === 0) return;
+
+    const idx = parseInt(slider.value, 10);
+    const snapshot = tmSnapshots[idx];
+
+    if (snapshot) {
+        preview.value = snapshot.text;
+        timeLabel.textContent = `Vaqt: ${snapshot.time}`;
+        charCount.textContent = `${snapshot.text.length} belgi`;
+    }
+};
+
+// Восстановление текста
+window.restoreTimeMachineVersion = function() {
+    const preview = document.getElementById("tmPreview");
+    if (!editor || !preview) return;
+
+    // Сохраняем текущую "испорченную" версию в бэкап, вдруг пользователь передумает
+    saveTimeMachineSnapshot(true);
+
+    const restoredText = preview.value;
+    editor.value = restoredText;
+    
+    if (typeof saveEditorDraft === "function") saveEditorDraft();
+    if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+    
+    closeTimeMachineModal();
+    
+    if (typeof showAutosaveIndicator === "function") {
+        setTimeout(() => showAutosaveIndicator("Matn tiklandi ✓"), 300);
+    }
+};
+
+window.clearTimeMachineHistory = function() {
+    if (confirm("Butun tarixni öçirib taşlamoqçimisiz?")) {
+        tmSnapshots = [];
+        localStorage.removeItem(TIME_MACHINE_KEY);
+        closeTimeMachineModal();
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Tarix tozalandi");
+    }
+};
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeTimeMachineModal();
+});
+
+// Запускаем движок при загрузке
+document.addEventListener('DOMContentLoaded', initTimeMachine);
