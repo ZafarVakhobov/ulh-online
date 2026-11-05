@@ -8715,3 +8715,101 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+
+// ==========================================
+// === 30. SOG'LOM KO'ZLAR (20-20-20 QOIDASI) ===
+// ==========================================
+let eyeCareActiveTime = 0;   // Время активности в секундах
+let eyeCareIdleTime = 0;     // Время простоя в секундах
+let eyeCareInterval = null;
+let isEyeCareResting = false;
+
+// НАСТРОЙКИ ПРАВИЛА
+const WORK_TIME_LIMIT = 20 * 60; // 20 минут работы (в секундах)
+const REST_TIME_LIMIT = 20;      // 20 секунд отдыха
+const IDLE_RESET_LIMIT = 5 * 60; // Если 5 минут нет активности, глаза отдохнули сами, сбрасываем таймер
+
+// Отслеживаем физическую активность пользователя (печать, мышь, скролл)
+const resetIdleTime = () => {
+    eyeCareIdleTime = 0;
+};
+document.addEventListener('mousemove', resetIdleTime);
+document.addEventListener('keydown', resetIdleTime);
+document.addEventListener('scroll', resetIdleTime);
+document.addEventListener('click', resetIdleTime);
+
+function initEyeCareTimer() {
+    eyeCareInterval = setInterval(() => {
+        if (isEyeCareResting) return; // Во время самого отдыха время не считаем
+
+        eyeCareIdleTime++;
+
+        // Если простой меньше 5 минут, считаем что пользователь активно работает
+        if (eyeCareIdleTime < IDLE_RESET_LIMIT) {
+            eyeCareActiveTime++;
+        } else {
+            // Если пользователь отошел на 5+ минут, сбрасываем счетчик работы (он уже отдохнул)
+            eyeCareActiveTime = 0;
+        }
+
+        // Наступило время отдыха (прошло 20 минут чистой активности)
+        if (eyeCareActiveTime >= WORK_TIME_LIMIT) {
+            triggerEyeCareRest();
+        }
+    }, 1000);
+}
+
+let restCountdownInterval = null;
+
+function triggerEyeCareRest() {
+    isEyeCareResting = true;
+    const overlay = document.getElementById('eyeCareOverlay');
+    const timerEl = document.getElementById('eyeCareTimer');
+    if (!overlay || !timerEl) return;
+
+    // Звуковое оповещение (используем функцию гудка из календаря, если она есть)
+    if (typeof playCalendarBeepSequence === "function") {
+        playCalendarBeepSequence();
+    }
+
+    overlay.classList.add('active');
+    
+    let timeLeft = REST_TIME_LIMIT;
+    timerEl.textContent = timeLeft;
+
+    restCountdownInterval = setInterval(() => {
+        timeLeft--;
+        timerEl.textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+            finishEyeCareRest();
+            // Короткий звук "Дзинь" в конце отдыха
+            if (typeof playCalendarBeepSequence === "function") playCalendarBeepSequence();
+        }
+    }, 1000);
+}
+
+window.finishEyeCareRest = function() {
+    clearInterval(restCountdownInterval);
+    const overlay = document.getElementById('eyeCareOverlay');
+    if (overlay) overlay.classList.remove('active');
+    
+    eyeCareActiveTime = 0;
+    eyeCareIdleTime = 0;
+    isEyeCareResting = false;
+};
+
+window.skipEyeCare = function() {
+    finishEyeCareRest();
+};
+
+// Запускаем умный таймер сразу после загрузки сайта
+document.addEventListener('DOMContentLoaded', initEyeCareTimer);
+
+// Функция ДЛЯ ТЕСТИРОВАНИЯ (позволяет проверить фичу без ожидания 20 минут)
+// Нажмите в консоли браузера: testEyeCare()
+window.testEyeCare = function() {
+    eyeCareActiveTime = (20 * 60) - 2; // Перематываем время до 19 минут 58 секунд
+    console.log("Diqqat! 2 soniyadan söng 20-20-20 oynasi oçiladi.");
+};
