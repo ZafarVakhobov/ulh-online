@@ -649,6 +649,25 @@ async function handleSelectedFile(file) {
         fileInfo.innerText = "Tayyor: " + processedOutName;
         saveBtn.style.display = 'inline-flex';
         savePdfBtn.style.display = 'inline-flex';
+
+        // [ВСТАВИТЬ СЮДА]: Отправка уведомления о файле
+        let fileBtnClass = "n-btn-neutral";
+        if (ext === 'docx') fileBtnClass = "n-btn-docx";
+        else if (ext === 'xlsx') fileBtnClass = "n-btn-xlsx";
+        else if (ext === 'pptx') fileBtnClass = "n-btn-pptx";
+        else if (ext === 'txt') fileBtnClass = "n-btn-txt";
+
+        addNotification({
+            type: 'file',
+            title: 'Fayl konvertatsiya qilindi',
+            desc: `${file.name} muvaffaqiyatli ögirildi. Yuklab olişingiz mumkin.`,
+            iconBg: '#E0F2FE', iconColor: '#0284C7',
+            iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+            actions: [
+                { label: 'Faylni saqlash', colorClass: fileBtnClass, onClick: 'downloadFile()' },
+                { label: 'PDF saqlash', colorClass: 'n-btn-pdf', onClick: 'downloadPdfFile()' }
+            ]
+        });
         
         // НОВОЕ: Показываем кнопку конспекта
         const summaryBtn = document.getElementById('summaryResultBtn');
@@ -1704,6 +1723,24 @@ function openQrModal(event) {
     if (modal) {
         modal.classList.add('open');
         renderQrCodePreview();
+
+        // [ВСТАВИТЬ СЮДА]:
+        const qrInput = document.getElementById("qrTextInput");
+        if (qrInput && qrInput.value.trim().length > 0) {
+            addNotification({
+                type: 'qr',
+                title: 'QR-kod tayyor',
+                desc: `Qiymat: ${qrInput.value.substring(0, 30)}...`,
+                iconBg: '#E2E8F0', iconColor: '#0F172A',
+                iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`,
+                actions: [
+                    { label: 'Oçiş', colorClass: 'n-btn-neutral', onClick: "document.getElementById('navResourcesItem').querySelector('button').click(); setTimeout(()=>openQrModal(null), 100);" },
+                    { label: 'PNG', colorClass: 'n-btn-xlsx', onClick: 'downloadQrPng()' },
+                    { label: 'SVG', colorClass: 'n-btn-docx', onClick: 'downloadQrSvg()' }
+                ]
+            });
+        }
+        
         setTimeout(() => {
             const input = document.getElementById("qrTextInput");
             if (input) input.focus();
@@ -3118,6 +3155,16 @@ async function executeAiRequest(mode, customInstruction) {
             finalOutput = cleanResult + "\n\n---\n\n" + sourceText;
         }
 
+        // [ВСТАВИТЬ СЮДА]: Уведомление ИИ
+        addNotification({
+            type: 'ai',
+            title: 'AI Yordamchi vazifani bajardi',
+            desc: `So'rov: ${mode === 'custom' ? customInstruction.substring(0,40) : mode}...`,
+            iconBg: '#EDE9FE', iconColor: '#4F46E5',
+            iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>`,
+            actions: [{ label: 'Natijani köriş', colorClass: 'n-btn-neutral', onClick: "document.getElementById('aiResultModalBackdrop').classList.add('open')" }]
+        });
+        
         // ВОТ ТА САМАЯ СТРОЧКА: Открываем новое окно визуального редактора
         openAiResultModal(finalOutput);
 
@@ -5189,6 +5236,15 @@ function saveToMusicHistory(url, title, author) {
     
     localStorage.setItem(MUSIC_HISTORY_KEY, JSON.stringify(history));
     renderMusicHistory();
+addNotification({
+        type: 'yt',
+        title: 'YouTube: Yangi trek',
+        desc: title,
+        iconBg: '#FEE2E2', iconColor: '#EF4444',
+        iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>`,
+        actions: [{ label: 'Tinglaş', colorClass: 'n-btn-play', onClick: `loadCustomYoutube('${cleanUrl}')` }]
+    });
+    
 }
 
 function renderMusicHistory() {
@@ -7168,6 +7224,15 @@ window.executeMiniSearch = function() {
     frame.style.opacity = "0.2";
     
     const searchUrl = `https://uz.m.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(query)}`;
+
+    addNotification({
+        type: 'wiki',
+        title: 'Tezkor qidiruv',
+        desc: `Qidiruv sörovi: "${query}"`,
+        iconBg: '#F1F5F9', iconColor: '#334155',
+        iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
+        actions: [{ label: 'Qayta oçiş', colorClass: 'n-btn-neutral', onClick: "document.getElementById('browser-toggle-btn').click();" }]
+    });
     
     frame.src = searchUrl;
     
@@ -8912,6 +8977,15 @@ window.generateWordCloud = function() {
         backgroundColor: bgCol,
         shape: 'cardioid'
     });
+    // [ВСТАВИТЬ СЮДА]: Уведомление об облаке слов
+    addNotification({
+        type: 'cloud',
+        title: 'Söz buluti yaratildi',
+        desc: 'Matningiz asosida grafik bulut tayyor. Uni saqlab olişingiz mumkin.',
+        iconBg: '#F3E8FF', iconColor: '#7C3AED',
+        iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>`,
+        actions: [{ label: 'PNG yuklab olish', colorClass: 'n-btn-xlsx', onClick: 'downloadWordCloud()' }]
+    });
 };
 
 // Функция скачивания (берет данные из большого скрытого холста 1920x1080)
@@ -8973,4 +9047,206 @@ window.closeWordCloudModal = function(event) {
 
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeWordCloudModal();
+});
+
+
+// ==========================================
+// === 32. ЦЕНТР УВЕДОМЛЕНИЙ (NOTIFICATIONS) ===
+// ==========================================
+const NOTIFY_KEY = "ulh_notifications_v1";
+let notifications = JSON.parse(localStorage.getItem(NOTIFY_KEY)) || [];
+let currentNotifyTab = 'all'; // 'all' (новые) или 'read' (прочитанные)
+
+// 1. Главная функция добавления уведомления
+// config = { type: 'file'|'ai'|'qr'|'cloud'|'wiki'|'yt', title, desc, iconBg, iconColor, iconSvg, actions: [{label, colorClass, onClick}] }
+function addNotification(config) {
+    const newNotif = {
+        id: Date.now().toString(),
+        time: new Date().getTime(),
+        isRead: false,
+        ...config
+    };
+    notifications.unshift(newNotif);
+    
+    // Храним максимум 50 старых уведомлений
+    if (notifications.length > 50) notifications = notifications.slice(0, 50);
+    
+    saveNotifications();
+    updateBellIcon();
+    if (document.getElementById('navNotifyWrap').classList.contains('open')) {
+        renderNotifications();
+    }
+}
+
+function saveNotifications() {
+    localStorage.setItem(NOTIFY_KEY, JSON.stringify(notifications.filter(n => n.type !== 'dynamic'))); // Динамические не сохраняем в Storage
+}
+
+function updateBellIcon() {
+    const unreadCount = notifications.filter(n => !n.isRead).length;
+    const btn = document.getElementById('notifyToggleBtn');
+    const dot = document.getElementById('notifyDot');
+    const outline = btn.querySelector('.bell-outline');
+    const filled = btn.querySelector('.bell-filled');
+
+    if (unreadCount > 0) {
+        dot.style.display = 'block';
+        outline.style.display = 'none';
+        filled.style.display = 'block';
+        btn.classList.add('has-new');
+    } else {
+        dot.style.display = 'none';
+        outline.style.display = 'block';
+        filled.style.display = 'none';
+        btn.classList.remove('has-new');
+    }
+}
+
+// 2. Управление вкладками и рендер
+window.switchNotifyTab = function(tab) {
+    currentNotifyTab = tab;
+    document.getElementById('tabNotifyAll').classList.toggle('active', tab === 'all');
+    document.getElementById('tabNotifyRead').classList.toggle('active', tab === 'read');
+    
+    const clearWrap = document.getElementById('notifyClearAllWrap');
+    clearWrap.style.display = tab === 'read' ? 'block' : 'none';
+    
+    renderNotifications();
+};
+
+window.markAsRead = function(id) {
+    const n = notifications.find(x => x.id === id);
+    if (n) { n.isRead = true; saveNotifications(); updateBellIcon(); renderNotifications(); }
+};
+
+window.deleteNotification = function(id) {
+    notifications = notifications.filter(x => x.id !== id);
+    saveNotifications(); updateBellIcon(); renderNotifications();
+};
+
+window.clearReadNotifications = function() {
+    notifications = notifications.filter(x => !x.isRead);
+    saveNotifications(); updateBellIcon(); renderNotifications();
+};
+
+// Скрываем пульсирующую точку при открытии меню (но физически они остаются не прочитанными, пока не нажмут галочку)
+window.markNotificationsViewed = function() {
+    document.getElementById('notifyDot').style.display = 'none';
+    renderNotifications();
+};
+
+// 3. Функция отрисовки + Динамический подхват из Календаря и Канбана
+function renderNotifications() {
+    const container = document.getElementById('notifyListContainer');
+    if (!container) return;
+
+    // --- ДИНАМИЧЕСКИЕ УВЕДОМЛЕНИЯ (Канбан и Календарь) ---
+    // Они генерируются на лету при открытии панели и не сохраняются в LocalStorage уведомлений
+    let displayList = [...notifications];
+
+    if (currentNotifyTab === 'all') {
+        // Подхватываем Канбан
+        let kanbanTasks = [];
+        try { kanbanTasks = JSON.parse(localStorage.getItem('ulh-kanban-tasks')) || []; } catch(e){}
+        const activeTasks = kanbanTasks.filter(t => t.status === 'todo' || t.status === 'inprogress');
+        if (activeTasks.length > 0) {
+            displayList.unshift({
+                id: 'dyn_kanban', type: 'dynamic', isRead: false,
+                title: 'Kanban: Faol vazifalar', desc: `Sizda bajarilişi kutilayotgan ${activeTasks.length} ta vazifa bor.`,
+                iconBg: '#FEF3C7', iconColor: '#D97706',
+                iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h6v6h-6v-6"></path><path d="M14 4h6v6h-6v-6"></path><path d="M4 14h6v6h-6v-6"></path><path d="M14 17h6m-3 -3v6"></path></svg>`,
+                actions: [{ label: 'Doskani oçiş', colorClass: 'n-btn-neutral', onClick: "document.getElementById('kanban-toggle-btn').click();" }],
+                time: new Date().getTime()
+            });
+        }
+
+        // Подхватываем Календарь (Сегодня + 2 дня)
+        const today = new Date();
+        const datesToCheck = [0, 1, 2].map(offset => {
+            const d = new Date(today); d.setDate(today.getDate() + offset);
+            return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+        });
+        
+        let cEvents = [];
+        try { cEvents = JSON.parse(localStorage.getItem('ulh_calendar_events_v1')) || []; } catch(e){}
+        const upcomingEvents = cEvents.filter(e => datesToCheck.includes(e.dateStr));
+        
+        upcomingEvents.forEach(evt => {
+            const isToday = evt.dateStr === datesToCheck[0];
+            displayList.unshift({
+                id: 'dyn_cal_' + evt.id, type: 'dynamic', isRead: false,
+                title: isToday ? `Bugun: ${evt.name}` : `Yaqinlaşmoqda: ${evt.name}`,
+                desc: `${evt.dateStr} soat ${evt.timeStr}. ${evt.note || ''}`,
+                iconBg: evt.type === 'birthday' ? '#FEE2E2' : '#E0F2FE',
+                iconColor: evt.type === 'birthday' ? '#EF4444' : '#0284C7',
+                iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`,
+                actions: [{ label: 'Taqvimda köriş', colorClass: 'n-btn-neutral', onClick: `document.getElementById('calendar-toggle-btn').click(); setTimeout(()=>jumpToCalDate('${evt.dateStr}'), 100);` }],
+                time: evt.timestamp || new Date().getTime()
+            });
+        });
+    }
+
+    // Фильтруем по вкладке
+    displayList = displayList.filter(n => currentNotifyTab === 'all' ? !n.isRead : n.isRead);
+
+    // Отрисовка
+    container.innerHTML = "";
+    if (displayList.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 30px 0; color: #94A3B8; font-size: 12px; font-weight: 600;">Hozirça böş</div>`;
+        return;
+    }
+
+    // Сортируем по времени (новые сверху)
+    displayList.sort((a, b) => b.time - a.time);
+
+    displayList.forEach(item => {
+        // Форматируем время (например: 14:30)
+        const d = new Date(item.time);
+        const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+        // Генерация кнопок
+        let actionsHtml = "";
+        if (item.actions && item.actions.length > 0) {
+            actionsHtml = `<div class="notify-actions">` + item.actions.map(btn => {
+                // Если передали onClick как строку, оборачиваем, иначе просто вызов
+                const clickAttr = `onclick="event.stopPropagation(); ${btn.onClick.replace(/"/g, '&quot;')}"`;
+                return `<button type="button" class="notify-btn ${btn.colorClass}" ${clickAttr}>${btn.label}</button>`;
+            }).join('') + `</div>`;
+        }
+
+        // Кнопка управления (прочитать или удалить)
+        let ctrlBtn = "";
+        if (item.type !== 'dynamic') { // Динамические нельзя удалить/прочитать, они зависят от источника
+            if (currentNotifyTab === 'all') {
+                ctrlBtn = `<button class="notify-mark-btn" title="Öqildi qilib belgilaş" onclick="event.stopPropagation(); markAsRead('${item.id}')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>`;
+            } else {
+                ctrlBtn = `<button class="notify-mark-btn notify-del-btn" title="Öçiriş" onclick="event.stopPropagation(); deleteNotification('${item.id}')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+            }
+        }
+
+        const card = document.createElement('div');
+        card.className = "notify-card";
+        card.innerHTML = `
+            <div class="notify-icon" style="background: ${item.iconBg}; color: ${item.iconColor};">
+                ${item.iconSvg}
+            </div>
+            <div class="notify-content">
+                <div class="notify-title-row">
+                    <span class="notify-title">${item.title}</span>
+                    <span class="notify-time">${timeStr}</span>
+                </div>
+                <div class="notify-desc">${item.desc}</div>
+                ${actionsHtml}
+            </div>
+            ${ctrlBtn}
+        `;
+        container.appendChild(card);
+    });
+}
+
+// Вызываем обновление при старте
+document.addEventListener('DOMContentLoaded', () => {
+    updateBellIcon();
 });
