@@ -1474,7 +1474,7 @@
 <div class="section-header">
                     <div class="section-title-wrap">
                         <div class="section-title" style="display:none;">Matnni kiriting:</div>
-                        <span class="autosave-badge" id="autosaveBadge" aria-live="polite">Avtosaqlandi ✓</span>
+                        <span class="autosave-badge" id="autosaveBadge" aria-live="polite" onclick="openTimeMachineModal(event)" title="Matn tarixini ko'rish" style="cursor: pointer;">Avtosaqlandi ✓</span>
                     </div>
 
     <div class="editor-actions">
@@ -2407,6 +2407,45 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
     </div>
 </div>
 
+<!-- === МОДАЛЬНОЕ ОКНО: МАШИНА ВРЕМЕНИ (MATN TARIXI) === -->
+    <div class="weather-modal-backdrop" id="timeMachineModalBackdrop" onclick="closeTimeMachineModal(event)">
+        <div class="weather-modal-card alphabet-modal-card" style="max-width: 600px;" onclick="event.stopPropagation()">
+            <div class="calc-input-banner">
+                <div class="calc-banner-top">
+                    <div class="weather-selected-tag">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>MATN TARIXI</span>
+                    </div>
+                </div>
+                <div class="ads-banner-title">Vaqt maşinasi</div>
+                <div class="ads-banner-sub">Slayderni surib, matnning oldingi holatlarini köring va keraklisini tiklang.</div>
+            </div>
+
+            <div style="padding: 0 4px; margin-top: 18px; display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 13px; color: #0284C7;">
+                    <span id="tmTimeLabel">Vaqt: --:--</span>
+                    <span id="tmCharCount">0 belgi</span>
+                </div>
+
+                <!-- Тот самый ползунок времени -->
+                <input type="range" id="tmSlider" class="tm-slider" min="0" max="0" value="0" oninput="updateTimeMachinePreview()">
+
+                <!-- Поле для предпросмотра прошлых версий -->
+                <textarea id="tmPreview" class="bib-custom-input custom-scrollbar" style="height: 200px; resize: none; background: #F8FAFC; color: #64748B; font-weight: 500;" readonly></textarea>
+
+                <button type="button" class="ai-submit-modal-btn" style="margin-top: 8px; width: 100%; background: #10B981; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);" onclick="restoreTimeMachineVersion()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+                    <span>Şu holatga qaytariş</span>
+                </button>
+            </div>
+
+            <div class="weather-modal-footer" style="margin-top: 14px;">
+                <button type="button" class="weather-modal-close" style="color: #E11D48; background: #FFE4E6;" onclick="clearTimeMachineHistory()">Tarixni tozalaş</button>
+                <button type="button" class="weather-modal-close" onclick="closeTimeMachineModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
+    
 <!-- === МОДАЛЬНОЕ ОКНО: AQLLI ANDOZALAR (КОНСТРУКТОР ДОКУМЕНТОВ) === -->
     <div class="weather-modal-backdrop" id="andozaModalBackdrop" onclick="closeAndozaModal(event)">
         <div class="weather-modal-card alphabet-modal-card" style="max-width: 500px;" onclick="event.stopPropagation()">
