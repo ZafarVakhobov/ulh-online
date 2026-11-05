@@ -7569,3 +7569,133 @@ body.dark-mode #wordCloudContainer {
     background: #0F172A !important;
     border-color: #334155 !important;
 }
+
+/* ========================================== */
+/* === ТЕМНАЯ ТЕМА ДЛЯ ВСЕХ МОДАЛЬНЫХ ОКОН === */
+/* ========================================== */
+
+/* 1. Общий фон и текст модалок (Заметки, Канбан, Менеджер источников, Помодоро) */
+body.dark-mode .kanban-modal-content {
+    background: #0F172A !important;
+    color: #F8FAFC !important;
+    border: 1px solid #1E293B !important;
+    box-shadow: 0 24px 54px rgba(0, 0, 0, 0.7) !important;
+}
+
+body.dark-mode .kanban-main-title,
+body.dark-mode .scratch-sidebar h3,
+body.dark-mode .sources-wrapper h3,
+body.dark-mode .kanban-modal-content h3 {
+    color: #F8FAFC !important;
+}
+
+/* 2. Кнопка закрытия (крестик) в модалках */
+body.dark-mode .kanban-close-btn {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #94A3B8 !important;
+}
+body.dark-mode .kanban-close-btn:hover {
+    background: rgba(225, 29, 72, 0.2) !important;
+    color: #FB7185 !important;
+}
+
+/* 3. Быстрые заметки (Qoralama) в темной теме */
+body.dark-mode .scratch-sidebar {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+}
+body.dark-mode .scratch-item {
+    background: #0F172A !important;
+    border-color: #334155 !important;
+}
+body.dark-mode .scratch-item:hover {
+    border-color: #475569 !important;
+}
+body.dark-mode .scratch-item.active {
+    background: #172554 !important;
+    border-color: #1D4ED8 !important;
+    border-left-color: #F59E0B !important;
+}
+body.dark-mode .scratch-item-title {
+    color: #F8FAFC !important;
+}
+body.dark-mode .scratch-item-preview {
+    color: #94A3B8 !important;
+}
+body.dark-mode .note-title-field {
+    color: #F8FAFC !important;
+    border-bottom-color: #334155 !important;
+}
+body.dark-mode .note-title-field::placeholder {
+    color: #64748B !important;
+}
+body.dark-mode .note-content-area {
+    color: #CBD5E1 !important;
+}
+body.dark-mode .markdown-toolbar {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+}
+body.dark-mode .md-btn {
+    color: #94A3B8 !important;
+}
+body.dark-mode .md-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #F8FAFC !important;
+}
+body.dark-mode .md-divider {
+    background: #334155 !important;
+}
+
+/* 4. Kanban доска в темной теме */
+body.dark-mode .kanban-column {
+    background: #1E293B !important;
+    border: 1px solid #334155 !important;
+}
+body.dark-mode .kanban-column-header {
+    color: #E2E8F0 !important;
+}
+body.dark-mode .task-count {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #CBD5E1 !important;
+}
+body.dark-mode .kanban-task {
+    background: #0F172A !important;
+    color: #F1F5F9 !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+body.dark-mode .add-task-btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #94A3B8 !important;
+}
+body.dark-mode .add-task-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #F8FAFC !important;
+}
+
+/* 5. Менеджер источников (VAK) в темной теме */
+body.dark-mode .sources-wrapper div[style*="background: #f8fafc"] {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+}
+body.dark-mode .sources-wrapper h4 {
+    color: #E2E8F0 !important;
+}
+
+/* 6. Помодоро таймер в темной теме */
+body.dark-mode #pomodoro-display {
+    color: #F8FAFC !important;
+}
+body.dark-mode .pom-mode-btn {
+    color: #94A3B8 !important;
+}
+body.dark-mode .pom-mode-btn:hover {
+    color: #F8FAFC !important;
+}
+body.dark-mode .pom-mode-btn.active {
+    background: #1E293B !important;
+    color: #EF4444 !important;
+}
+body.dark-mode div[style*="background: #f1f5f9"] {
+    background: #1E293B !important;
+}
