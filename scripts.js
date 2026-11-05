@@ -594,6 +594,51 @@ async function handleSelectedFile(file) {
 
             processedBlob = await zip.generateAsync({ type: "blob", mimeType: processedMimeType, compression: "DEFLATE" });
             await prepareOfficePdfStage(ext, processedBlob, zip, pdfStage);
+        } else if (['png', 'jpg', 'jpeg'].includes(ext)) {
+            // === МАГИЯ РАСПОЗНАВАНИЯ КАРТИНОК (OCR) ===
+            fileInfo.style.color = "#3B82F6";
+            fileInfo.innerText = "Rasm o'qilmoqda (AI OCR), kuting...";
+            
+            // Запускаем Tesseract.js (одновременная поддержка кириллицы, латиницы и русского)
+            const result = await Tesseract.recognize(file, 'uzb_cyrl+uzb+rus', {
+                logger: m => {
+                    // Красивый индикатор прогресса прямо в окошке
+                    if (m.status === 'recognizing text') {
+                        fileInfo.innerText = `Skanner qilinmoqda: ${Math.round(m.progress * 100)}%`;
+                    } else if (m.status === 'loading tesseract core') {
+                        fileInfo.innerText = `AI yadrosi ishga tushmoqda...`;
+                    }
+                }
+            });
+            
+            const extractedText = result.data.text;
+            
+            // Прогоняем сырой текст с картинки через наш умный транслитератор (Cyrillic -> Latin)
+            const convertedText = applyReplacements(extractedText);
+            
+            // Вставляем результат в главный редактор (с новой строки, если там уже есть текст)
+            const editorEl = document.getElementById('editor');
+            if (editorEl) {
+                const currentVal = editorEl.value.trim();
+                editorEl.value = currentVal ? currentVal + "\n\n" + convertedText : convertedText;
+                
+                // Сохраняем черновик и обновляем счетчик слов
+                if (typeof saveEditorDraft === "function") saveEditorDraft();
+                if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+                if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Rasm matnga ögirildi ✓");
+            }
+            
+            fileInfo.style.color = "#10B981";
+            fileInfo.innerText = "Rasm muvaffaqiyatli öqildi ✓";
+            
+            // Возвращаем дефолтную надпись через 3 секунды
+            setTimeout(() => {
+                fileInfo.style.color = "#64748B";
+                fileInfo.innerText = "Yuklab bölaydigan fayllar formati: .docx, .xlsx, .pptx, .txt, .png, .jpg";
+            }, 3000);
+            
+            return; // Завершаем функцию, так как скачивать тут ничего не нужно
+            
         } else {
             throw new Error("Noto'g'ri format");
         }
