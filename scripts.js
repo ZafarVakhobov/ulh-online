@@ -3257,7 +3257,7 @@ async function refineAiResult() {
 
     // Если поле с текстом пустое
     if (!sourceText) {
-        alert("Tahrirlovchida matn yo'q!");
+        alert("Tahrirlovçida matn yöq!");
         return;
     }
 
@@ -7669,7 +7669,7 @@ window.toggleCalNotifyUI = function(checkbox) {
         ui.querySelector("span").textContent = "Ha";
     } else {
         ui.classList.remove("active");
-        ui.querySelector("span").textContent = "Yo'q";
+        ui.querySelector("span").textContent = "Yöq";
     }
 };
 
