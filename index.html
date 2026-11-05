@@ -1714,6 +1714,14 @@
                 
                 <!-- ЛЕВЫЙ БЛОК ИНСТРУМЕНТОВ -->
                 <div class="dock-side-group">
+
+                    <!-- 0. Календарь и Мероприятия -->
+                    <button id="calendar-toggle-btn" class="dock-icon-btn custom-tooltip-trigger" title="Taqvim va Tadbirlar">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                    </button>
+                    
                     <!-- 1. Буфер обмена -->
                     <button id="clipboard-toggle-btn" class="dock-icon-btn custom-tooltip-trigger" title="Nusxalar tarixi">
                         <svg class="icon icon-tabler icons-tabler-outline icon-tabler-text-recognition" stroke-linejoin="round" stroke-linecap="round" stroke-width="2" stroke="currentColor" fill="none" viewBox="0 0 24 24" height="24" width="24" xmlns="http://www.w3.org/2000/svg"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 8v-2a2 2 0 0 1 2 -2h2"></path><path d="M4 16v2a2 2 0 0 0 2 2h2"></path><path d="M16 4h2a2 2 0 0 1 2 2v2"></path><path d="M16 20h2a2 2 0 0 0 2 -2v-2"></path><path d="M12 16v-7"></path><path d="M9 9h6"></path></svg>
@@ -2228,6 +2236,94 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
     <div class="browser-frame-wrapper">
         <div id="browserLoader" class="browser-loader" style="display:none;">Qidirilmoqda...</div>
         <iframe id="miniBrowserFrame" src="" frameborder="0"></iframe>
+    </div>
+</div>
+
+<!-- === МОДАЛЬНОЕ ОКНО: КАЛЕНДАРЬ И МЕРОПРИЯТИЯ === -->
+<div class="weather-modal-backdrop" id="calendarModalBackdrop" onclick="closeCalendarModal(event)">
+    <div class="weather-modal-card calendar-modal-card" onclick="event.stopPropagation()">
+        <button class="kanban-close-btn" style="top:16px; right:16px;" onclick="closeCalendarModal()">×</button>
+        
+        <div class="calendar-layout">
+            <!-- Левая колонка: Календарь и Форма -->
+            <div class="calendar-left-col">
+                <!-- Шапка календаря -->
+                <div class="cal-header">
+                    <div class="cal-month-year" id="calMonthYear">Avgust 2026</div>
+                    <div class="cal-nav-btns">
+                        <button onclick="changeCalMonth(-1)">‹</button>
+                        <button onclick="changeCalMonth(1)">›</button>
+                    </div>
+                </div>
+                
+                <!-- Сетка календаря -->
+                <div class="cal-grid">
+                    <div class="cal-day-name">Du</div><div class="cal-day-name">Se</div><div class="cal-day-name">Ço</div>
+                    <div class="cal-day-name">Pa</div><div class="cal-day-name">Ju</div><div class="cal-day-name">Şa</div><div class="cal-day-name">Ya</div>
+                </div>
+                <div class="cal-grid" id="calDaysGrid">
+                    <!-- Дни генерируются JS -->
+                </div>
+
+                <hr class="currency-Block-divider" style="margin: 16px 0;">
+                
+                <div class="weather-other-title" style="margin-bottom: 10px;">SANANI SAQLAŞ</div>
+                
+                <!-- Форма ввода -->
+                <div class="cal-form-row">
+                    <div class="cal-input-wrap">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <input type="text" id="calDateInput" class="cal-clean-input" placeholder="DD.MM.YYYY" maxlength="10" oninput="formatCalDateInput(this)">
+                    </div>
+                    <div class="cal-input-wrap" style="width: 100px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <input type="text" id="calTimeInput" class="cal-clean-input" placeholder="12:00" maxlength="5" oninput="formatCalTimeInput(this)">
+                    </div>
+                    <div class="cal-notify-wrap">
+                        <label title="Uyğotgiç çalinsinmi?">
+                            <input type="checkbox" id="calNotifyCheck" style="display:none;" onchange="toggleCalNotifyUI(this)">
+                            <div class="cal-notify-btn" id="calNotifyUI">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                                <span>Yöq</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="cal-form-row" style="margin-top: 10px;">
+                    <div style="flex: 1;">
+                        <select id="calEventType" class="bib-custom-input" style="height: 38px; border-radius: 10px;" onchange="updateCalPlaceholder()">
+                            <option value="other" selected>Boşqa tadbirlar</option>
+                            <option value="birthday">Tuğilgan kun</option>
+                        </select>
+                    </div>
+                    <div class="cal-input-wrap" style="flex: 2;">
+                        <input type="text" id="calEventName" class="cal-clean-input" style="width:100%;" placeholder="Tadbir nomi" autocomplete="off">
+                    </div>
+                </div>
+
+                <textarea id="calEventNote" class="bib-custom-input" style="margin-top: 10px; height: 60px; resize: none; border-radius: 10px;" placeholder="Tadbir uçun qisqaça eslatma..."></textarea>
+                
+                <button type="button" class="ai-submit-modal-btn" style="margin-top: 10px; width: 100%; border-radius: 10px; height: 40px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);" onclick="saveCalendarEvent()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    <span>Saqlaş</span>
+                </button>
+            </div>
+
+            <!-- Правая колонка: Список сохраненных мероприятий -->
+            <div class="calendar-right-col">
+                <div class="weather-other-title" style="margin-bottom: 16px; font-size: 14px;">SAQLANGAN SANALAR VA TADBIRLAR</div>
+                
+                <div id="calEventsList" style="display:flex; flex-direction:column; gap:12px; flex:1;">
+                    <!-- Карточки генерируются JS -->
+                </div>
+
+                <!-- Пагинация -->
+                <div class="cal-pagination" id="calPagination">
+                    <!-- Кнопки страниц генерируются JS -->
+                </div>
+            </div>
+        </div>
     </div>
 </div>
     
