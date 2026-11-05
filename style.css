@@ -7291,7 +7291,7 @@ body.dark-mode .browser-loader { color: #94A3B8; }
     gap: 8px;
     margin-top: 16px;
     padding-top: 16px;
-    border-top: 1px dashed #E2E8F0;
+    border-top: 0px dashed #E2E8F0;
 }
 .cal-page-btn {
     width: 30px;
