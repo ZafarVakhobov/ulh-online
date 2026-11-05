@@ -7699,3 +7699,42 @@ body.dark-mode .pom-mode-btn.active {
 body.dark-mode div[style*="background: #f1f5f9"] {
     background: #1E293B !important;
 }
+
+
+/* ========================================== */
+/* === ИСПРАВЛЕНИЕ: МЕНЕДЖЕР ИСТОЧНИКОВ И БЛОКНОТ === */
+/* ========================================== */
+
+/* 1. Поля ввода (инпуты, селекты, тексареа) в менеджере источников для темной темы */
+body.dark-mode .src-input,
+body.dark-mode #sources-modal select.src-input,
+body.dark-mode #sources-modal input.src-input,
+body.dark-mode #sources-modal textarea.src-input {
+    background: #0F172A !important;
+    border-color: #334155 !important;
+    color: #F8FAFC !important;
+}
+
+body.dark-mode .src-input::placeholder {
+    color: #64748B !important;
+}
+
+body.dark-mode .src-input:focus {
+    border-color: #38BDF8 !important;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+}
+
+/* 2. Активная заметка в блокноте (замена синей подсветки на желтую) */
+body.dark-mode .scratch-item.active,
+[data-theme="dark"] .scratch-item.active {
+    background: #1E1B12 !important;          /* Тёмно-янтарный мягкий фон */
+    border-color: #78350F !important;        /* Коричневато-желтая рамка */
+    border-left-color: #F59E0B !important;   /* Яркая желтая полоска слева */
+}
+
+/* На всякий случай дублируем и для светлой темы, если там тоже синий проскакивал */
+.scratch-item.active {
+    background: #FFFBEB !important;
+    border-color: #FDE68A !important;
+    border-left-color: #F59E0B !important;
+}
