@@ -885,7 +885,7 @@
                     </button>
                     
                     <!-- Превью-квадратик (появляется только после генерации) -->
-                    <div id="wordCloudPreviewBox" onclick="openWordCloudModal()" title="Kattalashtirib ko'rish" style="display: none; width: 38px; height: 38px; border-radius: 10px; background: #FFFFFF; border: 1.5px solid #CBD5E1; overflow: hidden; cursor: pointer; flex-shrink: 0; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.06); transition: transform 0.15s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
+                    <div id="wordCloudPreviewBox" onclick="openWordCloudModal()" title="Kattalaştirib köriş" style="display: none; width: 38px; height: 38px; border-radius: 10px; background: #FFFFFF; border: 1.5px solid #CBD5E1; overflow: hidden; cursor: pointer; flex-shrink: 0; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.06); transition: transform 0.15s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
                         <canvas id="wordCloudMiniCanvas" width="100" height="100" style="width: 100%; height: 100%; object-fit: cover; display: block;"></canvas>
                     </div>
 
@@ -2541,6 +2541,34 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         </div>
     </div>
 
+<!-- === МОДАЛЬНОЕ ОКНО: ПРОСМОТР ОБЛАКА СЛОВ === -->
+<div class="weather-modal-backdrop" id="wordCloudModalBackdrop" onclick="closeWordCloudModal(event)">
+    <div class="weather-modal-card" style="max-width: 650px; text-align: center;" onclick="event.stopPropagation()">
+        <div class="calc-input-banner" style="margin-bottom: 12px;">
+            <div class="calc-banner-top">
+                <div class="weather-selected-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    <span>SÖZ BULUTI (TOLIQ ÖLÇAM)</span>
+                </div>
+            </div>
+            <div class="ads-banner-title">Vizual taqdimot</div>
+        </div>
+
+        <!-- Контейнер увеличенного превью -->
+        <div style="width: 100%; background: #FFFFFF; border-radius: 16px; border: 1px solid #E2E8F0; padding: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.06); overflow: hidden;">
+            <canvas id="wordCloudModalCanvas" width="1920" height="1080" style="width: 100%; height: auto; max-height: 400px; object-fit: contain; display: block; border-radius: 8px;"></canvas>
+        </div>
+
+        <div class="weather-modal-footer" style="margin-top: 14px;">
+            <button type="button" class="pill-btn" onclick="downloadWordCloud()" style="background: #10B981; height: 36px; font-size: 12px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>PNG yuklab oliş</span>
+            </button>
+            <button type="button" class="weather-modal-close" onclick="closeWordCloudModal()">Yopiş</button>
+        </div>
+    </div>
+</div>
+    
 <!-- === 20-20-20 QOIDASI (SOG'LOM KO'ZLAR) === -->
 <div id="eyeCareOverlay" class="eye-care-overlay">
     <div class="eye-care-content">
