@@ -7061,6 +7061,8 @@ body.dark-mode .browser-loader { color: #94A3B8; }
 .cal-day-cell {
     position: relative;
     height: 36px;
+    width: 36px; /* Делаем жесткую ширину для идеального круга */
+    margin: 0 auto; /* Центрируем круг внутри ячейки сетки */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -7071,21 +7073,43 @@ body.dark-mode .browser-loader { color: #94A3B8; }
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
 }
-.cal-day-cell:hover:not(.empty) {
+
+/* Обычный hover (только для НЕвыделенных дат) */
+.cal-day-cell:hover:not(.empty):not(.selected) {
     background: #F1F5F9;
 }
+
 .cal-day-cell.empty {
     cursor: default;
     color: #CBD5E1;
 }
+
+/* Выделенная дата (Синяя по умолчанию) */
 .cal-day-cell.selected {
     background: #0284C7;
     color: #FFFFFF;
     box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
 }
+/* Hover для синей выделенной даты (чуть темнее) */
+.cal-day-cell.selected:hover {
+    background: #0369A1; 
+}
+
+/* Выделенная дата с Днем Рождения (Оранжевая) */
+.cal-day-cell.selected.birthday-event {
+    background: #D97706;
+    color: #FFFFFF;
+    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
+}
+/* Hover для оранжевой даты (чуть темнее) */
+.cal-day-cell.selected.birthday-event:hover {
+    background: #B45309; 
+}
+
 .cal-day-cell.today {
     border: 2px solid #E2E8F0;
 }
+
 /* Точка под датой (индикатор события) */
 .cal-event-dot {
     position: absolute;
@@ -7094,6 +7118,14 @@ body.dark-mode .browser-loader { color: #94A3B8; }
     height: 4px;
     border-radius: 50%;
     background: #0284C7; /* Синий для обычных */
+}
+.cal-event-dot.birthday {
+    background: #D97706; /* Оранжевый для ДР */
+}
+
+/* Если дата ВЫДЕЛЕНА, делаем точку белой, чтобы она не сливалась с фоном круга */
+.cal-day-cell.selected .cal-event-dot {
+    background: #FFFFFF !important;
 }
 .cal-event-dot.birthday {
     background: #D97706; /* Оранжевый для ДР */
@@ -7268,10 +7300,17 @@ body.dark-mode .browser-loader { color: #94A3B8; }
 body.dark-mode .cal-month-year { color: #F8FAFC; }
 body.dark-mode .cal-nav-btns button { background: #1E293B; border-color: #334155; color: #94A3B8; }
 body.dark-mode .cal-nav-btns button:hover { background: #334155; color: #F8FAFC; }
+
+/* Темная тема (Dark Mode) для дней календаря */
 body.dark-mode .cal-day-cell { color: #E2E8F0; }
-body.dark-mode .cal-day-cell:hover:not(.empty) { background: #1E293B; }
+body.dark-mode .cal-day-cell:hover:not(.empty):not(.selected) { background: #1E293B; }
 body.dark-mode .cal-day-cell.today { border-color: #334155; }
 body.dark-mode .cal-day-cell.selected { background: #38BDF8; color: #0F172A; }
+body.dark-mode .cal-day-cell.selected:hover { background: #0284C7; color: #FFFFFF; }
+body.dark-mode .cal-day-cell.selected.birthday-event { background: #F59E0B; color: #0F172A; }
+body.dark-mode .cal-day-cell.selected.birthday-event:hover { background: #D97706; color: #FFFFFF; }
+body.dark-mode .cal-day-cell.selected .cal-event-dot { background: #0F172A !important; }
+
 body.dark-mode .cal-input-wrap { background: #0F172A; border-color: #334155; }
 body.dark-mode .cal-input-wrap:focus-within { border-color: #38BDF8; box-shadow: 0 0 0 3px rgba(56,189,248,0.15); }
 body.dark-mode .cal-clean-input { color: #F8FAFC; }
