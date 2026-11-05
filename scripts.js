@@ -7468,3 +7468,451 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+
+
+// ==========================================
+// === 25. КАЛЕНДАРЬ И МЕРОПРИЯТИЯ (ORGANIZER) ===
+// ==========================================
+
+const CALENDAR_STORAGE_KEY = "ulh_calendar_events_v1";
+
+let calCurrentDate = new Date();
+let calSelectedDate = new Date();
+let calEvents = [];
+let calCurrentPage = 1;
+const CAL_ITEMS_PER_PAGE = 4;
+
+const UZ_MONTHS = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"];
+const UZ_MONTHS_SHORT = ["Yan", "Fev", "Mar", "Apr", "May", "Iyun", "Iyul", "Avg", "Sen", "Okt", "Noy", "Dek"];
+
+// 1. Инициализация и открытие окна
+document.addEventListener('DOMContentLoaded', () => {
+    loadCalEvents();
+    checkTodayEventsForDockIcon();
+    
+    // Запускаем проверку будильников каждую минуту (в 00 секунд)
+    setInterval(checkCalendarAlarms, 60000);
+    setTimeout(checkCalendarAlarms, 2000); // Проверка при старте
+
+    const calBtn = document.getElementById('calendar-toggle-btn');
+    if (calBtn) {
+        calBtn.addEventListener('click', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            if (typeof closeClipboardPanel === 'function') closeClipboardPanel();
+            
+            // Если у вас работает custom-select, инициализируем его для селекта событий
+            const sel = document.getElementById('calEventType');
+            if (sel && typeof initCustomSelects === 'function' && !sel.nextElementSibling?.classList.contains('custom-select-wrapper')) {
+                initCustomSelects();
+            }
+
+            const modal = document.getElementById('calendarModalBackdrop');
+            if (modal) {
+                modal.classList.add('open');
+                calCurrentDate = new Date();
+                calSelectedDate = new Date();
+                renderCalendar();
+                updateCalDateInput();
+                renderCalEventsList();
+            }
+        });
+    }
+});
+
+window.closeCalendarModal = function(e) {
+    const modal = document.getElementById('calendarModalBackdrop');
+    if (!modal) return;
+    if (e && e.target && e.target !== modal) return;
+    modal.classList.remove('open');
+};
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeCalendarModal();
+});
+
+// 2. Логика рендера календаря (Месяц / Год)
+window.changeCalMonth = function(step) {
+    calCurrentDate.setMonth(calCurrentDate.getMonth() + step);
+    renderCalendar();
+};
+
+function renderCalendar() {
+    const monthYearEl = document.getElementById("calMonthYear");
+    const gridEl = document.getElementById("calDaysGrid");
+    if (!monthYearEl || !gridEl) return;
+
+    const year = calCurrentDate.getFullYear();
+    const month = calCurrentDate.getMonth();
+    
+    monthYearEl.textContent = `${UZ_MONTHS[month]} ${year}`;
+    gridEl.innerHTML = "";
+
+    // Получаем первый день месяца (0 - Воскресенье, 1 - Понедельник...)
+    let firstDayIdx = new Date(year, month, 1).getDay();
+    // Адаптируем под Понедельник как первый день недели
+    firstDayIdx = firstDayIdx === 0 ? 6 : firstDayIdx - 1;
+    
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Пустые ячейки до начала месяца
+    for (let i = 0; i < firstDayIdx; i++) {
+        const emptyDiv = document.createElement("div");
+        emptyDiv.className = "cal-day-cell empty";
+        gridEl.appendChild(emptyDiv);
+    }
+
+    const today = new Date();
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayDiv = document.createElement("div");
+        dayDiv.className = "cal-day-cell";
+        dayDiv.textContent = day;
+
+        // Проверка на "Сегодня"
+        if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+            dayDiv.classList.add("today");
+        }
+
+        // Проверка на "Выбранный день"
+        if (day === calSelectedDate.getDate() && month === calSelectedDate.getMonth() && year === calSelectedDate.getFullYear()) {
+            dayDiv.classList.add("selected");
+        }
+
+        // Проверка наличия событий в этот день (Точки)
+        const dateStr = `${String(day).padStart(2, '0')}.${String(month + 1).padStart(2, '0')}.${year}`;
+        const dayEvents = calEvents.filter(e => e.dateStr === dateStr);
+        if (dayEvents.length > 0) {
+            const hasBirthday = dayEvents.some(e => e.type === "birthday");
+            const dot = document.createElement("div");
+            dot.className = `cal-event-dot ${hasBirthday ? 'birthday' : ''}`;
+            dayDiv.appendChild(dot);
+        }
+
+        dayDiv.onclick = () => {
+            calSelectedDate = new Date(year, month, day);
+            renderCalendar();
+            updateCalDateInput();
+        };
+
+        gridEl.appendChild(dayDiv);
+    }
+}
+
+// 3. Управление полями ввода
+function updateCalDateInput() {
+    const inp = document.getElementById("calDateInput");
+    if (!inp) return;
+    const d = String(calSelectedDate.getDate()).padStart(2, '0');
+    const m = String(calSelectedDate.getMonth() + 1).padStart(2, '0');
+    const y = calSelectedDate.getFullYear();
+    inp.value = `${d}.${m}.${y}`;
+}
+
+window.formatCalDateInput = function(input) {
+    let val = input.value.replace(/\D/g, "");
+    if (val.length > 2) val = val.substring(0, 2) + "." + val.substring(2);
+    if (val.length > 5) val = val.substring(0, 5) + "." + val.substring(5, 9);
+    input.value = val;
+
+    if (val.length === 10) {
+        const parts = val.split(".");
+        const d = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const y = parseInt(parts[2], 10);
+        
+        const dateObj = new Date(y, m, d);
+        if (dateObj.getFullYear() === y && dateObj.getMonth() === m && dateObj.getDate() === d) {
+            calSelectedDate = dateObj;
+            calCurrentDate = new Date(y, m, 1);
+            renderCalendar();
+        }
+    }
+};
+
+window.formatCalTimeInput = function(input) {
+    let val = input.value.replace(/\D/g, "");
+    if (val.length >= 3) {
+        val = val.substring(0, 2) + ":" + val.substring(2, 4);
+    }
+    
+    // Валидация часов и минут
+    if (val.length >= 2) {
+        let hrs = parseInt(val.substring(0, 2));
+        if (hrs > 23) val = "23" + val.substring(2);
+    }
+    if (val.length === 5) {
+        let mins = parseInt(val.substring(3, 5));
+        if (mins > 59) val = val.substring(0, 3) + "59";
+    }
+    input.value = val;
+};
+
+window.toggleCalNotifyUI = function(checkbox) {
+    const ui = document.getElementById("calNotifyUI");
+    if (!ui) return;
+    if (checkbox.checked) {
+        ui.classList.add("active");
+        ui.querySelector("span").textContent = "Ha";
+    } else {
+        ui.classList.remove("active");
+        ui.querySelector("span").textContent = "Yo'q";
+    }
+};
+
+window.updateCalPlaceholder = function() {
+    const type = document.getElementById("calEventType").value;
+    const nameInp = document.getElementById("calEventName");
+    if (!nameInp) return;
+    
+    if (type === "birthday") {
+        nameInp.placeholder = "Tuğilgan kun egasi ismi";
+    } else {
+        nameInp.placeholder = "Tadbir nomi";
+    }
+};
+
+// 4. Сохранение, загрузка и рендер списка
+function loadCalEvents() {
+    try {
+        const stored = localStorage.getItem(CALENDAR_STORAGE_KEY);
+        calEvents = stored ? JSON.parse(stored) : [];
+    } catch(e) {
+        calEvents = [];
+    }
+}
+
+function saveCalEvents() {
+    localStorage.setItem(CALENDAR_STORAGE_KEY, JSON.stringify(calEvents));
+    checkTodayEventsForDockIcon();
+}
+
+window.saveCalendarEvent = function() {
+    const dateStr = document.getElementById("calDateInput").value;
+    const timeStr = document.getElementById("calTimeInput").value || "00:00";
+    const type = document.getElementById("calEventType").value;
+    const name = document.getElementById("calEventName").value.trim();
+    const note = document.getElementById("calEventNote").value.trim();
+    const notify = document.getElementById("calNotifyCheck").checked;
+
+    if (dateStr.length !== 10) return alert("Iltimos, sanani töliq kiriting (DD.MM.YYYY).");
+    if (!name) return alert("Iltimos, tadbir nomini kiriting.");
+
+    const newEvent = {
+        id: Date.now().toString(),
+        dateStr,
+        timeStr,
+        type,
+        name,
+        note,
+        notify,
+        timestamp: parseDateStrToTimestamp(dateStr, timeStr)
+    };
+
+    calEvents.push(newEvent);
+    // Сортировка по дате (от ближайших к будущим)
+    calEvents.sort((a, b) => a.timestamp - b.timestamp);
+    
+    saveCalEvents();
+    
+    // Очистка формы
+    document.getElementById("calEventName").value = "";
+    document.getElementById("calEventNote").value = "";
+    document.getElementById("calTimeInput").value = "";
+    
+    calCurrentPage = 1; // Возврат на 1 страницу
+    renderCalendar();
+    renderCalEventsList();
+};
+
+function parseDateStrToTimestamp(dStr, tStr) {
+    const parts = dStr.split(".");
+    const d = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10) - 1;
+    const y = parseInt(parts[2], 10);
+    
+    const tParts = tStr.split(":");
+    const hr = parseInt(tParts[0], 10) || 0;
+    const mn = parseInt(tParts[1], 10) || 0;
+
+    return new Date(y, m, d, hr, mn).getTime();
+}
+
+window.deleteCalEvent = function(id) {
+    calEvents = calEvents.filter(e => e.id !== id);
+    saveCalEvents();
+    
+    // Проверка пагинации при удалении
+    const maxPages = Math.ceil(calEvents.length / CAL_ITEMS_PER_PAGE);
+    if (calCurrentPage > maxPages && maxPages > 0) calCurrentPage = maxPages;
+    
+    renderCalendar();
+    renderCalEventsList();
+};
+
+window.jumpToCalDate = function(dStr) {
+    const parts = dStr.split(".");
+    const d = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10) - 1;
+    const y = parseInt(parts[2], 10);
+    
+    calSelectedDate = new Date(y, m, d);
+    calCurrentDate = new Date(y, m, 1);
+    
+    updateCalDateInput();
+    renderCalendar();
+};
+
+window.changeCalPage = function(pageNum) {
+    calCurrentPage = pageNum;
+    renderCalEventsList();
+};
+
+function renderCalEventsList() {
+    const listEl = document.getElementById("calEventsList");
+    const pagEl = document.getElementById("calPagination");
+    if (!listEl || !pagEl) return;
+
+    listEl.innerHTML = "";
+    pagEl.innerHTML = "";
+
+    if (calEvents.length === 0) {
+        listEl.innerHTML = `<div style="text-align:center; color:#94A3B8; font-size:13px; padding-top:40px;">Heç qanday tadbir saqlanmagan.</div>`;
+        return;
+    }
+
+    // Пагинация
+    const totalPages = Math.ceil(calEvents.length / CAL_ITEMS_PER_PAGE);
+    const startIdx = (calCurrentPage - 1) * CAL_ITEMS_PER_PAGE;
+    const currentEvents = calEvents.slice(startIdx, startIdx + CAL_ITEMS_PER_PAGE);
+
+    currentEvents.forEach(evt => {
+        const parts = evt.dateStr.split(".");
+        const d = parts[0];
+        const m = UZ_MONTHS_SHORT[parseInt(parts[1], 10) - 1];
+
+        const card = document.createElement("div");
+        card.className = `cal-event-card ${evt.type === 'birthday' ? 'birthday' : ''}`;
+        
+        let bellHtml = "";
+        if (evt.notify) {
+            bellHtml = `<div class="cal-evt-bell" style="color: ${evt.type==='birthday'?'#D97706':'#0284C7'};">🔔 Uyğoniş</div>`;
+        }
+
+        card.innerHTML = `
+            <div class="cal-event-date-col">
+                <div class="cal-evt-d">${d}</div>
+                <div class="cal-evt-m">${m}</div>
+                <div class="cal-evt-t">${evt.timeStr}</div>
+                ${bellHtml}
+            </div>
+            <div class="cal-event-content-col">
+                <div class="cal-evt-title">${evt.name}</div>
+                <div class="cal-evt-note">${evt.note}</div>
+            </div>
+            <div class="cal-evt-action" style="flex-direction: column; gap: 8px;">
+                <button class="cal-del-btn" onclick="deleteCalEvent('${evt.id}')" title="Öçiriş">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+                <button class="cal-jump-btn" onclick="jumpToCalDate('${evt.dateStr}')" title="Sanaga ötiş">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+            </div>
+        `;
+        listEl.appendChild(card);
+    });
+
+    // Рендер кнопок пагинации
+    if (totalPages > 1) {
+        for (let i = 1; i <= totalPages; i++) {
+            const pBtn = document.createElement("button");
+            pBtn.className = `cal-page-btn ${i === calCurrentPage ? 'active' : ''}`;
+            pBtn.textContent = i;
+            pBtn.onclick = () => changeCalPage(i);
+            pagEl.appendChild(pBtn);
+        }
+    }
+}
+
+// 5. Логика Иконки Дока и Аудио-Уведомлений
+function checkTodayEventsForDockIcon() {
+    const dockBtn = document.getElementById("calendar-toggle-btn");
+    if (!dockBtn) return;
+
+    const today = new Date();
+    const todayStr = `${String(today.getDate()).padStart(2, '0')}.${String(today.getMonth() + 1).padStart(2, '0')}.${today.getFullYear()}`;
+    
+    const todayEvents = calEvents.filter(e => e.dateStr === todayStr);
+
+    dockBtn.classList.remove("has-event-other", "has-event-birthday");
+
+    if (todayEvents.length > 0) {
+        const hasBirthday = todayEvents.some(e => e.type === "birthday");
+        if (hasBirthday) {
+            dockBtn.classList.add("has-event-birthday");
+        } else {
+            dockBtn.classList.add("has-event-other");
+        }
+    }
+}
+
+function checkCalendarAlarms() {
+    const now = new Date();
+    const dateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`;
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    calEvents.forEach(evt => {
+        // Если дата, время совпадают, включено уведомление и мы еще не пищали для этого ID
+        if (evt.notify && evt.dateStr === dateStr && evt.timeStr === timeStr && !evt._alarmTriggered) {
+            evt._alarmTriggered = true; // Ставим флаг в runtime-объекте, чтобы не пищать 60 раз за 1 минуту
+            playCalendarBeepSequence();
+            
+            // Всплывающее системное окно браузера для надежности (если разрешено)
+            if (Notification.permission === "granted") {
+                new Notification(evt.name, { body: evt.note, icon: "/favicon.ico" });
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission();
+            }
+        }
+    });
+}
+
+// 3 сигнала с интервалом в 2 секунды
+function playCalendarBeepSequence() {
+    let beeps = 0;
+    
+    function beep() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            osc.type = 'square'; // Более резкий звук для будильника
+            osc.frequency.setValueAtTime(600, ctx.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.1, ctx.currentTime); // Громкость 10%
+            gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+
+            osc.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            osc.start();
+            osc.stop(ctx.currentTime + 0.5); 
+        } catch (e) {
+            console.log("Audio API not supported");
+        }
+    }
+
+    // Делаем 3 гудка
+    beep();
+    beeps++;
+    const interval = setInterval(() => {
+        if (beeps < 3) {
+            beep();
+            beeps++;
+        } else {
+            clearInterval(interval);
+        }
+    }, 2000); // Раз в 2 секунды
+}
