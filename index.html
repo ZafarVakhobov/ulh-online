@@ -319,7 +319,42 @@
         
 <!-- Правая группа: Мини-плеер + Переключатель тёмной темы + Кнопка Telegram -->
         <div class="nav-right-actions">
+<!-- === ЦЕНТР УВЕДОМЛЕНИЙ (NOTIFICATIONS) === -->
+            <div class="nav-item has-dropdown" id="navNotifyWrap">
+                <button type="button" class="theme-toggle-btn notify-toggle-btn" id="notifyToggleBtn" onclick="toggleNavDropdown('navNotifyWrap', event); markNotificationsViewed();" title="Bildirişnomalar" aria-label="Bildirishnomalar" aria-expanded="false">
+                    <!-- Обычный колокольчик -->
+                    <svg class="bell-outline" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <!-- Залитый колокольчик (когда есть новые) -->
+                    <svg class="bell-filled" style="display: none;" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <!-- Пульсирующая точка -->
+                    <span class="notify-dot" id="notifyDot" style="display: none;"></span>
+                </button>
 
+                <!-- Окно уведомлений (на базе дизайна профиля пользователя) -->
+                <div class="nav-dropdown user-dropdown-box notify-dropdown-box" onclick="event.stopPropagation()">
+                    <div class="notify-header">
+                        <span style="font-size: 15px; font-weight: 800; color: #0F172A;">Bildirişnomalar</span>
+                        <div class="notify-tabs">
+                            <button class="notify-tab active" id="tabNotifyAll" onclick="switchNotifyTab('all')">Yangi</button>
+                            <button class="notify-tab" id="tabNotifyRead" onclick="switchNotifyTab('read')">Öqilgan</button>
+                        </div>
+                    </div>
+                    <hr class="dropdown-divider" style="margin: 8px 0;">
+                    
+                    <div class="notify-list-container custom-scrollbar" id="notifyListContainer">
+                        <!-- Уведомления будут генерироваться здесь -->
+                    </div>
+
+                    <!-- Кнопка очистки для прочитанных (по умолчанию скрыта) -->
+                    <div id="notifyClearAllWrap" style="display: none; padding-top: 8px; border-top: 1px dashed #E2E8F0; margin-top: 8px;">
+                        <button type="button" class="user-ad-btn" style="margin-bottom: 0; background: #FEE2E2; color: #E11D48;" onclick="clearReadNotifications()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            Barça öqilganlarni öçiriş
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
 <!-- === КНОПКА И МЕНЮ АВТОРА (ZAFAR VAKHOBOV) === -->
             <div class="nav-item has-dropdown" id="navUserWrap">
                 <button type="button" class="theme-toggle-btn user-toggle-btn" onclick="toggleNavDropdown('navUserWrap', event)" title="Loyiha muallifi" aria-label="Muallif profili" aria-expanded="false">
