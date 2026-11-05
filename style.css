@@ -7454,3 +7454,8 @@ body.dark-mode #autosaveBadge:hover { background: rgba(16, 185, 129, 0.25); }
 body.dark-mode .tm-slider { background: #334155; }
 body.dark-mode .tm-slider::-webkit-slider-thumb { background: #38BDF8; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
 body.dark-mode #tmPreview { background: #0F172A; border-color: #334155; color: #94A3B8; }
+
+/* --- Тёмная тема для ASMR-кнопки --- */
+body.dark-mode .asmr-toggle-row { background: #1E293B !important; border-color: #334155 !important; }
+body.dark-mode .asmr-toggle-row:hover { background: #0F172A !important; border-color: #475569 !important; }
+body.dark-mode .asmr-title-text { color: #F8FAFC !important; }
