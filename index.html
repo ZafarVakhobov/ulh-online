@@ -264,7 +264,23 @@
                         </span>
                     </div>
                     
-                    
+<hr class="currency-Block-divider">
+                    <!-- НОВАЯ КНОПКА: AQLLI ANDOZALAR (КОНСТРУКТОР ДОКУМЕНТОВ) -->
+                    <div class="qr-mini-card" role="button" tabindex="0" onclick="openAndozaModal(event)" onkeydown="if(event.key==='Enter'){openAndozaModal(event);}" aria-label="Aqlli Andozalar">
+                        <div class="qr-mini-left">
+                            <div class="qr-mini-icon" style="color: #6366F1;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><path d="M10 9H8"/></svg>
+                            </div>
+                            <div class="qr-mini-text">
+                                <span class="qr-mini-title">AQLLI ANDOZALAR</span>
+                                <span class="qr-mini-sub">Rasmiy hujjatlar konstruktori</span>
+                            </div>
+                        </div>
+                        <span class="currency-nbu-pill">
+                            <span>Oçiş</span>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                    </div>                    
 
                     
 <hr class="currency-Block-divider">
@@ -2388,6 +2404,49 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         </div>
     </div>
 </div>
+
+<!-- === МОДАЛЬНОЕ ОКНО: AQLLI ANDOZALAR (КОНСТРУКТОР ДОКУМЕНТОВ) === -->
+    <div class="weather-modal-backdrop" id="andozaModalBackdrop" onclick="closeAndozaModal(event)">
+        <div class="weather-modal-card alphabet-modal-card" style="max-width: 500px;" onclick="event.stopPropagation()">
+            
+            <div class="calc-input-banner">
+                <div class="calc-banner-top">
+                    <div class="weather-selected-tag">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        <span>AQLLI ANDOZALAR</span>
+                    </div>
+                </div>
+                <div class="ads-banner-title">Hujjat konstruktori</div>
+                <div class="ads-banner-sub">Kerakli hujjat turini tanlang va qisqa ma'lumotlarni kiriting. AI uni rasmiy şaklda tayyorlaydi.</div>
+            </div>
+
+            <div style="padding: 0 4px; margin-top: 18px; display: flex; flex-direction: column; gap: 12px;">
+                
+                <label style="font-size: 11px; font-weight: 800; color: #64748B; margin-bottom: -6px; text-transform: uppercase;">Hujjat turi</label>
+                <select id="andozaType" class="bib-custom-input" onchange="toggleAndozaFields()">
+                    <option value="ariza" selected>Ariza (Заявление)</option>
+                    <option value="tushuntirish">Tuşuntiriş xati (Объяснительная)</option>
+                    <option value="malumotnoma">Ma'lumotnoma (Справка)</option>
+                    <option value="tavsiyanoma">Tavsiyanoma (Характеристика / Рекомендация)</option>
+                </select>
+
+                <!-- Динамические поля ввода -->
+                <div id="andozaDynamicFields" style="display: flex; flex-direction: column; gap: 12px;">
+                    <!-- Заполняется через JS -->
+                </div>
+                
+                <button type="button" id="andozaSubmitBtn" class="ai-submit-modal-btn" style="margin-top: 8px; width: 100%; background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); box-shadow: 0 6px 18px rgba(99, 102, 241, 0.3);" onclick="generateAndozaDocument()">
+                    <svg class="ai-sparkle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
+                    <span id="andozaBtnText">Hujjatni yaratiş</span>
+                </button>
+            </div>
+
+            <div class="weather-modal-footer" style="margin-top: 14px;">
+                <span>AI orqali mukammal şakllantiriladi</span>
+                <button type="button" class="weather-modal-close" onclick="closeAndozaModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
     
 </body>
 </html>
