@@ -34,6 +34,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Библиотека JSZip для работы конвертера в браузере -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Библиотека Tesseract.js для OCR (распознавания текста с картинок) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <!-- Библиотеки для точного рендеринга DOCX/XLSX и мультиориентационной сборки PDF -->
     <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.1.20/dist/docx-preview.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1674,7 +1676,7 @@
             <!-- Блок конвертера: виден на сайте, но автоматически скрывается в Telegram App -->
             <div class="converter-box" id="converterBox">
                 <div class="section-title" style="margin:0;">Office formatidagi fayllar konverteri</div>
-                <div class="file-info" id="fileInfo">Yuklab bölaydigan fayllar formati: .docx, .xlsx, .pptx, .txt</div>
+                <div class="file-info" id="fileInfo">Yuklab bölaydigan fayllar formati: .docx, .xlsx, .pptx, .txt, .png, .jpg</div>
                <!-- ... -->
 <div class="drop-hint">Faylni tanlang yoki şu yerga tortib taşlang (Drop file)</div>
 
@@ -1687,7 +1689,7 @@
     </label>
 </div>
 
-<input type="file" id="fileInput" style="display: none;" accept=".docx,.xlsx,.pptx,.txt" onchange="processFile(event)">
+<input type="file" id="fileInput" style="display: none;" accept=".docx,.xlsx,.pptx,.txt,.png,.jpg,.jpeg" onchange="processFile(event)">
 <div class="btn-row">
     <button class="pill-btn" onclick="document.getElementById('fileInput').click()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
