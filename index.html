@@ -2284,6 +2284,31 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
             </div>
         </div>
 
+        <hr class="dropdown-divider" style="margin: 4px 0;">
+
+        <!-- Блок 3: ASMR Клавиатура -->
+        <div>
+            <div style="font-size: 12px; font-weight: 800; color: #64748B; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.05em;">Ovozli effektlar</div>
+            
+            <label class="asmr-toggle-row" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 12px; transition: all 0.2s;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 20px; line-height: 1;">⌨️</span>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <span style="font-size: 13.5px; font-weight: 800; color: #1E293B;" class="asmr-title-text">ASMR Klaviatura</span>
+                        <span style="font-size: 11px; color: #64748B; font-weight: 600;">Mexanik tugmalar ovozi</span>
+                    </div>
+                </div>
+                
+                <!-- Переиспользуем готовый красивый переключатель антиплагиата -->
+                <div class="plagiat-toggle-wrapper" style="margin: 0; padding: 0; border: none; background: transparent;">
+                    <label class="plagiat-switch">
+                        <input type="checkbox" id="asmrToggleInput" onchange="toggleAsmrMode(this)">
+                        <span class="plagiat-slider round" style="background-color: #CBD5E1;"></span>
+                    </label>
+                </div>
+            </label>
+        </div>
+        
     </div>
     
     <div class="clipboard-footer">
