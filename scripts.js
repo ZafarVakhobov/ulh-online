@@ -9246,3 +9246,113 @@ function renderNotifications() {
 document.addEventListener('DOMContentLoaded', () => {
     updateBellIcon();
 });
+
+// ==========================================
+// === 34. ГЕНЕРАТОР SMM-ЦИТАТ (IQTIBOS DIZAYNERI) ===
+// ==========================================
+
+window.openQuoteModal = function() {
+    // Закрываем меню инструментов, чтобы не мешало
+    if (typeof closeEditorToolsMenu === "function") closeEditorToolsMenu();
+
+    const editorEl = document.getElementById("editor");
+    if (!editorEl) return;
+
+    // 1. Пытаемся получить именно ВЫДЕЛЕННЫЙ текст
+    let selectedText = editorEl.value.substring(editorEl.selectionStart, editorEl.selectionEnd).trim();
+    
+    // 2. Если пользователь ничего не выделил — берем весь текст
+    if (!selectedText) {
+        selectedText = editorEl.value.trim();
+        if (!selectedText) {
+            if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Matn kiriting yoki ajrating!");
+            return;
+        }
+        // Чтобы карточка не лопнула от объема, обрезаем слишком длинный текст
+        if (selectedText.length > 350) {
+            selectedText = selectedText.substring(0, 350) + "...";
+        }
+    } else {
+        if (selectedText.length > 450) {
+            selectedText = selectedText.substring(0, 450) + "...";
+        }
+    }
+
+    const modal = document.getElementById("quoteModalBackdrop");
+    const textStage = document.getElementById("quoteRenderText");
+    const imgPreview = document.getElementById("quotePreviewImg");
+    const loader = document.getElementById("quoteLoader");
+
+    if (!modal || !textStage || !imgPreview) return;
+
+    // Вставляем текст, сохраняя переносы строк (энтеры)
+    textStage.innerHTML = selectedText.replace(/\n/g, "<br>");
+    
+    imgPreview.style.display = "none";
+    loader.style.display = "block";
+    modal.classList.add("open");
+
+    // 3. Запускаем html2canvas для отрисовки карточки
+    setTimeout(async () => {
+        const stage = document.getElementById("quoteRenderStage");
+        try {
+            const canvas = await html2canvas(stage, {
+                scale: 1, // 1080x1080 - достаточно масштаба 1
+                backgroundColor: null,
+                useCORS: true,
+                logging: false
+            });
+            
+            const imgDataUrl = canvas.toDataURL("image/png");
+            imgPreview.src = imgDataUrl;
+            loader.style.display = "none";
+            imgPreview.style.display = "block";
+            
+            // Сохраняем готовую картинку в глобальную переменную для скачивания
+            window.currentQuoteDataUrl = imgDataUrl;
+            
+            // Отправляем красивое уведомление (интеграция с вашей системой!)
+            if (typeof addNotification === "function") {
+                addNotification({
+                    type: 'smm',
+                    title: 'Iqtibos kartoçkasi tayyor',
+                    desc: 'SMM dizayn muvaffaqiyatli yaratildi.',
+                    iconBg: '#FEF3C7', iconColor: '#D97706',
+                    iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`,
+                    actions: [{ label: 'PNG yuklab oliş', colorClass: 'n-btn-xlsx', onClick: 'downloadQuotePng()' }]
+                });
+            }
+
+        } catch (e) {
+            loader.textContent = "Xatolik yuz berdi :(";
+            console.error("Iqtibos render error:", e);
+        }
+    }, 300); // 300мс задержка, чтобы DOM успел применить стили
+};
+
+window.closeQuoteModal = function(e) {
+    const modal = document.getElementById("quoteModalBackdrop");
+    if (!modal) return;
+    if (e && e.target && e.target !== modal) return;
+    modal.classList.remove("open");
+};
+
+// Функция скачивания сгенерированной карточки
+window.downloadQuotePng = function() {
+    if (!window.currentQuoteDataUrl) return;
+    
+    const link = document.createElement("a");
+    link.download = "ulh_iqtibos_" + Date.now() + ".png";
+    link.href = window.currentQuoteDataUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    if (typeof showAutosaveIndicator === "function") {
+        showAutosaveIndicator("SMM kartoçka yuklandi ✓");
+    }
+};
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeQuoteModal();
+});
