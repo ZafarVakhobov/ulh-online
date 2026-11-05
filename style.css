@@ -7563,3 +7563,9 @@ body.dark-mode .eye-care-content { background: #0F172A; border: 1px solid #1E293
 body.dark-mode .eye-care-title { color: #F8FAFC; }
 body.dark-mode .eye-care-text { color: #94A3B8; }
 body.dark-mode .eye-care-timer-wrap { background: #1E293B; border-color: #334155; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
+
+/* --- Тёмная тема для облака слов --- */
+body.dark-mode #wordCloudContainer {
+    background: #0F172A !important;
+    border-color: #334155 !important;
+}
