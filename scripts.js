@@ -7482,6 +7482,7 @@ let calSelectedDate = new Date();
 let calEvents = [];
 let calCurrentPage = 1;
 const CAL_ITEMS_PER_PAGE = 4;
+let calEditingEventId = null;
 
 const UZ_MONTHS = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"];
 const UZ_MONTHS_SHORT = ["Yan", "Fev", "Mar", "Apr", "May", "Iyun", "Iyul", "Avg", "Sen", "Okt", "Noy", "Dek"];
@@ -7524,6 +7525,12 @@ window.closeCalendarModal = function(e) {
     const modal = document.getElementById('calendarModalBackdrop');
     if (!modal) return;
     if (e && e.target && e.target !== modal) return;
+    
+    // Сбрасываем режим редактирования при закрытии
+    calEditingEventId = null;
+    const btnSpan = document.querySelector('.calendar-left-col .ai-submit-modal-btn span');
+    if (btnSpan) btnSpan.textContent = "Saqlaş";
+    
     modal.classList.remove('open');
 };
 
@@ -7693,6 +7700,42 @@ function saveCalEvents() {
     checkTodayEventsForDockIcon();
 }
 
+window.editCalEvent = function(id) {
+    const evt = calEvents.find(e => e.id === id);
+    if (!evt) return;
+
+    // 1. Заполняем форму данными из события
+    document.getElementById("calDateInput").value = evt.dateStr;
+    document.getElementById("calTimeInput").value = evt.timeStr;
+    
+    const notifyCheck = document.getElementById("calNotifyCheck");
+    notifyCheck.checked = evt.notify;
+    toggleCalNotifyUI(notifyCheck);
+
+    const typeSelect = document.getElementById("calEventType");
+    typeSelect.value = evt.type;
+    
+    // Если селект кастомизирован, обновляем визуальную часть кнопки
+    const customTriggerText = typeSelect.nextElementSibling?.querySelector('.custom-select-text');
+    if (customTriggerText) {
+        customTriggerText.textContent = typeSelect.options[typeSelect.selectedIndex].text;
+    }
+    updateCalPlaceholder();
+
+    document.getElementById("calEventName").value = evt.name;
+    document.getElementById("calEventNote").value = evt.note;
+
+    // 2. Включаем режим редактирования
+    calEditingEventId = id; 
+
+    // 3. Меняем текст кнопки на "Сохранить изменения"
+    const btnSpan = document.querySelector('.calendar-left-col .ai-submit-modal-btn span');
+    if (btnSpan) btnSpan.textContent = "Özgarişlarni saqlaş";
+
+    // 4. Перекидываем календарь на эту дату
+    jumpToCalDate(evt.dateStr);
+};
+
 window.saveCalendarEvent = function() {
     const dateStr = document.getElementById("calDateInput").value;
     const timeStr = document.getElementById("calTimeInput").value || "00:00";
@@ -7704,21 +7747,34 @@ window.saveCalendarEvent = function() {
     if (dateStr.length !== 10) return alert("Iltimos, sanani töliq kiriting (DD.MM.YYYY).");
     if (!name) return alert("Iltimos, tadbir nomini kiriting.");
 
-    const newEvent = {
-        id: Date.now().toString(),
-        dateStr,
-        timeStr,
-        type,
-        name,
-        note,
-        notify,
-        timestamp: parseDateStrToTimestamp(dateStr, timeStr)
-    };
+    const timestamp = parseDateStrToTimestamp(dateStr, timeStr);
 
-    calEvents.push(newEvent);
-    // Сортировка по дате (от ближайших к будущим)
+    if (calEditingEventId) {
+        // Редактируем существующее событие
+        const evtIndex = calEvents.findIndex(e => e.id === calEditingEventId);
+        if (evtIndex !== -1) {
+            calEvents[evtIndex] = {
+                ...calEvents[evtIndex],
+                dateStr, timeStr, type, name, note, notify, timestamp,
+                _alarmTriggered: false // Сбрасываем будильник при изменении
+            };
+        }
+        calEditingEventId = null; // Выключаем режим редактирования
+        
+        // Возвращаем текст кнопки обратно
+        const btnSpan = document.querySelector('.calendar-left-col .ai-submit-modal-btn span');
+        if (btnSpan) btnSpan.textContent = "Saqlaş";
+    } else {
+        // Создаем новое событие
+        const newEvent = {
+            id: Date.now().toString(),
+            dateStr, timeStr, type, name, note, notify, timestamp
+        };
+        calEvents.push(newEvent);
+    }
+
+    // Сортировка и сохранение
     calEvents.sort((a, b) => a.timestamp - b.timestamp);
-    
     saveCalEvents();
     
     // Очистка формы
@@ -7726,7 +7782,7 @@ window.saveCalendarEvent = function() {
     document.getElementById("calEventNote").value = "";
     document.getElementById("calTimeInput").value = "";
     
-    calCurrentPage = 1; // Возврат на 1 страницу
+    calCurrentPage = 1; 
     renderCalendar();
     renderCalEventsList();
 };
@@ -7816,10 +7872,17 @@ function renderCalEventsList() {
                 <div class="cal-evt-title">${evt.name}</div>
                 <div class="cal-evt-note">${evt.note}</div>
             </div>
-            <div class="cal-evt-action" style="flex-direction: column; gap: 8px;">
-                <button class="cal-del-btn" onclick="deleteCalEvent('${evt.id}')" title="Öçiriş">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
+            <div class="cal-evt-action" style="flex-direction: column; gap: 8px; justify-content: space-between; align-items: flex-end;">
+                <!-- Блок кнопок Редактировать и Удалить в одной строке -->
+                <div style="display: flex; gap: 4px;">
+                    <button class="cal-edit-btn" onclick="editCalEvent('${evt.id}')" title="Tahrirlaş">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    </button>
+                    <button class="cal-del-btn" onclick="deleteCalEvent('${evt.id}')" title="Öçiriş">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>
+                <!-- Кнопка перехода к дате -->
                 <button class="cal-jump-btn" onclick="jumpToCalDate('${evt.dateStr}')" title="Sanaga ötiş">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </button>
