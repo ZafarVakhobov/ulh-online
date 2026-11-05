@@ -7459,3 +7459,107 @@ body.dark-mode #tmPreview { background: #0F172A; border-color: #334155; color: #
 body.dark-mode .asmr-toggle-row { background: #1E293B !important; border-color: #334155 !important; }
 body.dark-mode .asmr-toggle-row:hover { background: #0F172A !important; border-color: #475569 !important; }
 body.dark-mode .asmr-title-text { color: #F8FAFC !important; }
+
+
+/* ========================================== */
+/* === SOG'LOM KO'ZLAR (20-20-20 QOIDASI) === */
+/* ========================================== */
+.eye-care-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    z-index: 1000000; /* Поверх абсолютно всего */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.8s ease, visibility 0.8s ease; /* Очень плавное появление */
+}
+.eye-care-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.eye-care-content {
+    background: #FFFFFF;
+    padding: 36px 40px;
+    border-radius: 28px;
+    text-align: center;
+    max-width: 440px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
+    transform: scale(0.95) translateY(10px);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.eye-care-overlay.active .eye-care-content {
+    transform: scale(1) translateY(0);
+}
+
+.eye-care-icon {
+    color: #10B981;
+    margin-bottom: 12px;
+    animation: floatEye 3s ease-in-out infinite;
+}
+@keyframes floatEye {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+.eye-care-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0 0 10px;
+    letter-spacing: -0.02em;
+}
+.eye-care-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    line-height: 1.5;
+    margin: 0 0 24px;
+}
+.eye-care-timer-wrap {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 4px solid #ECFDF5;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+#eyeCareTimer {
+    font-size: 42px;
+    font-weight: 800;
+    color: #10B981;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.eye-care-skip {
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.eye-care-skip:hover {
+    color: #EF4444;
+}
+
+/* Темная тема */
+body.dark-mode .eye-care-overlay { background: rgba(11, 17, 32, 0.75); }
+body.dark-mode .eye-care-content { background: #0F172A; border: 1px solid #1E293B; }
+body.dark-mode .eye-care-title { color: #F8FAFC; }
+body.dark-mode .eye-care-text { color: #94A3B8; }
+body.dark-mode .eye-care-timer-wrap { background: #1E293B; border-color: #334155; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
