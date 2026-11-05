@@ -8813,3 +8813,107 @@ window.testEyeCare = function() {
     eyeCareActiveTime = (20 * 60) - 2; // Перематываем время до 19 минут 58 секунд
     console.log("Diqqat! 2 soniyadan söng 20-20-20 oynasi oçiladi.");
 };
+
+
+// ==========================================
+// === 31. SO'Z BULUTI (WORD CLOUD GENERATOR) ===
+// ==========================================
+
+// Список стоп-слов (предлоги, союзы, местоимения, которые нужно отбросить)
+const STOP_WORDS_UZ_RU = new Set([
+    // Узбекские
+    "va", "yoki", "bilan", "uchun", "ham", "bu", "o'sha", "shu", "u", "ular", 
+    "dan", "ga", "da", "ni", "ning", "kabi", "deb", "ekan", "edi", "emas", "lekin",
+    "biroq", "ammo", "chunki", "shuning", "til", "etish", "qilish", "haqida",
+    // Русские
+    "и", "в", "во", "не", "что", "он", "на", "я", "с", "со", "как", "а", "то", 
+    "все", "она", "так", "его", "но", "да", "ты", "к", "у", "же", "вы", "за", 
+    "бы", "по", "только", "ее", "мне", "было", "вот", "от", "меня", "еще", "нет",
+    // Английские
+    "the", "and", "to", "a", "of", "in", "is", "it", "you", "that", "he", "was", "for", "on"
+]);
+
+window.generateWordCloud = function() {
+    const editorEl = document.getElementById("editor");
+    const container = document.getElementById("wordCloudContainer");
+    const downloadBtn = document.getElementById("downloadCloudBtn");
+    const canvas = document.getElementById("wordCloudCanvas");
+
+    if (!editorEl || !editorEl.value.trim()) {
+        alert("Iltimos, avval matn kiriting!");
+        return;
+    }
+
+    const text = editorEl.value.trim();
+
+    // 1. Очищаем текст и разбиваем на слова
+    const wordsArray = text.toLowerCase()
+        .replace(/[0-9.,/#!$%^&*;:{}=\-_`~()«»""''?![\]+]/g, " ")
+        .split(/\s+/)
+        .map(w => w.trim())
+        .filter(w => w.length > 2 && !STOP_WORDS_UZ_RU.has(w));
+
+    if (wordsArray.length === 0) {
+        alert("Matnda tahlil qiliş uçun yetarli sözlar topilmadi.");
+        return;
+    }
+
+    // 2. Считаем частоту каждого слова
+    const frequencyMap = {};
+    wordsArray.forEach(word => {
+        frequencyMap[word] = (frequencyMap[word] || 0) + 1;
+    });
+
+    // Превращаем в массив формата WordCloud2: [ [word, weight], ... ]
+    let wordList = Object.keys(frequencyMap).map(word => {
+        // Применяем новый алфавит к словам, если это узбекский текст
+        const cleanWord = (typeof enforceNewUzbekAlphabet === "function") ? enforceNewUzbekAlphabet(word) : word;
+        return [cleanWord, frequencyMap[word] * 12]; // Умножаем на веса для красивого масштаба
+    });
+
+    // Сортируем по популярности и берем топ-60 слов
+    wordList.sort((a, b) => b[1] - a[1]);
+    wordList = wordList.slice(0, 60);
+
+    // Показываем контейнер и кнопку скачивания
+    container.style.display = "flex";
+    downloadBtn.style.display = "inline-flex";
+
+    // 3. Настройки и запуск генерации WordCloud2 на canvas
+    const isDark = document.body.classList.contains("dark-mode");
+    
+    WordCloud(canvas, {
+        list: wordList,
+        gridSize: Math.round(16 * canvas.width / 500),
+        weightFactor: 1.2,
+        fontFamily: 'Manrope, Arial, sans-serif',
+        color: function() {
+            // Фирменная палитра ULH Online (синий, изумрудный, фиолетовый, бирюзовый)
+            const palette = isDark 
+                ? ['#38BDF8', '#34D399', '#A5B4FC', '#F472B6', '#FBBF24'] 
+                : ['#0284C7', '#10B981', '#7C3AED', '#0D9488', '#2563EB'];
+            return palette[Math.floor(Math.random() * palette.length)];
+        },
+        rotateRatio: 0.35, // 35% слов будут повернуты вертикально для красоты
+        rotationSteps: 2,
+        backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+        shape: 'cardioid' // Форма облака в виде сердечка/овала
+    });
+};
+
+// Функция скачивания облака слов в формате PNG
+window.downloadWordCloud = function() {
+    const canvas = document.getElementById("wordCloudCanvas");
+    if (!canvas) return;
+
+    const link = document.createElement('a');
+    link.download = 'ulh_soz_buluti.png';
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    if (typeof showAutosaveIndicator === "function") {
+        showAutosaveIndicator("Söz buluti yuklab olindi ✓");
+    }
+};
