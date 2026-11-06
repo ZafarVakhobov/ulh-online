@@ -7973,3 +7973,88 @@ body.dark-mode .ambient-preset-btn.active {
     color: #FFFFFF;
     border-color: #0284C7;
 }
+
+
+
+/* ========================================== */
+/* === АВТО-ОГЛАВЛЕНИЕ (AVTO-MUNDARIJA) === */
+/* ========================================== */
+.minimap-right-panel {
+    margin-top: 0 !important;
+    height: 260px; /* Идеально вровень с редактором */
+    display: flex;
+    flex-direction: column;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 16px 8px 16px 16px;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+    animation: reportFadeSlide 0.25s ease-out forwards;
+    position: relative;
+}
+
+.minimap-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #1E293B;
+    margin-bottom: 12px;
+    padding-right: 28px;
+}
+
+.minimap-content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-right: 8px;
+}
+
+.minimap-item {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #475569;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: 1px solid transparent;
+}
+
+.minimap-item:hover {
+    background: #F8FAFC;
+    color: #0284C7;
+    border-color: #E2E8F0;
+    transform: translateX(3px);
+}
+
+/* Уровни вложенности заголовков */
+.minimap-level-1 { font-weight: 800; color: #1E293B; margin-top: 4px; }
+.minimap-level-2 { padding-left: 20px; font-size: 12px; }
+.minimap-level-3 { padding-left: 30px; font-size: 11px; }
+
+/* Темная тема (Dark Mode) */
+body.dark-mode .minimap-right-panel { background: #0F172A; border-color: #334155; }
+body.dark-mode .minimap-header { color: #F8FAFC; }
+body.dark-mode .minimap-item { color: #94A3B8; }
+body.dark-mode .minimap-level-1 { color: #E2E8F0; }
+body.dark-mode .minimap-item:hover { background: #1E293B; color: #38BDF8; border-color: #334155; }
+
+/* Адаптация для Zen Mode (чтобы панель вытягивалась в высоту) */
+body.zen-mode-active .minimap-right-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    margin-top: 16px !important;
+    height: 35vh !important; 
+    min-height: 250px !important;
+    flex-shrink: 0 !important; 
+}
+@media (max-width: 760px) {
+    .minimap-right-panel { height: 260px; max-height: 350px; }
+}
