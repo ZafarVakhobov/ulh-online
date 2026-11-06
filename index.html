@@ -32,6 +32,8 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- Подключаем шрифт Manrope -->
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Подключаем шрифт для сертификатов -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <!-- Библиотека JSZip для работы конвертера в браузере -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- Библиотека Tesseract.js для OCR (распознавания текста с картинок) -->
@@ -289,9 +291,27 @@
 
                     
 <hr class="currency-Block-divider">
+                    <!-- НОВАЯ КНОПКА: ГЕНЕРАТОР СЕРТИФИКАТОВ -->
+                    <div class="qr-mini-card" role="button" tabindex="0" onclick="openCertModal(event)" aria-label="Avto-Sertifikat">
+                        <div class="qr-mini-left">
+                            <div class="qr-mini-icon" style="background: #FEF3C7; color: #D97706;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15l-2 5l9-4l-9-4l2 5z" style="display:none;"/><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3l-5 3l1.523-9.11"/></svg>
+                            </div>
+                            <div class="qr-mini-text">
+                                <span class="qr-mini-title">AVTO-SERTIFIKAT</span>
+                                <span class="qr-mini-sub">Sertifikat, diplom yaratiş</span>
+                            </div>
+                        </div>
+                        <span class="currency-nbu-pill">
+                            <span>Oçiş</span>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                    </div>
 
+
+                    
                     <!-- НОВАЯ КНОПКА: ГОРЯЧИЕ КЛАВИШИ -->
-                    <div class="qr-mini-card" role="button" tabindex="0" onclick="openHotkeysModal(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openHotkeysModal(event);}" aria-label="Qaynoq tugmalar">
+                    <div class="qr-mini-card" style="display:none;" role="button" tabindex="0" onclick="openHotkeysModal(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openHotkeysModal(event);}" aria-label="Qaynoq tugmalar">
                         <div class="qr-mini-left">
                             <div class="qr-mini-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M8 12h.001"/><path d="M12 12h.001"/><path d="M16 12h.001"/><path d="M7 16h10"/></svg>
@@ -2701,7 +2721,100 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         </div>
     </div>
 </div>
+
+<!-- === МОДАЛЬНОЕ ОКНО: AVTO-SERTIFIKAT === -->
+<div class="weather-modal-backdrop" id="certModalBackdrop" onclick="closeCertModal(event)">
+    <div class="weather-modal-card alphabet-modal-card" style="max-width: 650px;" onclick="event.stopPropagation()">
         
+        <div class="calc-input-banner">
+            <div class="calc-banner-top">
+                <div class="weather-selected-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 15l-2 5l9-4l-9-4l2 5z" style="display:none;"/><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3l-5 3l1.523-9.11"/></svg>
+                    <span>SERTIFIKAT GENERATORI</span>
+                </div>
+            </div>
+            <div class="ads-banner-title">Avto-Sertifikat</div>
+            <div class="ads-banner-sub">Şablonni yuklang, ismlar röyxatini kiriting va AI buni avtomatik şakllantirib, QR-kod bilan ZIP arxivga joylaydi.</div>
+        </div>
+
+        <div style="padding: 0 4px; margin-top: 18px; display: flex; flex-direction: column; gap: 14px; max-height: 60vh; overflow-y: auto;" class="custom-scrollbar">
+            
+            <!-- Метаданные (Событие, Номер, Дата) -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <label style="font-size: 11px; font-weight: 800; color: #64748B; margin-bottom: 6px; display: block;">TADBIR / VOQEA NOMI</label>
+                    <input type="text" id="certEventName" class="bib-custom-input" placeholder="Masalan: Orientation Week 2026">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: 800; color: #64748B; margin-bottom: 6px; display: block;">SANA (DD.MM.YYYY)</label>
+                    <input type="text" id="certDate" class="bib-custom-input" placeholder="06.11.2026" maxlength="10" oninput="formatCalDateInput(this)">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <label style="font-size: 11px; font-weight: 800; color: #64748B; margin-bottom: 6px; display: block;">QABUL QILUVÇI TOIFASI</label>
+                    <select id="certType" class="bib-custom-input" onchange="toggleCertFields()">
+                        <option value="student" selected>Talaba (Student)</option>
+                        <option value="staff">Xodim (Staff)</option>
+                        <option value="guest">Faxriy mehmon / Boshqa</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: 800; color: #64748B; margin-bottom: 6px; display: block;">OXIRGI QAYD RAQAMI (Reg.daftardagi)</label>
+                    <input type="number" id="certLastNum" class="bib-custom-input" placeholder="Masalan: 145" min="0">
+                </div>
+            </div>
+
+            <!-- Динамические поля -->
+            <div id="certFieldsStudent" class="cert-dynamic-group active">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="text" id="certGroup" class="bib-custom-input" placeholder="Guruh (Masalan: ManTour-225)">
+                    <input type="text" id="certCourse" class="bib-custom-input" placeholder="Kurs (Masalan: 3-kurs)">
+                </div>
+            </div>
+            
+            <div id="certFieldsStaff" class="cert-dynamic-group">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="text" id="certPosition" class="bib-custom-input" placeholder="Lavozimi (Masalan: Menejer)">
+                    <input type="text" id="certDept" class="bib-custom-input" placeholder="Bölim (Masalan: IT Markazi)">
+                </div>
+            </div>
+
+            <div id="certFieldsGuest" class="cert-dynamic-group">
+                <input type="text" id="certCustomText" class="bib-custom-input" placeholder="Erkin izoh (Masalan: Faol iştiroki uçun)">
+            </div>
+
+            <!-- Загрузка списков и шаблона -->
+            <div>
+                <label style="font-size: 11px; font-weight: 800; color: #64748B; margin-bottom: 6px; display: block;">QABUL QILUVÇILAR RÖYXATI (Har qatorda bittadan)</label>
+                <textarea id="certNamesList" class="bib-custom-input cert-names-textarea custom-scrollbar" placeholder="Vakhobov Zafar&#10;Aliyev Vali&#10;..."></textarea>
+            </div>
+
+            <div>
+                <label for="certTemplateFile" class="cert-upload-label" id="certTemplateLabel">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 8px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span style="font-weight: 800; font-size: 13px;">Şablon rasmini yuklang (PNG / JPG)</span>
+                    <span style="font-size: 11px; color: inherit; font-weight: 600; margin-top: 4px;">Dizayn örtasi ism uçun oçiq bölişi kerak</span>
+                </label>
+                <input type="file" id="certTemplateFile" accept="image/png, image/jpeg" style="display: none;" onchange="handleCertTemplateSelect(this)">
+            </div>
+
+        </div>
+        
+        <!-- Кнопка генерации -->
+        <button type="button" id="certGenerateBtn" class="ai-submit-modal-btn" style="margin-top: 16px; width: 100%; background: linear-gradient(135deg, #10B981 0%, #059669 100%); box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);" onclick="processCertificates()">
+            <svg class="ai-sparkle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/></svg>
+            <span id="certGenerateText">Sertifikatlarni yaratiş</span>
+        </button>
+
+        <div class="weather-modal-footer" style="margin-top: 14px;">
+            <span>AI röyxatni avtomatik töğrilaydi</span>
+            <button type="button" class="weather-modal-close" onclick="closeCertModal()">Yopiş</button>
+        </div>
+    </div>
+</div>
+    
 <!-- === 20-20-20 QOIDASI (SOG'LOM KO'ZLAR) === -->
 <div id="eyeCareOverlay" class="eye-care-overlay">
     <div class="eye-care-content">
