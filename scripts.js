@@ -2611,75 +2611,51 @@ let ambientAudioCtx = null;
 let ambientMasterGain = null;
 let ambientReverbNode = null;
 let ambientIsPlaying = false;
-let ambientVolume = 0.70; // 70% по умолчанию
-let ambientChordTimer = null;
-let ambientMelodyTimer = null;
+let ambientVolume = 0.70; 
 let ambientHasStartedOnce = false;
 
-// Аккорды для мягкого фонового пэда (Fmaj9, Dm11, Bbmaj7, C6add9)
+// Таймеры и узлы для разных пресетов
+let ambientChordTimer = null;
+let ambientMelodyTimer = null;
+let rainNoiseNode = null;
+let brownNoiseNode = null;
+let vinylCracklesTimer = null;
+
+let currentAmbientPreset = 'soft_pad'; // 'soft_pad', 'rain', 'brown_noise', 'vinyl'
+
+// Аккорды и скейлы для soft_pad
 const AMBIENT_CHORDS = [
-    [174.61, 220.00, 261.63, 329.63, 392.00], // Fmaj9
-    [146.83, 220.00, 261.63, 329.63, 349.23], // Dm11
-    [116.54, 174.61, 220.00, 261.63, 349.23], // Bbmaj9
-    [130.81, 196.00, 246.94, 293.66, 329.63]  // Cmaj9
+    [174.61, 220.00, 261.63, 329.63, 392.00], 
+    [146.83, 220.00, 261.63, 329.63, 349.23], 
+    [116.54, 174.61, 220.00, 261.63, 349.23], 
+    [130.81, 196.00, 246.94, 293.66, 329.63]  
 ];
-
-// Пентатоника для мягких мелодических капель (Rhodes / Bell)
-const AMBIENT_SCALE = [
-    261.63, 293.66, 329.63, 349.23, 392.00, 440.00,
-    523.25, 587.33, 659.25, 698.46, 783.99, 880.00
-];
-
+const AMBIENT_SCALE = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 523.25, 587.33, 659.25, 698.46, 783.99, 880.00];
 let currentChordIdx = 0;
 
-// Создание мягкого пространственного ревербератора (Impulse Response)
-function createAmbientReverb(ctx) {
-    const sampleRate = ctx.sampleRate;
-    const length = sampleRate * 3.6; // 3.6 секунды хвоста реверберации
-    const impulse = ctx.createBuffer(2, length, sampleRate);
-
-    for (let ch = 0; ch < 2; ch++) {
-        const channelData = impulse.getChannelData(ch);
-        for (let i = 0; i < length; i++) {
-            const decay = Math.pow(1 - i / length, 2.4);
-            channelData[i] = (Math.random() * 2 - 1) * decay * 0.35;
-        }
-    }
-
-    const convolver = ctx.createConvolver();
-    convolver.buffer = impulse;
-    return convolver;
-}
-
+// Инициализация мастер-шины
 function initAmbientAudioEngine() {
     if (ambientAudioCtx) return;
-
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
 
     ambientAudioCtx = new AudioContextClass();
-
-    // Мастер-громкость
     ambientMasterGain = ambientAudioCtx.createGain();
     ambientMasterGain.gain.value = ambientVolume * 0.45;
 
-    // Мягкий сглаживающий фильтр на мастере
     const masterFilter = ambientAudioCtx.createBiquadFilter();
     masterFilter.type = "lowpass";
     masterFilter.frequency.value = 1800;
 
-    // Ревербератор для глубокого эмбиент-пространства
     ambientReverbNode = createAmbientReverb(ambientAudioCtx);
     const wetGain = ambientAudioCtx.createGain();
     wetGain.gain.value = 0.55;
-
     const dryGain = ambientAudioCtx.createGain();
     dryGain.gain.value = 0.65;
 
     masterFilter.connect(dryGain);
     masterFilter.connect(ambientReverbNode);
     ambientReverbNode.connect(wetGain);
-
     dryGain.connect(ambientMasterGain);
     wetGain.connect(ambientMasterGain);
     ambientMasterGain.connect(ambientAudioCtx.destination);
@@ -2687,164 +2663,241 @@ function initAmbientAudioEngine() {
     ambientAudioCtx._inputBus = masterFilter;
 }
 
-// Проигрывание тёплого обволакивающего аккорда (Pad)
-function triggerAmbientPadChord() {
-    if (!ambientIsPlaying || !ambientAudioCtx) return;
+function createAmbientReverb(ctx) {
+    const length = ctx.sampleRate * 3.6; 
+    const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+        const channelData = impulse.getChannelData(ch);
+        for (let i = 0; i < length; i++) {
+            const decay = Math.pow(1 - i / length, 2.4);
+            channelData[i] = (Math.random() * 2 - 1) * decay * 0.35;
+        }
+    }
+    const convolver = ctx.createConvolver();
+    convolver.buffer = impulse;
+    return convolver;
+}
 
+// -----------------------------------------------------------------
+// ГЕНЕРАТОРЫ ЗВУКА
+// -----------------------------------------------------------------
+
+// 1. Soft Pad
+function triggerAmbientPadChord() {
+    if (!ambientIsPlaying || currentAmbientPreset !== 'soft_pad') return;
     const now = ambientAudioCtx.currentTime;
     const chord = AMBIENT_CHORDS[currentChordIdx % AMBIENT_CHORDS.length];
     currentChordIdx++;
 
     chord.forEach((freq, idx) => {
         const osc = ambientAudioCtx.createOscillator();
-        const subOsc = ambientAudioCtx.createOscillator();
         const noteGain = ambientAudioCtx.createGain();
-        const filter = ambientAudioCtx.createBiquadFilter();
-        const panner = ambientAudioCtx.createStereoPanner ? ambientAudioCtx.createStereoPanner() : null;
-
         osc.type = "sine";
-        subOsc.type = "triangle";
-
-        // Легкий расстрой (detune) для теплоты аналогового синтезатора
         osc.frequency.setValueAtTime(freq, now);
-        subOsc.frequency.setValueAtTime(freq * 0.9985, now);
-
-        filter.type = "lowpass";
-        filter.frequency.setValueAtTime(520 + idx * 90, now);
-
-        const attack = 2.6;
-        const hold = 3.2;
-        const release = 4.2;
+        
+        const attack = 2.6, hold = 3.2, release = 4.2;
         const peakGain = 0.048 / Math.sqrt(chord.length);
-
+        
         noteGain.gain.setValueAtTime(0.0001, now);
         noteGain.gain.linearRampToValueAtTime(peakGain, now + attack);
         noteGain.gain.setValueAtTime(peakGain, now + attack + hold);
         noteGain.gain.exponentialRampToValueAtTime(0.0001, now + attack + hold + release);
-
-        osc.connect(filter);
-        subOsc.connect(filter);
-        filter.connect(noteGain);
-
-        if (panner) {
-            panner.pan.setValueAtTime((idx % 2 === 0 ? -1 : 1) * 0.35, now);
-            noteGain.connect(panner);
-            panner.connect(ambientAudioCtx._inputBus);
-        } else {
-            noteGain.connect(ambientAudioCtx._inputBus);
-        }
-
+        
+        osc.connect(noteGain);
+        noteGain.connect(ambientAudioCtx._inputBus);
+        
         osc.start(now);
-        subOsc.start(now);
         osc.stop(now + attack + hold + release + 0.1);
-        subOsc.stop(now + attack + hold + release + 0.1);
     });
 }
 
-// Проигрывание мягкой случайной ноты пентатоники (в стиле FigJam / Rhodes)
 function triggerAmbientMelodyNote() {
-    if (!ambientIsPlaying || !ambientAudioCtx) return;
-
+    if (!ambientIsPlaying || currentAmbientPreset !== 'soft_pad') return;
     const now = ambientAudioCtx.currentTime;
     const freq = AMBIENT_SCALE[Math.floor(Math.random() * AMBIENT_SCALE.length)];
-
     const osc = ambientAudioCtx.createOscillator();
-    const overtone = ambientAudioCtx.createOscillator();
     const noteGain = ambientAudioCtx.createGain();
-    const overtoneGain = ambientAudioCtx.createGain();
-
+    
     osc.type = "sine";
-    overtone.type = "sine";
-
     osc.frequency.setValueAtTime(freq, now);
-    overtone.frequency.setValueAtTime(freq * 2, now); // Мягкий обертон на октаву выше
-
+    
     noteGain.gain.setValueAtTime(0.0001, now);
     noteGain.gain.linearRampToValueAtTime(0.042, now + 0.05);
     noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.4);
-
-    overtoneGain.gain.setValueAtTime(0.0001, now);
-    overtoneGain.gain.linearRampToValueAtTime(0.008, now + 0.02);
-    overtoneGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
-
+    
     osc.connect(noteGain);
-    overtone.connect(overtoneGain);
-    overtoneGain.connect(noteGain);
     noteGain.connect(ambientAudioCtx._inputBus);
-
+    
     osc.start(now);
-    overtone.start(now);
     osc.stop(now + 3.5);
-    overtone.stop(now + 1.0);
+    
+    ambientMelodyTimer = setTimeout(triggerAmbientMelodyNote, 1800 + Math.random() * 2400);
+}
 
-    // Планируем следующую ноту через случайный органичный интервал (1.8 — 4.2 сек)
-    const nextDelay = 1800 + Math.random() * 2400;
-    ambientMelodyTimer = setTimeout(triggerAmbientMelodyNote, nextDelay);
+// Утилита генерации буфера шума
+function createNoiseBuffer(ctx) {
+    const bufferSize = ctx.sampleRate * 2; // 2 секунды
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1; // Белый шум
+    }
+    return buffer;
+}
+
+// 2. Rain (Дождь - Pink Noise + LPF)
+function startRainNoise() {
+    if (!ambientAudioCtx) return;
+    const noiseBuffer = createNoiseBuffer(ambientAudioCtx);
+    rainNoiseNode = ambientAudioCtx.createBufferSource();
+    rainNoiseNode.buffer = noiseBuffer;
+    rainNoiseNode.loop = true;
+    
+    const filter = ambientAudioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 600; // Срезаем верха для имитации тяжелого дождя
+    
+    // Небольшая модуляция (гроза вдалеке)
+    const lfo = ambientAudioCtx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 0.1; 
+    const lfoGain = ambientAudioCtx.createGain();
+    lfoGain.gain.value = 200;
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+    lfo.start();
+
+    rainNoiseNode.connect(filter);
+    filter.connect(ambientAudioCtx._inputBus);
+    rainNoiseNode.start();
+}
+
+// 3. Brown Noise (Гул кофейни/самолета)
+function startBrownNoise() {
+    if (!ambientAudioCtx) return;
+    const noiseBuffer = createNoiseBuffer(ambientAudioCtx);
+    brownNoiseNode = ambientAudioCtx.createBufferSource();
+    brownNoiseNode.buffer = noiseBuffer;
+    brownNoiseNode.loop = true;
+    
+    const filter = ambientAudioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 200; // Очень низкий срез для коричневого шума
+    filter.Q.value = 0.5;
+
+    brownNoiseNode.connect(filter);
+    filter.connect(ambientAudioCtx._inputBus);
+    brownNoiseNode.start();
+}
+
+// 4. Vinyl Crackles (Винил - короткие всплески высокочастотного шума)
+function triggerVinylCrackle() {
+    if (!ambientIsPlaying || currentAmbientPreset !== 'vinyl') return;
+    
+    const now = ambientAudioCtx.currentTime;
+    const osc = ambientAudioCtx.createOscillator();
+    const gain = ambientAudioCtx.createGain();
+    
+    // Резкий щелчок
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(3000 + Math.random() * 5000, now);
+    
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+    
+    const filter = ambientAudioCtx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 2000;
+    
+    osc.connect(gain);
+    gain.connect(filter);
+    filter.connect(ambientAudioCtx._inputBus);
+    
+    osc.start(now);
+    osc.stop(now + 0.05);
+
+    // Добавляем фоновый очень тихий белый шум
+    if (!brownNoiseNode) {
+        const noiseBuffer = createNoiseBuffer(ambientAudioCtx);
+        brownNoiseNode = ambientAudioCtx.createBufferSource();
+        brownNoiseNode.buffer = noiseBuffer;
+        brownNoiseNode.loop = true;
+        const noiseGain = ambientAudioCtx.createGain();
+        noiseGain.gain.value = 0.02; // Едва слышно
+        brownNoiseNode.connect(noiseGain);
+        noiseGain.connect(ambientAudioCtx._inputBus);
+        brownNoiseNode.start();
+    }
+    
+    vinylCracklesTimer = setTimeout(triggerVinylCrackle, 50 + Math.random() * 800);
+}
+
+// -----------------------------------------------------------------
+// УПРАВЛЕНИЕ ВОСПРОИЗВЕДЕНИЕМ
+// -----------------------------------------------------------------
+
+function stopAllGenerators() {
+    clearInterval(ambientChordTimer);
+    clearTimeout(ambientMelodyTimer);
+    clearTimeout(vinylCracklesTimer);
+    
+    if (rainNoiseNode) { rainNoiseNode.stop(); rainNoiseNode.disconnect(); rainNoiseNode = null; }
+    if (brownNoiseNode) { brownNoiseNode.stop(); brownNoiseNode.disconnect(); brownNoiseNode = null; }
 }
 
 function startAmbientMusic() {
     initAmbientAudioEngine();
     if (!ambientAudioCtx) return;
-
-    if (ambientAudioCtx.state === "suspended") {
-        ambientAudioCtx.resume();
-    }
-
+    if (ambientAudioCtx.state === "suspended") ambientAudioCtx.resume();
+    
     ambientIsPlaying = true;
     ambientHasStartedOnce = true;
     updateMusicPlayerUI();
+    stopAllGenerators();
 
-    clearInterval(ambientChordTimer);
-    clearTimeout(ambientMelodyTimer);
-
-    triggerAmbientPadChord();
-    ambientChordTimer = setInterval(triggerAmbientPadChord, 7200);
-    ambientMelodyTimer = setTimeout(triggerAmbientMelodyNote, 1100);
+    switch (currentAmbientPreset) {
+        case 'soft_pad':
+            triggerAmbientPadChord();
+            ambientChordTimer = setInterval(triggerAmbientPadChord, 7200);
+            ambientMelodyTimer = setTimeout(triggerAmbientMelodyNote, 1100);
+            break;
+        case 'rain':
+            startRainNoise();
+            break;
+        case 'brown_noise':
+            startBrownNoise();
+            break;
+        case 'vinyl':
+            triggerVinylCrackle();
+            break;
+    }
 }
 
 function pauseAmbientMusic() {
     ambientIsPlaying = false;
-    clearInterval(ambientChordTimer);
-    clearTimeout(ambientMelodyTimer);
+    stopAllGenerators();
     updateMusicPlayerUI();
 }
 
-function toggleAmbientPlayback(event) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
+window.setAmbientPreset = function(preset) {
+    currentAmbientPreset = preset;
+    
+    // Обновляем UI кнопок
+    document.querySelectorAll('.ambient-preset-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Находим нажатую кнопку по onclick атрибуту
+    const clickedBtn = document.querySelector(`.ambient-preset-btn[onclick="setAmbientPreset('${preset}')"]`);
+    if (clickedBtn) clickedBtn.classList.add('active');
+
+    // Если музыка уже играет, перезапускаем с новым пресетом
     if (ambientIsPlaying) {
-        pauseAmbientMusic();
-    } else {
+        stopAllGenerators();
         startAmbientMusic();
     }
-}
-
-function updateMusicPlayerUI() {
-    const navBtn = document.getElementById("musicToggleBtn");
-    const coverBtn = document.getElementById("musicPlayPauseBtn");
-    const dockBtn = document.getElementById("dockMainBtn"); // <--- Находим кнопку Ö
-
-    if (navBtn) {
-        navBtn.classList.toggle("is-playing", ambientIsPlaying);
-    }
-    if (coverBtn) {
-        coverBtn.classList.toggle("playing", ambientIsPlaying);
-    }
-    
-    // Управление центральной кнопкой (если играет AI музыка)
-    if (dockBtn && !isCustomMusicMode) {
-        dockBtn.classList.toggle("music-active", ambientIsPlaying);
-        
-        // Меняем подсказку при наведении на кнопку
-        if (ambientHasStartedOnce) {
-            const titleText = ambientIsPlaying ? "Musiqani töxtatiş" : "Musiqani davom ettiriş";
-            dockBtn.title = titleText;
-            dockBtn.setAttribute('data-ulh-title', titleText); // Для кастомного тултипа
-        }
-    }
-}
+};
+// ... (ULH AI MUSIC)
 
 // Открытие / закрытие выпадающего окошка плеера по клику на ноту
 function toggleMusicDropdown(event) {
