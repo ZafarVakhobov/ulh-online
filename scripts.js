@@ -9418,3 +9418,164 @@ window.downloadQuotePng = function() {
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeQuoteModal();
 });
+
+// ==========================================
+// === 35. ИНТЕРАКТИВНАЯ МИНИ-КАРТА (AVTO-MUNDARIJA) ===
+// ==========================================
+
+window.closeMinimapPanel = function() {
+    const panel = document.getElementById("minimapReportBox");
+    const converterBox = document.getElementById("converterBox");
+    
+    if (panel) {
+        panel.style.display = "none";
+    }
+    
+    // Возвращаем на место блок конвертера
+    if (converterBox) {
+        const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+        const isTelegramEnv = Boolean(tg && tg.initData && tg.initData.length > 0);
+        if (!isTelegramEnv) {
+            converterBox.style.display = "flex";
+        }
+    }
+    
+    // Отключаем фоновое обновление, чтобы не грузить память, когда панель скрыта
+    if (editor) {
+        editor.removeEventListener("input", updateMinimapContent);
+    }
+};
+
+window.toggleMinimapPanel = function() {
+    if (typeof closeEditorToolsMenu === "function") closeEditorToolsMenu();
+    
+    const panelExists = document.getElementById("minimapReportBox");
+    if (panelExists && panelExists.style.display !== "none") {
+        closeMinimapPanel();
+        return;
+    }
+    
+    // Прячем другие панели, чтобы они не наслаивались
+    const uniquenessPanel = document.getElementById("uniquenessReportBox");
+    if (uniquenessPanel) uniquenessPanel.style.display = "none";
+    const translatorPanel = document.getElementById("translatorReportBox");
+    if (translatorPanel) translatorPanel.style.display = "none";
+    
+    const converterBox = document.getElementById("converterBox");
+    const workspace = document.querySelector(".workspace");
+    
+    if (converterBox) converterBox.style.display = "none";
+    
+    let panel = document.getElementById("minimapReportBox");
+    if (!panel) {
+        panel = document.createElement("div");
+        panel.id = "minimapReportBox";
+        // Вставляем панель в рабочую зону
+        if (workspace) workspace.appendChild(panel);
+        else editor.parentNode.insertBefore(panel, editor.nextSibling);
+    }
+    
+    panel.className = "minimap-right-panel";
+    panel.style.display = "flex";
+    
+    const closeBtnHtml = `<button onclick="closeMinimapPanel()" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.04); border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748B; transition: all 0.2s ease; z-index: 10;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.color='#EF4444'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='#64748B'" title="Yopish">×</button>`;
+    
+    panel.innerHTML = `
+        ${closeBtnHtml}
+        <div class="minimap-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            <span>Avto-Mundarija</span>
+        </div>
+        <div id="minimapContentBox" class="minimap-content custom-scrollbar"></div>
+    `;
+    
+    updateMinimapContent();
+    
+    // Подключаем живое обновление: когда вы пишете текст, оглавление строится само
+    if (editor) {
+        editor.addEventListener("input", updateMinimapContent);
+    }
+};
+
+window.updateMinimapContent = function() {
+    const contentBox = document.getElementById("minimapContentBox");
+    if (!contentBox || !editor) return;
+    
+    const text = editor.value;
+    if (!text.trim()) {
+        contentBox.innerHTML = `<div style="text-align:center; color:#94A3B8; font-size:12px; margin-top:30px;">Sarlavhalarni topiş uçun matn yozing.<br><br><i>Sarlavhalar BUTUNLAY KATTA HARFDA yoki # belgisi bilan yozişi kerak.</i></div>`;
+        return;
+    }
+    
+    // Алгоритм умного поиска заголовков
+    const lines = text.split('\n');
+    let headings = [];
+    let currentIndex = 0; // Считаем символы, чтобы потом скроллить к ним
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+        const lengthWithNewline = line.length + 1;
+        
+        let level = 0;
+        let titleText = "";
+        
+        // 1. Поиск по Markdown (### Заголовок)
+        const mdMatch = trimmed.match(/^(#{1,3})\s+(.+)/);
+        if (mdMatch) {
+            level = mdMatch[1].length; // 1, 2 или 3 уровень вложенности
+            titleText = mdMatch[2];
+        } 
+        // 2. Поиск по КАПСУ (I BOB. TURIZM)
+        else if (trimmed.length > 2 && trimmed.length < 80 && trimmed === trimmed.toUpperCase() && /[A-ZÖĞŞÇА-ЯЁЎҚҒҲ]/.test(trimmed)) {
+            level = 1;
+            titleText = trimmed;
+        }
+        
+        if (level > 0) {
+            headings.push({
+                text: titleText,
+                level: level,
+                index: currentIndex // Запоминаем точную позицию в тексте
+            });
+        }
+        
+        currentIndex += lengthWithNewline;
+    }
+    
+    if (headings.length === 0) {
+        contentBox.innerHTML = `<div style="text-align:center; color:#94A3B8; font-size:12px; margin-top:30px;">Sarlavhalar topilmadi.<br><br>Sarlavhalarni <b>KATTA HARFLARDA</b> yozing yoki oldiga <b>#</b> belgisini qöying.</div>`;
+        return;
+    }
+    
+    contentBox.innerHTML = "";
+    headings.forEach(h => {
+        const item = document.createElement("div");
+        item.className = `minimap-item minimap-level-${h.level}`;
+        item.textContent = h.text;
+        item.title = h.text;
+        
+        // Магия скроллинга
+        item.onclick = () => {
+            editor.focus();
+            // Выделяем сам заголовок
+            editor.setSelectionRange(h.index, h.index + h.text.length);
+            
+            // Вычисляем высоту и прокручиваем textarea
+            const textBefore = editor.value.substring(0, h.index);
+            const lineNumbers = textBefore.split('\n').length;
+            
+            // Учитываем разную высоту строки (в Zen-режиме шрифт крупнее)
+            const isZen = document.body.classList.contains("zen-mode-active");
+            const lineHeight = isZen ? 26 : 21; 
+            
+            // Плавный скролл к нужной строке
+            editor.scrollTo({
+                top: Math.max(0, (lineNumbers - 1) * lineHeight - 40),
+                behavior: 'smooth'
+            });
+        };
+        
+        contentBox.appendChild(item);
+    });
+};
