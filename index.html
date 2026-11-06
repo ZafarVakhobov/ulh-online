@@ -1606,6 +1606,20 @@
                                 <div class="tools-group-label">MATNNI TAHRIRLAŞ</div>
 
                                 <!-- ... -->
+
+<!-- ТРИ КНОПКИ РЕГИСТРА В ОДИН РЯД -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px;">
+    <button type="button" class="tools-menu-item" style="justify-content: center; padding: 6px;" onclick="applyEditorTool('sentence_case')" title="Gap boşidan katta harf">
+        <span class="tools-text-badge">Aa</span>
+    </button>
+    <button type="button" class="tools-menu-item" style="justify-content: center; padding: 6px;" onclick="applyEditorTool('upper_case')" title="HAMMASI KATTA HARF">
+        <span class="tools-text-badge">AA</span>
+    </button>
+    <button type="button" class="tools-menu-item" style="justify-content: center; padding: 6px;" onclick="applyEditorTool('lower_case')" title="hammasi kiçik harf">
+        <span class="tools-text-badge">aa</span>
+    </button>
+</div>
+                                
 <button type="button" class="tools-menu-item" onclick="applyEditorTool('clean_spaces')">
     <span class="tools-text-badge">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
@@ -1640,18 +1654,7 @@
     <span>Avto-Mundarija (Minixarita)</span>
 </button>
 
-<!-- ТРИ КНОПКИ РЕГИСТРА В ОДИН РЯД -->
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px;">
-    <button type="button" class="tools-menu-item" style="justify-content: center; padding: 6px;" onclick="applyEditorTool('sentence_case')" title="Gap boşidan katta harf">
-        <span class="tools-text-badge">Aa</span>
-    </button>
-    <button type="button" class="tools-menu-item" style="justify-content: center; padding: 6px;" onclick="applyEditorTool('upper_case')" title="HAMMASI KATTA HARF">
-        <span class="tools-text-badge">AA</span>
-    </button>
-    <button type="button" class="tools-menu-item" style="justify-content: center; padding: 6px;" onclick="applyEditorTool('lower_case')" title="hammasi kiçik harf">
-        <span class="tools-text-badge">aa</span>
-    </button>
-</div>
+
 
                                 <hr class="dropdown-divider">
                                 <div class="tools-group-label">SMM KONTENT</div>
