@@ -1622,20 +1622,26 @@
 </button>
 <!-- ... -->
 
-                                <button type="button" class="tools-menu-item" onclick="applyEditorTool('sentence_case')">
-                                    <span class="tools-text-badge">Aa</span>
-                                    <span>Gap boşidan katta harf</span>
-                                </button>
+                                <!-- НОВАЯ КНОПКА: Авто-оглавление (Avto-Mundarija) -->
+<button type="button" class="tools-menu-item" onclick="toggleMinimapPanel()">
+    <span class="tools-text-badge" style="background: #E0F2FE; color: #0284C7;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+    </span>
+    <span>Avto-Mundarija (Minixarita)</span>
+</button>
 
-                                <button type="button" class="tools-menu-item" onclick="applyEditorTool('upper_case')">
-                                    <span class="tools-text-badge">AA</span>
-                                    <span>HAMMASI KATTA HARF</span>
-                                </button>
-
-                                <button type="button" class="tools-menu-item" onclick="applyEditorTool('lower_case')">
-                                    <span class="tools-text-badge">aa</span>
-                                    <span>hammasi kiçik harf</span>
-                                </button>
+<!-- ТРИ КНОПКИ РЕГИСТРА В ОДИН РЯД -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px;">
+    <button type="button" class="tools-menu-item" style="justify-content: center; padding: 6px;" onclick="applyEditorTool('sentence_case')" title="Gap boşidan katta harf">
+        <span class="tools-text-badge">Aa</span>
+    </button>
+    <button type="button" class="tools-menu-item" style="justify-content: center; padding: 6px;" onclick="applyEditorTool('upper_case')" title="HAMMASI KATTA HARF">
+        <span class="tools-text-badge">AA</span>
+    </button>
+    <button type="button" class="tools-menu-item" style="justify-content: center; padding: 6px;" onclick="applyEditorTool('lower_case')" title="hammasi kiçik harf">
+        <span class="tools-text-badge">aa</span>
+    </button>
+</div>
 
                                 <hr class="dropdown-divider">
                                 <div class="tools-group-label">SMM KONTENT</div>
