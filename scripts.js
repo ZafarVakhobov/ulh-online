@@ -2420,7 +2420,7 @@ function closeEditorToolsMenu() {
 
 document.addEventListener("click", closeEditorToolsMenu);
 
-// Инструменты чистки пробелов и смены регистра с учетом узбекского алфавита
+// Инструменты чистки пробелов, смены регистра и УМНОЙ ТИПОГРАФИКИ
 function applyEditorTool(actionType) {
     if (!editor || !editor.value) {
         closeEditorToolsMenu();
@@ -2431,18 +2431,51 @@ function applyEditorTool(actionType) {
 
     if (actionType === "clean_spaces") {
         text = text
-            .replace(/[ \t]+/g, " ")               // убираем двойные и множественные пробелы
-            .replace(/^[ \t]+|[ \t]+$/gm, "")      // убираем пробелы по краям каждой строки
-            .replace(/\s+([,.;:!?])/g, "$1")       // убираем лишний пробел перед знаками препинания
-            .replace(/\n{3,}/g, "\n\n")            // оставляем максимум один пустой отступ между абзацами
+            .replace(/[ \t]+/g, " ")               
+            .replace(/^[ \t]+|[ \t]+$/gm, "")      
+            .replace(/\s+([,.;:!?])/g, "$1")       
+            .replace(/\n{3,}/g, "\n\n")            
             .trim();
         showAutosaveIndicator("Böşliqlar tozalandi ✓");
+        
+    } else if (actionType === "smart_typography") {
+        // === УМНЫЙ ТИПОГРАФ (AQLLI TIPOGRAFIKA) ===
+        
+        // 1. Убираем лишние пробелы (базовая гигиена)
+        text = text.replace(/[ \t]+/g, " ");
+        
+        // 2. Двойные дефисы (--) и дефисы, окруженные пробелами ( - ), превращаем в длинное тире (—)
+        text = text.replace(/\s+-\s+/g, " — ").replace(/--+/g, "—");
+        
+        // 3. Привязываем короткие слова и союзы к следующему слову неразрывным пробелом (\u00A0)
+        // Это предотвратит висячие предлоги в конце строк (va, u, bu, shu, o'z + 1-2 буквенные слова)
+        text = text.replace(/(^|\s+)([A-Za-zÇŞĞÖçşğöА-Яа-яЁёЎўҚқҒғҲҳ]{1,2}|va|ham|shu|bu|u)\s+/gi, "$1$2\u00A0");
+        
+        // 4. Приклеиваем знаки препинания к словам и добавляем пробел ПОСЛЕ них (если его нет)
+        text = text.replace(/\s+([,.;:!?])/g, "$1");
+        text = text.replace(/([,;:!?])([^\s"»\)])/g, "$1 $2");
+        
+        // 5. Убираем пробелы внутри скобок: ( matn ) -> (matn)
+        text = text.replace(/\(\s+/g, "(").replace(/\s+\)/g, ")");
+        
+        // 6. Умная замена обычных кавычек ("") на французские «ёлочки» («»)
+        let quoteOpen = true;
+        text = text.replace(/"/g, function() {
+            let repl = quoteOpen ? "«" : "»";
+            quoteOpen = !quoteOpen;
+            return repl;
+        });
+
+        showAutosaveIndicator("Matn tipografiyasi sozlandi ✓");
+        
     } else if (actionType === "upper_case") {
         text = text.toUpperCase();
         showAutosaveIndicator("KATTA HARFLAR ✓");
+        
     } else if (actionType === "lower_case") {
         text = text.toLowerCase();
         showAutosaveIndicator("kiçik harflar ✓");
+        
     } else if (actionType === "sentence_case") {
         text = text.toLowerCase().replace(/(^\s*[a-zA-ZçşğöÇŞĞÖа-яА-ЯёЁўқғҳЎҚҒҲ]|[.!?]\s+[a-zA-ZçşğöÇŞĞÖа-яА-ЯёЁўқғҳЎҚҒҲ]|\n\s*[a-zA-ZçşğöÇŞĞÖа-яА-ЯёЁўқғҳЎҚҒҲ])/g, function(match) {
             return match.toUpperCase();
@@ -2450,11 +2483,13 @@ function applyEditorTool(actionType) {
         showAutosaveIndicator("Gap boşidan katta ✓");
     }
 
-    editor.value = text;
+    editor.value = text.trim();
+    
+    // Делаем снимок для Машины Времени, чтобы можно было отменить изменения
+    if (typeof saveTimeMachineSnapshot === "function") saveTimeMachineSnapshot(true);
+    
     saveEditorDraft();
-    if (typeof calculateAndRenderTextStats === "function") {
-        calculateAndRenderTextStats();
-    }
+    if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
     closeEditorToolsMenu();
 }
 
