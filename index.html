@@ -307,30 +307,6 @@
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </span>
                     </div>
-
-
-                    
-                    <!-- НОВАЯ КНОПКА: ГОРЯЧИЕ КЛАВИШИ -->
-                    <div class="qr-mini-card" style="display:none;" role="button" tabindex="0" onclick="openHotkeysModal(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openHotkeysModal(event);}" aria-label="Qaynoq tugmalar">
-                        <div class="qr-mini-left">
-                            <div class="qr-mini-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M8 12h.001"/><path d="M12 12h.001"/><path d="M16 12h.001"/><path d="M7 16h10"/></svg>
-                            </div>
-                            <div class="qr-mini-text">
-                                <span class="qr-mini-title">QAYNOQ TUGMALAR</span>
-                                <span class="qr-mini-sub">Tezkor klaviatura yorliqlari</span>
-                            </div>
-                        </div>
-                        <span class="currency-nbu-pill">
-                            <span>Tanişiş</span>
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                        </span>
-                    </div>
-
-                
-
-                    
-                    
                 </div>
             </div>
         </div>
@@ -2435,6 +2411,34 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                     </label>
                 </div>
             </label>
+        </div>
+
+<hr class="dropdown-divider" style="margin: 4px 0;">
+
+        <!-- Блок 4: Горячие клавиши (Qaynoq tugmalar) -->
+        <div>
+            <div style="font-size: 12px; font-weight: 800; color: #64748B; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.05em;">Qöşimça imkoniyatlar</div>
+            
+            <!-- При клике панель дизайна закроется и откроется модалка -->
+            <div class="asmr-toggle-row" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 12px; transition: all 0.2s;" onclick="closeThemeStudioPanel(event); openHotkeysModal(event)">
+                
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="color: #0284C7; display: flex; align-items: center; justify-content: center; width: 24px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M8 12h.001"/><path d="M12 12h.001"/><path d="M16 12h.001"/><path d="M7 16h10"/></svg>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <span style="font-size: 13.5px; font-weight: 800; color: #1E293B;" class="asmr-title-text">Qaynoq tugmalar</span>
+                        <span style="font-size: 11px; color: #64748B; font-weight: 600;">Tezkor klaviatura yorliqlari</span>
+                    </div>
+                </div>
+                
+                <!-- Стильный бейдж-кнопка (адаптируется под тёмную тему автоматически) -->
+                <div class="alpha-rules-trigger" style="margin: 0; pointer-events: none; box-shadow: none;">
+                    <span>Oçiş</span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+                
+            </div>
         </div>
         
     </div>
