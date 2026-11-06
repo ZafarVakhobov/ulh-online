@@ -9614,3 +9614,272 @@ window.updateMinimapContent = function() {
         contentBox.appendChild(item);
     });
 };
+
+// ==========================================
+// === 36. АВТО-СЕРТИФИКАТ (МАССОВЫЙ ГЕНЕРАТОР ГРАМОТ И БЕЙДЖЕЙ) ===
+// ==========================================
+
+let uploadedCertTemplate = null;
+
+window.openCertModal = function(event) {
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    
+    // Инициализация кастомного селекта
+    const sel = document.getElementById('certType');
+    if (sel && typeof initCustomSelects === 'function' && !sel.nextElementSibling?.classList.contains('custom-select-wrapper')) {
+        initCustomSelects();
+    }
+    
+    // Подставляем сегодняшнюю дату по умолчанию
+    const dateInput = document.getElementById("certDate");
+    if (dateInput && !dateInput.value) {
+        const today = new Date();
+        dateInput.value = `${String(today.getDate()).padStart(2, '0')}.${String(today.getMonth() + 1).padStart(2, '0')}.${today.getFullYear()}`;
+    }
+
+    const modal = document.getElementById('certModalBackdrop');
+    if (modal) modal.classList.add('open');
+};
+
+window.closeCertModal = function(event) {
+    const modal = document.getElementById('certModalBackdrop');
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove('open');
+};
+
+window.toggleCertFields = function() {
+    const type = document.getElementById("certType").value;
+    document.getElementById("certFieldsStudent").classList.toggle("active", type === "student");
+    document.getElementById("certFieldsStaff").classList.toggle("active", type === "staff");
+    document.getElementById("certFieldsGuest").classList.toggle("active", type === "guest");
+};
+
+window.handleCertTemplateSelect = function(input) {
+    const label = document.getElementById("certTemplateLabel");
+    if (input.files && input.files[0]) {
+        uploadedCertTemplate = input.files[0];
+        label.classList.add("loaded");
+        label.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-bottom: 8px;"><polyline points="20 6 9 17 4 12"/></svg><span style="font-weight: 800; font-size: 13px;">Şablon yuklandi: ${input.files[0].name}</span>`;
+    }
+};
+
+// Функция отрисовки SVG на Canvas
+function drawSvgToCanvas(svgString, ctx, x, y, size) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        const svg64 = btoa(unescape(encodeURIComponent(svgString)));
+        const b64Start = 'data:image/svg+xml;base64,';
+        img.onload = function() {
+            ctx.drawImage(img, x, y, size, size);
+            resolve();
+        };
+        img.src = b64Start + svg64;
+    });
+}
+
+window.processCertificates = async function() {
+    const btn = document.getElementById("certGenerateBtn");
+    const btnText = document.getElementById("certGenerateText");
+    const icon = btn.querySelector(".ai-sparkle-icon");
+
+    const namesRaw = document.getElementById("certNamesList").value.trim();
+    const eventName = document.getElementById("certEventName").value.trim();
+    const dateStr = document.getElementById("certDate").value.trim();
+    const lastRegNumStr = document.getElementById("certLastNum").value.trim();
+    const type = document.getElementById("certType").value;
+
+    if (!namesRaw || !uploadedCertTemplate) {
+        alert("Iltimos, ismlar röyxatini kiriting va şablonni yuklang!");
+        return;
+    }
+
+    let lastRegNum = parseInt(lastRegNumStr, 10);
+    if (isNaN(lastRegNum)) lastRegNum = 0; // Если пустой, начинаем с 0
+
+    // UI Загрузки
+    btn.style.pointerEvents = "none";
+    btnText.textContent = "AI ma'lumotlarni tahlil qilmoqda...";
+    if (icon) icon.style.animation = "aiSpinPulse 1.1s linear infinite";
+
+    // 1. ИИ нормализует список имен
+    const promptText = `Sen matn muharririsan. Berilgan ro'yxatdagi ismlarni bosh harflar bilan to'g'rilab, lotin alifbosiga o'gir va har bir qatorda bittadan ism qoldir. Hech qanday qo'shimcha so'z yozma. \nRo'yxat: \n${namesRaw}`;
+    
+    let cleanNames = [];
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: namesRaw, customPrompt: promptText })
+        });
+        const data = await response.json();
+        let aiParsed = data.result || data.response || (typeof data === "string" ? data : "");
+        aiParsed = (typeof enforceNewUzbekAlphabet === "function") ? enforceNewUzbekAlphabet(aiParsed) : aiParsed;
+        cleanNames = aiParsed.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+    } catch (e) {
+        console.warn("AI formatlaşda xato, asl röyxatdan foydalanilmoqda.");
+        cleanNames = namesRaw.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+    }
+
+    if (cleanNames.length === 0) {
+        alert("Ismlar röyxati notöğri şaklda berilgan!");
+        btn.style.pointerEvents = "auto";
+        btnText.textContent = "Sertifikatlarni yaratiş";
+        if (icon) icon.style.animation = "none";
+        return;
+    }
+
+    btnText.textContent = `Grafika render qilinmoqda (0/${cleanNames.length})...`;
+
+    // 2. Сборка метаданных
+    let metaText = "";
+    if (type === "student") {
+        const gr = document.getElementById("certGroup").value.trim();
+        const cr = document.getElementById("certCourse").value.trim();
+        metaText = [cr, gr].filter(Boolean).join(", ");
+    } else if (type === "staff") {
+        const pos = document.getElementById("certPosition").value.trim();
+        const dept = document.getElementById("certDept").value.trim();
+        metaText = [pos, dept].filter(Boolean).join(", ");
+    } else {
+        metaText = document.getElementById("certCustomText").value.trim();
+    }
+
+    // 3. Форматирование даты для QR (DD-MM-YY)
+    let qrDatePrefix = "00-00-00";
+    if (dateStr.length === 10) {
+        const parts = dateStr.split(".");
+        qrDatePrefix = `${parts[0]}-${parts[1]}-${parts[2].slice(-2)}`;
+    }
+
+    // 4. Подготовка Canvas и Загрузка Изображения
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    
+    const imgUrl = URL.createObjectURL(uploadedCertTemplate);
+    const templateImg = new Image();
+    
+    await new Promise((resolve) => {
+        templateImg.onload = () => {
+            canvas.width = templateImg.width;
+            canvas.height = templateImg.height;
+            resolve();
+        };
+        templateImg.src = imgUrl;
+    });
+
+    const zip = new JSZip();
+    const folder = zip.folder("Sertifikatlar");
+    let singleBlob = null;
+
+    // 5. Отрисовка
+    for (let i = 0; i < cleanNames.length; i++) {
+        const name = cleanNames[i];
+        lastRegNum++;
+        
+        const regCode = `REG-${qrDatePrefix}-${String(lastRegNum).padStart(4, '0')}`;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(templateImg, 0, 0);
+
+        // Динамические размеры шрифтов под ширину изображения
+        const nameSize = Math.max(40, Math.floor(canvas.width * 0.05));
+        const metaSize = Math.max(20, Math.floor(canvas.width * 0.025));
+        const smallSize = Math.max(16, Math.floor(canvas.width * 0.015));
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height * 0.45; // Имя чуть выше центра
+
+        // Рисуем Имя (Кастомный или курсивный шрифт)
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#0F172A";
+        ctx.font = `bold ${nameSize}px "Monotype Corsiva", "Dancing Script", cursive, serif`;
+        ctx.fillText(name, centerX, centerY);
+
+        // Рисуем Метаданные (Тип, Должность)
+        ctx.font = `bold ${metaSize}px "Manrope", sans-serif`;
+        ctx.fillStyle = "#334155";
+        if (metaText) {
+            ctx.fillText(metaText, centerX, centerY + (nameSize * 0.8));
+        }
+
+        // Рисуем Название Мероприятия
+        ctx.fillStyle = "#0284C7";
+        if (eventName) {
+            ctx.fillText(eventName, centerX, centerY + (nameSize * 1.5));
+        }
+
+        // Рисуем QR-код и Регистрационный номер (Нижний левый угол)
+        if (typeof buildQrMatrix === "function" && typeof generateQrSvgMarkup === "function") {
+            const qrMatrix = buildQrMatrix(regCode);
+            if (qrMatrix) {
+                const qrSize = Math.floor(canvas.width * 0.12);
+                const qrX = canvas.width * 0.08;
+                const qrY = canvas.height - (qrSize + canvas.height * 0.08);
+                
+                const svgString = generateQrSvgMarkup(qrMatrix, "#000000", qrSize);
+                await drawSvgToCanvas(svgString, ctx, qrX, qrY, qrSize);
+
+                // Номер под QR-кодом
+                ctx.font = `bold ${smallSize}px "Manrope", sans-serif`;
+                ctx.fillStyle = "#64748B";
+                ctx.textAlign = "left";
+                ctx.fillText(regCode, qrX, qrY + qrSize + (smallSize * 1.2));
+            }
+        }
+
+        // Рисуем Дату (Нижний правый угол)
+        if (dateStr) {
+            ctx.textAlign = "right";
+            ctx.font = `bold ${metaSize}px "Manrope", sans-serif`;
+            ctx.fillStyle = "#0F172A";
+            ctx.fillText(dateStr, canvas.width - (canvas.width * 0.08), canvas.height - (canvas.height * 0.08));
+        }
+
+        // Сохранение текущего кадра
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        
+        if (cleanNames.length === 1) {
+            singleBlob = blob;
+        } else {
+            folder.file(`${name.replace(/[^a-zA-ZçşğöÇŞĞÖ\s]/g, "")}_${regCode}.png`, blob);
+        }
+
+        btnText.textContent = `Grafika render qilinmoqda (${i+1}/${cleanNames.length})...`;
+    }
+
+    // 6. Скачивание
+    btnText.textContent = "Yuklanmoqda...";
+    
+    if (cleanNames.length === 1 && singleBlob) {
+        // Один файл
+        const url = URL.createObjectURL(singleBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Sertifikat_${cleanNames[0].replace(/[^a-zA-ZçşğöÇŞĞÖ\s]/g, "")}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } else {
+        // ZIP-архив
+        const zipBlob = await zip.generateAsync({ type: "blob", compression: "STORE" });
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `ULH_Sertifikatlar_Arxiv.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Sertifikatlar tayyor ✓");
+    
+    // Возврат UI
+    btn.style.pointerEvents = "auto";
+    btnText.textContent = "Sertifikatlarni yaratiş";
+    if (icon) icon.style.animation = "none";
+    closeCertModal();
+};
