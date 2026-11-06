@@ -43,7 +43,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Библиотека jsdiff для визуального сканера текста -->
+    <script src="https://cdn.jsdelivr.net/npm/diff@5.2.0/dist/diff.min.js"></script>
 
+    
 <!-- Библиотека WordCloud2 для генерации облака слов -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
     
@@ -1623,8 +1626,16 @@
         <span>Ortiqça böşliqlarni tozalaş</span>
 </button>
 
+<!-- НОВАЯ КНОПКА: Визуальный сканер (Text Diff) -->
+                                <button type="button" class="tools-menu-item" onclick="openDiffModal()">
+                                    <span class="tools-text-badge" style="background: #E0E7FF; color: #4338CA;">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+                                    </span>
+                                    <span>Matnlarni soliştiriş</span>
+                                </button>
+                                
 <!-- НОВАЯ КНОПКА: Умная типографика (Aqlli Tipografika) -->
-<button type="button" class="tools-menu-item" onclick="applyEditorTool('smart_typography')">
+<button type="button" class="tools-menu-item" style="display:none;" onclick="applyEditorTool('smart_typography')">
     <span class="tools-text-badge">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
             <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/>
@@ -2815,6 +2826,71 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         <div class="weather-modal-footer" style="margin-top: 14px;">
             <span>AI röyxatni avtomatik töğrilaydi</span>
             <button type="button" class="weather-modal-close" onclick="closeCertModal()">Yopiş</button>
+        </div>
+    </div>
+</div>
+
+<!-- === МОДАЛЬНОЕ ОКНО: ВИЗУАЛЬНЫЙ СКАНЕР (TEXT DIFF) === -->
+<div class="weather-modal-backdrop" id="diffModalBackdrop" onclick="closeDiffModal(event)">
+    <div class="weather-modal-card alphabet-modal-card" style="max-width: 950px;" onclick="event.stopPropagation()">
+        
+        <div class="calc-input-banner">
+            <div class="calc-banner-top">
+                <div class="weather-selected-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+                    <span>MATNLARNI SOLIŞTIRIŞ</span>
+                </div>
+            </div>
+            <div class="ads-banner-title">Vizual skaner</div>
+            <div class="ads-banner-sub">Ikki matnni kiriting. Tizim ularni tahlil qilib, qöşilgan va öçirilgan sözlarni ranglar bilan körsatadi.</div>
+        </div>
+
+        <!-- Контейнеры для ввода -->
+        <div id="diffInputArea" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px;">
+            <div>
+                <label style="font-size: 11px; font-weight: 800; color: #64748B; margin-bottom: 6px; display: block;">ASL MATN (ESKI)</label>
+                <textarea id="diffOldText" class="bib-custom-input custom-scrollbar" style="height: 280px; resize: none;" placeholder="Eski yoki asl matnni bu yerga joylang..."></textarea>
+            </div>
+            <div>
+                <label style="font-size: 11px; font-weight: 800; color: #64748B; margin-bottom: 6px; display: block;">YANGI MATN (TAHRIRLANGAN)</label>
+                <textarea id="diffNewText" class="bib-custom-input custom-scrollbar" style="height: 280px; resize: none;" placeholder="Tahrirlangan matnni bu yerga joylang..."></textarea>
+            </div>
+        </div>
+
+        <!-- Контейнер для результата (скрыт по умолчанию) -->
+        <div id="diffResultArea" style="display: none; margin-top: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="font-size: 11px; font-weight: 800; color: #64748B; display: block; margin: 0;">TAHLIL NATIJASI</label>
+                
+                <!-- Легенда цветов -->
+                <div style="display:flex; gap:16px; font-size: 12px; font-weight: 700;">
+                    <span style="color:#EF4444; display:flex; align-items:center; gap:6px;">
+                        <span style="width:12px; height:12px; background:#FEE2E2; border:1px solid #FCA5A5; border-radius:3px;"></span> Öçirilgan
+                    </span>
+                    <span style="color:#10B981; display:flex; align-items:center; gap:6px;">
+                        <span style="width:12px; height:12px; background:#D1FAE5; border:1px solid #6EE7B7; border-radius:3px;"></span> Qöşilgan
+                    </span>
+                </div>
+            </div>
+            
+            <div id="diffResultBox" class="bib-custom-input custom-scrollbar" style="height: 40vh; min-height: 300px; overflow-y: auto; background: #F8FAFC; line-height: 1.65; font-size: 14.5px; color: #1E293B;"></div>
+        </div>
+
+        <!-- Кнопки управления -->
+        <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button type="button" id="diffBackBtn" class="ai-submit-modal-btn" style="display: none; flex: 1; background: #E2E8F0; color: #334155; box-shadow: none;" onclick="resetDiffView()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <span>Orqaga</span>
+            </button>
+            <button type="button" id="diffRunBtn" class="ai-submit-modal-btn" style="flex: 2; background: linear-gradient(135deg, #4338CA 0%, #3730A3 100%); box-shadow: 0 6px 18px rgba(67, 56, 202, 0.25);" onclick="executeTextDiff()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>Soliştirişni boşlaş</span>
+            </button>
+        </div>
+
+        <div class="weather-modal-footer" style="margin-top: 14px;">
+            <span>Ma'lumotlar xavfsiz, brauzer içida işlanadi</span>
+            <button type="button" class="weather-modal-close" onclick="closeDiffModal()">Yopiş</button>
         </div>
     </div>
 </div>
