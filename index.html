@@ -414,6 +414,22 @@
                         <span>Konsentratsiya musiqasiga qaytiş</span>
                     </button>
 
+                    <!-- НОВЫЙ БЛОК: Выбор фонового шума (Ambient) -->
+<div class="music-ambient-selector" id="ambientNoiseSelector" style="margin-top: 10px; display: flex; gap: 6px;">
+    <button type="button" class="ambient-preset-btn active" onclick="setAmbientPreset('soft_pad')" title="Yengil akkordlar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5v14M7 5v14M22 8v8M2 8v8"/></svg>
+    </button>
+    <button type="button" class="ambient-preset-btn" onclick="setAmbientPreset('rain')" title="Yomğir ovozi">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 13v8M8 13v8M12 15v8"/><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/></svg>
+    </button>
+    <button type="button" class="ambient-preset-btn" onclick="setAmbientPreset('brown_noise')" title="Oq shovqin (Cafe)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12a4 4 0 0 1 8 0"/></svg>
+    </button>
+    <button type="button" class="ambient-preset-btn" onclick="setAmbientPreset('vinyl')" title="Vinil şiqirlaşi">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="12" x2="16" y2="16"/></svg>
+    </button>
+</div>
+
                     <hr class="dropdown-divider" style="margin-top: 12px; margin-bottom: 8px;">
 
                     <!-- История прослушиваний -->
