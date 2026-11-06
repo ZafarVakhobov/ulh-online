@@ -9883,3 +9883,97 @@ window.processCertificates = async function() {
     if (icon) icon.style.animation = "none";
     closeCertModal();
 };
+
+// ==========================================
+// === 37. ВИЗУАЛЬНЫЙ СКАНЕР ИЗМЕНЕНИЙ (TEXT DIFF) ===
+// ==========================================
+
+window.openDiffModal = function(event) {
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    if (typeof closeEditorToolsMenu === "function") closeEditorToolsMenu();
+    
+    const modal = document.getElementById("diffModalBackdrop");
+    if (modal) {
+        modal.classList.add("open");
+        
+        // Умная деталь: Если в главном редакторе сайта уже есть текст, 
+        // автоматически вставляем его в колонку "YANGI MATN" для удобства пользователя.
+        const newTextArea = document.getElementById("diffNewText");
+        if (editor && editor.value.trim().length > 0 && newTextArea && !newTextArea.value) {
+            newTextArea.value = editor.value;
+        }
+    }
+};
+
+window.closeDiffModal = function(event) {
+    const modal = document.getElementById("diffModalBackdrop");
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove("open");
+};
+
+// Функция возврата из режима просмотра результата к вводу текста
+window.resetDiffView = function() {
+    document.getElementById("diffInputArea").style.display = "grid";
+    document.getElementById("diffResultArea").style.display = "none";
+    
+    document.getElementById("diffRunBtn").style.display = "flex";
+    document.getElementById("diffBackBtn").style.display = "none";
+    
+    document.getElementById("diffResultBox").innerHTML = "";
+};
+
+// Функция запуска сравнения
+window.executeTextDiff = function() {
+    // Проверка загрузилась ли библиотека
+    if (typeof Diff === "undefined") {
+        alert("Kutubxona yuklanmoqda... Iltimos bir oz kuting.");
+        return;
+    }
+    
+    const oldText = document.getElementById("diffOldText").value.trim();
+    const newText = document.getElementById("diffNewText").value.trim();
+    
+    if (!oldText || !newText) {
+        alert("Iltimos, soliştiriş uçun ikkala maydonni ham töldiring!");
+        return;
+    }
+    
+    // Переключаем интерфейс на окно результата
+    document.getElementById("diffInputArea").style.display = "none";
+    document.getElementById("diffResultArea").style.display = "block";
+    
+    document.getElementById("diffRunBtn").style.display = "none";
+    document.getElementById("diffBackBtn").style.display = "flex";
+    
+    const resultBox = document.getElementById("diffResultBox");
+    resultBox.innerHTML = "<div style='text-align:center; padding: 40px; color:#64748B;'>Tahlil qilinmoqda... Kuting.</div>";
+    
+    // Используем setTimeout, чтобы браузер успел отрисовать интерфейс загрузки
+    setTimeout(() => {
+        // Функция diffWords сравнивает текст по словам, игнорируя лишние пробелы
+        const diff = Diff.diffWords(oldText, newText);
+        
+        let html = "";
+        
+        diff.forEach((part) => {
+            // Заменяем обычные переносы строк на <br> для правильного отображения в HTML
+            const textWithBreaks = part.value.replace(/\n/g, "<br>");
+            
+            if (part.added) {
+                html += `<span class="diff-add">${textWithBreaks}</span>`;
+            } else if (part.removed) {
+                html += `<span class="diff-remove">${textWithBreaks}</span>`;
+            } else {
+                html += `<span class="diff-unchanged">${textWithBreaks}</span>`;
+            }
+        });
+        
+        resultBox.innerHTML = html;
+    }, 150); 
+};
+
+// Привязка закрытия на клавишу Escape
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeDiffModal();
+});
