@@ -2897,7 +2897,6 @@ window.setAmbientPreset = function(preset) {
         startAmbientMusic();
     }
 };
-// ... (ULH AI MUSIC)
 
 // Открытие / закрытие выпадающего окошка плеера по клику на ноту
 function toggleMusicDropdown(event) {
@@ -3015,6 +3014,43 @@ function setAmbientVolumeRatio(ratio) {
         }
     });
 })();
+
+function updateMusicPlayerUI() {
+    const navBtn = document.getElementById("musicToggleBtn");
+    const coverBtn = document.getElementById("musicPlayPauseBtn");
+    const dockBtn = document.getElementById("dockMainBtn");
+    const titleEl = document.getElementById("musicTitleText");
+    const subtitleEl = document.getElementById("musicSubtitleText");
+
+    if (navBtn) {
+        navBtn.classList.toggle("is-playing", ambientIsPlaying);
+    }
+    if (coverBtn) {
+        coverBtn.classList.toggle("playing", ambientIsPlaying);
+    }
+    
+    // Обновляем текст в зависимости от выбранного пресета, если мы в AI-режиме
+    if (!isCustomMusicMode) {
+        if (titleEl) {
+            if (currentAmbientPreset === 'soft_pad') titleEl.textContent = "Konsentratsiya musiqasi";
+            else if (currentAmbientPreset === 'rain') titleEl.textContent = "Yomg'ir ovozi";
+            else if (currentAmbientPreset === 'brown_noise') titleEl.textContent = "Kofe xona shovqini";
+            else if (currentAmbientPreset === 'vinyl') titleEl.textContent = "Vinil shiqirlashi";
+        }
+        if (subtitleEl) subtitleEl.textContent = "AI Generated Ambient";
+    }
+    
+    // Управление центральной кнопкой (светящаяся "Ö")
+    if (dockBtn && !isCustomMusicMode) {
+        dockBtn.classList.toggle("music-active", ambientIsPlaying);
+        
+        if (ambientHasStartedOnce) {
+            const titleText = ambientIsPlaying ? "Musiqani töxtatiş" : "Musiqani davom ettiriş";
+            dockBtn.title = titleText;
+            dockBtn.setAttribute('data-ulh-title', titleText); 
+        }
+    }
+}
 
 // === 13. AI YORDAMÇI (ИСПРАВЛЕНИЕ ОШИБОК, ПОСТЫ ДЛЯ СОЦСЕТЕЙ, ЗАГОЛОВКИ И СВОЁ ЗАДАНИЕ) ===
 const AI_PROXY_ENDPOINT = "https://ulh-ai-helper.lanigirodesigner.workers.dev";
