@@ -8099,3 +8099,53 @@ body.zen-mode-active .minimap-right-panel {
 body.dark-mode .cert-dynamic-group { background: #0F172A; border-color: #334155; }
 body.dark-mode .cert-upload-label { background: rgba(2, 132, 199, 0.1); border-color: #334155; }
 body.dark-mode .cert-upload-label.loaded { background: rgba(16, 185, 129, 0.1); border-color: #10B981; }
+
+/* ========================================== */
+/* === ВИЗУАЛЬНЫЙ СКАНЕР ИЗМЕНЕНИЙ (TEXT DIFF) === */
+/* ========================================== */
+.diff-add {
+    background-color: #D1FAE5;
+    color: #065F46;
+    padding: 0 3px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-decoration: none;
+}
+.diff-remove {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    padding: 0 3px;
+    border-radius: 4px;
+    text-decoration: line-through;
+    opacity: 0.8;
+}
+.diff-unchanged {
+    color: #334155;
+}
+
+/* Темная тема для Diff */
+body.dark-mode .diff-add {
+    background-color: rgba(16, 185, 129, 0.25);
+    color: #34D399;
+}
+body.dark-mode .diff-remove {
+    background-color: rgba(225, 29, 72, 0.25);
+    color: #FB7185;
+}
+body.dark-mode .diff-unchanged {
+    color: #E2E8F0;
+}
+body.dark-mode #diffResultBox {
+    background: #0F172A !important;
+    border-color: #334155 !important;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    #diffInputArea {
+        grid-template-columns: 1fr !important; /* На телефонах колонки встанут друг под друга */
+    }
+    #diffOldText, #diffNewText {
+        height: 140px !important;
+    }
+}
