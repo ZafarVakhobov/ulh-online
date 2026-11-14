@@ -8288,30 +8288,33 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
     .mobile-burger-btn { display: inline-flex; align-items: center; justify-content: center; margin-left: 4px; }
     
     .top-navbar {
-        padding: 10px 14px !important;
+        padding: 8px 12px !important;
         border-radius: 0 0 20px 20px !important;
         border-top: none !important;
         position: sticky;
         top: 0;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        /* УБРАЛИ backdrop-filter, чтобы окна не обрезались внутри шапки */
+        background: #FFFFFF !important; 
         z-index: 10000;
-        flex-wrap: nowrap !important; /* ЗАПРЕЩАЕМ ПЕРЕНОС ИКОНОК В ШАПКЕ */
-        overflow-x: auto;
-        scrollbar-width: none;
+        flex-wrap: nowrap !important;
+        overflow: visible !important; /* КРИТИЧЕСКИ ВАЖНО: Разрешает окнам выходить за рамки */
     }
-    body.dark-mode .top-navbar { background: rgba(15, 23, 42, 0.95); }
+    body.dark-mode .top-navbar { background: #0F172A !important; }
 
-    /* Исправление сплющивания иконки темы */
-    .theme-toggle-btn { flex-shrink: 0 !important; }
+    /* Предотвращаем сплющивание кнопок (Луна/Солнце, Уведомления, Профиль) */
+    .nav-right-actions { gap: 6px !important; }
+    .theme-toggle-btn, .notify-toggle-btn, .user-toggle-btn, .mobile-burger-btn {
+        width: 36px !important;
+        height: 36px !important;
+        flex-shrink: 0 !important;
+    }
 
-    /* Боковое выезжающее меню на весь экран */
+    /* Боковое выезжающее меню на всю ширину экрана */
     .nav-links {
         position: fixed !important;
         top: 0;
         left: -100%;
-        width: 100vw !important; /* МЕНЮ НА ВСЮ ШИРИНУ ЭКРАНА */
+        width: 100vw !important; /* На всю ширину */
         height: 100vh !important;
         background: #FFFFFF !important;
         flex-direction: column !important;
@@ -8322,7 +8325,7 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
         transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
         z-index: 10500 !important;
         overflow-y: auto !important;
-        border-radius: 0 24px 24px 0; /* ЗАКРУГЛЕНИЕ МЕНЮ */
+        border-radius: 0 24px 24px 0; /* Красивое закругление меню */
     }
     body.dark-mode .nav-links { background: #0F172A !important; box-shadow: 20px 0 40px rgba(0,0,0,0.6) !important; }
     .nav-links.active { left: 0 !important; }
@@ -8344,10 +8347,9 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
     }
     body.dark-mode .mobile-menu-close { background: #1E293B; color: #94A3B8; }
 
-    /* Прячем длинную кнопку Telegram с панели (она будет в бургере) */
-    .nav-tg-btn { display: none !important; }
+    .nav-tg-btn { display: none !important; } /* Прячем длинную кнопку Telegram с панели */
 
-    /* Исправление выпадающего меню "Foydali resurslar" (Чтобы открывалось ровно вниз, а не улетало вправо) */
+    /* Исправление выпадающего меню "Foydali resurslar" (открывается ровно вниз) */
     .nav-item { flex-direction: column; align-items: stretch !important; width: 100%; margin-bottom: 8px; position: relative !important; }
     .nav-link-btn { width: 100%; justify-content: space-between !important; background: #F8FAFC !important; }
     body.dark-mode .nav-link-btn { background: #1E293B !important; }
@@ -8365,16 +8367,16 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
     }
     .nav-item.open .nav-dropdown { display: flex !important; flex-direction: column; gap: 8px; }
 
-    /* ИСПРАВЛЕНИЕ: Выравнивание всплывающих окон (Уведомления, Плеер, Профиль) по центру экрана смартфона */
+    /* ИСПРАВЛЕНИЕ: Выравнивание всплывающих окон по центру экрана смартфона */
     .notify-dropdown-box,
     .music-dropdown-box,
     .user-dropdown-box {
         position: fixed !important;
-        top: 70px !important;
+        top: 65px !important;
         left: 50% !important;
         transform: translateX(-50%) translateY(8px) scale(0.98) !important;
-        width: 92vw !important;
-        max-width: 380px !important;
+        width: calc(100vw - 24px) !important;
+        max-width: 400px !important;
         right: auto !important;
         z-index: 10600 !important;
     }
@@ -8384,21 +8386,20 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
         transform: translateX(-50%) translateY(0) scale(1) !important;
     }
 
-    /* ИСПРАВЛЕНИЕ: Скрытие лишних элементов (Плеер и Новости) на телефонах */
-    #navMusicWrap { display: none !important; } /* Прячем плеер */
-    .news-ticker-wrapper { display: none !important; } /* Прячем ленту новостей */
+    /* Скрываем лишние элементы (Плеер и Новости) на телефонах */
+    #navMusicWrap { display: none !important; } 
+    .news-ticker-wrapper { display: none !important; } 
 
-    /* 2. Баннеры во всю ширину экрана смартфона с закруглениями */
+    /* 2. Баннеры во всю ширину экрана смартфона (с закруглениями и без обрезки) */
     .hero-slider {
         width: 100% !important;
         height: auto !important;
         aspect-ratio: 2560 / 844 !important;
         margin-bottom: 16px !important;
-        border-radius: 20px !important; /* ВОЗВРАЩАЕМ ЗАКРУГЛЕНИЯ */
+        border-radius: 20px !important; 
     }
-    
     .hero-slide img {
-        object-fit: cover !important; /* Идеальные пропорции без кропа */
+        object-fit: contain !important; /* Идеальные пропорции без кропа */
     }
 
     /* 3. Убираем жирные белые поля у главного контейнера */
@@ -8410,36 +8411,24 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
         background: transparent !important;
     }
 
-    /* Возвращаем отступы только внутренним блокам, чтобы текст не лип к краям */
-    .workspace {
-        padding: 0 12px;
-    }
+    .workspace { padding: 0 12px; }
 
-    /* 4. Кнопки редактора в аккуратный горизонтальный скролл (Свайп как в Telegram) */
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
+    /* 4. Кнопки редактора в горизонтальный скролл без вертикального дергания */
+    .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
     
-    /* ИСПРАВЛЕНИЕ: Горизонтальный скролл панели без вертикального "дёргания" */
     .editor-actions {
         width: 100%;
         justify-content: flex-start !important;
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
-        overflow-y: hidden !important; /* УБИРАЕМ ВЕРТИКАЛЬНЫЙ СКРОЛЛ */
+        overflow-y: hidden !important; 
         scrollbar-width: none;
         padding-bottom: 6px;
-        -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+        -webkit-overflow-scrolling: touch; 
     }
     .editor-actions::-webkit-scrollbar { display: none; }
+    .action-icon-btn, .editor-tools-wrap, .editor-ai-wrap { flex-shrink: 0 !important; }
     
-    .action-icon-btn, .editor-tools-wrap, .editor-ai-wrap {
-        flex-shrink: 0 !important;
-    }
-    
-    /* Убираем всплывающее меню инструментов при горизонтальном скролле */
     .editor-tools-dropdown, .editor-ai-dropdown {
         position: fixed !important;
         top: 50% !important;
@@ -8454,18 +8443,78 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
         transform: translate(-50%, -50%) scale(1) !important;
     }
 
-    /* 5. Увеличиваем текстовое поле для комфортной печати на телефоне */
-    textarea#editor {
-        height: 320px !important;
+    textarea#editor { height: 320px !important; }
+
+    /* ========================================================= */
+    /* 5. ИДЕАЛЬНАЯ ПЛАВАЮЩАЯ КНОПКА (Ö) И ВЫЛЕТАЮЩЕЕ МЕНЮ ДОКА */
+    /* ========================================================= */
+    .footer {
+        position: fixed;
+        bottom: 20px;
+        left: 0;
+        width: 100%;
+        z-index: 9900;
+        pointer-events: none; /* Пропускаем клики сквозь невидимую часть футера */
+        background: transparent !important;
+    }
+    
+    .glass-dock-container {
+        padding: 4px !important;
+        border-radius: 50% !important; /* Идеальный круг */
+        width: 60px;
+        height: 60px;
+        justify-content: center;
+        pointer-events: auto; /* Возвращаем кликабельность самой кнопке */
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15) !important;
+        border: 1px solid rgba(226, 232, 240, 0.8) !important;
+    }
+    
+    .dock-main-btn {
+        width: 50px !important;
+        height: 50px !important;
+        border-radius: 50% !important;
+        margin: 0 !important;
+    }
+    
+    /* Боковые группы превращаем в парящее меню (Сетка 4x2) */
+    .dock-side-group {
+        position: absolute;
+        left: 50%;
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 16px;
+        padding: 10px !important;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px !important;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        box-shadow: 0 14px 32px rgba(0,0,0,0.15);
+        transform: translateX(-50%) scale(0.9) translateY(15px) !important;
+    }
+    
+    /* Верхний ряд (Левая группа) */
+    .glass-dock-container > .dock-side-group:nth-child(1) { bottom: 145px; }
+    /* Нижний ряд (Правая группа) */
+    .glass-dock-container > .dock-side-group:nth-child(3) { bottom: 80px; }
+    
+    /* Состояние открытого меню */
+    .glass-dock-container.menu-open .dock-side-group {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateX(-50%) scale(1) translateY(0) !important;
     }
 
-    /* 6. Адаптация нижнего Дока (Стеклянной панели) */
-    .glass-dock-container {
-        padding: 8px 12px !important;
-        gap: 8px !important;
-        max-width: 95vw;
-        overflow-x: auto;
-        scrollbar-width: none;
+    body.dark-mode .dock-side-group {
+        background: rgba(15, 23, 42, 0.95) !important;
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 14px 32px rgba(0,0,0,0.6);
     }
-    .dock-icon-btn { width: 40px !important; height: 40px !important; }
+    
+    .dock-icon-btn { width: 44px !important; height: 44px !important; }
 }
