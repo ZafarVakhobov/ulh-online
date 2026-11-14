@@ -8283,23 +8283,33 @@ body.dark-mode .mic-icon-btn.recording {
 .mobile-menu-close { display: none; }
 
 @media (max-width: 768px) {
-    /* 1. Верхняя панель: Строгий минимализм (Только Логотип и Тема) */
+    /* 1. Верхняя панель: Островная док-панель (Floating Island) */
     .top-navbar {
-        padding: 10px 16px !important;
-        border-radius: 0 0 20px 20px !important;
-        border-top: none !important;
         position: sticky;
-        top: 0;
-        background: #FFFFFF !important; 
+        top: 12px !important; /* Отступ от верхнего края экрана при скролле */
+        width: calc(100% - 24px) !important; /* Отступы по бокам */
+        margin: 12px auto 16px auto !important; /* Центрируем "остров" */
+        padding: 8px 14px !important; /* Чуть тоньше для изящности */
+        border-radius: 24px !important; /* Закругляем ВСЕ углы */
+        border: 1px solid rgba(226, 232, 240, 0.8) !important; 
+        background: rgba(255, 255, 255, 0.85) !important; /* Эффект стекла */
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         z-index: 10000;
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
         flex-wrap: nowrap !important;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08) !important; /* Красивая парящая тень */
     }
-    body.dark-mode .top-navbar { background: #0F172A !important; }
+    
+    body.dark-mode .top-navbar { 
+        background: rgba(15, 23, 42, 0.85) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+    }
 
-    /* ЖЕСТКО СКРЫВАЕМ ВСЁ ЛИШНЕЕ ИЗ ШАПКИ */
+    /* ЖЕСТКО СКРЫВАЕМ ВСЁ ЛИШНЕЕ ИЗ ШАПКИ (СТРОГИЙ МИНИМАЛИЗМ) */
     .nav-links,
     #navNotifyWrap,
     #navUserWrap,
@@ -8315,6 +8325,9 @@ body.dark-mode .mic-icon-btn.recording {
         width: 36px !important;
         height: 36px !important;
         flex-shrink: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
     /* 2. Скрываем приветственное облако ИИ-бота, чтобы не перекрывало экран */
@@ -8322,7 +8335,22 @@ body.dark-mode .mic-icon-btn.recording {
         display: none !important;
     }
 
-    /* 3. Баннеры во всю ширину экрана смартфона (с закруглениями) */
+    /* 3. НОВОЕ: Лента новостей — оставляем только иконку */
+    .news-ticker-btn span {
+        display: none !important;
+    }
+    .news-ticker-btn {
+        width: 34px !important;
+        height: 34px !important;
+        padding: 0 !important;
+        justify-content: center !important;
+        border-radius: 10px !important; /* Делаем аккуратный квадратик */
+    }
+    .news-ticker-track {
+        padding-left: 10px !important; /* Чуть сдвигаем текст влево */
+    }
+
+    /* 4. Баннеры во всю ширину экрана смартфона (с закруглениями) */
     .hero-slider {
         width: 100% !important;
         height: auto !important;
@@ -8334,7 +8362,7 @@ body.dark-mode .mic-icon-btn.recording {
         object-fit: contain !important; 
     }
 
-    /* 4. Убираем жирные белые поля у главного контейнера */
+    /* 5. Убираем жирные белые поля у главного контейнера */
     .container {
         max-width: 100% !important;
         padding: 0 !important;
@@ -8345,7 +8373,7 @@ body.dark-mode .mic-icon-btn.recording {
 
     .workspace { padding: 0 12px; }
 
-    /* 5. Кнопки редактора в горизонтальный скролл */
+    /* 6. Кнопки редактора в горизонтальный скролл */
     .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
     
     .editor-actions {
@@ -8380,7 +8408,7 @@ body.dark-mode .mic-icon-btn.recording {
     textarea#editor { height: 320px !important; }
 
     /* ========================================================= */
-    /* 6. ИДЕАЛЬНАЯ ПЛАВАЮЩАЯ КНОПКА (Ö) И ВЫЛЕТАЮЩЕЕ МЕНЮ ДОКА */
+    /* 7. ИДЕАЛЬНАЯ ПЛАВАЮЩАЯ КНОПКА (Ö) И ВЫЛЕТАЮЩЕЕ МЕНЮ ДОКА */
     /* ========================================================= */
     .footer {
         position: fixed;
@@ -8388,17 +8416,17 @@ body.dark-mode .mic-icon-btn.recording {
         left: 0;
         width: 100%;
         z-index: 9900;
-        pointer-events: none; /* Пропускаем клики сквозь невидимую часть футера */
+        pointer-events: none; 
         background: transparent !important;
     }
     
     .glass-dock-container {
         padding: 4px !important;
-        border-radius: 50% !important; /* Идеальный круг */
+        border-radius: 50% !important; 
         width: 60px;
         height: 60px;
         justify-content: center;
-        pointer-events: auto; /* Возвращаем кликабельность самой кнопке */
+        pointer-events: auto; 
         box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15) !important;
         border: 1px solid rgba(226, 232, 240, 0.8) !important;
     }
