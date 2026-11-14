@@ -8272,3 +8272,145 @@ body.dark-mode .mic-icon-btn.recording {
     70% { box-shadow: 0 0 0 8px rgba(251, 113, 133, 0); }
     100% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0); }
 }
+
+
+/* ========================================== */
+/* === МОБИЛЬНАЯ РЕВОЛЮЦИЯ (APP-LIKE UI) === */
+/* ========================================== */
+
+/* Прячем бургер-кнопки на ПК */
+.mobile-burger-btn { display: none; background: transparent; border: none; color: #0F172A; padding: 4px; cursor: pointer; }
+.mobile-menu-close { display: none; }
+body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
+
+@media (max-width: 768px) {
+    /* 1. Показываем бургер-меню */
+    .mobile-burger-btn { display: inline-flex; align-items: center; justify-content: center; margin-left: 4px; }
+    
+    .top-navbar {
+        padding: 10px 14px !important;
+        border-radius: 0 0 20px 20px !important;
+        border-top: none !important;
+        position: sticky;
+        top: 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        z-index: 10000;
+    }
+    body.dark-mode .top-navbar { background: rgba(15, 23, 42, 0.95); }
+
+    /* Боковое выезжающее меню на весь экран */
+    .nav-links {
+        position: fixed !important;
+        top: 0;
+        left: -100%;
+        width: 280px !important;
+        height: 100vh !important;
+        background: #FFFFFF !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        padding: 70px 20px 20px !important;
+        box-shadow: 20px 0 40px rgba(0,0,0,0.2) !important;
+        transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        z-index: 10500 !important;
+        overflow-y: auto !important;
+    }
+    body.dark-mode .nav-links { background: #0F172A !important; box-shadow: 20px 0 40px rgba(0,0,0,0.6) !important; }
+    .nav-links.active { left: 0 !important; }
+
+    /* Кнопка закрытия внутри бургера */
+    .mobile-menu-close {
+        display: block;
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: #F1F5F9;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        font-size: 18px;
+        color: #64748B;
+        cursor: pointer;
+    }
+    body.dark-mode .mobile-menu-close { background: #1E293B; color: #94A3B8; }
+
+    /* Превращаем выпадающие меню в Аккордеон */
+    .nav-item { flex-direction: column; align-items: stretch !important; width: 100%; margin-bottom: 8px; }
+    .nav-link-btn { width: 100%; justify-content: space-between !important; background: #F8FAFC !important; }
+    body.dark-mode .nav-link-btn { background: #1E293B !important; }
+    
+    .nav-dropdown {
+        position: static !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 10px 4px !important;
+        min-width: 100% !important;
+        display: none !important;
+        background: transparent !important;
+    }
+    .nav-item.open .nav-dropdown { display: flex !important; flex-direction: column; gap: 8px; }
+
+    /* Прячем длинную кнопку Telegram с панели (она будет в бургере) */
+    .nav-tg-btn { display: none !important; }
+
+    /* 2. Баннеры во всю ширину экрана смартфона */
+    .hero-slider {
+        width: 100% !important;
+        border-radius: 0 !important; /* Убираем круглые края */
+        height: 150px !important;    /* Адаптированная высота */
+        aspect-ratio: auto !important;
+        margin-bottom: 16px !important;
+    }
+
+    /* 3. Убираем жирные белые поля у главного контейнера */
+    .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    /* Возвращаем отступы только внутренним блокам, чтобы текст не лип к краям */
+    .workspace, .news-ticker-wrapper {
+        padding: 0 12px;
+    }
+
+    /* 4. Кнопки редактора в аккуратный горизонтальный скролл (Свайп как в Telegram) */
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .editor-actions {
+        width: 100%;
+        justify-content: flex-start !important;
+        flex-wrap: nowrap !important; /* Запрещаем кнопкам переноситься на 2 ряд */
+        overflow-x: auto !important;  /* Включаем свайп вбок */
+        scrollbar-width: none;
+        padding-bottom: 8px;
+    }
+    .editor-actions::-webkit-scrollbar { display: none; }
+    .action-icon-btn, .editor-tools-wrap, .editor-ai-wrap {
+        flex-shrink: 0 !important; /* Запрещаем кнопкам сплющиваться */
+    }
+    
+    /* 5. Увеличиваем текстовое поле для комфортной печати на телефоне */
+    textarea#editor {
+        height: 320px !important;
+    }
+
+    /* 6. Адаптация нижнего Дока (Стеклянной панели) */
+    .glass-dock-container {
+        padding: 8px 12px !important;
+        gap: 8px !important;
+        max-width: 95vw;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    .dock-icon-btn { width: 40px !important; height: 40px !important; }
+}
