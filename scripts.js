@@ -10040,3 +10040,186 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+// ==========================================
+// === 39. ИНТЕРАКТИВНЫЙ ТЕСТ / ВИКТОРИНА ===
+// ==========================================
+
+let currentQuizData = [];
+let quizUserScore = 0;
+let quizAnsweredCount = 0;
+
+window.openInteractiveTestModal = async function() {
+    if (typeof closeAiMenu === "function") closeAiMenu();
+
+    if (!editor || !editor.value.trim()) {
+        alert("Iltimos, test tuziş uçun avval matn kiriting!");
+        if (editor) editor.focus();
+        return;
+    }
+
+    const text = editor.value.trim();
+    const modal = document.getElementById("quizModalBackdrop");
+    const container = document.getElementById("quizBodyContainer");
+    const resultBox = document.getElementById("quizResultBox");
+    const restartBtn = document.getElementById("quizRestartBtn");
+    const subTitle = document.getElementById("quizSub");
+
+    if (!modal || !container) return;
+
+    // Сброс состояния
+    container.innerHTML = `<div style="text-align: center; padding: 40px; color: #0284C7; font-weight: 700;">AI matnni tahlil qilib, test tuzmoqda... Kuting...</div>`;
+    resultBox.style.display = "none";
+    if (restartBtn) restartBtn.style.display = "none";
+    subTitle.textContent = "Matn asosida savollar tayyorlanmoqda...";
+    
+    quizUserScore = 0;
+    quizAnsweredCount = 0;
+    currentQuizData = [];
+
+    modal.classList.add("open");
+
+    // Строгий промпт для получения JSON ответа от ИИ
+    const promptText = `Sen tajribali o'qituvchi va metodistsan. Berilgan matn asosida 5 ta test savoli tuz. Savollar tili asl matndagi tilga asosan bo'lishi shart!
+Javobni FAQAT toza JSON formatida ber, hech qanday markdown (\`\`\`json) yoki boshqa so'z yozma.
+Format:
+[
+  {
+    "question": "Savol matni?",
+    "options": ["Variant A", "Variant B", "Variant C", "Variant D"],
+    "correct_index": 0
+  }
+]
+Bu yerda "correct_index" — töğri javobning massivdagi indeksi (0 dan 3 gacha).
+Matn: "${text.substring(0, 4000)}"`;
+
+    try {
+        const response = await fetch(AI_PROXY_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "custom", text: text, customPrompt: promptText })
+        });
+
+        if (!response.ok) throw new Error("Server xatosi");
+
+        const data = await response.json();
+        let rawResult = data.result || data.response || (typeof data === "string" ? data : JSON.stringify(data));
+
+        let cleanJson = rawResult.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const startIdx = cleanJson.indexOf('[');
+        const endIdx = cleanJson.lastIndexOf(']');
+        if (startIdx !== -1 && endIdx !== -1) {
+            cleanJson = cleanJson.substring(startIdx, endIdx + 1);
+        }
+
+        currentQuizData = JSON.parse(cleanJson);
+
+        if (!Array.isArray(currentQuizData) || currentQuizData.length === 0) {
+            throw new Error("Savollar topilmadi");
+        }
+
+        subTitle.textContent = `Jami ${currentQuizData.length} ta savol. Özingizni sinab köring!`;
+        renderQuizQuestions();
+
+    } catch (err) {
+        console.error("Quiz Gen Error:", err);
+        container.innerHTML = `<div style="text-align: center; color: #EF4444; font-weight: 700; padding: 20px;">Test tuzişda xatolik yuz berdi. Qaytadan urinib köring.</div>`;
+        subTitle.textContent = "Xatolik yuz berdi";
+    }
+};
+
+window.closeQuizModal = function(event) {
+    const modal = document.getElementById("quizModalBackdrop");
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove("open");
+};
+
+function renderQuizQuestions() {
+    const container = document.getElementById("quizBodyContainer");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    currentQuizData.forEach((q, qIndex) => {
+        const card = document.createElement("div");
+        card.className = "quiz-question-card";
+        card.id = `quiz-card-${qIndex}`;
+
+        let optionsHtml = "";
+        q.options.forEach((opt, optIndex) => {
+            const safeOpt = (typeof enforceNewUzbekAlphabet === "function") ? enforceNewUzbekAlphabet(opt) : opt;
+            optionsHtml += `
+                <button type="button" class="quiz-opt-btn" onclick="handleQuizAnswer(${qIndex}, ${optIndex}, this)">
+                    ${optIndex + 1}. ${safeOpt}
+                </button>
+            `;
+        });
+
+        const safeQuestion = (typeof enforceNewUzbekAlphabet === "function") ? enforceNewUzbekAlphabet(q.question) : q.question;
+
+        card.innerHTML = `
+            <div class="quiz-q-title">${qIndex + 1}. ${safeQuestion}</div>
+            <div class="quiz-options-grid">${optionsHtml}</div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+window.handleQuizAnswer = function(qIndex, selectedOptIndex, btnEl) {
+    const questionObj = currentQuizData[qIndex];
+    const card = document.getElementById(`quiz-card-${qIndex}`);
+    if (!card) return;
+
+    // Блокируем все кнопки в этом вопросе, чтобы нельзя было кликнуть повторно
+    const allButtons = card.querySelectorAll(".quiz-opt-btn");
+    allButtons.forEach((b, idx) => {
+        b.disabled = true;
+        if (idx === questionObj.correct_index) {
+            b.classList.add("correct"); // Подсвечиваем правильный зеленым
+        }
+    });
+
+    // Если выбор пользователя неверный, подсвечиваем его красным
+    if (selectedOptIndex === questionObj.correct_index) {
+        quizUserScore++;
+    } else {
+        btnEl.classList.add("wrong");
+    }
+
+    quizAnsweredCount++;
+
+    // Проверяем, ответил ли пользователь на все вопросы
+    if (quizAnsweredCount === currentQuizData.length) {
+        showQuizFinalScore();
+    }
+};
+
+function showQuizFinalScore() {
+    const resultBox = document.getElementById("quizResultBox");
+    const scoreText = document.getElementById("quizScoreText");
+    const scoreComment = document.getElementById("quizScoreComment");
+    const restartBtn = document.getElementById("quizRestartBtn");
+
+    if (!resultBox) return;
+
+    const total = currentQuizData.length;
+    scoreText.textContent = `Nizangiz: ${quizUserScore} / ${total}`;
+
+    let comment = "Yaxşi natija! Öqişni davom eting.";
+    const ratio = quizUserScore / total;
+    if (ratio === 1) comment = "Mukammal! Siz matnni 100% özlaştirgansiz 🏆";
+    else if (ratio >= 0.7) comment = "Ajoyib natija! Mavzuni juda yaxşi tuşungansiz 👏";
+    else if (ratio < 0.4) comment = "Yana bir bor öqib çiqiş tavsiya etiladi 📚";
+
+    scoreComment.textContent = comment;
+    resultBox.style.display = "block";
+    if (restartBtn) restartBtn.style.display = "inline-flex";
+
+    // Плавный скролл к результату
+    resultBox.scrollIntoView({ behavior: 'smooth' });
+}
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeQuizModal();
+});
