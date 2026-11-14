@@ -10223,3 +10223,124 @@ function showQuizFinalScore() {
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeQuizModal();
 });
+
+// ==========================================
+// === 40. OVOZLI DIKTAT (Golosli kiritish) ===
+// ==========================================
+let speechRec = null;
+let isDictating = false;
+
+function initSpeechRecognition() {
+    // Поддержка для Google Chrome, Safari, Edge
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Keçirasiz, sizning brauzeringiz ovozli diktatni qöllab-quvvatlamaydi. Çrome yoki Safari'dan foydalaning.");
+        return false;
+    }
+    
+    speechRec = new SpeechRecognition();
+    speechRec.lang = 'uz-UZ'; // Слушаем узбекский язык
+    speechRec.continuous = true; // Не отключаемся после первого предложения
+    speechRec.interimResults = true; // Ловим текст на лету
+
+    speechRec.onstart = function() {
+        isDictating = true;
+        const btn = document.getElementById("dictationBtn");
+        const tooltip = document.getElementById("dictationTooltip");
+        if (btn) btn.classList.add("recording");
+        if (tooltip) tooltip.textContent = "Eşitilmoqda...";
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Mikrofon yoniq 🎙️");
+    };
+
+    speechRec.onresult = function(event) {
+        let currentFinal = "";
+        
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                // Если фраза закончена, забираем её
+                currentFinal += event.results[i][0].transcript;
+            }
+        }
+
+        if (currentFinal && editor) {
+            // 1. Пропускаем текст через наш умный фильтр нового алфавита
+            let cleanText = currentFinal;
+            if (typeof enforceNewUzbekAlphabet === "function") {
+                cleanText = enforceNewUzbekAlphabet(cleanText);
+            }
+            
+            // 2. Делаем текст с заглавной буквы, если это начало предложения
+            cleanText = cleanText.charAt(0).toUpperCase() + cleanText.slice(1);
+            
+            // 3. Вставляем текст туда, где стоит курсор
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            
+            // Добавляем пробел перед новым словом, если его нет
+            const prefix = (start > 0 && !editor.value.substring(0, start).endsWith(' ') && !editor.value.substring(0, start).endsWith('\n')) ? ' ' : '';
+            
+            const textToInsert = prefix + cleanText + ". ";
+            editor.value = editor.value.substring(0, start) + textToInsert + editor.value.substring(end);
+            
+            const newPos = start + textToInsert.length;
+            editor.focus();
+            editor.selectionStart = editor.selectionEnd = newPos;
+            
+            // 4. Триггерим автосохранение и статистику
+            if (typeof saveEditorDraft === "function") saveEditorDraft();
+            if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+        }
+    };
+
+    speechRec.onerror = function(event) {
+        console.error("Ovozli diktat xatosi:", event.error);
+        if (event.error === 'not-allowed') {
+            alert("Mikrofonga ruxsat berilmagan! Iltimos, brauzer sozlamalaridan ruxsat bering.");
+        }
+        stopDictation();
+    };
+
+    speechRec.onend = function() {
+        // Если движок сам остановился (из-за тишины), но мы не выключали его вручную — перезапускаем
+        if (isDictating) {
+            try { speechRec.start(); } catch(e) { stopDictation(); }
+        } else {
+            stopDictation();
+        }
+    };
+    
+    return true;
+}
+
+window.toggleDictation = function() {
+    if (!speechRec) {
+        const initialized = initSpeechRecognition();
+        if (!initialized) return;
+    }
+
+    if (isDictating) {
+        // Если микрофон включен - выключаем
+        isDictating = false;
+        speechRec.stop();
+        stopDictation();
+    } else {
+        // Если выключен - включаем
+        try {
+            // === МАШИНА ВРЕМЕНИ (MATN TARIXI) - Делаем снимок перед диктовкой ===
+            if (typeof saveTimeMachineSnapshot === "function") saveTimeMachineSnapshot(true);
+            
+            speechRec.start();
+        } catch (e) {
+            console.error("Dictation start error:", e);
+        }
+    }
+};
+
+function stopDictation() {
+    isDictating = false;
+    const btn = document.getElementById("dictationBtn");
+    const tooltip = document.getElementById("dictationTooltip");
+    if (btn) btn.classList.remove("recording");
+    if (tooltip) tooltip.textContent = "Ovozni matnga ögiriş";
+    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Mikrofon öçirildi");
+}
