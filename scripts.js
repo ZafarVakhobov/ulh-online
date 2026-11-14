@@ -9918,7 +9918,7 @@ document.addEventListener("keydown", (e) => {
 
 
 // ==========================================
-// === 38. P2P ПЕРЕДАЧА ТЕКСТА ЧЕРЕЗ ХЭШ (#) ===
+// === 38. P2P ПЕРЕДАЧА ТЕКСТА ЧЕРЕЗ ХЭШ (#) С ЗАЩИТОЙ QR ===
 // ==========================================
 
 window.openP2pModal = function(event) {
@@ -9939,44 +9939,62 @@ window.openP2pModal = function(event) {
 
     const rawText = editor.value.trim();
     
-    // 1. Сжимаем текст алгоритмом LZ-String в безопасную строку
+    // 1. Сжимаем текст алгоритмом LZ-String
     const compressed = LZString.compressToEncodedURIComponent(rawText);
     
-    // 2. Формируем локальную ссылку с хэшем (#), которая не уходит на сервер
+    // 2. Формируем локальную ссылку с хэшем (#)
     const currentBaseUrl = window.location.origin + window.location.pathname;
     const shareUrl = `${currentBaseUrl}#${compressed}`;
 
-    if (hint) {
-        hint.textContent = `Asl matn: ${rawText.length} belgi | Havola hajmi: ${shareUrl.length} bayt`;
-    }
+    window.currentP2pShareUrl = shareUrl;
 
-    // 3. Генерируем QR-код прямо в браузере (используем уровень 'L' для максимальной вместимости)
-    try {
-        const qr = qrcode(0, "L"); 
-        qr.addData(shareUrl);
-        qr.make();
-        
-        const count = qr.getModuleCount();
-        let pathData = "";
-        for (let r = 0; r < count; r++) {
-            for (let c = 0; c < count; c++) {
-                if (qr.isDark(r, c)) {
-                    pathData += `M${c},${r}h1v1h-1z `;
+    // 3. Умная проверка длины: если текст больше 500 символов, QR-код будет слишком плотным.
+    // В таком случае показываем предупреждение вместо «шумного» квадрата.
+    const MAX_QR_SAFE_LENGTH = 500;
+
+    if (rawText.length > MAX_QR_SAFE_LENGTH) {
+        qrBox.innerHTML = `
+            <div style="padding: 20px; text-align: center; color: #D97706; font-size: 13px; font-weight: 700; line-height: 1.5;">
+                ⚠️ Matn juda uzun (${rawText.length} belgi). <br><br>
+                <span style="font-size: 11.5px; color: #64748B; font-weight: 600;">Katta hajmdagi matnlar uçun QR-kod öqilmasligi mumkin. Iltimos, quyidagi tugma orqali havolani nusxalab yuboring!</span>
+            </div>
+        `;
+        if (hint) {
+            hint.textContent = `Asl matn: ${rawText.length} belgi (Faqat havolani nusxalaş tavsiya etiladi)`;
+            hint.style.color = "#D97706";
+        }
+    } else {
+        // Если текст компактный — генерируем красивый, чистый и крупный QR-код
+        try {
+            const qr = qrcode(0, "L"); 
+            qr.addData(shareUrl);
+            qr.make();
+            
+            const count = qr.getModuleCount();
+            let pathData = "";
+            for (let r = 0; r < count; r++) {
+                for (let c = 0; c < count; c++) {
+                    if (qr.isDark(r, c)) {
+                        pathData += `M${c},${r}h1v1h-1z `;
+                    }
                 }
             }
+            
+            qrBox.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${count} ${count}" shape-rendering="crispEdges">
+                <rect width="${count}" height="${count}" fill="#FFFFFF"/>
+                <path d="${pathData.trim()}" fill="#0F172A"/>
+            </svg>`;
+            
+            if (hint) {
+                hint.textContent = `Asl matn: ${rawText.length} belgi | QR-kod öqişga qulay`;
+                hint.style.color = "#10B981";
+            }
+        } catch (e) {
+            console.error("P2P QR Error:", e);
         }
-        
-        qrBox.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${count} ${count}" shape-rendering="crispEdges">
-            <rect width="${count}" height="${count}" fill="#FFFFFF"/>
-            <path d="${pathData.trim()}" fill="#0F172A"/>
-        </svg>`;
-        
-        window.currentP2pShareUrl = shareUrl;
-        modal.classList.add("open");
-    } catch (e) {
-        alert("Matn hajmi juda katta! QR-kodga siğmadi. Matnni qisqaroq qismga bölib köring");
-        console.error("P2P QR Error:", e);
     }
+
+    modal.classList.add("open");
 };
 
 window.closeP2pModal = function(event) {
@@ -10008,7 +10026,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof saveEditorDraft === "function") saveEditorDraft();
                 if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
                 
-                // Аккуратно очищаем хэш из адресной строки, чтобы при обновлении страницы текст не вставился заново
+                // Аккуратно очищаем хэш из адресной строки
                 history.replaceState(null, null, window.location.pathname);
                 
                 setTimeout(() => {
