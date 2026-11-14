@@ -558,6 +558,9 @@
         
     </nav>
 
+<!-- Универсальный фон для мобильных всплывающих меню -->
+    <div class="weather-modal-backdrop" id="mobileMenuOverlay" style="z-index: 10550;" onclick="closeAllMobileMenus()"></div>
+    
     <!-- === МОДАЛЬНОЕ ПОП-АП ОКНО ВЫБОРА ГОРОДА ПОГОДЫ === -->
     <div class="weather-modal-backdrop" id="weatherModalBackdrop" onclick="closeWeatherModal(event)">
         <div class="weather-modal-card" onclick="event.stopPropagation()">
