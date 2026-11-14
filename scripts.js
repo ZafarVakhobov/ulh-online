@@ -9918,8 +9918,18 @@ document.addEventListener("keydown", (e) => {
 
 
 // ==========================================
-// === 38. P2P ПЕРЕДАЧА ТЕКСТА ЧЕРЕЗ ХЭШ (#) ===
+// === 38. P2P ПЕРЕДАЧА ТЕКСТА ЧЕРЕЗ ЛОКАЛЬНЫЙ ID (#6символов) ===
 // ==========================================
+
+// Генератор случайных 6 символов (с учетом регистра и цифр)
+function generateShortId() {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    for (let i = 0; i < 6; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
 
 window.openP2pModal = function(event) {
     if (event) { event.preventDefault(); event.stopPropagation(); }
@@ -9939,18 +9949,42 @@ window.openP2pModal = function(event) {
 
     const rawText = editor.value.trim();
     
-    // 1. Сжимаем текст алгоритмом LZ-String
-    const compressed = LZString.compressToEncodedURIComponent(rawText);
+    // 1. Генерируем короткий уникальный ID из 6 символов (например: #9aB2xQ)
+    const shortId = generateShortId();
     
-    // 2. Формируем ссылку с хэшем (#), которая остается локальной и безопасной
-    const currentBaseUrl = window.location.origin + window.location.pathname;
-    const shareUrl = `${currentBaseUrl}#${compressed}`;
-
-    hint.textContent = `Asl matn: ${rawText.length} belgi | Havola hajmi: ${shareUrl.length} bayt`;
-
-    // 3. Генерируем QR-код прямо в браузере
+    // 2. Сохраняем связку в локальное хранилище браузера (LocalStorage)
+    let localShareDB = {};
     try {
-        const qr = qrcode(0, "L"); // Уровень L для максимальной емкости
+        const storedDB = localStorage.getItem("ulh_p2p_local_db");
+        if (storedDB) localShareDB = JSON.parse(storedDB);
+    } catch(e) {}
+
+    localShareDB[shortId] = {
+        text: rawText,
+        time: Date.now()
+    };
+
+    // Очищаем старые записи старше 24 часов, чтобы не забивать память браузера
+    const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+    Object.keys(localShareDB).forEach(key => {
+        if (localShareDB[key].time < oneDayAgo) delete localShareDB[key];
+    });
+
+    try {
+        localStorage.setItem("ulh_p2p_local_db", JSON.stringify(localShareDB));
+    } catch(e) {
+        console.warn("LocalStorage limitga yetdi:", e);
+    }
+
+    // 3. Формируем ультракороткую ссылку с хэшем
+    const currentBaseUrl = window.location.origin + window.location.pathname;
+    const shareUrl = `${currentBaseUrl}#${shortId}`;
+
+    hint.textContent = `Asl matn: ${rawText.length} belgi | Havola: ${shortId} (Qisqa kod)`;
+
+    // 4. Генерируем QR-код (теперь он будет очень «редким» и легко читаемым для любой камеры!)
+    try {
+        const qr = qrcode(0, "L"); 
         qr.addData(shareUrl);
         qr.make();
         
@@ -9972,7 +10006,7 @@ window.openP2pModal = function(event) {
         window.currentP2pShareUrl = shareUrl;
         modal.classList.add("open");
     } catch (e) {
-        alert("Matn hajmi juda katta! QR-kodga siğmadi. Matnni qisqaroq qismga bölib köring.");
+        alert("QR-kodni yaratişda xatolik yuz berdi");
         console.error("P2P QR Error:", e);
     }
 };
@@ -9988,35 +10022,37 @@ window.copyP2pLink = function() {
     if (!window.currentP2pShareUrl) return;
     navigator.clipboard.writeText(window.currentP2pShareUrl).then(() => {
         if (typeof showAutosaveIndicator === "function") {
-            showAutosaveIndicator("P2P havola nusxalandi ✓");
+            showAutosaveIndicator("P2P havola nusxalandi");
         }
     });
 };
 
-// 4. Автоматический перехватчик: ловит данные из хэша (#) при открытии сайта на смартфоне
+// 5. Автоматический перехватчик: проверяет хэш (#) при открытии сайта
 document.addEventListener('DOMContentLoaded', () => {
-    // Берём всё, что идет после символа '#'
-    const hashData = window.location.hash.substring(1); 
+    const hashKey = window.location.hash.substring(1); // Берём код после '#' (например, 9aB2xQ)
     
-    if (hashData && editor) {
+    if (hashKey && hashKey.length === 6 && editor) {
         try {
-            const decompressed = LZString.decompressFromEncodedURIComponent(hashData);
-            if (decompressed) {
-                editor.value = decompressed;
+            const storedDB = JSON.parse(localStorage.getItem("ulh_p2p_local_db") || "{}");
+            
+            if (storedDB[hashKey]) {
+                const targetText = storedDB[hashKey].text;
+                editor.value = targetText;
+                
                 if (typeof saveEditorDraft === "function") saveEditorDraft();
                 if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
                 
-                // Очищаем адресную строку браузера от хэша, чтобы при случайном обновлении текст не затерся заново
+                // Очищаем хэш из адресной строки
                 history.replaceState(null, null, window.location.pathname);
                 
                 setTimeout(() => {
                     if (typeof showAutosaveIndicator === "function") {
-                        showAutosaveIndicator("Telefondan matn qabul qilindi ✓");
+                        showAutosaveIndicator("Telefondan matn qabul qilindi");
                     }
                 }, 500);
             }
         } catch (e) {
-            console.error("P2P Decompress Error:", e);
+            console.error("P2P Local DB Read Error:", e);
         }
     }
 });
