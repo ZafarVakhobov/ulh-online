@@ -9915,3 +9915,108 @@ window.executeTextDiff = function() {
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeDiffModal();
 });
+
+
+// ==========================================
+// === 38. P2P ПЕРЕДАЧА ТЕКСТА ПО QR (LZ-STRING) ===
+// ==========================================
+
+window.openP2pModal = function(event) {
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    if (typeof closeEditorToolsMenu === "function") closeEditorToolsMenu();
+
+    if (!editor || !editor.value.trim()) {
+        alert("Iltimos, uzatish uchun avval matn kiriting!");
+        if (editor) editor.focus();
+        return;
+    }
+
+    const modal = document.getElementById("p2pModalBackdrop");
+    const qrBox = document.getElementById("p2pQrBox");
+    const hint = document.getElementById("p2pSizeHint");
+    
+    if (!modal || !qrBox) return;
+
+    const rawText = editor.value.trim();
+    
+    // 1. Сжимаем текст алгоритмом LZ-String в безопасный URI-компонент
+    const compressed = LZString.compressToEncodedURIComponent(rawText);
+    
+    // 2. Формируем специальную ссылку на текущий сайт с параметром ?p2p=...
+    const currentBaseUrl = window.location.origin + window.location.pathname;
+    const shareUrl = `${currentBaseUrl}?p2p=${compressed}`;
+
+    hint.textContent = `Asl matn: ${rawText.length} belgi | Siqilgan: ${shareUrl.length} belgi`;
+
+    // 3. Генерируем QR-код с помощью уже подключенной библиотеки qrcode.js
+    try {
+        const qr = qrcode(0, "L"); // Уровень L дает максимальную вместимость для текста
+        qr.addData(shareUrl);
+        qr.make();
+        
+        // Рендерим SVG внутри блока
+        const count = qr.getModuleCount();
+        let pathData = "";
+        for (let r = 0; r < count; r++) {
+            for (let c = 0; c < count; c++) {
+                if (qr.isDark(r, c)) {
+                    pathData += `M${c},${r}h1v1h-1z `;
+                }
+            }
+        }
+        
+        qrBox.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${count} ${count}" shape-rendering="crispEdges">
+            <rect width="${count}" height="${count}" fill="#FFFFFF"/>
+            <path d="${pathData.trim()}" fill="#0F172A"/>
+        </svg>`;
+        
+        window.currentP2pShareUrl = shareUrl;
+        modal.classList.add("open");
+    } catch (e) {
+        alert("Matn hajmi juda katta! QR-kodga siğmadi. Biroq qisqaroq matn yoki 'Havolani nusxalaş'dan foydalanişingiz mumkin.");
+        console.error("P2P QR Error:", e);
+    }
+};
+
+window.closeP2pModal = function(event) {
+    const modal = document.getElementById("p2pModalBackdrop");
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove("open");
+};
+
+window.copyP2pLink = function() {
+    if (!window.currentP2pShareUrl) return;
+    navigator.clipboard.writeText(window.currentP2pShareUrl).then(() => {
+        if (typeof showAutosaveIndicator === "function") {
+            showAutosaveIndicator("P2P havola nusxalandi ✓");
+        }
+    });
+};
+
+// 4. Автоматический перехватчик при открытии сайта на смартфоне:
+// Если человек отсканировал QR, сайт открывается, ловит ?p2p=..., распаковывает и вставляет в редактор!
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const p2pData = urlParams.get('p2p');
+    
+    if (p2pData && editor) {
+        try {
+            const decompressed = LZString.decompressFromEncodedURIComponent(p2pData);
+            if (decompressed) {
+                editor.value = decompressed;
+                if (typeof saveEditorDraft === "function") saveEditorDraft();
+                if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
+                
+                // Красивое уведомление
+                setTimeout(() => {
+                    if (typeof showAutosaveIndicator === "function") {
+                        showAutosaveIndicator("Telefondan matn qabul qilindi ✓");
+                    }
+                }, 500);
+            }
+        } catch (e) {
+            console.error("P2P Decompress Error:", e);
+        }
+    }
+});
