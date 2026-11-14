@@ -8297,15 +8297,21 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         z-index: 10000;
+        flex-wrap: nowrap !important; /* ЗАПРЕЩАЕМ ПЕРЕНОС ИКОНОК В ШАПКЕ */
+        overflow-x: auto;
+        scrollbar-width: none;
     }
     body.dark-mode .top-navbar { background: rgba(15, 23, 42, 0.95); }
+
+    /* Исправление сплющивания иконки темы */
+    .theme-toggle-btn { flex-shrink: 0 !important; }
 
     /* Боковое выезжающее меню на весь экран */
     .nav-links {
         position: fixed !important;
         top: 0;
         left: -100%;
-        width: 280px !important;
+        width: 100vw !important; /* МЕНЮ НА ВСЮ ШИРИНУ ЭКРАНА */
         height: 100vh !important;
         background: #FFFFFF !important;
         flex-direction: column !important;
@@ -8316,6 +8322,7 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
         transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
         z-index: 10500 !important;
         overflow-y: auto !important;
+        border-radius: 0 24px 24px 0; /* ЗАКРУГЛЕНИЕ МЕНЮ */
     }
     body.dark-mode .nav-links { background: #0F172A !important; box-shadow: 20px 0 40px rgba(0,0,0,0.6) !important; }
     .nav-links.active { left: 0 !important; }
@@ -8337,8 +8344,11 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
     }
     body.dark-mode .mobile-menu-close { background: #1E293B; color: #94A3B8; }
 
-    /* Превращаем выпадающие меню в Аккордеон */
-    .nav-item { flex-direction: column; align-items: stretch !important; width: 100%; margin-bottom: 8px; }
+    /* Прячем длинную кнопку Telegram с панели (она будет в бургере) */
+    .nav-tg-btn { display: none !important; }
+
+    /* Исправление выпадающего меню "Foydali resurslar" (Чтобы открывалось ровно вниз, а не улетало вправо) */
+    .nav-item { flex-direction: column; align-items: stretch !important; width: 100%; margin-bottom: 8px; position: relative !important; }
     .nav-link-btn { width: 100%; justify-content: space-between !important; background: #F8FAFC !important; }
     body.dark-mode .nav-link-btn { background: #1E293B !important; }
     
@@ -8349,21 +8359,46 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
         border: none !important;
         padding: 10px 4px !important;
         min-width: 100% !important;
+        width: 100% !important;
         display: none !important;
         background: transparent !important;
     }
     .nav-item.open .nav-dropdown { display: flex !important; flex-direction: column; gap: 8px; }
 
-    /* Прячем длинную кнопку Telegram с панели (она будет в бургере) */
-    .nav-tg-btn { display: none !important; }
+    /* ИСПРАВЛЕНИЕ: Выравнивание всплывающих окон (Уведомления, Плеер, Профиль) по центру экрана смартфона */
+    .notify-dropdown-box,
+    .music-dropdown-box,
+    .user-dropdown-box {
+        position: fixed !important;
+        top: 70px !important;
+        left: 50% !important;
+        transform: translateX(-50%) translateY(8px) scale(0.98) !important;
+        width: 92vw !important;
+        max-width: 380px !important;
+        right: auto !important;
+        z-index: 10600 !important;
+    }
+    .nav-item.open .notify-dropdown-box,
+    .nav-music-wrap.open .music-dropdown-box,
+    .nav-item.open .user-dropdown-box {
+        transform: translateX(-50%) translateY(0) scale(1) !important;
+    }
 
-    /* 2. Баннеры во всю ширину экрана смартфона */
+    /* ИСПРАВЛЕНИЕ: Скрытие лишних элементов (Плеер и Новости) на телефонах */
+    #navMusicWrap { display: none !important; } /* Прячем плеер */
+    .news-ticker-wrapper { display: none !important; } /* Прячем ленту новостей */
+
+    /* 2. Баннеры во всю ширину экрана смартфона с закруглениями */
     .hero-slider {
         width: 100% !important;
-        border-radius: 0 !important; /* Убираем круглые края */
-        height: 150px !important;    /* Адаптированная высота */
-        aspect-ratio: auto !important;
+        height: auto !important;
+        aspect-ratio: 2560 / 844 !important;
         margin-bottom: 16px !important;
+        border-radius: 20px !important; /* ВОЗВРАЩАЕМ ЗАКРУГЛЕНИЯ */
+    }
+    
+    .hero-slide img {
+        object-fit: cover !important; /* Идеальные пропорции без кропа */
     }
 
     /* 3. Убираем жирные белые поля у главного контейнера */
@@ -8376,7 +8411,7 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
     }
 
     /* Возвращаем отступы только внутренним блокам, чтобы текст не лип к краям */
-    .workspace, .news-ticker-wrapper {
+    .workspace {
         padding: 0 12px;
     }
 
@@ -8386,19 +8421,39 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
         align-items: flex-start;
         gap: 12px;
     }
+    
+    /* ИСПРАВЛЕНИЕ: Горизонтальный скролл панели без вертикального "дёргания" */
     .editor-actions {
         width: 100%;
         justify-content: flex-start !important;
-        flex-wrap: nowrap !important; /* Запрещаем кнопкам переноситься на 2 ряд */
-        overflow-x: auto !important;  /* Включаем свайп вбок */
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important; /* УБИРАЕМ ВЕРТИКАЛЬНЫЙ СКРОЛЛ */
         scrollbar-width: none;
-        padding-bottom: 8px;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
     }
     .editor-actions::-webkit-scrollbar { display: none; }
+    
     .action-icon-btn, .editor-tools-wrap, .editor-ai-wrap {
-        flex-shrink: 0 !important; /* Запрещаем кнопкам сплющиваться */
+        flex-shrink: 0 !important;
     }
     
+    /* Убираем всплывающее меню инструментов при горизонтальном скролле */
+    .editor-tools-dropdown, .editor-ai-dropdown {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) scale(0.98) !important;
+        width: 90vw !important;
+        z-index: 10600 !important;
+    }
+    
+    .editor-tools-wrap.open .editor-tools-dropdown,
+    .editor-ai-wrap.open .editor-ai-dropdown {
+        transform: translate(-50%, -50%) scale(1) !important;
+    }
+
     /* 5. Увеличиваем текстовое поле для комфортной печати на телефоне */
     textarea#editor {
         height: 320px !important;
