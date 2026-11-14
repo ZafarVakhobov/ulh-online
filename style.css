@@ -8287,10 +8287,10 @@ body.dark-mode .mic-icon-btn.recording {
     .top-navbar {
         position: sticky;
         top: 12px !important; /* Отступ от верхнего края экрана при скролле */
-        width: calc(100% - 24px) !important; /* Отступы по бокам */
+        width: calc(100% - 20px) !important; /* Отступы по бокам */
         margin: 12px auto 16px auto !important; /* Центрируем "остров" */
         padding: 8px 14px !important; /* Чуть тоньше для изящности */
-        border-radius: 24px !important; /* Закругляем ВСЕ углы */
+        border-radius: 20px !important; /* Закругляем ВСЕ углы */
         border: 1px solid rgba(226, 232, 240, 0.8) !important; 
         background: rgba(255, 255, 255, 0.85) !important; /* Эффект стекла */
         backdrop-filter: blur(16px);
@@ -8344,10 +8344,10 @@ body.dark-mode .mic-icon-btn.recording {
         height: 34px !important;
         padding: 0 !important;
         justify-content: center !important;
-        border-radius: 10px !important; /* Делаем аккуратный квадратик */
+        border-radius: 100px !important; /* Делаем аккуратный квадратик */
     }
     .news-ticker-track {
-        padding-left: 10px !important; /* Чуть сдвигаем текст влево */
+        padding-left: 15px !important; /* Чуть сдвигаем текст влево */
     }
 
     /* 4. Баннеры во всю ширину экрана смартфона (с закруглениями) */
@@ -8460,7 +8460,7 @@ body.dark-mode .mic-icon-btn.recording {
     }
     
     /* Верхний ряд (Левая группа) */
-    .glass-dock-container > .dock-side-group:nth-child(1) { bottom: 145px; }
+    .glass-dock-container > .dock-side-group:nth-child(1) { bottom: 150px; }
     /* Нижний ряд (Правая группа) */
     .glass-dock-container > .dock-side-group:nth-child(3) { bottom: 80px; }
     
