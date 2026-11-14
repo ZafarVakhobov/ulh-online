@@ -9918,7 +9918,7 @@ document.addEventListener("keydown", (e) => {
 
 
 // ==========================================
-// === 38. P2P ПЕРЕДАЧА ТЕКСТА ПО QR (LZ-STRING) ===
+// === 38. P2P ПЕРЕДАЧА ТЕКСТА ЧЕРЕЗ ХЭШ (#) ===
 // ==========================================
 
 window.openP2pModal = function(event) {
@@ -9926,7 +9926,7 @@ window.openP2pModal = function(event) {
     if (typeof closeEditorToolsMenu === "function") closeEditorToolsMenu();
 
     if (!editor || !editor.value.trim()) {
-        alert("Iltimos, uzatish uchun avval matn kiriting!");
+        alert("Iltimos, uzatiş uçun avval matn kiriting!");
         if (editor) editor.focus();
         return;
     }
@@ -9939,22 +9939,21 @@ window.openP2pModal = function(event) {
 
     const rawText = editor.value.trim();
     
-    // 1. Сжимаем текст алгоритмом LZ-String в безопасный URI-компонент
+    // 1. Сжимаем текст алгоритмом LZ-String
     const compressed = LZString.compressToEncodedURIComponent(rawText);
     
-    // 2. Формируем специальную ссылку на текущий сайт с параметром ?p2p=...
+    // 2. Формируем ссылку с хэшем (#), которая остается локальной и безопасной
     const currentBaseUrl = window.location.origin + window.location.pathname;
-    const shareUrl = `${currentBaseUrl}?p2p=${compressed}`;
+    const shareUrl = `${currentBaseUrl}#${compressed}`;
 
-    hint.textContent = `Asl matn: ${rawText.length} belgi | Siqilgan: ${shareUrl.length} belgi`;
+    hint.textContent = `Asl matn: ${rawText.length} belgi | Havola hajmi: ${shareUrl.length} bayt`;
 
-    // 3. Генерируем QR-код с помощью уже подключенной библиотеки qrcode.js
+    // 3. Генерируем QR-код прямо в браузере
     try {
-        const qr = qrcode(0, "L"); // Уровень L дает максимальную вместимость для текста
+        const qr = qrcode(0, "L"); // Уровень L для максимальной емкости
         qr.addData(shareUrl);
         qr.make();
         
-        // Рендерим SVG внутри блока
         const count = qr.getModuleCount();
         let pathData = "";
         for (let r = 0; r < count; r++) {
@@ -9973,7 +9972,7 @@ window.openP2pModal = function(event) {
         window.currentP2pShareUrl = shareUrl;
         modal.classList.add("open");
     } catch (e) {
-        alert("Matn hajmi juda katta! QR-kodga siğmadi. Biroq qisqaroq matn yoki 'Havolani nusxalaş'dan foydalanişingiz mumkin.");
+        alert("Matn hajmi juda katta! QR-kodga siğmadi. Matnni qisqaroq qismga bölib köring.");
         console.error("P2P QR Error:", e);
     }
 };
@@ -9994,21 +9993,22 @@ window.copyP2pLink = function() {
     });
 };
 
-// 4. Автоматический перехватчик при открытии сайта на смартфоне:
-// Если человек отсканировал QR, сайт открывается, ловит ?p2p=..., распаковывает и вставляет в редактор!
+// 4. Автоматический перехватчик: ловит данные из хэша (#) при открытии сайта на смартфоне
 document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const p2pData = urlParams.get('p2p');
+    // Берём всё, что идет после символа '#'
+    const hashData = window.location.hash.substring(1); 
     
-    if (p2pData && editor) {
+    if (hashData && editor) {
         try {
-            const decompressed = LZString.decompressFromEncodedURIComponent(p2pData);
+            const decompressed = LZString.decompressFromEncodedURIComponent(hashData);
             if (decompressed) {
                 editor.value = decompressed;
                 if (typeof saveEditorDraft === "function") saveEditorDraft();
                 if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
                 
-                // Красивое уведомление
+                // Очищаем адресную строку браузера от хэша, чтобы при случайном обновлении текст не затерся заново
+                history.replaceState(null, null, window.location.pathname);
+                
                 setTimeout(() => {
                     if (typeof showAutosaveIndicator === "function") {
                         showAutosaveIndicator("Telefondan matn qabul qilindi ✓");
