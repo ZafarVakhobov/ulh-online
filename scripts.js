@@ -10344,3 +10344,15 @@ function stopDictation() {
     if (tooltip) tooltip.textContent = "Ovozni matnga ögiriş";
     if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Mikrofon öçirildi");
 }
+
+
+// Закрытие бургер-меню при клике мимо него
+document.addEventListener('click', (e) => {
+    const menu = document.getElementById('mobileMenuLinks');
+    const burgerBtn = document.querySelector('.mobile-burger-btn');
+    if (menu && menu.classList.contains('active')) {
+        if (!menu.contains(e.target) && (!burgerBtn || !burgerBtn.contains(e.target))) {
+            menu.classList.remove('active');
+        }
+    }
+});
