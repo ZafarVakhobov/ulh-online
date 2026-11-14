@@ -10204,7 +10204,7 @@ function showQuizFinalScore() {
     if (!resultBox) return;
 
     const total = currentQuizData.length;
-    scoreText.textContent = `Nizangiz: ${quizUserScore} / ${total}`;
+    scoreText.textContent = `Töğri javob: ${quizUserScore} / ${total}`;
 
     let comment = "Yaxşi natija! Öqişni davom eting.";
     const ratio = quizUserScore / total;
