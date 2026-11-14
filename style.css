@@ -8281,116 +8281,48 @@ body.dark-mode .mic-icon-btn.recording {
 /* Прячем бургер-кнопки на ПК */
 .mobile-burger-btn { display: none; background: transparent; border: none; color: #0F172A; padding: 4px; cursor: pointer; }
 .mobile-menu-close { display: none; }
-body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
 
 @media (max-width: 768px) {
-    /* 1. Показываем бургер-меню */
-    .mobile-burger-btn { display: inline-flex; align-items: center; justify-content: center; margin-left: 4px; }
-    
+    /* 1. Верхняя панель: Строгий минимализм (Только Логотип и Тема) */
     .top-navbar {
-        padding: 8px 12px !important;
+        padding: 10px 16px !important;
         border-radius: 0 0 20px 20px !important;
         border-top: none !important;
         position: sticky;
         top: 0;
-        /* УБРАЛИ backdrop-filter, чтобы окна не обрезались внутри шапки */
         background: #FFFFFF !important; 
         z-index: 10000;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
         flex-wrap: nowrap !important;
-        overflow: visible !important; /* КРИТИЧЕСКИ ВАЖНО: Разрешает окнам выходить за рамки */
     }
     body.dark-mode .top-navbar { background: #0F172A !important; }
 
-    /* Предотвращаем сплющивание кнопок (Луна/Солнце, Уведомления, Профиль) */
-    .nav-right-actions { gap: 6px !important; }
-    .theme-toggle-btn, .notify-toggle-btn, .user-toggle-btn, .mobile-burger-btn {
+    /* ЖЕСТКО СКРЫВАЕМ ВСЁ ЛИШНЕЕ ИЗ ШАПКИ */
+    .nav-links,
+    #navNotifyWrap,
+    #navUserWrap,
+    #navMusicWrap,
+    .mobile-burger-btn,
+    .nav-tg-btn {
+        display: none !important;
+    }
+
+    /* Оставляем только кнопку смены темы */
+    .nav-right-actions { gap: 0 !important; }
+    .theme-toggle-btn {
         width: 36px !important;
         height: 36px !important;
         flex-shrink: 0 !important;
     }
 
-    /* Боковое выезжающее меню на всю ширину экрана */
-    .nav-links {
-        position: fixed !important;
-        top: 0;
-        left: -100%;
-        width: 100vw !important; /* На всю ширину */
-        height: 100vh !important;
-        background: #FFFFFF !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-        justify-content: flex-start !important;
-        padding: 70px 20px 20px !important;
-        box-shadow: 20px 0 40px rgba(0,0,0,0.2) !important;
-        transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        z-index: 10500 !important;
-        overflow-y: auto !important;
-        border-radius: 0 24px 24px 0; /* Красивое закругление меню */
-    }
-    body.dark-mode .nav-links { background: #0F172A !important; box-shadow: 20px 0 40px rgba(0,0,0,0.6) !important; }
-    .nav-links.active { left: 0 !important; }
-
-    /* Кнопка закрытия внутри бургера */
-    .mobile-menu-close {
-        display: block;
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        background: #F1F5F9;
-        border: none;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        font-size: 18px;
-        color: #64748B;
-        cursor: pointer;
-    }
-    body.dark-mode .mobile-menu-close { background: #1E293B; color: #94A3B8; }
-
-    .nav-tg-btn { display: none !important; } /* Прячем длинную кнопку Telegram с панели */
-
-    /* Исправление выпадающего меню "Foydali resurslar" (открывается ровно вниз) */
-    .nav-item { flex-direction: column; align-items: stretch !important; width: 100%; margin-bottom: 8px; position: relative !important; }
-    .nav-link-btn { width: 100%; justify-content: space-between !important; background: #F8FAFC !important; }
-    body.dark-mode .nav-link-btn { background: #1E293B !important; }
-    
-    .nav-dropdown {
-        position: static !important;
-        transform: none !important;
-        box-shadow: none !important;
-        border: none !important;
-        padding: 10px 4px !important;
-        min-width: 100% !important;
-        width: 100% !important;
+    /* 2. Скрываем приветственное облако ИИ-бота, чтобы не перекрывало экран */
+    #osha-bubble {
         display: none !important;
-        background: transparent !important;
-    }
-    .nav-item.open .nav-dropdown { display: flex !important; flex-direction: column; gap: 8px; }
-
-    /* ИСПРАВЛЕНИЕ: Выравнивание всплывающих окон по центру экрана смартфона */
-    .notify-dropdown-box,
-    .music-dropdown-box,
-    .user-dropdown-box {
-        position: fixed !important;
-        top: 65px !important;
-        left: 50% !important;
-        transform: translateX(-50%) translateY(8px) scale(0.98) !important;
-        width: calc(100vw - 24px) !important;
-        max-width: 400px !important;
-        right: auto !important;
-        z-index: 10600 !important;
-    }
-    .nav-item.open .notify-dropdown-box,
-    .nav-music-wrap.open .music-dropdown-box,
-    .nav-item.open .user-dropdown-box {
-        transform: translateX(-50%) translateY(0) scale(1) !important;
     }
 
-    /* Скрываем лишние элементы (Плеер и Новости) на телефонах */
-    #navMusicWrap { display: none !important; } 
-    .news-ticker-wrapper { display: none !important; } 
-
-    /* 2. Баннеры во всю ширину экрана смартфона (с закруглениями и без обрезки) */
+    /* 3. Баннеры во всю ширину экрана смартфона (с закруглениями) */
     .hero-slider {
         width: 100% !important;
         height: auto !important;
@@ -8399,10 +8331,10 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
         border-radius: 20px !important; 
     }
     .hero-slide img {
-        object-fit: contain !important; /* Идеальные пропорции без кропа */
+        object-fit: contain !important; 
     }
 
-    /* 3. Убираем жирные белые поля у главного контейнера */
+    /* 4. Убираем жирные белые поля у главного контейнера */
     .container {
         max-width: 100% !important;
         padding: 0 !important;
@@ -8413,7 +8345,7 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
 
     .workspace { padding: 0 12px; }
 
-    /* 4. Кнопки редактора в горизонтальный скролл без вертикального дергания */
+    /* 5. Кнопки редактора в горизонтальный скролл */
     .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
     
     .editor-actions {
@@ -8429,6 +8361,7 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
     .editor-actions::-webkit-scrollbar { display: none; }
     .action-icon-btn, .editor-tools-wrap, .editor-ai-wrap { flex-shrink: 0 !important; }
     
+    /* Выпадающие меню инструментов по центру экрана */
     .editor-tools-dropdown, .editor-ai-dropdown {
         position: fixed !important;
         top: 50% !important;
@@ -8443,10 +8376,11 @@ body.dark-mode .mobile-burger-btn { color: #F8FAFC; }
         transform: translate(-50%, -50%) scale(1) !important;
     }
 
+    /* Увеличиваем текстовое поле для комфортной печати на телефоне */
     textarea#editor { height: 320px !important; }
 
     /* ========================================================= */
-    /* 5. ИДЕАЛЬНАЯ ПЛАВАЮЩАЯ КНОПКА (Ö) И ВЫЛЕТАЮЩЕЕ МЕНЮ ДОКА */
+    /* 6. ИДЕАЛЬНАЯ ПЛАВАЮЩАЯ КНОПКА (Ö) И ВЫЛЕТАЮЩЕЕ МЕНЮ ДОКА */
     /* ========================================================= */
     .footer {
         position: fixed;
