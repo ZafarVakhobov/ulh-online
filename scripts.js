@@ -10356,3 +10356,47 @@ document.addEventListener('click', (e) => {
         }
     }
 });
+
+// ==========================================
+// === УПРАВЛЕНИЕ МОБИЛЬНЫМИ МЕНЮ И OVERLAY ===
+// ==========================================
+function toggleMobileMenuOverlay(isOpen) {
+    if (window.innerWidth > 768) return;
+    const overlay = document.getElementById('mobileMenuOverlay');
+    if (overlay) {
+        if (isOpen) {
+            overlay.classList.add('open');
+        } else {
+            overlay.classList.remove('open');
+        }
+    }
+}
+
+window.closeAllMobileMenus = function() {
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    document.querySelectorAll('.editor-tools-wrap').forEach(el => el.classList.remove('open'));
+    document.querySelectorAll('.editor-ai-wrap').forEach(el => el.classList.remove('open'));
+    toggleMobileMenuOverlay(false);
+};
+
+// Привязываем overlay к вашим существующим функциям
+const originalToggleNavDropdown = window.toggleNavDropdown;
+window.toggleNavDropdown = function(itemId, event) {
+    if (originalToggleNavDropdown) originalToggleNavDropdown(itemId, event);
+    const target = document.getElementById(itemId);
+    toggleMobileMenuOverlay(target && target.classList.contains('open'));
+};
+
+const originalToggleEditorToolsMenu = window.toggleEditorToolsMenu;
+window.toggleEditorToolsMenu = function(event) {
+    if (originalToggleEditorToolsMenu) originalToggleEditorToolsMenu(event);
+    const wrap = document.getElementById("editorToolsWrap");
+    toggleMobileMenuOverlay(wrap && wrap.classList.contains('open'));
+};
+
+const originalToggleAiMenu = window.toggleAiMenu;
+window.toggleAiMenu = function(event) {
+    if (originalToggleAiMenu) originalToggleAiMenu(event);
+    const wrap = document.getElementById("editorAiWrap");
+    toggleMobileMenuOverlay(wrap && wrap.classList.contains('open'));
+};
