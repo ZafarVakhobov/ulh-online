@@ -8159,3 +8159,71 @@ body.dark-mode #diffResultBox {
     opacity: 0.9;
     box-shadow: 0 6px 16px rgba(16, 185, 129, 0.38) !important;
 }
+
+/* ========================================== */
+/* === ИНТЕРАКТИВНЫЙ ТЕСТ (VIKTORINA) === */
+/* ========================================== */
+.quiz-question-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.quiz-q-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #1E293B;
+    line-height: 1.4;
+}
+.quiz-options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.quiz-opt-btn {
+    width: 100%;
+    background: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: left;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.quiz-opt-btn:hover:not(:disabled) {
+    background: #F1F5F9;
+    border-color: #0284C7;
+    color: #0284C7;
+}
+/* Стили после выбора ответа */
+.quiz-opt-btn.correct {
+    background: #D1FAE5 !important;
+    border-color: #34D399 !important;
+    color: #065F46 !important;
+}
+.quiz-opt-btn.wrong {
+    background: #FEE2E2 !important;
+    border-color: #FCA5A5 !important;
+    color: #991B1B !important;
+}
+.quiz-opt-btn:disabled {
+    cursor: default;
+}
+
+/* Темная тема */
+body.dark-mode .quiz-question-card { background: #1E293B; border-color: #334155; }
+body.dark-mode .quiz-q-title { color: #F8FAFC; }
+body.dark-mode .quiz-opt-btn { background: #0F172A; border-color: #334155; color: #E2E8F0; }
+body.dark-mode .quiz-opt-btn:hover:not(:disabled) { background: #172554; border-color: #38BDF8; color: #38BDF8; }
+body.dark-mode .quiz-opt-btn.correct { background: rgba(16, 185, 129, 0.25) !important; color: #34D399 !important; }
+body.dark-mode .quiz-opt-btn.wrong { background: rgba(225, 29, 72, 0.25) !important; color: #FB7185 !important; }
+body.dark-mode #quizResultBox { background: rgba(22, 163, 74, 0.15) !important; border-color: rgba(22, 163, 74, 0.3) !important; }
+body.dark-mode #quizScoreText { color: #4ADE80 !important; }
+body.dark-mode #quizScoreComment { color: #86EFAC !important; }
