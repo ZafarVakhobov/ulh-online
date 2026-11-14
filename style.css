@@ -8227,3 +8227,48 @@ body.dark-mode .quiz-opt-btn.wrong { background: rgba(225, 29, 72, 0.25) !import
 body.dark-mode #quizResultBox { background: rgba(22, 163, 74, 0.15) !important; border-color: rgba(22, 163, 74, 0.3) !important; }
 body.dark-mode #quizScoreText { color: #4ADE80 !important; }
 body.dark-mode #quizScoreComment { color: #86EFAC !important; }
+
+
+/* ========================================== */
+/* === КНОПКА МИКРОФОНА (OVOZLI DIKTAT) === */
+/* ========================================== */
+.mic-icon-btn {
+    background-color: #E0F2FE;
+    color: #0284C7;
+}
+.mic-icon-btn:hover {
+    background-color: #0284C7;
+    color: #FFFFFF;
+}
+
+/* Состояние активной записи (красная пульсация) */
+.mic-icon-btn.recording {
+    background-color: #FEE2E2;
+    color: #EF4444;
+    animation: micPulse 1.5s infinite;
+}
+@keyframes micPulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Темная тема для микрофона */
+body.dark-mode .mic-icon-btn {
+    background-color: rgba(2, 132, 199, 0.18);
+    color: #38BDF8;
+}
+body.dark-mode .mic-icon-btn:hover {
+    background-color: #0284C7;
+    color: #FFFFFF;
+}
+body.dark-mode .mic-icon-btn.recording {
+    background-color: rgba(225, 29, 72, 0.25);
+    color: #FB7185;
+    animation: micPulseDark 1.5s infinite;
+}
+@keyframes micPulseDark {
+    0% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.5); }
+    70% { box-shadow: 0 0 0 8px rgba(251, 113, 133, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0); }
+}
