@@ -7344,23 +7344,35 @@ window.executeMiniSearch = function() {
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const dockMainBtn = document.getElementById("dockMainBtn");
+    const dockContainer = document.querySelector(".glass-dock-container");
+    
     if (dockMainBtn) {
         dockMainBtn.addEventListener("click", function(e) {
-            // Проверяем: если музыка ХОТЯ БЫ РАЗ была включена (AI или YouTube)
+            // НА МОБИЛЬНОМ: Кнопка работает как открытие меню (Floating Action Button)
+            if (window.innerWidth <= 768) {
+                e.preventDefault(); 
+                e.stopPropagation();
+                if (dockContainer) dockContainer.classList.toggle("menu-open");
+                return;
+            }
+            
+            // НА ПК: Кнопка управляет музыкой (если она включена)
             if ((typeof ambientHasStartedOnce !== 'undefined' && ambientHasStartedOnce) || 
                 (typeof isCustomMusicMode !== 'undefined' && isCustomMusicMode)) {
-                
-                // Блокируем стандартный переход по ссылке на главную
                 e.preventDefault(); 
-                
-                // Переключаем плей/паузу
-                if (typeof togglePlaybackHandler === "function") {
-                    togglePlaybackHandler(e);
-                }
+                if (typeof togglePlaybackHandler === "function") togglePlaybackHandler(e);
             }
-            // В противном случае ничего не блокируем, и ссылка работает как обычно
         });
     }
+    
+    // Закрытие парящего меню инструментов на мобильном при клике мимо него
+    document.addEventListener("click", (e) => {
+        if (window.innerWidth <= 768 && dockContainer && dockContainer.classList.contains("menu-open")) {
+            if (!dockContainer.contains(e.target)) {
+                dockContainer.classList.remove("menu-open");
+            }
+        }
+    });
 });
 
 // ==========================================
