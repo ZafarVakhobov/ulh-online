@@ -9155,7 +9155,6 @@ let notifications = JSON.parse(localStorage.getItem(NOTIFY_KEY)) || [];
 let currentNotifyTab = 'all'; // 'all' (новые) или 'read' (прочитанные)
 
 // 1. Главная функция добавления уведомления
-// config = { type: 'file'|'ai'|'qr'|'cloud'|'wiki'|'yt', title, desc, iconBg, iconColor, iconSvg, actions: [{label, colorClass, onClick}] }
 function addNotification(config) {
     const newNotif = {
         id: Date.now().toString(),
@@ -9170,26 +9169,26 @@ function addNotification(config) {
     
     saveNotifications();
     updateBellIcon();
-    if (document.getElementById('navNotifyWrap').classList.contains('open')) {
+    const wrap = document.getElementById('navNotifyWrap');
+    if (wrap && wrap.classList.contains('open')) {
         renderNotifications();
     }
 }
 
 function saveNotifications() {
-    localStorage.setItem(NOTIFY_KEY, JSON.stringify(notifications.filter(n => n.type !== 'dynamic'))); // Динамические не сохраняем в Storage
+    localStorage.setItem(NOTIFY_KEY, JSON.stringify(notifications.filter(n => n.type !== 'dynamic')));
 }
 
 function updateBellIcon() {
     const unreadCount = notifications.filter(n => !n.isRead).length;
     const btn = document.getElementById('notifyToggleBtn');
     const dot = document.getElementById('notifyDot');
+    if (!btn || !dot) return;
 
     if (unreadCount > 0) {
-        // Показываем точку и подсвечиваем кнопку синим
         dot.style.display = 'block';
         btn.classList.add('has-new');
     } else {
-        // Прячем точку и возвращаем стандартный вид кнопки
         dot.style.display = 'none';
         btn.classList.remove('has-new');
     }
@@ -9202,7 +9201,7 @@ window.switchNotifyTab = function(tab) {
     document.getElementById('tabNotifyRead').classList.toggle('active', tab === 'read');
     
     const clearWrap = document.getElementById('notifyClearAllWrap');
-    clearWrap.style.display = tab === 'read' ? 'block' : 'none';
+    if (clearWrap) clearWrap.style.display = tab === 'read' ? 'block' : 'none';
     
     renderNotifications();
 };
@@ -9222,9 +9221,9 @@ window.clearReadNotifications = function() {
     saveNotifications(); updateBellIcon(); renderNotifications();
 };
 
-// Скрываем пульсирующую точку при открытии меню (но физически они остаются не прочитанными, пока не нажмут галочку)
 window.markNotificationsViewed = function() {
-    document.getElementById('notifyDot').style.display = 'none';
+    const dot = document.getElementById('notifyDot');
+    if (dot) dot.style.display = 'none';
     renderNotifications();
 };
 
@@ -9233,8 +9232,6 @@ function renderNotifications() {
     const container = document.getElementById('notifyListContainer');
     if (!container) return;
 
-    // --- ДИНАМИЧЕСКИЕ УВЕДОМЛЕНИЯ (Канбан и Календарь) ---
-    // Они генерируются на лету при открытии панели и не сохраняются в LocalStorage уведомлений
     let displayList = [...notifications];
 
     if (currentNotifyTab === 'all') {
@@ -9279,37 +9276,30 @@ function renderNotifications() {
         });
     }
 
-    // Фильтруем по вкладке
     displayList = displayList.filter(n => currentNotifyTab === 'all' ? !n.isRead : n.isRead);
 
-    // Отрисовка
     container.innerHTML = "";
     if (displayList.length === 0) {
         container.innerHTML = `<div style="text-align:center; padding: 30px 0; color: #94A3B8; font-size: 12px; font-weight: 600;">Hozirça böş</div>`;
         return;
     }
 
-    // Сортируем по времени (новые сверху)
     displayList.sort((a, b) => b.time - a.time);
 
     displayList.forEach(item => {
-        // Форматируем время (например: 14:30)
         const d = new Date(item.time);
         const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
-        // Генерация кнопок
         let actionsHtml = "";
         if (item.actions && item.actions.length > 0) {
             actionsHtml = `<div class="notify-actions">` + item.actions.map(btn => {
-                // Если передали onClick как строку, оборачиваем, иначе просто вызов
                 const clickAttr = `onclick="event.stopPropagation(); ${btn.onClick.replace(/"/g, '&quot;')}"`;
                 return `<button type="button" class="notify-btn ${btn.colorClass}" ${clickAttr}>${btn.label}</button>`;
             }).join('') + `</div>`;
         }
 
-        // Кнопка управления (прочитать или удалить)
         let ctrlBtn = "";
-        if (item.type !== 'dynamic') { // Динамические нельзя удалить/прочитать, они зависят от источника
+        if (item.type !== 'dynamic') {
             if (currentNotifyTab === 'all') {
                 ctrlBtn = `<button class="notify-mark-btn" title="Öqildi qilib belgilaş" onclick="event.stopPropagation(); markAsRead('${item.id}')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>`;
@@ -9339,33 +9329,30 @@ function renderNotifications() {
     });
 }
 
-// Вызываем обновление при старте
 document.addEventListener('DOMContentLoaded', () => {
     updateBellIcon();
 });
 
+
 // ==========================================
 // === 34. ГЕНЕРАТОР SMM-ЦИТАТ (IQTIBOS DIZAYNERI) ===
 // ==========================================
+window.currentQuoteDataUrl = "";
 
 window.openQuoteModal = function() {
-    // Закрываем меню инструментов, чтобы не мешало
     if (typeof closeEditorToolsMenu === "function") closeEditorToolsMenu();
 
     const editorEl = document.getElementById("editor");
     if (!editorEl) return;
 
-    // 1. Пытаемся получить именно ВЫДЕЛЕННЫЙ текст
     let selectedText = editorEl.value.substring(editorEl.selectionStart, editorEl.selectionEnd).trim();
     
-    // 2. Если пользователь ничего не выделил — берем весь текст
     if (!selectedText) {
         selectedText = editorEl.value.trim();
         if (!selectedText) {
             if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Matn kiriting yoki ajrating!");
             return;
         }
-        // Чтобы карточка не лопнула от объема, обрезаем слишком длинный текст
         if (selectedText.length > 350) {
             selectedText = selectedText.substring(0, 350) + "...";
         }
@@ -9382,19 +9369,18 @@ window.openQuoteModal = function() {
 
     if (!modal || !textStage || !imgPreview) return;
 
-    // Вставляем текст, сохраняя переносы строк (энтеры)
     textStage.innerHTML = selectedText.replace(/\n/g, "<br>");
     
     imgPreview.style.display = "none";
     loader.style.display = "block";
+    loader.textContent = "Kartoçka yasalmoqda...";
     modal.classList.add("open");
 
-    // 3. Запускаем html2canvas для отрисовки карточки
     setTimeout(async () => {
         const stage = document.getElementById("quoteRenderStage");
         try {
             const canvas = await html2canvas(stage, {
-                scale: 1, // 1080x1080 - достаточно масштаба 1
+                scale: 1,
                 backgroundColor: null,
                 useCORS: true,
                 logging: false
@@ -9405,10 +9391,8 @@ window.openQuoteModal = function() {
             loader.style.display = "none";
             imgPreview.style.display = "block";
             
-            // Сохраняем готовую картинку в глобальную переменную для скачивания
             window.currentQuoteDataUrl = imgDataUrl;
             
-            // Отправляем красивое уведомление (интеграция с вашей системой!)
             if (typeof addNotification === "function") {
                 addNotification({
                     type: 'smm',
@@ -9419,34 +9403,30 @@ window.openQuoteModal = function() {
                     actions: [{ label: 'PNG yuklab oliş', colorClass: 'n-btn-xlsx', onClick: 'downloadQuotePng()' }]
                 });
             }
-
         } catch (e) {
-            loader.textContent = "Xatolik yuz berdi :(";
-            console.error("Iqtibos render error:", e);
+            loader.textContent = "Xatolik yuz berdi!";
+            console.error("Quote Render Error:", e);
         }
-    }, 300); // 300мс задержка, чтобы DOM успел применить стили
+    }, 150);
 };
 
-window.closeQuoteModal = function(e) {
+window.closeQuoteModal = function(event) {
     const modal = document.getElementById("quoteModalBackdrop");
     if (!modal) return;
-    if (e && e.target && e.target !== modal) return;
+    if (event && event.target && event.target !== modal) return;
     modal.classList.remove("open");
 };
 
-// Функция скачивания сгенерированной карточки
 window.downloadQuotePng = function() {
     if (!window.currentQuoteDataUrl) return;
-    
-    const link = document.createElement("a");
-    link.download = "ulh_iqtibos_" + Date.now() + ".png";
-    link.href = window.currentQuoteDataUrl;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
+    const a = document.createElement("a");
+    a.href = window.currentQuoteDataUrl;
+    a.download = `ulh_iqtibos_${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     if (typeof showAutosaveIndicator === "function") {
-        showAutosaveIndicator("SMM kartoçka yuklandi ✓");
+        showAutosaveIndicator("Iqtibos PNG yuklab olindi ✓");
     }
 };
 
@@ -9454,10 +9434,10 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeQuoteModal();
 });
 
+
 // ==========================================
 // === 35. ИНТЕРАКТИВНАЯ МИНИ-КАРТА (AVTO-MUNDARIJA) ===
 // ==========================================
-
 window.closeMinimapPanel = function() {
     const panel = document.getElementById("minimapReportBox");
     const converterBox = document.getElementById("converterBox");
@@ -9466,7 +9446,6 @@ window.closeMinimapPanel = function() {
         panel.style.display = "none";
     }
     
-    // Возвращаем на место блок конвертера
     if (converterBox) {
         const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
         const isTelegramEnv = Boolean(tg && tg.initData && tg.initData.length > 0);
@@ -9475,7 +9454,6 @@ window.closeMinimapPanel = function() {
         }
     }
     
-    // Отключаем фоновое обновление, чтобы не грузить память, когда панель скрыта
     if (editor) {
         editor.removeEventListener("input", updateMinimapContent);
     }
@@ -9490,7 +9468,6 @@ window.toggleMinimapPanel = function() {
         return;
     }
     
-    // Прячем другие панели, чтобы они не наслаивались
     const uniquenessPanel = document.getElementById("uniquenessReportBox");
     if (uniquenessPanel) uniquenessPanel.style.display = "none";
     const translatorPanel = document.getElementById("translatorReportBox");
@@ -9505,7 +9482,6 @@ window.toggleMinimapPanel = function() {
     if (!panel) {
         panel = document.createElement("div");
         panel.id = "minimapReportBox";
-        // Вставляем панель в рабочую зону
         if (workspace) workspace.appendChild(panel);
         else editor.parentNode.insertBefore(panel, editor.nextSibling);
     }
@@ -9513,7 +9489,7 @@ window.toggleMinimapPanel = function() {
     panel.className = "minimap-right-panel";
     panel.style.display = "flex";
     
-    const closeBtnHtml = `<button onclick="closeMinimapPanel()" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.04); border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748B; transition: all 0.2s ease; z-index: 10;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.color='#EF4444'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='#64748B'" title="Yopish">×</button>`;
+    const closeBtnHtml = `<button onclick="closeMinimapPanel()" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.04); border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748B; transition: all 0.2s ease; z-index: 10;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.color='#EF4444'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='#64748B'" title="Yopiş">×</button>`;
     
     panel.innerHTML = `
         ${closeBtnHtml}
@@ -9526,7 +9502,6 @@ window.toggleMinimapPanel = function() {
     
     updateMinimapContent();
     
-    // Подключаем живое обновление: когда вы пишете текст, оглавление строится само
     if (editor) {
         editor.addEventListener("input", updateMinimapContent);
     }
@@ -9542,10 +9517,9 @@ window.updateMinimapContent = function() {
         return;
     }
     
-    // Алгоритм умного поиска заголовков
     const lines = text.split('\n');
     let headings = [];
-    let currentIndex = 0; // Считаем символы, чтобы потом скроллить к ним
+    let currentIndex = 0;
     
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -9555,14 +9529,11 @@ window.updateMinimapContent = function() {
         let level = 0;
         let titleText = "";
         
-        // 1. Поиск по Markdown (### Заголовок)
         const mdMatch = trimmed.match(/^(#{1,3})\s+(.+)/);
         if (mdMatch) {
-            level = mdMatch[1].length; // 1, 2 или 3 уровень вложенности
+            level = mdMatch[1].length;
             titleText = mdMatch[2];
-        } 
-        // 2. Поиск по КАПСУ (I BOB. TURIZM)
-        else if (trimmed.length > 2 && trimmed.length < 80 && trimmed === trimmed.toUpperCase() && /[A-ZÖĞŞÇА-ЯЁЎҚҒҲ]/.test(trimmed)) {
+        } else if (trimmed.length > 2 && trimmed.length < 80 && trimmed === trimmed.toUpperCase() && /[A-ZÖĞŞÇА-ЯЁЎҚҒҲ]/.test(trimmed)) {
             level = 1;
             titleText = trimmed;
         }
@@ -9571,7 +9542,7 @@ window.updateMinimapContent = function() {
             headings.push({
                 text: titleText,
                 level: level,
-                index: currentIndex // Запоминаем точную позицию в тексте
+                index: currentIndex
             });
         }
         
@@ -9579,7 +9550,7 @@ window.updateMinimapContent = function() {
     }
     
     if (headings.length === 0) {
-        contentBox.innerHTML = `<div style="text-align:center; color:#94A3B8; font-size:12px; margin-top:30px;">Sarlavhalar topilmadi.<br><br>Sarlavhalarni <b>KATTA HARFLARDA</b> yozing yoki oldiga <b>#</b> belgisini qöying.</div>`;
+        contentBox.innerHTML = `<div style="text-align:center; color:#94A3B8; font-size:12px; margin-top:30px;">Sarlavhalar topilmadi.<br><br>Sarlavhalarni <b>BUTUNLAY KATTA HARFLARDA</b> yozing yoki oldiga <b>#</b> belgisini qöying.</div>`;
         return;
     }
     
@@ -9590,21 +9561,16 @@ window.updateMinimapContent = function() {
         item.textContent = h.text;
         item.title = h.text;
         
-        // Магия скроллинга
         item.onclick = () => {
             editor.focus();
-            // Выделяем сам заголовок
             editor.setSelectionRange(h.index, h.index + h.text.length);
             
-            // Вычисляем высоту и прокручиваем textarea
             const textBefore = editor.value.substring(0, h.index);
             const lineNumbers = textBefore.split('\n').length;
             
-            // Учитываем разную высоту строки (в Zen-режиме шрифт крупнее)
             const isZen = document.body.classList.contains("zen-mode-active");
             const lineHeight = isZen ? 26 : 21; 
             
-            // Плавный скролл к нужной строке
             editor.scrollTo({
                 top: Math.max(0, (lineNumbers - 1) * lineHeight - 40),
                 behavior: 'smooth'
@@ -9615,23 +9581,21 @@ window.updateMinimapContent = function() {
     });
 };
 
+
 // ==========================================
 // === 36. АВТО-СЕРТИФИКАТ (МАССОВЫЙ ГЕНЕРАТОР ГРАМОТ И БЕЙДЖЕЙ) ===
 // ==========================================
-
 let uploadedCertTemplate = null;
 
 window.openCertModal = function(event) {
     if (event) { event.preventDefault(); event.stopPropagation(); }
     document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
     
-    // Инициализация кастомного селекта
     const sel = document.getElementById('certType');
     if (sel && typeof initCustomSelects === 'function' && !sel.nextElementSibling?.classList.contains('custom-select-wrapper')) {
         initCustomSelects();
     }
     
-    // Подставляем сегодняшнюю дату по умолчанию
     const dateInput = document.getElementById("certDate");
     if (dateInput && !dateInput.value) {
         const today = new Date();
@@ -9665,7 +9629,6 @@ window.handleCertTemplateSelect = function(input) {
     }
 };
 
-// Функция отрисовки SVG на Canvas
 function drawSvgToCanvas(svgString, ctx, x, y, size) {
     return new Promise((resolve) => {
         const img = new Image();
@@ -9696,14 +9659,12 @@ window.processCertificates = async function() {
     }
 
     let lastRegNum = parseInt(lastRegNumStr, 10);
-    if (isNaN(lastRegNum)) lastRegNum = 0; // Если пустой, начинаем с 0
+    if (isNaN(lastRegNum)) lastRegNum = 0;
 
-    // UI Загрузки
     btn.style.pointerEvents = "none";
     btnText.textContent = "AI ma'lumotlarni tahlil qilmoqda...";
     if (icon) icon.style.animation = "aiSpinPulse 1.1s linear infinite";
 
-    // 1. ИИ нормализует список имен
     const promptText = `Sen matn muharririsan. Berilgan ro'yxatdagi ismlarni bosh harflar bilan to'g'rilab, lotin alifbosiga o'gir va har bir qatorda bittadan ism qoldir. Hech qanday qo'shimcha so'z yozma. \nRo'yxat: \n${namesRaw}`;
     
     let cleanNames = [];
@@ -9723,7 +9684,7 @@ window.processCertificates = async function() {
     }
 
     if (cleanNames.length === 0) {
-        alert("Ismlar röyxati notöğri şaklda berilgan!");
+        alert("Ismlar röyxati notöğri!");
         btn.style.pointerEvents = "auto";
         btnText.textContent = "Sertifikatlarni yaratiş";
         if (icon) icon.style.animation = "none";
@@ -9732,7 +9693,6 @@ window.processCertificates = async function() {
 
     btnText.textContent = `Grafika render qilinmoqda (0/${cleanNames.length})...`;
 
-    // 2. Сборка метаданных
     let metaText = "";
     if (type === "student") {
         const gr = document.getElementById("certGroup").value.trim();
@@ -9746,14 +9706,12 @@ window.processCertificates = async function() {
         metaText = document.getElementById("certCustomText").value.trim();
     }
 
-    // 3. Форматирование даты для QR (DD-MM-YY)
     let qrDatePrefix = "00-00-00";
     if (dateStr.length === 10) {
         const parts = dateStr.split(".");
         qrDatePrefix = `${parts[0]}-${parts[1]}-${parts[2].slice(-2)}`;
     }
 
-    // 4. Подготовка Canvas и Загрузка Изображения
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     
@@ -9773,7 +9731,6 @@ window.processCertificates = async function() {
     const folder = zip.folder("Sertifikatlar");
     let singleBlob = null;
 
-    // 5. Отрисовка
     for (let i = 0; i < cleanNames.length; i++) {
         const name = cleanNames[i];
         lastRegNum++;
@@ -9783,34 +9740,29 @@ window.processCertificates = async function() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(templateImg, 0, 0);
 
-        // Динамические размеры шрифтов под ширину изображения
         const nameSize = Math.max(40, Math.floor(canvas.width * 0.05));
         const metaSize = Math.max(20, Math.floor(canvas.width * 0.025));
         const smallSize = Math.max(16, Math.floor(canvas.width * 0.015));
 
         const centerX = canvas.width / 2;
-        const centerY = canvas.height * 0.45; // Имя чуть выше центра
+        const centerY = canvas.height * 0.45;
 
-        // Рисуем Имя (Кастомный или курсивный шрифт)
         ctx.textAlign = "center";
         ctx.fillStyle = "#0F172A";
         ctx.font = `bold ${nameSize}px "Monotype Corsiva", "Dancing Script", cursive, serif`;
         ctx.fillText(name, centerX, centerY);
 
-        // Рисуем Метаданные (Тип, Должность)
         ctx.font = `bold ${metaSize}px "Manrope", sans-serif`;
         ctx.fillStyle = "#334155";
         if (metaText) {
             ctx.fillText(metaText, centerX, centerY + (nameSize * 0.8));
         }
 
-        // Рисуем Название Мероприятия
         ctx.fillStyle = "#0284C7";
         if (eventName) {
             ctx.fillText(eventName, centerX, centerY + (nameSize * 1.5));
         }
 
-        // Рисуем QR-код и Регистрационный номер (Нижний левый угол)
         if (typeof buildQrMatrix === "function" && typeof generateQrSvgMarkup === "function") {
             const qrMatrix = buildQrMatrix(regCode);
             if (qrMatrix) {
@@ -9821,7 +9773,6 @@ window.processCertificates = async function() {
                 const svgString = generateQrSvgMarkup(qrMatrix, "#000000", qrSize);
                 await drawSvgToCanvas(svgString, ctx, qrX, qrY, qrSize);
 
-                // Номер под QR-кодом
                 ctx.font = `bold ${smallSize}px "Manrope", sans-serif`;
                 ctx.fillStyle = "#64748B";
                 ctx.textAlign = "left";
@@ -9829,7 +9780,6 @@ window.processCertificates = async function() {
             }
         }
 
-        // Рисуем Дату (Нижний правый угол)
         if (dateStr) {
             ctx.textAlign = "right";
             ctx.font = `bold ${metaSize}px "Manrope", sans-serif`;
@@ -9837,7 +9787,6 @@ window.processCertificates = async function() {
             ctx.fillText(dateStr, canvas.width - (canvas.width * 0.08), canvas.height - (canvas.height * 0.08));
         }
 
-        // Сохранение текущего кадра
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         
         if (cleanNames.length === 1) {
@@ -9849,11 +9798,9 @@ window.processCertificates = async function() {
         btnText.textContent = `Grafika render qilinmoqda (${i+1}/${cleanNames.length})...`;
     }
 
-    // 6. Скачивание
     btnText.textContent = "Yuklanmoqda...";
     
     if (cleanNames.length === 1 && singleBlob) {
-        // Один файл
         const url = URL.createObjectURL(singleBlob);
         const a = document.createElement("a");
         a.href = url;
@@ -9863,7 +9810,6 @@ window.processCertificates = async function() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     } else {
-        // ZIP-архив
         const zipBlob = await zip.generateAsync({ type: "blob", compression: "STORE" });
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement("a");
@@ -9877,17 +9823,20 @@ window.processCertificates = async function() {
 
     if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Sertifikatlar tayyor ✓");
     
-    // Возврат UI
     btn.style.pointerEvents = "auto";
     btnText.textContent = "Sertifikatlarni yaratiş";
     if (icon) icon.style.animation = "none";
     closeCertModal();
 };
 
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeCertModal();
+});
+
+
 // ==========================================
 // === 37. ВИЗУАЛЬНЫЙ СКАНЕР ИЗМЕНЕНИЙ (TEXT DIFF) ===
 // ==========================================
-
 window.openDiffModal = function(event) {
     if (event) { event.preventDefault(); event.stopPropagation(); }
     if (typeof closeEditorToolsMenu === "function") closeEditorToolsMenu();
@@ -9896,8 +9845,6 @@ window.openDiffModal = function(event) {
     if (modal) {
         modal.classList.add("open");
         
-        // Умная деталь: Если в главном редакторе сайта уже есть текст, 
-        // автоматически вставляем его в колонку "YANGI MATN" для удобства пользователя.
         const newTextArea = document.getElementById("diffNewText");
         if (editor && editor.value.trim().length > 0 && newTextArea && !newTextArea.value) {
             newTextArea.value = editor.value;
@@ -9912,7 +9859,6 @@ window.closeDiffModal = function(event) {
     modal.classList.remove("open");
 };
 
-// Функция возврата из режима просмотра результата к вводу текста
 window.resetDiffView = function() {
     document.getElementById("diffInputArea").style.display = "grid";
     document.getElementById("diffResultArea").style.display = "none";
@@ -9923,9 +9869,7 @@ window.resetDiffView = function() {
     document.getElementById("diffResultBox").innerHTML = "";
 };
 
-// Функция запуска сравнения
 window.executeTextDiff = function() {
-    // Проверка загрузилась ли библиотека
     if (typeof Diff === "undefined") {
         alert("Kutubxona yuklanmoqda... Iltimos bir oz kuting.");
         return;
@@ -9939,7 +9883,6 @@ window.executeTextDiff = function() {
         return;
     }
     
-    // Переключаем интерфейс на окно результата
     document.getElementById("diffInputArea").style.display = "none";
     document.getElementById("diffResultArea").style.display = "block";
     
@@ -9949,16 +9892,12 @@ window.executeTextDiff = function() {
     const resultBox = document.getElementById("diffResultBox");
     resultBox.innerHTML = "<div style='text-align:center; padding: 40px; color:#64748B;'>Tahlil qilinmoqda... Kuting.</div>";
     
-    // Используем setTimeout, чтобы браузер успел отрисовать интерфейс загрузки
     setTimeout(() => {
-        // Функция diffWords сравнивает текст по словам, игнорируя лишние пробелы
         const diff = Diff.diffWords(oldText, newText);
-        
         let html = "";
         
         diff.forEach((part) => {
-            // Заменяем обычные переносы строк на <br> для правильного отображения в HTML
-            const textWithBreaks = part.value.replace(/\n/g, "<br>");
+            const textWithBreaks = escapeHTML(part.value).replace(/\n/g, "<br>");
             
             if (part.added) {
                 html += `<span class="diff-add">${textWithBreaks}</span>`;
@@ -9973,7 +9912,6 @@ window.executeTextDiff = function() {
     }, 150); 
 };
 
-// Привязка закрытия на клавишу Escape
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeDiffModal();
 });
