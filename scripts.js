@@ -589,16 +589,18 @@ async function handleSelectedFile(file) {
             if (ext === 'pptx') processedMimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
 
             processedBlob = await zip.generateAsync({ type: "blob", mimeType: processedMimeType, compression: "DEFLATE" });
-            await prepareOfficePdfStage(ext, processedBlob, zip, pdfStage);
+            
+            if (typeof prepareOfficePdfStage === "function") {
+                await prepareOfficePdfStage(ext, processedBlob, zip, pdfStage);
+            }
+
         } else if (['png', 'jpg', 'jpeg'].includes(ext)) {
             // === МАГИЯ РАСПОЗНАВАНИЯ КАРТИНОК (OCR) ===
             fileInfo.style.color = "#3B82F6";
             fileInfo.innerText = "Rasm o'qilmoqda (AI OCR), kuting...";
             
-            // Запускаем Tesseract.js (одновременная поддержка кириллицы, латиницы и русского)
             const result = await Tesseract.recognize(file, 'uzb_cyrl+uzb+rus', {
                 logger: m => {
-                    // Красивый индикатор прогресса прямо в окошке
                     if (m.status === 'recognizing text') {
                         fileInfo.innerText = `Skanner qilinmoqda: ${Math.round(m.progress * 100)}%`;
                     } else if (m.status === 'loading tesseract core') {
@@ -608,17 +610,13 @@ async function handleSelectedFile(file) {
             });
             
             const extractedText = result.data.text;
-            
-            // Прогоняем сырой текст с картинки через наш умный транслитератор (Cyrillic -> Latin)
             const convertedText = applyReplacements(extractedText);
             
-            // Вставляем результат в главный редактор (с новой строки, если там уже есть текст)
             const editorEl = document.getElementById('editor');
             if (editorEl) {
                 const currentVal = editorEl.value.trim();
                 editorEl.value = currentVal ? currentVal + "\n\n" + convertedText : convertedText;
                 
-                // Сохраняем черновик и обновляем счетчик слов
                 if (typeof saveEditorDraft === "function") saveEditorDraft();
                 if (typeof calculateAndRenderTextStats === "function") calculateAndRenderTextStats();
                 if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("Rasm matnga ögirildi ✓");
@@ -627,52 +625,20 @@ async function handleSelectedFile(file) {
             fileInfo.style.color = "#10B981";
             fileInfo.innerText = "Rasm muvaffaqiyatli öqildi ✓";
             
-            // Возвращаем дефолтную надпись через 3 секунды
             setTimeout(() => {
                 fileInfo.style.color = "#64748B";
                 fileInfo.innerText = "Yuklab bölaydigan fayllar formati: .docx, .xlsx, .pptx, .txt, .png, .jpg";
             }, 3000);
             
-            return; // Завершаем функцию, так как скачивать тут ничего не нужно
-            
+            return; 
         } else {
             throw new Error("Noto'g'ri format");
         }
 
-        // ... (код конвертации файла) ...
-        
-        async function handleSelectedFile(file) {
-    const fileInfo = document.getElementById('fileInfo');
-    const pdfStage = document.getElementById('pdfRenderStage');
-    const saveMenuWrap = document.getElementById('fileSaveMenuWrap'); // Наше новое меню
-
-    if (!fileInfo || !pdfStage) return;
-
-    // Прячем меню перед новой обработкой
-    if (saveMenuWrap) saveMenuWrap.style.display = 'none';
-    
-    processedBlob = null;
-    window.extractedFileText = ""; 
-    pdfStage.innerHTML = "";
-
-    const dotIndex = file.name.lastIndexOf('.');
-    const baseName = (dotIndex !== -1) ? file.name.substring(0, dotIndex) : file.name;
-    processedOutName = (dotIndex !== -1) ? baseName + "_yangi" + file.name.substring(dotIndex) : "yangi_" + file.name;
-    processedPdfName = baseName + "_yangi.pdf";
-
-    const ext = file.name.split('.').pop().toLowerCase();
-    fileInfo.style.color = "#3B82F6";
-    fileInfo.innerText = "Konvertatsiya qilinmoqda: " + file.name + "...";
-
-    try {
-        // ... (Здесь остается ВЕСЬ ТВОЙ КОД обработки txt, docx, xlsx, pptx и картинок. НЕ МЕНЯЙ ЕГО!) ...
-        // ...
-        // ... в самом конце блока try (после `await prepareOfficePdfStage...`), ЗАМЕНИ старый код на этот:
-
+        // --- УСПЕШНАЯ КОНВЕРТАЦИЯ - ОТОБРАЖАЕМ МЕНЮ ---
         fileInfo.style.color = "#10B981";
         fileInfo.innerText = "Tayyor: " + processedOutName;
         
-        // Показываем наше новое выпадающее меню
         if (saveMenuWrap) {
             saveMenuWrap.style.display = 'inline-flex';
             
@@ -710,17 +676,19 @@ async function handleSelectedFile(file) {
         else if (ext === 'pptx') fileBtnClass = "n-btn-pptx";
         else if (ext === 'txt') fileBtnClass = "n-btn-txt";
 
-        addNotification({
-            type: 'file',
-            title: 'Fayl konvertatsiya qilindi',
-            desc: `${file.name} muvaffaqiyatli ögirildi. Yuklab olişingiz mumkin.`,
-            iconBg: '#E0F2FE', iconColor: '#0284C7',
-            iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
-            actions: [
-                { label: 'Faylni saqlaş', colorClass: fileBtnClass, onClick: 'downloadFile()' },
-                { label: 'PDF saqlaş', colorClass: 'n-btn-pdf', onClick: 'downloadPdfFile()' }
-            ]
-        });
+        if (typeof addNotification === "function") {
+            addNotification({
+                type: 'file',
+                title: 'Fayl konvertatsiya qilindi',
+                desc: `${file.name} muvaffaqiyatli ögirildi. Yuklab olişingiz mumkin.`,
+                iconBg: '#E0F2FE', iconColor: '#0284C7',
+                iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+                actions: [
+                    { label: 'Faylni saqlaş', colorClass: fileBtnClass, onClick: 'downloadFile()' },
+                    { label: 'PDF saqlaş', colorClass: 'n-btn-pdf', onClick: 'downloadPdfFile()' }
+                ]
+            });
+        }
 
     } catch (err) {
         fileInfo.style.color = "#E11D48";
@@ -950,12 +918,11 @@ function findSafeSliceY(ctx, canvasWidth, targetY, minSearchY) {
 
 async function downloadPdfFile() {
     const stage = document.getElementById('pdfRenderStage');
-    const savePdfBtn = document.getElementById('savePdfBtn');
     const fileInfo = document.getElementById('fileInfo');
-    if (!stage || !stage.innerHTML.trim() || !savePdfBtn || !fileInfo) return;
+    
+    // ИСПРАВЛЕНИЕ: Убрана жесткая привязка к старой кнопке savePdfBtn
+    if (!stage || !stage.innerHTML.trim() || !fileInfo) return;
 
-    const originalBtnHtml = savePdfBtn.innerHTML;
-    savePdfBtn.disabled = true;
     fileInfo.style.color = "#3B82F6";
     fileInfo.innerText = "PDF tayyorlanmoqda: " + processedPdfName + "...";
 
@@ -1074,9 +1041,6 @@ async function downloadPdfFile() {
     } catch (err) {
         fileInfo.style.color = "#E11D48";
         fileInfo.innerText = "PDF xatolik: " + err.message;
-    } finally {
-        savePdfBtn.disabled = false;
-        savePdfBtn.innerHTML = originalBtnHtml;
     }
 }
 
