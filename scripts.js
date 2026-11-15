@@ -7156,18 +7156,17 @@ window.toggleZenMode = function() {
         body.classList.add('zen-mode-active');
         document.getElementById('zenIconExpand').style.display = 'none';
         document.getElementById('zenIconCollapse').style.display = 'inline-block';
-        document.getElementById('zenTooltip').textContent = "Fokus-xonadan chiqish";
+        document.getElementById('zenTooltip').textContent = "Fokus-xonadan çiqiş";
         
-        // Если фон еще не был выбран, ставим уютное Lofi Café по умолчанию
+        // Если фон еще не был выбран, по умолчанию запускаем первое видео (Lo-fi Kafe)
         if (!document.getElementById('zenBgVideo').src && !document.getElementById('zenBackground').style.backgroundImage) {
-            // Ищем первую кнопку и симулируем клик для установки первого фона
             const firstBtn = document.querySelector('.zen-bg-btn');
-            setZenBackground('lofi', firstBtn);
+            setZenBackground('rFZHOHl-L8A', firstBtn);
         }
         
         if (typeof addNotification === "function") {
             addNotification({
-                type: 'system', title: 'Fokus-Xona faollashdi', 
+                type: 'system', title: 'Fokus-Xona faollaşdi', 
                 desc: 'Diqqatni jamlang. Orqa fonni ekrandagi tugmalar orqali özgartirişingiz mumkin.',
                 iconBg: '#EDE9FE', iconColor: '#7C3AED',
                 iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5v14M7 5v14M22 8v8M2 8v8"/></svg>`
@@ -7185,7 +7184,7 @@ window.toggleZenMode = function() {
     }
 };
 
-window.setZenBackground = function(type, btnElement) {
+window.setZenBackground = function(inputVal, btnElement) {
     const bgContainer = document.getElementById('zenBackground');
     const videoEl = document.getElementById('zenBgVideo');
     
@@ -7195,21 +7194,34 @@ window.setZenBackground = function(type, btnElement) {
 
     const ytParams = "?autoplay=1&mute=1&controls=0&showinfo=0&autohide=1&loop=1&playsinline=1&modestbranding=1&playlist=";
 
-    if (type === 'lofi') {
-        // Уютное кафе
-        videoEl.src = "https://youtu.be/rFZHOHl-L8A" + ytParams + "rFZHOHl-L8A";
+    // Универсальный парсер идентификатора YouTube из любой ссылки или прямого ID
+    function getYoutubeEmbedUrl(query) {
+        let videoId = query.trim();
+        if (query.includes("youtu.be/")) {
+            videoId = query.split("youtu.be/")[1].split("?")[0];
+        } else if (query.includes("embed/")) {
+            videoId = query.split("embed/")[1].split("?")[0];
+        } else if (query.includes("watch?v=")) {
+            videoId = query.split("watch?v=")[1].split("&")[0];
+        }
+        return "https://www.youtube.com/embed/" + videoId + ytParams + videoId;
+    }
+
+    if (inputVal === 'rFZHOHl-L8A') {
+        videoEl.src = getYoutubeEmbedUrl("https://youtu.be/rFZHOHl-L8A");
         bgContainer.style.backgroundImage = "none";
-    } else if (type === 'rain') {
-        // Дождливое окно
-        videoEl.src = "https://www.youtube.com/embed/c0_ejQQcrwI" + ytParams + "c0_ejQQcrwI";
+    } else if (inputVal === 'c0_ejQQcrwI') {
+        videoEl.src = getYoutubeEmbedUrl("https://www.youtube.com/embed/c0_ejQQcrwI");
         bgContainer.style.backgroundImage = "none";
-    } else if (type === 'hogwarts') {
-        // Библиотека
-        videoEl.src = "https://youtu.be/R68KY-dBg2M" + ytParams + "R68KY-dBg2M";
+    } else if (inputVal === 'hogwarts' || inputVal === 'R68KY-dBg2M') {
+        videoEl.src = getYoutubeEmbedUrl("https://youtu.be/R68KY-dBg2M");
         bgContainer.style.backgroundImage = "none";
-    } else if (type === 'samarkand') {
-        // Статичный фон (Регистан)
-        videoEl.src = "https://youtu.be/jxeorC_f6qw" + ytParams + "jxeorC_f6qw";
+    } else if (inputVal === 'samarkand' || inputVal === 'jxeorC_f6qw') {
+        videoEl.src = getYoutubeEmbedUrl("https://youtu.be/jxeorC_f6qw");
+        bgContainer.style.backgroundImage = "none";
+    } else {
+        // Если передан готовый URL или ID
+        videoEl.src = getYoutubeEmbedUrl(inputVal);
         bgContainer.style.backgroundImage = "none";
     }
 };
