@@ -8790,29 +8790,61 @@ body.zen-mode-active .news-ticker-wrapper {
     border-radius: 100px !important; /* Делаем капсульную форму */
 }
 
-/* Кнопка "Yangiliklar lentasi" (Глубокий синий цвет) */
-body.zen-mode-active .news-ticker-btn {
-    background: rgba(2, 132, 199, 0.3) !important;
-    color: #FFFFFF !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 100px 0 0 100px !important;
+/* --- 8. ЛЕНТА НОВОСТЕЙ В ZEN MODE (ИДЕАЛЬНАЯ ШИРИНА, ОТСТУПЫ И ТЕМНЫЙ СТИЛЬ) --- */
+
+/* 1. Гарантированный отступ между лентой и редактором */
+body.zen-mode-active .workspace {
+    align-items: flex-start !important; /* Прижимаем контент к верху */
+    padding: 90px 20px 24px 20px !important; /* 90px сверху (место под ленту + зазор) */
 }
-body.zen-mode-active .news-ticker-btn:hover {
-    background: rgba(2, 132, 199, 0.6) !important;
-}
-body.zen-mode-active .news-ticker-btn svg {
-    color: #38BDF8 !important; /* Голубая иконка для контраста */
+body.zen-mode-active .editor-wrapper {
+    height: 100% !important; /* Растягивается на оставшуюся высоту */
 }
 
-/* Текст новостей и ссылки */
-body.zen-mode-active .news-ticker-track {
-    color: #94A3B8 !important; /* Мягкий серый цвет для второстепенного текста */
+/* 2. Сама лента новостей: темное стекло и идеальная ширина */
+body.zen-mode-active .news-ticker-wrapper {
+    display: flex !important; /* Возвращаем из невидимости */
+    position: fixed !important;
+    top: 24px !important; /* Отступ от самого верха экрана */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 10100 !important;
+    
+    width: calc(100% - 40px) !important; /* Точно совпадает с редактором (100% минус padding workspace) */
+    max-width: 950px !important; /* Максимальная ширина точь-в-точь как у редактора */
+    
+    /* Принудительный темный дизайн (перебивает светлую тему сайта) */
+    background: rgba(15, 23, 42, 0.85) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+    margin: 0 !important;
+    border-radius: 100px !important; /* Красивая капсульная форма */
 }
-body.zen-mode-active .news-ticker-track a {
-    color: #F8FAFC !important; /* Белый цвет для главных заголовков */
+
+/* 3. Кнопка "Yangiliklar lentasi" */
+body.zen-mode-active .news-ticker-btn {
+    background: rgba(2, 132, 199, 0.35) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 100px 0 0 100px !important;
+}
+body.zen-mode-active .news-ticker-btn:hover { background: rgba(2, 132, 199, 0.6) !important; }
+body.zen-mode-active .news-ticker-btn svg { color: #38BDF8 !important; stroke: #38BDF8 !important; }
+
+/* 4. Текст бегущей строки (жестко перебиваем светлые цвета на темные/белые) */
+body.zen-mode-active .news-ticker-track,
+body.zen-mode-active .news-ticker-track div,
+body.zen-mode-active .news-ticker-track span { 
+    color: #94A3B8 !important; /* Мягкий серый цвет для обычного текста */
+}
+body.zen-mode-active .news-ticker-track a { 
+    color: #F8FAFC !important; /* Белый цвет для главных заголовков (ссылок) */
     font-weight: 600 !important;
 }
-body.zen-mode-active .news-ticker-track a:hover {
+body.zen-mode-active .news-ticker-track a:hover { 
     color: #38BDF8 !important; /* Неоново-голубой при наведении */
     text-decoration: none !important;
 }
