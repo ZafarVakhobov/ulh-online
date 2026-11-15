@@ -5048,24 +5048,31 @@ function formatTime(seconds) {
     return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-function togglePlaybackHandler(event) {
+// Обработчик кнопки Плей/Пауза (и центральной кнопки Ö на ПК)
+window.togglePlaybackHandler = function(event) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
     
     if (isCustomMusicMode && ytPlayer) {
+        // Логика для YouTube
         if (isYtPlaying) {
             ytPlayer.pauseVideo();
         } else {
             ytPlayer.playVideo();
         }
     } else {
-        if (typeof toggleAmbientPlayback === "function") {
-            toggleAmbientPlayback();
+        // ИСПРАВЛЕНИЕ: Логика для AI-генератора эмбиента
+        if (typeof ambientIsPlaying !== 'undefined') {
+            if (ambientIsPlaying) {
+                pauseAmbientMusic();
+            } else {
+                startAmbientMusic();
+            }
         }
     }
-}
+};
 
 // --- ЛОГИКА ПЛАВАЮЩЕГО ОКНА ВИДЕО И РЕЖИМА КИНОТЕАТРА ---
 
