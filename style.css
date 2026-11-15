@@ -8795,7 +8795,7 @@ body.zen-mode-active .news-ticker-wrapper {
 /* 1. Гарантированный отступ между лентой и редактором */
 body.zen-mode-active .workspace {
     align-items: flex-start !important; /* Прижимаем контент к верху */
-    padding: 90px 20px 24px 20px !important; /* 90px сверху (место под ленту + зазор) */
+    padding: 50px 20px 24px 20px !important; /* 50px сверху (место под ленту + зазор) */
 }
 body.zen-mode-active .editor-wrapper {
     height: 100% !important; /* Растягивается на оставшуюся высоту */
@@ -8847,4 +8847,14 @@ body.zen-mode-active .news-ticker-track a {
 body.zen-mode-active .news-ticker-track a:hover { 
     color: #38BDF8 !important; /* Неоново-голубой при наведении */
     text-decoration: none !important;
+}
+
+/* --- 9. УБИРАЕМ БЕЛОЕ СВЕЧЕНИЕ (ГРАДИЕНТ ЗАТУХАНИЯ) У ЛЕНТЫ В ZEN MODE --- */
+body.zen-mode-active .news-ticker-wrapper::before,
+body.zen-mode-active .news-ticker-wrapper::after,
+body.zen-mode-active .news-ticker-scroll-area::before,
+body.zen-mode-active .news-ticker-scroll-area::after {
+    display: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
 }
