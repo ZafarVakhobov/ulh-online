@@ -9535,7 +9535,7 @@ function renderNotifications() {
                 id: 'dyn_cal_' + evt.id, type: 'dynamic', isRead: false,
                 title: isToday ? `Bugun: ${evt.name}` : `Yaqinlaşmoqda: ${evt.name}`,
                 desc: `${evt.dateStr} soat ${evt.timeStr}. ${evt.note || ''}`,
-                iconBg: evt.type === 'birthday' ? '#FEE2E2' : '#EF4444', // Исправлен цвет для обычных событий (был неконтрастный)
+                iconBg: evt.type === 'birthday' ? '#FEE2E2' : 'rgba(2, 132, 199, 0.12)', // Мягкий адаптивный фон
                 iconColor: evt.type === 'birthday' ? '#EF4444' : '#0284C7',
                 iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`,
                 actions: [{ label: 'Taqvimda köriş', colorClass: 'n-btn-neutral', onClick: `document.getElementById('calendar-toggle-btn').click(); setTimeout(()=>jumpToCalDate('${evt.dateStr}'), 100);` }],
