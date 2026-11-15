@@ -1432,6 +1432,38 @@ body.dark-mode .dock-main-btn.music-active {
     animation: dockMusicGradient 5s ease infinite, dockMusicPulseDark 1.2s ease-in-out infinite !important;
 }
 
+/* НОВАЯ КНОПКА ДОБАВЛЕНИЯ ТРЕКА */
+.music-add-track-btn {
+    background: #ECFDF5;
+    color: #10B981;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.music-add-track-btn:hover {
+    background: #10B981;
+    color: #FFFFFF;
+}
+
+/* Темная тема для кнопки */
+body.dark-mode .music-add-track-btn {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34D399;
+}
+body.dark-mode .music-add-track-btn:hover {
+    background: rgba(16, 185, 129, 0.3);
+    color: #10B981;
+}
+
+
 /* ========================================== */
 /* === ТЕМНАЯ ТЕМА ДЛЯ DOCK (DARK MODE) === */
 /* ========================================== */
