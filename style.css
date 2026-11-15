@@ -2855,6 +2855,24 @@ body.dark-mode .weather-modal-close:hover {
     pointer-events: auto;
     transform: translateY(0) scale(1);
 }
+
+/* СПЕЦИАЛЬНЫЙ МОДИФИКАТОР ДЛЯ МЕНЮ КОНВЕРТЕРА (ОТКРЫТИЕ ВВЕРХ) */
+.drop-up-menu {
+    top: auto !important;
+    bottom: calc(100% + 8px) !important; /* Отступ 8px над кнопкой */
+    transform-origin: bottom center !important;
+    transform: translateX(-50%) translateY(10px) scale(0.95) !important;
+}
+
+.editor-tools-wrap.open .editor-tools-dropdown.drop-up-menu {
+    transform: translateX(-50%) translateY(0) scale(1) !important;
+}
+
+/* Переворачиваем шеврон (галочку) при открытии вверх */
+#fileSaveMenuWrap.open .tools-chevron {
+    transform: rotate(180deg);
+}
+
 .tools-group-label {
     font-size: 10px;
     font-weight: 800;
