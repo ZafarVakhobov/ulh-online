@@ -9121,3 +9121,101 @@ body.zen-mode-active .ai-dropdown-wrap {
     background: var(--bg-secondary, rgba(255,255,255,0.1)) !important;
     color: #10B981 !important;
 }
+
+/* ========================================== */
+/* --- ФИНАЛЬНАЯ АДАПТАЦИЯ УВЕДОМЛЕНИЙ ДЛЯ ТЕМНОЙ ТЕМЫ --- */
+/* ========================================== */
+
+/* 1. Переключатель вкладок в темной теме */
+body.dark-theme .notify-tabs,
+body[data-theme="dark"] .notify-tabs,
+.dark-theme .notify-tabs {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-theme .notify-tab,
+body[data-theme="dark"] .notify-tab,
+.dark-theme .notify-tab {
+    color: #94A3B8 !important;
+}
+
+body.dark-theme .notify-tab.active,
+body[data-theme="dark"] .notify-tab.active,
+.dark-theme .notify-tab.active {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 2. Делаем иконки уведомлений полупрозрачными и гармоничными в темной теме */
+body.dark-theme .notify-icon,
+body[data-theme="dark"] .notify-icon,
+.dark-theme .notify-icon {
+    /* Превращаем слишком яркие белые/светлые фоны иконок в мягкое темное стекло */
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #38BDF8 !important; /* Приятный неоново-голубой цвет иконок */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Кнопка "Прочитать все" (двойная галочка) в темной теме */
+body.dark-theme #markAllReadBtn,
+body[data-theme="dark"] #markAllReadBtn,
+.dark-theme #markAllReadBtn {
+    color: #94A3B8 !important;
+}
+body.dark-theme #markAllReadBtn:hover,
+body[data-theme="dark"] #markAllReadBtn:hover,
+.dark-theme #markAllReadBtn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #34D399 !important;
+}
+
+/* ========================================== */
+/* --- ФИНАЛЬНЫЙ ФИКС ИКОНОК И КНОПОК В УВЕДОМЛЕНИЯХ (ТЕМНАЯ ТЕМА) --- */
+/* ========================================== */
+
+/* 1. Делаем фоны ВСЕХ иконок в уведомлениях мягкими и адаптивными в темной теме */
+body.dark-theme .notify-icon,
+body[data-theme="dark"] .notify-icon,
+.dark-theme .notify-icon {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #38BDF8 !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* 2. Исправляем кнопки действий внутри уведомлений (Fayni saqlaş, PDF saqlaş, Taqvimda köriş) для темной темы */
+body.dark-theme .notify-btn,
+body[data-theme="dark"] .notify-btn,
+.dark-theme .notify-btn {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #F8FAFC !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.2s ease !important;
+}
+
+/* 3. Возвращаем и усиливаем ховер-эффекты для кнопок в темной теме */
+body.dark-theme .notify-btn:hover,
+body[data-theme="dark"] .notify-btn:hover,
+.dark-theme .notify-btn:hover {
+    background: rgba(255, 255, 255, 0.18) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    color: #FFFFFF !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Специально для PDF-кнопки или красных кнопок (если у них особый класс) */
+body.dark-theme .notify-btn.pdf-btn,
+body[data-theme="dark"] .notify-btn.pdf-btn,
+.dark-theme .notify-btn.pdf-btn {
+    background: rgba(239, 68, 68, 0.15) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: #FCA5A5 !important;
+}
+body.dark-theme .notify-btn.pdf-btn:hover,
+body[data-theme="dark"] .notify-btn.pdf-btn:hover,
+.dark-theme .notify-btn.pdf-btn:hover {
+    background: rgba(239, 68, 68, 0.25) !important;
+    color: #FFFFFF !important;
+}
