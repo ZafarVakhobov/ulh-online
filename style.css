@@ -7979,6 +7979,43 @@ body.dark-mode .notify-toggle-btn.has-new { background: rgba(42, 171, 238, 0.15)
     color: #10B981 !important; /* При наведении иконка становится зеленой */
 }
 
+/* ========================================== */
+/* --- СТИЛИЗАЦИЯ ВКЛАДОК УВЕДОМЛЕНИЙ --- */
+/* ========================================== */
+
+/* Общий контейнер вкладок (капсула) */
+.notify-tabs {
+    display: flex !important;
+    background: var(--bg-secondary, #F1F5F9) !important;
+    border-radius: 10px !important;
+    padding: 3px !important;
+    gap: 2px !important;
+}
+
+/* Сами кнопки вкладок по умолчанию */
+.notify-tab {
+    background: transparent !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--text-muted, #64748B) !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Эффект при наведении на неактивную вкладку */
+.notify-tab:hover {
+    color: var(--text-color, #1E293B) !important;
+}
+
+/* Активная вкладка (белая капсула с тенью, как было раньше) */
+.notify-tab.active {
+    background: var(--card-bg, #FFFFFF) !important;
+    color: var(--text-color, #0F172A) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
 
 /* Тёмная тема */
 body.dark-mode .notify-dropdown-box { background: #0F172A; border-color: #1E293B; box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7); }
