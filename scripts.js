@@ -1,4 +1,4 @@
-// === 1. ИНИЦИАЛИЗАЦИЯ TELEGRAM MINI APP ===
+    // === 1. ИНИЦИАЛИЗАЦИЯ TELEGRAM MINI APP ===
 const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 if (tg) {
     tg.ready();
@@ -9398,7 +9398,6 @@ function addNotification(config) {
     };
     notifications.unshift(newNotif);
     
-    // Храним максимум 50 старых уведомлений
     if (notifications.length > 50) notifications = notifications.slice(0, 50);
     
     saveNotifications();
@@ -9432,7 +9431,6 @@ function updateBellIcon() {
 window.switchNotifyTab = function(tabName) {
     currentNotifyTab = (tabName === 'read') ? 'read' : 'all';
     
-    // Жестко переключаем класс active по конкретным ID
     const tabNew = document.getElementById('tabNotifyNew');
     const tabRead = document.getElementById('tabNotifyRead');
     
@@ -9446,7 +9444,6 @@ window.switchNotifyTab = function(tabName) {
         }
     }
     
-    // Показываем/скрываем кнопку очистки прочитанных
     const clearWrap = document.getElementById('notifyClearAllWrap');
     if (clearWrap) clearWrap.style.display = currentNotifyTab === 'read' ? 'block' : 'none';
     
@@ -9474,11 +9471,9 @@ window.markNotificationsViewed = function() {
     renderNotifications();
 };
 
-// Функция "Прочитать все" (ИСПРАВЛЕННАЯ ЛОГИКА)
+// Функция "Прочитать все"
 window.markAllNotificationsAsRead = function() {
     let hasChanges = false;
-    
-    // Меняем статус в самой базе данных уведомлений
     notifications.forEach(n => {
         if (!n.isRead) {
             n.isRead = true;
@@ -9486,12 +9481,10 @@ window.markAllNotificationsAsRead = function() {
         }
     });
 
-    // Если были новые уведомления - сохраняем и обновляем интерфейс
     if (hasChanges) {
         saveNotifications();
         updateBellIcon();
-        renderNotifications(); // Перерисует списки и они сами перелетят во вкладку "Прочитанные"
-        console.log("Barça bildirişnomalar öqilgan deb belgilandi.");
+        renderNotifications();
     }
 };
 
@@ -9518,7 +9511,7 @@ function renderNotifications() {
             });
         }
 
-        // Подхватываем Календарь (Сегодня + 2 дня)
+        // Подхватываем Календарь
         const today = new Date();
         const datesToCheck = [0, 1, 2].map(offset => {
             const d = new Date(today); d.setDate(today.getDate() + offset);
@@ -9535,12 +9528,25 @@ function renderNotifications() {
                 id: 'dyn_cal_' + evt.id, type: 'dynamic', isRead: false,
                 title: isToday ? `Bugun: ${evt.name}` : `Yaqinlaşmoqda: ${evt.name}`,
                 desc: `${evt.dateStr} soat ${evt.timeStr}. ${evt.note || ''}`,
-                iconBg: evt.type === 'birthday' ? '#FEE2E2' : 'rgba(2, 132, 199, 0.12)', // Мягкий адаптивный фон
+                iconBg: evt.type === 'birthday' ? '#FEE2E2' : 'rgba(2, 132, 199, 0.12)',
                 iconColor: evt.type === 'birthday' ? '#EF4444' : '#0284C7',
                 iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`,
                 actions: [{ label: 'Taqvimda köriş', colorClass: 'n-btn-neutral', onClick: `document.getElementById('calendar-toggle-btn').click(); setTimeout(()=>jumpToCalDate('${evt.dateStr}'), 100);` }],
                 time: evt.timestamp || new Date().getTime()
             });
+        });
+    }
+
+    // Автоматическая адаптация иконок под темную тему прямо в коде отрисовки
+    const isDarkTheme = document.documentElement.classList.contains('dark-theme') || 
+                        document.body.classList.contains('dark-theme') || 
+                        document.documentElement.getAttribute('data-theme') === 'dark' ||
+                        document.body.getAttribute('data-theme') === 'dark';
+
+    if (isDarkTheme) {
+        displayList.forEach(item => {
+            item.iconBg = 'rgba(255, 255, 255, 0.08)';
+            item.iconColor = '#38BDF8';
         });
     }
 
@@ -9569,7 +9575,7 @@ function renderNotifications() {
         let ctrlBtn = "";
         if (item.type !== 'dynamic') {
             if (currentNotifyTab === 'all') {
-                ctrlBtn = `<button class="notify-mark-btn" title="Öqildi qilib belgilaş" onclick="event.stopPropagation(); markAsRead('${item.id}')">
+                ctrlBtn = `<button class="notify-mark-btn" title="Öqilgan qilib belgilaş" onclick="event.stopPropagation(); markAsRead('${item.id}')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>`;
             } else {
                 ctrlBtn = `<button class="notify-mark-btn notify-del-btn" title="Öçiriş" onclick="event.stopPropagation(); deleteNotification('${item.id}')">
