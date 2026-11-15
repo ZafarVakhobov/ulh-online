@@ -7189,24 +7189,25 @@ window.setZenBackground = function(type, btnElement) {
     const bgContainer = document.getElementById('zenBackground');
     const videoEl = document.getElementById('zenBgVideo');
     
-    // Снимаем выделение со всех кнопок и подсвечиваем нажатую
     document.querySelectorAll('.zen-bg-btn').forEach(btn => btn.classList.remove('active'));
     if(btnElement) btnElement.classList.add('active');
 
-    // Настройки YouTube: автоплей, без звука, скрыты контроли
     const ytParams = "?autoplay=1&mute=1&controls=0&showinfo=0&autohide=1&loop=1&playsinline=1&modestbranding=1&playlist=";
 
     if (type === 'lofi') {
+        // Надежное видео кафе
         videoEl.src = "https://youtu.be/rFZHOHl-L8A" + ytParams + "rFZHOHl-L8A";
         bgContainer.style.backgroundImage = "none";
     } else if (type === 'rain') {
+        // Дождь за окном
         videoEl.src = "https://www.youtube.com/embed/c0_ejQQcrwI" + ytParams + "c0_ejQQcrwI";
         bgContainer.style.backgroundImage = "none";
     } else if (type === 'hogwarts') {
+        // Уютная библиотека
         videoEl.src = "https://youtu.be/R68KY-dBg2M" + ytParams + "R68KY-dBg2M";
         bgContainer.style.backgroundImage = "none";
     } else if (type === 'samarkand') {
-        // Для Самарканда используем шикарное статичное фото высокого разрешения, чтобы не грузить систему
+        // Высококачественное фото Регистана (всегда работает мгновенно)
         videoEl.src = "https://youtu.be/jxeorC_f6qw" + ytParams + "jxeorC_f6qw";
         bgContainer.style.backgroundImage = "none";
     }
