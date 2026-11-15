@@ -8917,13 +8917,13 @@ body.zen-mode-active .news-ticker-btn {
 
 /* Поднимаем редактор выше мобильного затемнения (#mobileMenuOverlay имеет 10550) */
 body.zen-mode-active .workspace {
-    z-index: 10600 !important; 
+    z-index: 12600 !important; 
 }
 
 /* Гарантируем, что сами менюшки внутри редактора тоже в приоритете */
 body.zen-mode-active .editor-tools-dropdown,
 body.zen-mode-active .editor-ai-dropdown {
-    z-index: 10650 !important;
+    z-index: 12650 !important;
 }
 
 /* Поднимаем остальные элементы Дзен-режима еще выше, чтобы редактор их случайно не перекрыл */
@@ -8931,7 +8931,7 @@ body.zen-mode-active .zen-settings-panel,
 body.zen-mode-active #navMusicWrap,
 body.zen-mode-active .footer,
 body.zen-mode-active .news-ticker-wrapper {
-    z-index: 10700 !important;
+    z-index: 12700 !important;
 }
 
 /* ========================================== */
@@ -8970,5 +8970,5 @@ body.zen-mode-active .weather-modal-backdrop,
 body.zen-mode-active .kanban-modal-backdrop,
 body.zen-mode-active .clipboard-overlay,
 body.zen-mode-active .clipboard-panel {
-    z-index: 10900 !important; 
+    z-index: 12900 !important; 
 }
