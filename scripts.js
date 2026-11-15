@@ -7189,25 +7189,26 @@ window.setZenBackground = function(type, btnElement) {
     const bgContainer = document.getElementById('zenBackground');
     const videoEl = document.getElementById('zenBgVideo');
     
+    // Подсвечиваем активную кнопку превью
     document.querySelectorAll('.zen-bg-btn').forEach(btn => btn.classList.remove('active'));
     if(btnElement) btnElement.classList.add('active');
 
     const ytParams = "?autoplay=1&mute=1&controls=0&showinfo=0&autohide=1&loop=1&playsinline=1&modestbranding=1&playlist=";
 
     if (type === 'lofi') {
-        // Надежное видео кафе
+        // Уютное кафе
         videoEl.src = "https://youtu.be/rFZHOHl-L8A" + ytParams + "rFZHOHl-L8A";
         bgContainer.style.backgroundImage = "none";
     } else if (type === 'rain') {
-        // Дождь за окном
+        // Дождливое окно
         videoEl.src = "https://www.youtube.com/embed/c0_ejQQcrwI" + ytParams + "c0_ejQQcrwI";
         bgContainer.style.backgroundImage = "none";
     } else if (type === 'hogwarts') {
-        // Уютная библиотека
+        // Библиотека
         videoEl.src = "https://youtu.be/R68KY-dBg2M" + ytParams + "R68KY-dBg2M";
         bgContainer.style.backgroundImage = "none";
     } else if (type === 'samarkand') {
-        // Высококачественное фото Регистана (всегда работает мгновенно)
+        // Статичный фон (Регистан)
         videoEl.src = "https://youtu.be/jxeorC_f6qw" + ytParams + "jxeorC_f6qw";
         bgContainer.style.backgroundImage = "none";
     }
