@@ -7156,9 +7156,9 @@ window.toggleZenMode = function() {
         body.classList.add('zen-mode-active');
         document.getElementById('zenIconExpand').style.display = 'none';
         document.getElementById('zenIconCollapse').style.display = 'inline-block';
-        document.getElementById('zenTooltip').textContent = "Fokus-xonadan çiqiş";
+        document.getElementById('zenTooltip').textContent = "Fokus-xonadan chiqish";
         
-        // Если фон еще не был выбран, по умолчанию запускаем первое видео (Lo-fi Kafe)
+        // Устанавливаем фон по умолчанию (Lo-fi кафе), если еще не выбран
         if (!document.getElementById('zenBgVideo').src && !document.getElementById('zenBackground').style.backgroundImage) {
             const firstBtn = document.querySelector('.zen-bg-btn');
             setZenBackground('rFZHOHl-L8A', firstBtn);
@@ -7166,7 +7166,7 @@ window.toggleZenMode = function() {
         
         if (typeof addNotification === "function") {
             addNotification({
-                type: 'system', title: 'Fokus-Xona faollaşdi', 
+                type: 'system', title: 'Fokus-Xona faollashdi', 
                 desc: 'Diqqatni jamlang. Orqa fonni ekrandagi tugmalar orqali özgartirişingiz mumkin.',
                 iconBg: '#EDE9FE', iconColor: '#7C3AED',
                 iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5v14M7 5v14M22 8v8M2 8v8"/></svg>`
@@ -7178,50 +7178,48 @@ window.toggleZenMode = function() {
         document.getElementById('zenIconCollapse').style.display = 'none';
         document.getElementById('zenTooltip').textContent = "Zen rejimi (Fokus)";
         
-        // Ставим видео на паузу, очищая источник, чтобы не тратить трафик
+        // Очищаем видео при выходе
         document.getElementById('zenBgVideo').src = "";
         document.querySelectorAll('.zen-bg-btn').forEach(b => b.classList.remove('active'));
     }
 };
 
-window.setZenBackground = function(inputVal, btnElement) {
+window.setZenBackground = function(query, btnElement) {
     const bgContainer = document.getElementById('zenBackground');
     const videoEl = document.getElementById('zenBgVideo');
     
-    // Подсвечиваем активную кнопку превью
     document.querySelectorAll('.zen-bg-btn').forEach(btn => btn.classList.remove('active'));
     if(btnElement) btnElement.classList.add('active');
 
+    // Настройки для автозапуска и зацикливания YouTube внутри iframe
     const ytParams = "?autoplay=1&mute=1&controls=0&showinfo=0&autohide=1&loop=1&playsinline=1&modestbranding=1&playlist=";
 
-    // Универсальный парсер идентификатора YouTube из любой ссылки или прямого ID
-    function getYoutubeEmbedUrl(query) {
-        let videoId = query.trim();
-        if (query.includes("youtu.be/")) {
-            videoId = query.split("youtu.be/")[1].split("?")[0];
-        } else if (query.includes("embed/")) {
-            videoId = query.split("embed/")[1].split("?")[0];
-        } else if (query.includes("watch?v=")) {
-            videoId = query.split("watch?v=")[1].split("&")[0];
+    function parseYouTubeEmbed(input) {
+        let vId = input.trim();
+        if (input.includes("youtu.be/")) {
+            vId = input.split("youtu.be/")[1].split("?")[0];
+        } else if (input.includes("embed/")) {
+            vId = input.split("embed/")[1].split("?")[0];
+        } else if (input.includes("watch?v=")) {
+            vId = input.split("watch?v=")[1].split("&")[0];
         }
-        return "https://www.youtube.com/embed/" + videoId + ytParams + videoId;
+        return "https://www.youtube.com/embed/" + vId + ytParams + vId;
     }
 
-    if (inputVal === 'rFZHOHl-L8A') {
-        videoEl.src = getYoutubeEmbedUrl("https://youtu.be/rFZHOHl-L8A");
+    if (query === 'lofi' || query === 'rFZHOHl-L8A') {
+        videoEl.src = parseYouTubeEmbed("https://youtu.be/rFZHOHl-L8A");
         bgContainer.style.backgroundImage = "none";
-    } else if (inputVal === 'c0_ejQQcrwI') {
-        videoEl.src = getYoutubeEmbedUrl("https://www.youtube.com/embed/c0_ejQQcrwI");
+    } else if (query === 'rain' || query === 'c0_ejQQcrwI') {
+        videoEl.src = parseYouTubeEmbed("https://www.youtube.com/embed/c0_ejQQcrwI");
         bgContainer.style.backgroundImage = "none";
-    } else if (inputVal === 'hogwarts' || inputVal === 'R68KY-dBg2M') {
-        videoEl.src = getYoutubeEmbedUrl("https://youtu.be/R68KY-dBg2M");
+    } else if (query === 'hogwarts' || query === 'R68KY-dBg2M') {
+        videoEl.src = parseYouTubeEmbed("https://youtu.be/R68KY-dBg2M");
         bgContainer.style.backgroundImage = "none";
-    } else if (inputVal === 'samarkand' || inputVal === 'jxeorC_f6qw') {
-        videoEl.src = getYoutubeEmbedUrl("https://youtu.be/jxeorC_f6qw");
+    } else if (query === 'samarkand' || query === 'jxeorC_f6qw') {
+        videoEl.src = parseYouTubeEmbed("https://youtu.be/jxeorC_f6qw");
         bgContainer.style.backgroundImage = "none";
     } else {
-        // Если передан готовый URL или ID
-        videoEl.src = getYoutubeEmbedUrl(inputVal);
+        videoEl.src = parseYouTubeEmbed(query);
         bgContainer.style.backgroundImage = "none";
     }
 };
