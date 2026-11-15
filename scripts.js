@@ -7548,7 +7548,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('osha_file_name', fileName);
 
         // Показываем красивое сообщение от бота (Оно не уходит на сервер, только для визуала)
-        appendMessage('assistant', `📄 <b>${fileName}</b> fayli qabul qilindi! Men matnni o'qib chiqdim. Ushbu hujjat bo'yicha savollar berishingiz, xulosa yozdirishingiz yoki qidirayotgan ma'lumotingizni so'rashingiz mumkin.`);
+        appendMessage('assistant', `📄 <b>${fileName}</b> fayli qabul qilindi! Men matnni öqib çiqdim. Uşbu hujjat böyiça savollar berişingiz, xulosa yozdirişingiz yoki qidirayotgan ma'lumotingizni söraşingiz mumkin.`);
         
         setTimeout(() => inputField.focus(), 300);
     };
