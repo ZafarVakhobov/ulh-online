@@ -7167,8 +7167,13 @@ window.toggleZenMode = function() {
             wasYtPlayingBeforeZen = false;
         }
 
-        // Автозапуск первого фона (Lofi) при открытии
-        if (!document.getElementById('zenBgVideo').src && !document.getElementById('zenBackground').style.backgroundImage) {
+        // --- АВТОЗАПУСК ФОНА ---
+        // Надежная проверка: смотрим, есть ли в src слово "youtube"
+        const videoEl = document.getElementById('zenBgVideo');
+        const bgContainer = document.getElementById('zenBackground');
+        const currentSrc = videoEl.src || "";
+        
+        if (!currentSrc.includes('youtube') && !bgContainer.style.backgroundImage.includes('url')) {
             const firstBtn = document.querySelector('.zen-bg-btn');
             setZenBackground('lofi', firstBtn);
         }
