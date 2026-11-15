@@ -360,13 +360,20 @@
 
                 <!-- Окно уведомлений (на базе дизайна профиля пользователя) -->
                 <div class="nav-dropdown user-dropdown-box notify-dropdown-box" onclick="event.stopPropagation()">
-                    <div class="notify-header">
-                        <span style="font-size: 15px; font-weight: 800; color: #0F172A;">Bildirişnomalar</span>
-                        <div class="notify-tabs">
-                            <button class="notify-tab active" id="tabNotifyAll" onclick="switchNotifyTab('all')">Yangi</button>
-                            <button class="notify-tab" id="tabNotifyRead" onclick="switchNotifyTab('read')">Öqilgan</button>
-                        </div>
-                    </div>
+                    <div class="notify-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+    <h3 style="margin: 0; font-size: 16px; color: var(--text-color);">Bildirişnomalar</h3>
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <!-- Наша новая кнопка "Прочитать все" -->
+        <button id="markAllReadBtn" onclick="markAllNotificationsAsRead()" title="Barçasini öqilgan deb belgilaş" style="background: transparent; border: none; cursor: pointer; padding: 4px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L2.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093L8.95 4.992a.252.252 0 0 1 .02-.022zm-.92 5.14l.92.92a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 1 0-1.091-1.028L9.477 9.417l-.485-.486l-.943 1.179z"/></svg>
+        </button>
+
+        <div class="notify-tabs" style="display: flex; background: var(--bg-color); border-radius: 8px; padding: 2px;">
+            <button class="notify-tab active" onclick="switchNotifyTab('new')">Yangi</button>
+            <button class="notify-tab" onclick="switchNotifyTab('read')">Öqilgan</button>
+        </div>
+    </div>
+</div>
                     <hr class="dropdown-divider" style="margin: 8px 0;">
                     
                     <div class="notify-list-container custom-scrollbar" id="notifyListContainer">
