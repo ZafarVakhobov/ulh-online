@@ -8959,3 +8959,16 @@ body.zen-mode-active .news-ticker-wrapper {
         transform: translateY(0) !important;
     }
 }
+
+/* ========================================== */
+/* --- 12. ИСПРАВЛЕНИЕ ВСПЛЫВАЮЩИХ ОКОН В ZEN MODE --- */
+/* ========================================== */
+
+/* Поднимаем все модальные окна (Архив, Статистика, Машина времени, Сравнение и т.д.) 
+   поверх нашего "высокого" стеклянного редактора */
+body.zen-mode-active .weather-modal-backdrop,
+body.zen-mode-active .kanban-modal-backdrop,
+body.zen-mode-active .clipboard-overlay,
+body.zen-mode-active .clipboard-panel {
+    z-index: 10900 !important; 
+}
