@@ -8795,7 +8795,7 @@ body.zen-mode-active .news-ticker-wrapper {
 /* 1. Гарантированный отступ между лентой и редактором */
 body.zen-mode-active .workspace {
     align-items: flex-start !important; /* Прижимаем контент к верху */
-    padding: 40px 20px 24px 20px !important; /* 40px сверху (место под ленту + зазор) */
+    padding: 45px 20px 24px 20px !important; /* 45px сверху (место под ленту + зазор) */
 }
 body.zen-mode-active .editor-wrapper {
     height: 100% !important; /* Растягивается на оставшуюся высоту */
@@ -8811,7 +8811,7 @@ body.zen-mode-active .news-ticker-wrapper {
     z-index: 2000 !important;
     
     width: calc(100% - 40px) !important; /* Точно совпадает с редактором (100% минус padding workspace) */
-    max-width: 855px !important; /* Максимальная ширина точь-в-точь как у редактора */
+    max-width: 875px !important; /* Максимальная ширина точь-в-точь как у редактора */
     
     /* Принудительный темный дизайн (перебивает светлую тему сайта) */
     background: rgba(15, 23, 42, 0.85) !important;
@@ -8867,4 +8867,46 @@ body.zen-mode-active .news-ticker-btn::after {
 /* Отключаем белое свечение, если оно сделано через тень самой кнопки */
 body.zen-mode-active .news-ticker-btn {
     box-shadow: none !important;
+}
+
+
+/* ========================================== */
+/* --- 10. МОБИЛЬНАЯ ВЕРСИЯ ZEN MODE --- */
+/* ========================================== */
+@media (max-width: 768px) {
+    
+    /* 1. Отключаем ленту новостей и боковой Dock (с кнопкой Ö) на телефонах */
+    body.zen-mode-active .news-ticker-wrapper,
+    body.zen-mode-active .footer {
+        display: none !important;
+    }
+
+    /* 2. Панель атмосферы - на самый верх, строго по центру */
+    body.zen-mode-active .zen-settings-panel {
+        top: 16px !important; /* Отступ от верхнего края экрана */
+        bottom: auto !important;
+        right: 50% !important;
+        transform: translateX(50%) !important; /* Идеальное центрирование */
+        width: max-content !important;
+        padding: 10px 14px !important; /* Чуть компактнее для телефона */
+    }
+
+    /* 3. Сдвигаем текстовый редактор вниз, чтобы он не прилипал к панели атмосфер */
+    body.zen-mode-active .workspace {
+        padding: 105px 12px 24px 12px !important; /* 105px сверху - идеальный "воздух" между панелью и текстом */
+    }
+
+    /* 4. Оптимизируем сам редактор под пальцы */
+    body.zen-mode-active .editor-wrapper {
+        height: calc(100vh - 120px) !important;
+    }
+    body.zen-mode-active textarea#editor {
+        padding: 16px !important; /* Чуть меньше внутренних отступов для экономии места */
+        font-size: 16px !important;
+    }
+
+    /* 5. Полностью скрываем музыкальный плеер на телефонах в Дзен-режиме */
+    body.zen-mode-active #navMusicWrap {
+        display: none !important;
+    }
 }
