@@ -7532,7 +7532,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let chatHistory = JSON.parse(localStorage.getItem('oshaChatHistory')) || [];
 
-    if (!chatBtn) return; // Защита на случай отсутствия виджета
+    if (!chatBtn) return;
+
+    // --- НОВАЯ ФУНКЦИЯ ДЛЯ ЧТЕНИЯ ФАЙЛОВ ---
+    window.triggerOshaFileMode = function(fileText, fileName) {
+        // Открываем чат
+        chatModal.classList.remove('osha-hidden');
+        if (bubble) {
+            bubble.style.opacity = '0';
+            bubble.style.visibility = 'hidden';
+        }
+
+        // Сохраняем текст файла в специальную временную память вкладки (макс. 5000 символов)
+        sessionStorage.setItem('osha_file_context', fileText.substring(0, 5000));
+        sessionStorage.setItem('osha_file_name', fileName);
+
+        // Показываем красивое сообщение от бота (Оно не уходит на сервер, только для визуала)
+        appendMessage('assistant', `📄 <b>${fileName}</b> fayli qabul qilindi! Men matnni o'qib chiqdim. Ushbu hujjat bo'yicha savollar berishingiz, xulosa yozdirishingiz yoki qidirayotgan ma'lumotingizni so'rashingiz mumkin.`);
+        
+        setTimeout(() => inputField.focus(), 300);
+    };
 
     chatBtn.addEventListener('click', () => {
         chatModal.classList.remove('osha-hidden');
@@ -7544,10 +7563,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeBtn.addEventListener('click', () => {
         chatModal.classList.add('osha-hidden');
-        setTimeout(() => {
-            bubble.style.opacity = '1';
-            bubble.style.visibility = 'visible';
-        }, 300);
+        // Показываем облачко только на ПК (если ширина экрана больше 768px)
+        if (window.innerWidth > 768) {
+            setTimeout(() => {
+                bubble.style.opacity = '1';
+                bubble.style.visibility = 'visible';
+            }, 300);
+        }
     });
 
     inputField.addEventListener('input', function() {
@@ -7598,7 +7620,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 <span class="osha-tooltip">Nusxa oliş</span>
             `;
-
             copyBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 navigator.clipboard.writeText(content).then(() => {
@@ -7616,17 +7637,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                 <span class="osha-tooltip">Tahrirlaş</span>
             `;
-
             editBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const editorField = document.getElementById('aiResultContent'); 
-                if (editorField) {
-                    editorField.innerHTML = content.replace(/\n/g, '<br>'); 
-                }
+                if (editorField) editorField.innerHTML = content.replace(/\n/g, '<br>'); 
                 const editorModal = document.getElementById('aiResultModalBackdrop');
-                if (editorModal) {
-                    editorModal.classList.add('open'); 
-                }
+                if (editorModal) editorModal.classList.add('open'); 
             });
 
             containerDiv.appendChild(editBtn);
@@ -7655,8 +7671,11 @@ document.addEventListener('DOMContentLoaded', () => {
         inputField.style.height = '42px';
         sendBtn.disabled = true;
 
-        // Используем глобальную функцию из Модуля 13
-        appendMessage('user', enforceNewUzbekAlphabet(text));
+        if (typeof enforceNewUzbekAlphabet === "function") {
+            appendMessage('user', enforceNewUzbekAlphabet(text));
+        } else {
+            appendMessage('user', text);
+        }
 
         const typingId = 'typing-' + Date.now();
         const wrapDiv = document.createElement('div');
@@ -7678,8 +7697,18 @@ document.addEventListener('DOMContentLoaded', () => {
         messagesContainer.appendChild(wrapDiv);
         scrollToBottom();
 
-        let apiMessages = [{ role: 'system', content: SYSTEM_PROMPT }];
-        const recentHistory = chatHistory.slice(-10);
+        // 1. Формируем контекст ИИ
+        let currentSysPrompt = SYSTEM_PROMPT;
+        
+        // 2. ИНЖЕКЦИЯ ФАЙЛА В ПАМЯТЬ БОТА
+        const fileContext = sessionStorage.getItem('osha_file_context');
+        const fileName = sessionStorage.getItem('osha_file_name');
+        if (fileContext) {
+            currentSysPrompt += `\n\nDIQQAT! Foydalanuvchi senga "${fileName}" nomli hujjatni yubordi. Ushbu hujjatning matni quyida keltirilgan. Agar foydalanuvchining savoli hujjatga tegishli bo'lsa, shu matnga asoslanib aniq javob ber:\n\n---\n${fileContext}\n---\n`;
+        }
+
+        let apiMessages = [{ role: 'system', content: currentSysPrompt }];
+        const recentHistory = chatHistory.slice(-10); // Оставляем 10 последних сообщений
         apiMessages = apiMessages.concat(recentHistory);
 
         let fallbackTextFormat = apiMessages.map(m => `${m.role}: ${m.content}`).join('\n');
@@ -7689,32 +7718,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    model: 'qwen/qwen3.8-27b',
+                    model: 'qwen/qwen3.8-27b', // Используем твою модель
                     messages: apiMessages,
-                    temperature: 0.6,
+                    temperature: 0.5,
                     max_tokens: 16384,
                     mode: 'chat',
                     text: fallbackTextFormat,
-                    customPrompt: SYSTEM_PROMPT
+                    customPrompt: currentSysPrompt
                 })
             });
 
             const data = await response.json();
             document.getElementById(typingId).remove();
             
-            // Используем глобальную функцию из Модуля 13
+            let replyContent = "";
             if (data.choices && data.choices[0] && data.choices[0].message) {
-                appendMessage('assistant', enforceNewUzbekAlphabet(data.choices[0].message.content));
+                replyContent = data.choices[0].message.content;
             } else if (data.result) {
-                appendMessage('assistant', enforceNewUzbekAlphabet(data.result));
+                replyContent = data.result;
             } else if (data.error) {
                 const errMsg = typeof data.error === 'string' ? data.error : (data.error.message || JSON.stringify(data.error));
-                appendMessage('assistant', "Xatolik yuz berdi: " + errMsg);
+                replyContent = "Xatolik yuz berdi: " + errMsg;
             } else if (data.message) {
-                appendMessage('assistant', enforceNewUzbekAlphabet(data.message));
+                replyContent = data.message;
             } else {
-                appendMessage('assistant', "Keçirasiz, noma'lum xatolik yuz berdi. Server javobi: " + JSON.stringify(data).substring(0, 50));
+                replyContent = "Keçirasiz, noma'lum xatolik yuz berdi.";
             }
+
+            if (typeof enforceNewUzbekAlphabet === "function") {
+                appendMessage('assistant', enforceNewUzbekAlphabet(replyContent));
+            } else {
+                appendMessage('assistant', replyContent);
+            }
+            
         } catch (error) {
             document.getElementById(typingId).remove();
             appendMessage('assistant', "Internet ulanişida xatolik: " + error.message);
@@ -7742,20 +7778,22 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             clearConfirm.classList.toggle('show');
         });
-
         confirmNo.addEventListener('click', (e) => {
             e.stopPropagation();
             clearConfirm.classList.remove('show');
         });
-
         confirmYes.addEventListener('click', (e) => {
             e.stopPropagation();
             chatHistory = [];
             localStorage.removeItem('oshaChatHistory');
+            
+            // ВАЖНО: При очистке чата также удаляем память о файле!
+            sessionStorage.removeItem('osha_file_context');
+            sessionStorage.removeItem('osha_file_name');
+            
             clearConfirm.classList.remove('show');
             renderMessages();
         });
-
         document.addEventListener('click', (e) => {
             if (clearConfirm.classList.contains('show') && !clearConfirm.contains(e.target) && e.target !== clearBtn) {
                 clearConfirm.classList.remove('show');
@@ -7769,14 +7807,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (clearConfirm) clearConfirm.classList.remove('show');
             infoPopup.classList.toggle('show');
         });
-
         if (infoOkBtn) {
             infoOkBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 infoPopup.classList.remove('show');
             });
         }
-
         document.addEventListener('click', (e) => {
             if (infoPopup.classList.contains('show') && !infoPopup.contains(e.target) && e.target !== infoBtn) {
                 infoPopup.classList.remove('show');
@@ -7788,12 +7824,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (exportBtn) {
         exportBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            
             if (!chatHistory || chatHistory.length === 0) {
                 alert("Chat tarixi hozircha bo'sh!");
                 return;
             }
-
             let htmlContent = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
                 <head>
@@ -7811,13 +7845,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <body>
                 <h2>Öşa AI — Çat Tarixi (ULH Online)</h2>
             `;
-
             chatHistory.forEach(msg => {
                 if (msg.role === 'system') return;
                 const roleName = msg.role === 'user' ? 'Foydalanuvçi' : 'Öşa AI (Öşa)';
                 const cssClass = msg.role === 'user' ? 'user' : 'assistant';
                 const formattedText = msg.content.replace(/\n/g, '<br>');
-
                 htmlContent += `
                     <div class="msg ${cssClass}">
                         <div class="role">${roleName}:</div>
@@ -7825,9 +7857,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             });
-
             htmlContent += `</body></html>`;
-
             const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -7837,7 +7867,6 @@ document.addEventListener('DOMContentLoaded', () => {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-
             if (infoPopup) infoPopup.classList.remove('show');
         });
     }
@@ -10549,3 +10578,37 @@ window.toggleAiMenu = function(event) {
     const wrap = document.getElementById("editorAiWrap");
     toggleMobileMenuOverlay(wrap && wrap.classList.contains('open'));
 };
+
+// ==========================================
+// === ИНТЕГРАЦИЯ ФАЙЛОВ С БОТОМ ÖŞA ===
+// ==========================================
+window.sendFileToOsha = function() {
+    const text = (window.extractedFileText || "").trim();
+    if (!text) {
+        alert("Fayl içida matn topilmadi!");
+        return;
+    }
+    // Получаем оригинальное имя файла
+    let fName = typeof processedOutName !== 'undefined' ? processedOutName.replace("_yangi", "") : "Hujjat";
+    
+    // Вызываем функцию внутри виджета Öşa
+    if (typeof window.triggerOshaFileMode === 'function') {
+        window.triggerOshaFileMode(text, fName);
+    } else {
+        alert("Öşa yordamçisi hozirça işga tuşmadi.");
+    }
+};
+
+// ХАК: Чтобы кнопка появлялась после загрузки файла
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'fileInput') {
+        setTimeout(() => {
+            const oshaBtn = document.getElementById('sendToOshaBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            // Если файл успешно обработан (появилась кнопка Saqlaş), показываем и нашу кнопку
+            if (oshaBtn && saveBtn && saveBtn.style.display !== 'none') {
+                oshaBtn.style.display = 'inline-flex';
+            }
+        }, 1500); // Ждем завершения конвертации
+    }
+});
