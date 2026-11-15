@@ -5003,20 +5003,39 @@ let ytProgressInterval = null;
 const MUSIC_PLAYLIST_KEY = "ulh_music_playlist_v2";
 let currentYtTrackUrl = ""; // Отслеживает, какой трек сейчас играет
 
+// Функция переключения показа поля ввода
+window.toggleMusicInputRow = function() {
+    const inputRow = document.getElementById("musicCustomInputRow");
+    const inputField = document.getElementById("customMusicUrl");
+    
+    if (inputRow.style.display === "none") {
+        inputRow.style.display = "flex";
+        setTimeout(() => inputField.focus(), 50); // Фокус на поле ввода
+    } else {
+        inputRow.style.display = "none";
+    }
+};
+
 // Устанавливаем режим контроллеров (AI = 100% громкость, YT = 70/30 с таймлайном)
 function setPlayerUI_Mode(mode) {
     const controlsRow = document.getElementById("musicControlsRow");
     const ytVideoBtn = document.getElementById("openYtVideoBtn");
+    const inputRow = document.getElementById("musicCustomInputRow");
+    
     if (!controlsRow) return;
 
     if (mode === 'yt') {
         controlsRow.classList.remove('ai-mode');
         controlsRow.classList.add('yt-mode');
         if (ytVideoBtn) ytVideoBtn.style.display = "inline-flex";
+        // При переходе в режим YT прячем поле ввода, пользователь вызовет его кнопкой "+"
+        if (inputRow) inputRow.style.display = "none"; 
     } else {
         controlsRow.classList.remove('yt-mode');
         controlsRow.classList.add('ai-mode');
         if (ytVideoBtn) ytVideoBtn.style.display = "none";
+        // В AI-режиме поле ввода всегда видно по умолчанию
+        if (inputRow) inputRow.style.display = "flex";
     }
 }
 
@@ -5057,8 +5076,11 @@ window.togglePlaybackHandler = function(event) {
     }
     
     if (isCustomMusicMode && ytPlayer) {
-        if (isYtPlaying) ytPlayer.pauseVideo();
-        else ytPlayer.playVideo();
+        if (isYtPlaying) {
+            ytPlayer.pauseVideo();
+        } else {
+            ytPlayer.playVideo();
+        }
     } else {
         if (typeof ambientIsPlaying !== 'undefined') {
             if (ambientIsPlaying) pauseAmbientMusic();
@@ -5171,11 +5193,20 @@ window.loadCustomYoutube = async function(urlFromList = null) {
             
             addTrackToPlaylist(rawUrl, title, author); 
             
-            if (inputEl) { inputEl.value = ""; inputEl.disabled = false; inputEl.focus(); }
+            if (inputEl) { 
+                inputEl.value = ""; 
+                inputEl.disabled = false; 
+                // Если сейчас играет музыка, прячем поле после добавления трека
+                if (isCustomMusicMode) document.getElementById("musicCustomInputRow").style.display = "none";
+            }
             if (!isCustomMusicMode) playPlaylistItem(rawUrl, title, author);
         } catch(e) {
             addTrackToPlaylist(rawUrl, "Yangi trek", "YouTube");
-            if (inputEl) { inputEl.value = ""; inputEl.disabled = false; }
+            if (inputEl) { 
+                inputEl.value = ""; 
+                inputEl.disabled = false; 
+                if (isCustomMusicMode) document.getElementById("musicCustomInputRow").style.display = "none";
+            }
             if (!isCustomMusicMode) playPlaylistItem(rawUrl, "Yangi trek", "YouTube");
         }
     } 
@@ -5195,6 +5226,8 @@ function playPlaylistItem(url, title = "Yuklanmoqda...", author = "YouTube") {
     }
 
     isCustomMusicMode = true;
+    
+    // Прячем старую форму ввода (если она была открыта кнопкой +)
     document.getElementById("musicCustomInputRow").style.display = "none";
     document.getElementById("musicProgressRow").style.display = "flex"; 
     document.getElementById("backToAiMusicBtn").style.display = "inline-flex";
@@ -5389,6 +5422,16 @@ function addTrackToPlaylist(url, title, author) {
 window.removePlaylistTrack = function(event, index) {
     event.preventDefault(); event.stopPropagation();
     let playlist = JSON.parse(localStorage.getItem(MUSIC_PLAYLIST_KEY)) || [];
+    
+    // Если удаляем трек, который сейчас играет
+    if (isCustomMusicMode && getYoutubeId(playlist[index].url) === getYoutubeId(currentYtTrackUrl)) {
+        if (playlist.length > 1) {
+            playNextTrack(); // Переключаем на следующий
+        } else {
+            switchToAiMusic(); // Или возвращаемся к AI, если он был последним
+        }
+    }
+
     playlist.splice(index, 1); 
     localStorage.setItem(MUSIC_PLAYLIST_KEY, JSON.stringify(playlist));
     renderMusicHistory();
@@ -5399,11 +5442,6 @@ let draggedPlaylistIndex = null;
 function renderMusicHistory() {
     const list = document.getElementById("musicHistoryList");
     if (!list) return;
-    
-    const headerTitle = document.querySelector(".music-history-header span");
-    if (headerTitle && headerTitle.textContent !== "PLEYLIST") {
-        headerTitle.textContent = "PLEYLIST";
-    }
 
     let playlist = JSON.parse(localStorage.getItem(MUSIC_PLAYLIST_KEY)) || [];
     list.innerHTML = "";
@@ -5476,15 +5514,13 @@ window.toggleMusicHistoryConfirm = function(event) {
     const confirmBox = document.getElementById("musicHistoryConfirm");
     if (confirmBox) {
         confirmBox.classList.toggle("show");
-        const title = confirmBox.querySelector(".music-confirm-title");
-        if (title) title.textContent = "Butun pleylistni öçirmoqçimisiz?";
     }
 };
 
 window.clearMusicHistory = function(event) {
     if (event) { event.preventDefault(); event.stopPropagation(); }
     localStorage.removeItem(MUSIC_PLAYLIST_KEY);
-    renderMusicHistory();
+    switchToAiMusic(); // Выключаем музыку при очистке плейлиста
     const confirmBox = document.getElementById("musicHistoryConfirm");
     if (confirmBox) confirmBox.classList.remove("show");
 };
