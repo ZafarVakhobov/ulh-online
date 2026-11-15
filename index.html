@@ -58,6 +58,34 @@
 </head>
 <body>
 
+    <!-- === IMMERSIVE FOCUS ROOM (ZEN MODE 2.0) === -->
+    <div id="zenBackground" class="zen-background">
+        <div class="zen-bg-video-wrapper">
+            <iframe id="zenBgVideo" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+        <div class="zen-bg-overlay"></div>
+    </div>
+
+    <!-- Плавающая панель настройки фона в Дзен-режиме -->
+    <div id="zenSettingsWidget" class="zen-settings-panel">
+        <div style="font-size: 11px; font-weight: 800; color: white; margin-bottom: 6px; text-transform: uppercase; text-shadow: 0 1px 4px rgba(0,0,0,0.5);">Atmosferani tanlang</div>
+        <div style="display: flex; gap: 8px;">
+            <button class="zen-bg-btn" style="background-image: url('https://img.youtube.com/vi/jfKfPfyJRdk/0.jpg')" onclick="setZenBackground('lofi', this)" title="Lo-fi Kafe"></button>
+            <button class="zen-bg-btn" style="background-image: url('https://img.youtube.com/vi/c0_ejQQcrwI/0.jpg')" onclick="setZenBackground('rain', this)" title="Yomğirli atmosfera"></button>
+            <button class="zen-bg-btn" style="background-image: url('https://img.youtube.com/vi/xQYEU30q4Lg/0.jpg')" onclick="setZenBackground('hogwarts', this)" title="Kutubxona"></button>
+            <button class="zen-bg-btn" style="background-image: url('https://images.unsplash.com/photo-1621216503883-9bc0ab487de5?w=300&q=80')" onclick="setZenBackground('samarkand', this)" title="Samarqand"></button>
+            
+            <div style="width: 1px; background: rgba(255,255,255,0.3); margin: 0 4px;"></div>
+            
+            <button class="zen-bg-btn" style="background: rgba(225, 29, 72, 0.8); color: white; display: flex; align-items: center; justify-content: center;" onclick="toggleZenMode()" title="Fokus-xonadan chiqish">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+    <!-- ========================================== -->
+    
+    
+
     <div id="popup-tip" onmousedown="event.preventDefault(); revertText();">Sh</div>
 
     <!-- Скрытая сцена для генерации PDF с сохранением оригинального оформления и ориентации страниц -->
