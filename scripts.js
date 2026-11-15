@@ -7143,43 +7143,74 @@ fetchAndRenderNews();
 
 
 // ==========================================
-// === 19. ZEN MODE (РЕЖИМ ГЛУБОКОГО ПОГРУЖЕНИЯ) ===
+// === IMMERSIVE FOCUS ROOM (ZEN MODE 2.0) ===
 // ==========================================
 
-window.toggleZenMode = function() {
-    const isZen = document.body.classList.toggle('zen-mode-active');
-    
-    const iconExpand = document.getElementById('zenIconExpand');
-    const iconCollapse = document.getElementById('zenIconCollapse');
-    const tooltip = document.getElementById('zenTooltip'); // Наш span.custom-tooltip
+let isZenMode = false;
 
-    if (isZen) {
-        // Режим включен: показываем иконку сужения
-        if (iconExpand) iconExpand.style.display = 'none';
-        if (iconCollapse) iconCollapse.style.display = 'block';
+window.toggleZenMode = function() {
+    isZenMode = !isZenMode;
+    const body = document.body;
+    
+    if (isZenMode) {
+        body.classList.add('zen-mode-active');
+        document.getElementById('zenIconExpand').style.display = 'none';
+        document.getElementById('zenIconCollapse').style.display = 'inline-block';
+        document.getElementById('zenTooltip').textContent = "Fokus-xonadan chiqish";
         
-        // Меняем текст внутри красивого тултипа
-        if (tooltip) tooltip.textContent = 'Oddiy rejimga qaytiş';
+        // Если фон еще не был выбран, ставим уютное Lofi Café по умолчанию
+        if (!document.getElementById('zenBgVideo').src && !document.getElementById('zenBackground').style.backgroundImage) {
+            // Ищем первую кнопку и симулируем клик для установки первого фона
+            const firstBtn = document.querySelector('.zen-bg-btn');
+            setZenBackground('lofi', firstBtn);
+        }
         
-        // Фокусируемся на тексте
-        const editor = document.getElementById('editor');
-        if (editor) editor.focus();
+        if (typeof addNotification === "function") {
+            addNotification({
+                type: 'system', title: 'Fokus-Xona faollashdi', 
+                desc: 'Diqqatni jamlang. Orqa fonni ekrandagi tugmalar orqali o\'zgartirishingiz mumkin.',
+                iconBg: '#EDE9FE', iconColor: '#7C3AED',
+                iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5v14M7 5v14M22 8v8M2 8v8"/></svg>`
+            });
+        }
     } else {
-        // Режим выключен: показываем иконку расширения
-        if (iconExpand) iconExpand.style.display = 'block';
-        if (iconCollapse) iconCollapse.style.display = 'none';
+        body.classList.remove('zen-mode-active');
+        document.getElementById('zenIconExpand').style.display = 'inline-block';
+        document.getElementById('zenIconCollapse').style.display = 'none';
+        document.getElementById('zenTooltip').textContent = "Zen rejimi (Fokus)";
         
-        // Возвращаем исходный текст тултипу
-        if (tooltip) tooltip.textContent = 'Zen rejimi';
+        // Ставим видео на паузу, очищая источник, чтобы не тратить трафик
+        document.getElementById('zenBgVideo').src = "";
+        document.querySelectorAll('.zen-bg-btn').forEach(b => b.classList.remove('active'));
     }
 };
 
-// Выход из Zen Mode по нажатию клавиши Escape
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && document.body.classList.contains('zen-mode-active')) {
-        window.toggleZenMode();
+window.setZenBackground = function(type, btnElement) {
+    const bgContainer = document.getElementById('zenBackground');
+    const videoEl = document.getElementById('zenBgVideo');
+    
+    // Снимаем выделение со всех кнопок и подсвечиваем нажатую
+    document.querySelectorAll('.zen-bg-btn').forEach(btn => btn.classList.remove('active'));
+    if(btnElement) btnElement.classList.add('active');
+
+    // Настройки YouTube: автоплей, без звука (звук мы берем из нашего плеера), зациклено
+    const ytParams = "?autoplay=1&mute=1&controls=0&showinfo=0&autohide=1&loop=1&playsinline=1&modestbranding=1&playlist=";
+
+    if (type === 'lofi') {
+        videoEl.src = "https://www.youtube.com/embed/jfKfPfyJRdk" + ytParams + "jfKfPfyJRdk";
+        bgContainer.style.backgroundImage = "none";
+    } else if (type === 'rain') {
+        videoEl.src = "https://www.youtube.com/embed/c0_ejQQcrwI" + ytParams + "c0_ejQQcrwI";
+        bgContainer.style.backgroundImage = "none";
+    } else if (type === 'hogwarts') {
+        videoEl.src = "https://www.youtube.com/embed/xQYEU30q4Lg" + ytParams + "xQYEU30q4Lg";
+        bgContainer.style.backgroundImage = "none";
+    } else if (type === 'samarkand') {
+        // Для Самарканда используем шикарное статичное фото высокого разрешения, чтобы не грузить систему
+        videoEl.src = "";
+        bgContainer.style.backgroundImage = "url('https://images.unsplash.com/photo-1621216503883-9bc0ab487de5?auto=format&fit=crop&w=1920&q=80')";
     }
-});
+};
 
 // ==========================================
 // === 20. ИИ-АНАЛИЗ КАЧЕСТВА ТЕКСТА (READABILITY & TONE) ===
