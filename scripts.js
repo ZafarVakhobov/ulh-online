@@ -7197,17 +7197,17 @@ window.setZenBackground = function(type, btnElement) {
     const ytParams = "?autoplay=1&mute=1&controls=0&showinfo=0&autohide=1&loop=1&playsinline=1&modestbranding=1&playlist=";
 
     if (type === 'lofi') {
-        videoEl.src = "https://youtu.be/rFZHOHl-L8A" + ytParams + "rFZHOHl-L8A";
+        videoEl.src = "https://www.youtube.com/embed/rFZHOHl-L8A" + ytParams + "rFZHOHl-L8A";
         bgContainer.style.backgroundImage = "none";
     } else if (type === 'rain') {
         videoEl.src = "https://www.youtube.com/embed/c0_ejQQcrwI" + ytParams + "c0_ejQQcrwI";
         bgContainer.style.backgroundImage = "none";
     } else if (type === 'hogwarts') {
-        videoEl.src = "https://youtu.be/R68KY-dBg2M" + ytParams + "R68KY-dBg2M";
+        videoEl.src = "https://www.youtube.com/embed/R68KY-dBg2M" + ytParams + "R68KY-dBg2M";
         bgContainer.style.backgroundImage = "none";
     } else if (type === 'samarkand') {
         // Для Самарканда используем шикарное статичное фото высокого разрешения, чтобы не грузить систему
-        videoEl.src = "https://youtu.be/jxeorC_f6qw" + ytParams + "jxeorC_f6qw";
+        videoEl.src = "https://www.youtube.com/embed/jxeorC_f6qw" + ytParams + "jxeorC_f6qw";
         bgContainer.style.backgroundImage = "none";
     }
 };
