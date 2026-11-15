@@ -9430,9 +9430,26 @@ function updateBellIcon() {
 
 // 2. Управление вкладками и рендер
 window.switchNotifyTab = function(tab) {
+    // Поддержка и старых вызовов ('all') и новых из HTML ('new')
+    if (tab === 'new') tab = 'all'; 
     currentNotifyTab = tab;
-    document.getElementById('tabNotifyAll').classList.toggle('active', tab === 'all');
-    document.getElementById('tabNotifyRead').classList.toggle('active', tab === 'read');
+    
+    // Обновляем активные классы у вкладок, находя их по тексту
+    const tabs = document.querySelectorAll('.notify-tab');
+    if (tabs.length > 0) {
+        tabs.forEach(t => t.classList.remove('active'));
+        tabs.forEach(t => {
+            const text = t.textContent.trim().toLowerCase();
+            if (tab === 'all' && text === 'yangi') t.classList.add('active');
+            if (tab === 'read' && text === "o'qilgan") t.classList.add('active');
+        });
+    } else {
+        // Запасной вариант, если остались старые ID
+        const allTab = document.getElementById('tabNotifyAll');
+        const readTab = document.getElementById('tabNotifyRead');
+        if(allTab) allTab.classList.toggle('active', tab === 'all');
+        if(readTab) readTab.classList.toggle('active', tab === 'read');
+    }
     
     const clearWrap = document.getElementById('notifyClearAllWrap');
     if (clearWrap) clearWrap.style.display = tab === 'read' ? 'block' : 'none';
@@ -9461,39 +9478,24 @@ window.markNotificationsViewed = function() {
     renderNotifications();
 };
 
-// Функция "Прочитать все"
+// Функция "Прочитать все" (ИСПРАВЛЕННАЯ ЛОГИКА)
 window.markAllNotificationsAsRead = function() {
-    // Находим все уведомления, у которых НЕТ класса 'read' (то есть все новые)
-    const newItems = document.querySelectorAll('.notify-item:not(.read)');
+    let hasChanges = false;
     
-    if (newItems.length === 0) return; // Если новых нет, ничего не делаем
-
-    newItems.forEach(item => {
-        // Добавляем класс 'read', который переносит их во вкладку "Прочитанные"
-        item.classList.add('read');
-        
-        // Убираем синюю точку индикатора у каждого прочитанного уведомления
-        const dot = item.querySelector('.notify-dot');
-        if (dot) dot.style.display = 'none';
+    // Меняем статус в самой базе данных уведомлений
+    notifications.forEach(n => {
+        if (!n.isRead) {
+            n.isRead = true;
+            hasChanges = true;
+        }
     });
 
-    // Сбрасываем общий счетчик уведомлений на колокольчике
-    const badge = document.getElementById('navNotifyBadge');
-    if (badge) {
-        badge.style.display = 'none';
-        badge.textContent = '0';
-    }
-
-    // Если сейчас открыта вкладка "Yangi", обновляем её отображение (она опустеет)
-    const activeTab = document.querySelector('.notify-tab.active');
-    if (activeTab && activeTab.textContent.trim().toLowerCase() === 'yangi') {
-        switchNotifyTab('new'); 
-    }
-    
-    // Опционально: можно показать мини-уведомление системы об успехе
-    if (typeof addNotification === "function") {
-         // Делаем тихий вызов без анимации колокольчика, просто для информирования
-         console.log("Barça bildirişnomalar öqilgan deb belgilandi.");
+    // Если были новые уведомления - сохраняем и обновляем интерфейс
+    if (hasChanges) {
+        saveNotifications();
+        updateBellIcon();
+        renderNotifications(); // Перерисует списки и они сами перелетят во вкладку "Прочитанные"
+        console.log("Barça bildirişnomalar öqilgan deb belgilandi.");
     }
 };
 
@@ -9537,7 +9539,7 @@ function renderNotifications() {
                 id: 'dyn_cal_' + evt.id, type: 'dynamic', isRead: false,
                 title: isToday ? `Bugun: ${evt.name}` : `Yaqinlaşmoqda: ${evt.name}`,
                 desc: `${evt.dateStr} soat ${evt.timeStr}. ${evt.note || ''}`,
-                iconBg: evt.type === 'birthday' ? '#FEE2E2' : '#E0F2FE',
+                iconBg: evt.type === 'birthday' ? '#FEE2E2' : '#EF4444', // Исправлен цвет для обычных событий (был неконтрастный)
                 iconColor: evt.type === 'birthday' ? '#EF4444' : '#0284C7',
                 iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`,
                 actions: [{ label: 'Taqvimda köriş', colorClass: 'n-btn-neutral', onClick: `document.getElementById('calendar-toggle-btn').click(); setTimeout(()=>jumpToCalDate('${evt.dateStr}'), 100);` }],
