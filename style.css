@@ -8576,12 +8576,12 @@ body.dark-mode .mic-icon-btn.recording {
 /* === IMMERSIVE FOCUS ROOM (ZEN MODE 2.0) === */
 /* ========================================== */
 
-/* 1. ФОН И ВИДЕО (ВЫВОДИМ ПОВЕРХ САЙТА) */
+/* Активация полноэкранного режима */
 body.zen-mode-active #zenBackground { opacity: 1; visibility: visible; }
 .zen-background {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    z-index: 9900; /* Перекрываем стандартный фон сайта */
-    background-color: #0F172A; background-size: cover; background-position: center;
+    z-index: 9900; background-color: #0F172A;
+    background-size: cover; background-position: center;
     opacity: 0; visibility: hidden; transition: opacity 0.8s ease;
 }
 .zen-bg-video-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
@@ -8589,16 +8589,15 @@ body.zen-mode-active #zenBackground { opacity: 1; visibility: visible; }
     width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh;
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;
 }
-.zen-bg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); }
+.zen-bg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.35); }
 
-/* 2. ПРЯЧЕМ ЛИШНЕЕ */
+/* Скрываем всё лишнее, кроме редактора, плеера и левого меню */
 body.zen-mode-active .hero-slider,
 body.zen-mode-active .news-ticker-wrapper,
 body.zen-mode-active .converter-box,
 body.zen-mode-active #osha-bubble,
 body.zen-mode-active #osha-btn { display: none !important; }
 
-/* Шапка: делаем невидимой, но оставляем "выпадать" из неё музыкальный плеер */
 body.zen-mode-active .top-navbar {
     background: transparent !important; border: none !important; box-shadow: none !important; z-index: 9999 !important; height: 0 !important; overflow: visible !important;
 }
@@ -8610,7 +8609,51 @@ body.zen-mode-active #navUserWrap,
 body.zen-mode-active .nav-tg-btn,
 body.zen-mode-active .mobile-burger-btn { display: none !important; }
 
-/* 3. ПЛЕЕР СПРАВА ВНИЗУ */
+
+/* --- 1. ТЕКСТОВАЯ ПАНЕЛЬ (ПОЛУПРОЗРАЧНОЕ СТЕКЛО) --- */
+body.zen-mode-active { overflow: hidden; }
+body.zen-mode-active .workspace {
+    position: relative; z-index: 9950; padding: 20px !important; height: 100vh !important; display: flex; justify-content: center; align-items: center; overflow: hidden;
+}
+body.zen-mode-active .editor-wrapper {
+    background: rgba(15, 23, 42, 0.45) !important; /* Мягкое полупрозрачное темное стекло */
+    backdrop-filter: blur(18px) !important; -webkit-backdrop-filter: blur(18px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4) !important;
+    height: 85vh !important; max-width: 950px !important; width: 100% !important; margin: 0 auto !important;
+    display: flex; flex-direction: column; border-radius: 20px !important; overflow: visible !important;
+}
+
+/* Верхняя панель инструментов редактора */
+body.zen-mode-active .section-header {
+    display: flex !important; background: rgba(15, 23, 42, 0.3) !important; 
+    border-bottom: 1px solid rgba(255,255,255,0.1) !important; padding: 12px 20px !important;
+    border-radius: 20px 20px 0 0 !important;
+}
+body.zen-mode-active .action-icon-btn { color: #FFFFFF !important; background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.2) !important; }
+body.zen-mode-active .action-icon-btn:hover { background: rgba(255,255,255,0.2) !important; }
+body.zen-mode-active .autosave-badge { color: #A7F3D0 !important; }
+body.zen-mode-active .stats-number-only { color: #FFFFFF !important; }
+
+/* Сам текст */
+body.zen-mode-active textarea#editor {
+    color: #FFFFFF !important; text-shadow: none !important;
+    font-size: 18px !important; line-height: 1.8 !important; padding: 24px !important; background: transparent !important;
+}
+body.zen-mode-active textarea#editor::placeholder { color: rgba(255,255,255,0.5) !important; }
+
+/* Выпадающие меню инструментов в фокусе */
+body.zen-mode-active .editor-tools-dropdown,
+body.zen-mode-active .editor-ai-dropdown {
+    background: rgba(15, 23, 42, 0.95) !important; backdrop-filter: blur(24px) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
+}
+body.zen-mode-active .tools-group-label { color: #94A3B8 !important; }
+body.zen-mode-active .tools-menu-item span, body.zen-mode-active .ai-item-title { color: #F8FAFC !important; }
+body.zen-mode-active .ai-item-sub { color: #94A3B8 !important; }
+body.zen-mode-active .tools-menu-item:hover, body.zen-mode-active .ai-menu-item:hover { background: rgba(255,255,255,0.1) !important; }
+
+
+/* --- 2. МУЗЫКАЛЬНЫЙ ПЛЕЕР СПРАВА ВНИЗУ --- */
 body.zen-mode-active #navMusicWrap {
     position: fixed !important; bottom: 30px !important; right: 30px !important; top: auto !important; z-index: 9999 !important; display: block !important;
 }
@@ -8620,38 +8663,13 @@ body.zen-mode-active .music-toggle-btn {
 }
 body.zen-mode-active .music-dropdown-box {
     bottom: 80px !important; right: 0 !important; top: auto !important; transform-origin: bottom right !important;
-    background: rgba(15, 23, 42, 0.9) !important; border-color: rgba(255,255,255,0.15) !important;
+    background: rgba(15, 23, 42, 0.95) !important; border-color: rgba(255,255,255,0.15) !important; color: white !important;
 }
 body.zen-mode-active .music-title, body.zen-mode-active .music-history-item-title { color: #FFFFFF !important; }
 body.zen-mode-active .music-subtitle, body.zen-mode-active .music-history-header span { color: #94A3B8 !important; }
 
-/* 4. РЕДАКТОР - ТЕМНОЕ СТЕКЛО (Читаемость текста) */
-body.zen-mode-active .workspace {
-    position: relative; z-index: 9950; padding: 20px !important; height: 100vh !important; display: flex; justify-content: center; align-items: center; overflow: hidden;
-}
-body.zen-mode-active .editor-wrapper {
-    background: rgba(15, 23, 42, 0.6) !important; /* Темное полупрозрачное стекло */
-    backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5) !important;
-    height: 85vh !important; max-width: 1000px !important; margin: 0 auto !important;
-    display: flex; flex-direction: column; border-radius: 20px !important; overflow: hidden;
-}
 
-/* Верхняя панель инструментов текста - ОСТАВЛЯЕМ! */
-body.zen-mode-active .section-header {
-    background: rgba(255,255,255,0.05) !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; padding: 12px 20px !important;
-}
-body.zen-mode-active .action-icon-btn { color: #FFFFFF !important; background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.2) !important; }
-body.zen-mode-active .action-icon-btn:hover { background: rgba(255,255,255,0.2) !important; }
-body.zen-mode-active .autosave-badge { color: #A7F3D0 !important; }
-body.zen-mode-active .stats-number-only { color: #FFFFFF !important; }
-
-body.zen-mode-active textarea#editor {
-    color: #FFFFFF !important; text-shadow: none !important;
-    font-size: 18px !important; line-height: 1.8 !important; padding: 24px !important; background: transparent !important;
-}
-
-/* 5. ЛЕВЫЙ DOCK (ПАНЕЛЬ ИНСТРУМЕНТОВ) */
+/* --- 3. ЛЕВАЯ ПАНЕЛЬ ИНСТРУМЕНТОВ (ПОМОДОРО, КАЛЕНДАРЬ И Т.Д.) --- */
 body.zen-mode-active .footer {
     position: fixed !important; top: 50% !important; left: 24px !important; bottom: auto !important; transform: translateY(-50%) !important;
     width: 70px !important; height: auto !important; z-index: 9999 !important; background: transparent !important; pointer-events: auto !important;
@@ -8667,7 +8685,8 @@ body.zen-mode-active .dock-side-group {
 body.zen-mode-active .dock-icon-btn { color: #FFFFFF !important; width: 44px !important; height: 44px !important; }
 body.zen-mode-active .dock-icon-btn:hover { background: rgba(255,255,255,0.15) !important; }
 
-/* 6. ПАНЕЛЬ НАСТРОЙКИ ФОНА */
+
+/* --- 4. ПАНЕЛЬ ВЫБОРА ФОНА СВЕРХУ СПРАВА --- */
 .zen-settings-panel {
     position: fixed; top: 24px; right: 24px; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.2);
     border-radius: 16px; padding: 12px 16px; z-index: 9999; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transform: translateY(-20px); transition: all 0.4s ease;
