@@ -8849,12 +8849,22 @@ body.zen-mode-active .news-ticker-track a:hover {
     text-decoration: none !important;
 }
 
-/* --- 9. УБИРАЕМ БЕЛОЕ СВЕЧЕНИЕ (ГРАДИЕНТ ЗАТУХАНИЯ) У ЛЕНТЫ В ZEN MODE --- */
+/* --- 9. ЖЕСТКО УБИРАЕМ БЕЛОЕ СВЕЧЕНИЕ (ГРАДИЕНТ И ТЕНИ) В ЛЮБОЙ ТЕМЕ --- */
 body.zen-mode-active .news-ticker-wrapper::before,
 body.zen-mode-active .news-ticker-wrapper::after,
 body.zen-mode-active .news-ticker-scroll-area::before,
-body.zen-mode-active .news-ticker-scroll-area::after {
+body.zen-mode-active .news-ticker-scroll-area::after,
+body.zen-mode-active .news-ticker-btn::before,
+body.zen-mode-active .news-ticker-btn::after {
+    content: none !important;
     display: none !important;
     background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    opacity: 0 !important;
+}
+
+/* Отключаем белое свечение, если оно сделано через тень самой кнопки */
+body.zen-mode-active .news-ticker-btn {
     box-shadow: none !important;
 }
