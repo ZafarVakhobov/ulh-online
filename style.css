@@ -9086,3 +9086,38 @@ body.zen-mode-active .ai-dropdown-wrap {
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8) !important;
     }
 }
+
+/* ========================================== */
+/* --- АДАПТАЦИЯ ЦЕНТРА УВЕДОМЛЕНИЙ ПОД ТЕМЫ --- */
+/* ========================================== */
+
+/* 1. Контейнер вкладок (капсула переключения) */
+.notify-tabs {
+    background: var(--bg-secondary, #F1F5F9) !important;
+    border: 1px solid var(--border-color, rgba(0,0,0,0.05)) !important;
+}
+
+/* 2. Неактивные вкладки */
+.notify-tab {
+    color: var(--text-muted, #64748B) !important;
+    background: transparent !important;
+}
+.notify-tab:hover {
+    color: var(--text-color, #1E293B) !important;
+}
+
+/* 3. Активная вкладка («кирпичик») — подстраивается под тему */
+.notify-tab.active {
+    background: var(--card-bg, #FFFFFF) !important;
+    color: var(--text-color, #0F172A) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 4. Кнопка "Прочитать все" (двойная галочка) рядом с вкладками */
+#markAllReadBtn {
+    color: var(--text-muted, #64748B) !important;
+}
+#markAllReadBtn:hover {
+    background: var(--bg-secondary, rgba(255,255,255,0.1)) !important;
+    color: #10B981 !important;
+}
