@@ -517,20 +517,16 @@ window.extractedFileText = ""; // Глобальная переменная дл
 
 async function handleSelectedFile(file) {
     const fileInfo = document.getElementById('fileInfo');
-    const saveBtn = document.getElementById('saveBtn');
-    const savePdfBtn = document.getElementById('savePdfBtn');
-    const plagiatBtn = document.getElementById('plagiatResultBtn');
-    const plagiatToggle = document.getElementById('plagiatToggleInput');
     const pdfStage = document.getElementById('pdfRenderStage');
+    const saveMenuWrap = document.getElementById('fileSaveMenuWrap'); // Наше новое меню
 
-    if (!fileInfo || !saveBtn || !savePdfBtn || !pdfStage) return;
+    if (!fileInfo || !pdfStage) return;
 
-    saveBtn.style.display = 'none';
-    savePdfBtn.style.display = 'none';
-    if (plagiatBtn) plagiatBtn.style.display = 'none';
+    // Прячем меню перед новой обработкой
+    if (saveMenuWrap) saveMenuWrap.style.display = 'none';
     
     processedBlob = null;
-    window.extractedFileText = ""; // Очищаем перед новым файлом
+    window.extractedFileText = ""; 
     pdfStage.innerHTML = "";
 
     const dotIndex = file.name.lastIndexOf('.');
@@ -645,12 +641,69 @@ async function handleSelectedFile(file) {
 
         // ... (код конвертации файла) ...
         
+        async function handleSelectedFile(file) {
+    const fileInfo = document.getElementById('fileInfo');
+    const pdfStage = document.getElementById('pdfRenderStage');
+    const saveMenuWrap = document.getElementById('fileSaveMenuWrap'); // Наше новое меню
+
+    if (!fileInfo || !pdfStage) return;
+
+    // Прячем меню перед новой обработкой
+    if (saveMenuWrap) saveMenuWrap.style.display = 'none';
+    
+    processedBlob = null;
+    window.extractedFileText = ""; 
+    pdfStage.innerHTML = "";
+
+    const dotIndex = file.name.lastIndexOf('.');
+    const baseName = (dotIndex !== -1) ? file.name.substring(0, dotIndex) : file.name;
+    processedOutName = (dotIndex !== -1) ? baseName + "_yangi" + file.name.substring(dotIndex) : "yangi_" + file.name;
+    processedPdfName = baseName + "_yangi.pdf";
+
+    const ext = file.name.split('.').pop().toLowerCase();
+    fileInfo.style.color = "#3B82F6";
+    fileInfo.innerText = "Konvertatsiya qilinmoqda: " + file.name + "...";
+
+    try {
+        // ... (Здесь остается ВЕСЬ ТВОЙ КОД обработки txt, docx, xlsx, pptx и картинок. НЕ МЕНЯЙ ЕГО!) ...
+        // ...
+        // ... в самом конце блока try (после `await prepareOfficePdfStage...`), ЗАМЕНИ старый код на этот:
+
         fileInfo.style.color = "#10B981";
         fileInfo.innerText = "Tayyor: " + processedOutName;
-        saveBtn.style.display = 'inline-flex';
-        savePdfBtn.style.display = 'inline-flex';
+        
+        // Показываем наше новое выпадающее меню
+        if (saveMenuWrap) {
+            saveMenuWrap.style.display = 'inline-flex';
+            
+            // Динамически меняем бейджик расширения (цвет и текст)
+            const extBadge = document.getElementById('saveOriginalExt');
+            const iconBadge = document.getElementById('saveOriginalBadge');
+            
+            if (extBadge && iconBadge) {
+                extBadge.textContent = "." + ext.toUpperCase();
+                
+                if (ext === 'docx') {
+                    extBadge.style.background = "#0284C7"; // Синий Word
+                    iconBadge.style.background = "#E0F2FE";
+                    iconBadge.style.color = "#0284C7";
+                } else if (ext === 'xlsx') {
+                    extBadge.style.background = "#10B981"; // Зеленый Excel
+                    iconBadge.style.background = "#ECFDF5";
+                    iconBadge.style.color = "#10B981";
+                } else if (ext === 'pptx') {
+                    extBadge.style.background = "#EA580C"; // Оранжевый PowerPoint
+                    iconBadge.style.background = "#FFEDD5";
+                    iconBadge.style.color = "#EA580C";
+                } else if (ext === 'txt') {
+                    extBadge.style.background = "#7C3AED"; // Фиолетовый Текст
+                    iconBadge.style.background = "#F3E8FF";
+                    iconBadge.style.color = "#7C3AED";
+                }
+            }
+        }
 
-        // [ВСТАВИТЬ СЮДА]: Отправка уведомления о файле
+        // Отправка системного уведомления
         let fileBtnClass = "n-btn-neutral";
         if (ext === 'docx') fileBtnClass = "n-btn-docx";
         else if (ext === 'xlsx') fileBtnClass = "n-btn-xlsx";
@@ -664,22 +717,10 @@ async function handleSelectedFile(file) {
             iconBg: '#E0F2FE', iconColor: '#0284C7',
             iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
             actions: [
-                { label: 'Faylni saqlash', colorClass: fileBtnClass, onClick: 'downloadFile()' },
-                { label: 'PDF saqlash', colorClass: 'n-btn-pdf', onClick: 'downloadPdfFile()' }
+                { label: 'Faylni saqlaş', colorClass: fileBtnClass, onClick: 'downloadFile()' },
+                { label: 'PDF saqlaş', colorClass: 'n-btn-pdf', onClick: 'downloadPdfFile()' }
             ]
         });
-        
-        // НОВОЕ: Показываем кнопку конспекта
-        const summaryBtn = document.getElementById('summaryResultBtn');
-        if (summaryBtn) summaryBtn.style.display = 'inline-flex';
-
-// ---> ПРОВЕРЬТЕ ЭТИ ДВЕ СТРОКИ <---
-        const opponentBtn = document.getElementById('opponentBtn');
-        if (opponentBtn) opponentBtn.style.display = 'inline-flex';
-        
-        if (plagiatToggle && plagiatToggle.checked && plagiatBtn) {
-            plagiatBtn.style.display = 'inline-flex';
-        }
 
     } catch (err) {
         fileInfo.style.color = "#E11D48";
@@ -10610,5 +10651,48 @@ document.addEventListener('change', function(e) {
                 oshaBtn.style.display = 'inline-flex';
             }
         }, 1500); // Ждем завершения конвертации
+    }
+});
+
+
+// ==========================================
+// === УПРАВЛЕНИЕ МЕНЮ СОХРАНЕНИЯ ФАЙЛА ===
+// ==========================================
+window.toggleFileSaveMenu = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    const wrap = document.getElementById("fileSaveMenuWrap");
+    if (wrap) {
+        const isOpen = wrap.classList.toggle("open");
+        
+        // Для мобильной версии (если у нас подключен overlay)
+        if (typeof toggleMobileMenuOverlay === 'function') {
+            toggleMobileMenuOverlay(isOpen);
+        }
+    }
+};
+
+window.closeFileSaveMenu = function() {
+    const wrap = document.getElementById("fileSaveMenuWrap");
+    if (wrap) wrap.classList.remove("open");
+    if (typeof toggleMobileMenuOverlay === 'function') {
+        toggleMobileMenuOverlay(false);
+    }
+};
+
+// Закрываем меню при клике в пустое место
+document.addEventListener("click", (e) => {
+    const wrap = document.getElementById("fileSaveMenuWrap");
+    if (wrap && !wrap.contains(e.target)) {
+        closeFileSaveMenu();
+    }
+});
+
+// Закрываем меню по клавише ESC
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        closeFileSaveMenu();
     }
 });
