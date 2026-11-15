@@ -4994,13 +4994,14 @@ document.addEventListener('DOMContentLoaded', () => {
     selectNote(activeNoteId);
 });
 
-// === ИНТЕГРАЦИЯ YOUTUBE ПЛЕЕРА И ИСТОРИЯ ПРОСЛУШИВАНИЙ ===
+// === ИНТЕГРАЦИЯ YOUTUBE ПЛЕЕРА И ПЛЕЙЛИСТА (QUEUE + DRAG&DROP) ===
 
 let isCustomMusicMode = false;
 let ytPlayer = null;
 let isYtPlaying = false;
 let ytProgressInterval = null;
-const MUSIC_HISTORY_KEY = "ulh_music_history";
+const MUSIC_PLAYLIST_KEY = "ulh_music_playlist_v2";
+let currentYtTrackUrl = ""; // Отслеживает, какой трек сейчас играет
 
 // Устанавливаем режим контроллеров (AI = 100% громкость, YT = 70/30 с таймлайном)
 function setPlayerUI_Mode(mode) {
@@ -5056,27 +5057,17 @@ window.togglePlaybackHandler = function(event) {
     }
     
     if (isCustomMusicMode && ytPlayer) {
-        // Логика для YouTube
-        if (isYtPlaying) {
-            ytPlayer.pauseVideo();
-        } else {
-            ytPlayer.playVideo();
-        }
+        if (isYtPlaying) ytPlayer.pauseVideo();
+        else ytPlayer.playVideo();
     } else {
-        // ИСПРАВЛЕНИЕ: Логика для AI-генератора эмбиента
         if (typeof ambientIsPlaying !== 'undefined') {
-            if (ambientIsPlaying) {
-                pauseAmbientMusic();
-            } else {
-                startAmbientMusic();
-            }
+            if (ambientIsPlaying) pauseAmbientMusic();
+            else startAmbientMusic();
         }
     }
 };
 
 // --- ЛОГИКА ПЛАВАЮЩЕГО ОКНА ВИДЕО И РЕЖИМА КИНОТЕАТРА ---
-
-// Включение / выключение режима кинотеатра
 window.toggleCinemaMode = function(event) {
     if (event) {
         event.stopPropagation();
@@ -5090,7 +5081,6 @@ window.toggleCinemaMode = function(event) {
     }
 };
 
-// Открываем окно с видео
 window.openYtVideoModal = function() {
     const modal = document.getElementById("ytFloatingModal");
     const dropdown = document.getElementById("navMusicWrap");
@@ -5110,14 +5100,12 @@ window.openYtVideoModal = function() {
     }
 };
 
-// Закрываем окно с видео (прячем его за экран) И ВЫКЛЮЧАЕМ СВЕТ
 window.closeYtVideoModal = function() {
     const modal = document.getElementById("ytFloatingModal");
     if (modal) {
         modal.classList.add("hidden-player");
     }
     
-    // Плавное отключение режима кинотеатра, если он был включен
     const overlay = document.getElementById("cinemaOverlay");
     const btn = document.getElementById("cinemaToggleBtn");
     if (overlay && overlay.classList.contains("active")) {
@@ -5128,7 +5116,6 @@ window.closeYtVideoModal = function() {
     }
 };
 
-// Скрипт перетаскивания (Drag & Drop) модального окна за шапку
 (function initDraggableModal() {
     const modal = document.getElementById("ytFloatingModal");
     const header = document.getElementById("ytModalHeader");
@@ -5140,16 +5127,14 @@ window.closeYtVideoModal = function() {
 
     header.addEventListener("mousedown", (e) => {
         isDragging = true;
-        // Вычисляем смещение мыши относительно левого верхнего угла модалки
         const rect = modal.getBoundingClientRect();
         offsetX = e.clientX - rect.left;
         offsetY = e.clientY - rect.top;
-        modal.style.right = "auto"; // Отключаем привязку к правому краю
+        modal.style.right = "auto"; 
     });
 
     document.addEventListener("mousemove", (e) => {
         if (!isDragging) return;
-        // Двигаем окно за мышью
         modal.style.left = (e.clientX - offsetX) + "px";
         modal.style.top = (e.clientY - offsetY) + "px";
     });
@@ -5159,10 +5144,10 @@ window.closeYtVideoModal = function() {
     });
 })();
 
-// --- ЗАГРУЗКА ВИДЕО ---
-window.loadCustomYoutube = function(urlFromHistory = null) {
+// --- ОСНОВНАЯ ЛОГИКА ДОБАВЛЕНИЯ И ЗАПУСКА ТРЕКОВ ---
+window.loadCustomYoutube = async function(urlFromList = null) {
     const inputEl = document.getElementById("customMusicUrl");
-    let rawUrl = urlFromHistory || (inputEl ? inputEl.value.trim() : "");
+    let rawUrl = urlFromList || (inputEl ? inputEl.value.trim() : "");
     if (!rawUrl) return;
 
     const videoId = getYoutubeId(rawUrl);
@@ -5171,87 +5156,133 @@ window.loadCustomYoutube = function(urlFromHistory = null) {
         return;
     }
 
+    if (inputEl && !urlFromList) {
+        inputEl.value = "Qidirilmoqda...";
+        inputEl.disabled = true;
+    }
+
+    // 1. Если трек добавляется ВРУЧНУЮ через форму
+    if (!urlFromList) {
+        try {
+            const res = await fetch(`https://noembed.com/embed?dataType=json&url=https://www.youtube.com/watch?v=${videoId}`);
+            const data = await res.json();
+            let title = data.title || "Noma'lum trek";
+            let author = data.author_name || "YouTube";
+            
+            addTrackToPlaylist(rawUrl, title, author); 
+            
+            if (inputEl) { inputEl.value = ""; inputEl.disabled = false; inputEl.focus(); }
+            if (!isCustomMusicMode) playPlaylistItem(rawUrl, title, author);
+        } catch(e) {
+            addTrackToPlaylist(rawUrl, "Yangi trek", "YouTube");
+            if (inputEl) { inputEl.value = ""; inputEl.disabled = false; }
+            if (!isCustomMusicMode) playPlaylistItem(rawUrl, "Yangi trek", "YouTube");
+        }
+    } 
+    // 2. Если кликнули по треку из плейлиста
+    else {
+        playPlaylistItem(rawUrl);
+    }
+};
+
+function playPlaylistItem(url, title = "Yuklanmoqda...", author = "YouTube") {
+    const videoId = getYoutubeId(url);
+    if (!videoId) return;
+
+    currentYtTrackUrl = url;
     if (typeof ambientIsPlaying !== 'undefined' && ambientIsPlaying) {
         pauseAmbientMusic();
     }
 
     isCustomMusicMode = true;
-
     document.getElementById("musicCustomInputRow").style.display = "none";
     document.getElementById("musicProgressRow").style.display = "flex"; 
     document.getElementById("backToAiMusicBtn").style.display = "inline-flex";
     
     setPlayerUI_Mode('yt');
-
-    document.getElementById("musicTitleText").textContent = "Yuklanmoqda...";
-    document.getElementById("musicSubtitleText").textContent = "YouTube...";
-    document.getElementById("ytModalFloatTitle").textContent = "Yuklanmoqda...";
     
+    const pl = JSON.parse(localStorage.getItem(MUSIC_PLAYLIST_KEY)) || [];
+    const existing = pl.find(t => getYoutubeId(t.url) === videoId);
+    if (existing) { title = existing.title; author = existing.author; }
+
+    document.getElementById("musicTitleText").textContent = truncateText(title, 40);
+    document.getElementById("musicSubtitleText").textContent = truncateText(author, 40);
+    const floatTitle = document.getElementById("ytModalFloatTitle");
+    if(floatTitle) floatTitle.textContent = truncateText(title, 40);
+
     if (ytPlayer && typeof ytPlayer.loadVideoById === "function") {
         ytPlayer.loadVideoById(videoId);
     } else {
         ytPlayer = new YT.Player('yt-player-container', {
-            // Размеры задаст CSS через aspect-ratio (100% ширины модалки)
             height: '100%',
             width: '100%',
             videoId: videoId,
-            playerVars: { 'autoplay': 1, 'controls': 1 }, // Включаем controls, чтобы видео можно было мотать в окне
+            playerVars: { 'autoplay': 1, 'controls': 1 },
             events: {
                 'onReady': onPlayerReady,
                 'onStateChange': onPlayerStateChange
             }
         });
     }
-
-    if (!urlFromHistory && inputEl) {
-        inputEl.value = ""; 
-    }
-};
+    renderMusicHistory(); 
+}
 
 function onPlayerReady(event) {
     if (typeof ambientVolume !== 'undefined') {
         event.target.setVolume(Math.round(ambientVolume * 100));
     }
     event.target.playVideo();
-    fetchYtMetadata();
 }
 
 function onPlayerStateChange(event) {
     const coverBtn = document.getElementById("musicPlayPauseBtn");
     const navBtn = document.getElementById("musicToggleBtn");
-    const dockBtn = document.getElementById("dockMainBtn"); // <--- Находим кнопку Ö
+    const dockBtn = document.getElementById("dockMainBtn");
     
     if (event.data == YT.PlayerState.PLAYING) {
         isYtPlaying = true;
-        coverBtn.classList.add("playing");
-        navBtn.classList.add("is-playing");
-        
-        // Включаем светомузыку
+        if(coverBtn) coverBtn.classList.add("playing");
+        if(navBtn) navBtn.classList.add("is-playing");
         if (dockBtn) {
             dockBtn.classList.add("music-active");
             dockBtn.title = "Musiqani töxtatiş";
             dockBtn.setAttribute('data-ulh-title', "Musiqani töxtatiş");
         }
-        
         startProgressInterval();
-        fetchYtMetadata();
+        
+        if (document.getElementById("musicTitleText").textContent === "Yangi trek") {
+            fetchYtMetadataAndUpdate();
+        }
+
+    } else if (event.data == YT.PlayerState.ENDED) {
+        playNextTrack();
     } else {
         isYtPlaying = false;
-        coverBtn.classList.remove("playing");
-        navBtn.classList.remove("is-playing");
-        
-        // Ставим светомузыку на паузу
+        if(coverBtn) coverBtn.classList.remove("playing");
+        if(navBtn) navBtn.classList.remove("is-playing");
         if (dockBtn) {
             dockBtn.classList.remove("music-active");
             dockBtn.title = "Musiqani davom ettiriş";
             dockBtn.setAttribute('data-ulh-title', "Musiqani davom ettiriş");
         }
-        
         clearInterval(ytProgressInterval);
     }
 }
 
-function fetchYtMetadata() {
+function playNextTrack() {
+    let playlist = JSON.parse(localStorage.getItem(MUSIC_PLAYLIST_KEY)) || [];
+    if (playlist.length === 0) return;
+    
+    let currentIndex = playlist.findIndex(item => getYoutubeId(item.url) === getYoutubeId(currentYtTrackUrl));
+    if (currentIndex !== -1 && currentIndex < playlist.length - 1) {
+        let nextTrack = playlist[currentIndex + 1];
+        playPlaylistItem(nextTrack.url, nextTrack.title, nextTrack.author);
+    } else {
+        switchToAiMusic();
+    }
+}
+
+function fetchYtMetadataAndUpdate() {
     if (!ytPlayer || typeof ytPlayer.getVideoData !== 'function') return;
     const data = ytPlayer.getVideoData();
     if (data && data.title) {
@@ -5260,9 +5291,15 @@ function fetchYtMetadata() {
         
         document.getElementById("musicTitleText").textContent = title;
         document.getElementById("musicSubtitleText").textContent = author;
-        document.getElementById("ytModalFloatTitle").textContent = title; // Заголовок в плавающем окне
         
-        saveToMusicHistory(ytPlayer.getVideoUrl(), title, author);
+        let playlist = JSON.parse(localStorage.getItem(MUSIC_PLAYLIST_KEY)) || [];
+        let trackIndex = playlist.findIndex(item => getYoutubeId(item.url) === getYoutubeId(currentYtTrackUrl));
+        if (trackIndex !== -1) {
+            playlist[trackIndex].title = title;
+            playlist[trackIndex].author = author;
+            localStorage.setItem(MUSIC_PLAYLIST_KEY, JSON.stringify(playlist));
+            renderMusicHistory();
+        }
     }
 }
 
@@ -5284,39 +5321,38 @@ function startProgressInterval() {
     }, 1000);
 }
 
-document.getElementById("musicSeekbar").addEventListener("input", function(e) {
-    if (isCustomMusicMode && ytPlayer && typeof ytPlayer.getDuration === 'function') {
-        const duration = ytPlayer.getDuration();
-        const seekToTime = (e.target.value / 100) * duration;
-        ytPlayer.seekTo(seekToTime, true);
-        document.getElementById("musicTimeDisplay").textContent = `${formatTime(seekToTime)} / ${formatTime(duration)}`;
-    }
-});
+const sb = document.getElementById("musicSeekbar");
+if(sb) {
+    sb.addEventListener("input", function(e) {
+        if (isCustomMusicMode && ytPlayer && typeof ytPlayer.getDuration === 'function') {
+            const duration = ytPlayer.getDuration();
+            const seekToTime = (e.target.value / 100) * duration;
+            ytPlayer.seekTo(seekToTime, true);
+            document.getElementById("musicTimeDisplay").textContent = `${formatTime(seekToTime)} / ${formatTime(duration)}`;
+        }
+    });
+}
 
 // Возврат к оригинальной музыке концентрации
 window.switchToAiMusic = function() {
-    if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
-        ytPlayer.pauseVideo();
-    }
+    if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
     isCustomMusicMode = false;
     isYtPlaying = false;
+    currentYtTrackUrl = "";
     clearInterval(ytProgressInterval);
 
-    // Прячем видео окно и плавно выключаем свет, если он был включен
-    closeYtVideoModal();
+    if (typeof closeYtVideoModal === "function") closeYtVideoModal();
 
     document.getElementById("musicCustomInputRow").style.display = "flex";
     document.getElementById("musicProgressRow").style.display = "none";
     document.getElementById("backToAiMusicBtn").style.display = "none";
-    
     setPlayerUI_Mode('ai'); 
     
     document.getElementById("musicTitleText").textContent = "Konsentratsiya uçun musiqa";
     document.getElementById("musicSubtitleText").textContent = "AI Generated Music by LANIGIRO";
     
-    if (typeof startAmbientMusic === "function") {
-        startAmbientMusic();
-    }
+    renderMusicHistory(); 
+    if (typeof startAmbientMusic === "function") startAmbientMusic();
 };
 
 if (typeof setAmbientVolumeRatio === "function") {
@@ -5329,53 +5365,108 @@ if (typeof setAmbientVolumeRatio === "function") {
     };
 }
 
-// --- ИСТОРИЯ ПРОСЛУШИВАНИЙ ---
-function saveToMusicHistory(url, title, author) {
+// --- УПРАВЛЕНИЕ ПЛЕЙЛИСТОМ (ДОБАВЛЕНИЕ, УДАЛЕНИЕ, DRAG & DROP) ---
+function addTrackToPlaylist(url, title, author) {
     const cleanUrl = url.split('&')[0]; 
-    let history = JSON.parse(localStorage.getItem(MUSIC_HISTORY_KEY)) || [];
+    let playlist = JSON.parse(localStorage.getItem(MUSIC_PLAYLIST_KEY)) || [];
     
-    history = history.filter(item => getYoutubeId(item.url) !== getYoutubeId(cleanUrl));
-    history.unshift({ url: cleanUrl, title, author });
-    if (history.length > 3) history = history.slice(0, 3);
-    
-    localStorage.setItem(MUSIC_HISTORY_KEY, JSON.stringify(history));
-    renderMusicHistory();
-addNotification({
-        type: 'yt',
-        title: 'YouTube: Yangi trek',
-        desc: title,
-        iconBg: '#FEE2E2', iconColor: '#EF4444',
-        iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>`,
-        actions: [{ label: 'Tinglaş', colorClass: 'n-btn-play', onClick: `loadCustomYoutube('${cleanUrl}')` }]
-    });
-    
+    if (!playlist.find(item => getYoutubeId(item.url) === getYoutubeId(cleanUrl))) {
+        playlist.push({ url: cleanUrl, title, author }); 
+        localStorage.setItem(MUSIC_PLAYLIST_KEY, JSON.stringify(playlist));
+        renderMusicHistory();
+
+        if (typeof addNotification === "function") {
+            addNotification({
+                type: 'yt', title: 'Pleylistga qöşildi', desc: title,
+                iconBg: '#FEE2E2', iconColor: '#EF4444',
+                iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>`,
+                actions: [{ label: 'Tinglaş', colorClass: 'n-btn-play', onClick: `loadCustomYoutube('${cleanUrl}')` }]
+            });
+        }
+    }
 }
+
+window.removePlaylistTrack = function(event, index) {
+    event.preventDefault(); event.stopPropagation();
+    let playlist = JSON.parse(localStorage.getItem(MUSIC_PLAYLIST_KEY)) || [];
+    playlist.splice(index, 1); 
+    localStorage.setItem(MUSIC_PLAYLIST_KEY, JSON.stringify(playlist));
+    renderMusicHistory();
+};
+
+let draggedPlaylistIndex = null;
 
 function renderMusicHistory() {
     const list = document.getElementById("musicHistoryList");
     if (!list) return;
     
-    let history = JSON.parse(localStorage.getItem(MUSIC_HISTORY_KEY)) || [];
+    const headerTitle = document.querySelector(".music-history-header span");
+    if (headerTitle && headerTitle.textContent !== "PLEYLIST") {
+        headerTitle.textContent = "PLEYLIST";
+    }
+
+    let playlist = JSON.parse(localStorage.getItem(MUSIC_PLAYLIST_KEY)) || [];
     list.innerHTML = "";
     
-    if (history.length === 0) {
-        list.innerHTML = `<div style="text-align: center; color: #94A3B8; font-size: 11.5px; padding: 10px 0;">Hozirça böş</div>`;
+    if (playlist.length === 0) {
+        list.innerHTML = `<div style="text-align: center; color: #94A3B8; font-size: 11.5px; padding: 10px 0;">Pleylist böş</div>`;
         return;
     }
     
-    history.forEach(item => {
+    playlist.forEach((item, index) => {
+        const isPlaying = isCustomMusicMode && (getYoutubeId(currentYtTrackUrl) === getYoutubeId(item.url));
+        
         const itemEl = document.createElement("div");
-        itemEl.className = "music-history-item";
-        itemEl.onclick = () => loadCustomYoutube(item.url);
+        itemEl.className = `music-history-item ${isPlaying ? 'active-track' : ''}`;
+        itemEl.draggable = true; 
+        itemEl.dataset.index = index;
+
         itemEl.innerHTML = `
-            <div class="music-history-item-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            <div class="music-drag-handle" title="Tepaga/pastga suriş">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
             </div>
-            <div class="music-history-item-text">
+            <div class="music-history-item-icon" style="cursor: pointer;" onclick="loadCustomYoutube('${item.url}')">
+                ${isPlaying && isYtPlaying ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>` : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`}
+            </div>
+            <div class="music-history-item-text" style="cursor: pointer;" onclick="loadCustomYoutube('${item.url}')">
                 <div class="music-history-item-title">${item.title}</div>
                 <div class="music-history-item-sub">${item.author}</div>
             </div>
+            <div class="music-del-btn" onclick="removePlaylistTrack(event, ${index})" title="Öçiriş">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
         `;
+        
+        itemEl.addEventListener('dragstart', function(e) {
+            draggedPlaylistIndex = index;
+            e.dataTransfer.effectAllowed = "move";
+            setTimeout(() => this.classList.add('dragging'), 0);
+        });
+        itemEl.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+        itemEl.addEventListener('dragleave', function(e) {
+            this.classList.remove('drag-over');
+        });
+        itemEl.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            const targetIndex = index;
+            if (draggedPlaylistIndex === null || draggedPlaylistIndex === targetIndex) return;
+
+            let hist = JSON.parse(localStorage.getItem(MUSIC_PLAYLIST_KEY)) || [];
+            const draggedItem = hist.splice(draggedPlaylistIndex, 1)[0];
+            hist.splice(targetIndex, 0, draggedItem);
+            localStorage.setItem(MUSIC_PLAYLIST_KEY, JSON.stringify(hist));
+            
+            renderMusicHistory();
+        });
+        itemEl.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+            draggedPlaylistIndex = null;
+        });
+
         list.appendChild(itemEl);
     });
 }
@@ -5383,12 +5474,16 @@ function renderMusicHistory() {
 window.toggleMusicHistoryConfirm = function(event) {
     if (event) { event.preventDefault(); event.stopPropagation(); }
     const confirmBox = document.getElementById("musicHistoryConfirm");
-    if (confirmBox) confirmBox.classList.toggle("show");
+    if (confirmBox) {
+        confirmBox.classList.toggle("show");
+        const title = confirmBox.querySelector(".music-confirm-title");
+        if (title) title.textContent = "Butun pleylistni öçirmoqçimisiz?";
+    }
 };
 
 window.clearMusicHistory = function(event) {
     if (event) { event.preventDefault(); event.stopPropagation(); }
-    localStorage.removeItem(MUSIC_HISTORY_KEY);
+    localStorage.removeItem(MUSIC_PLAYLIST_KEY);
     renderMusicHistory();
     const confirmBox = document.getElementById("musicHistoryConfirm");
     if (confirmBox) confirmBox.classList.remove("show");
@@ -5402,7 +5497,6 @@ document.addEventListener("click", (e) => {
     }
 });
 
-// Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
     setPlayerUI_Mode('ai');
     renderMusicHistory();
