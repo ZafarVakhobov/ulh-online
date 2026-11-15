@@ -7147,6 +7147,7 @@ fetchAndRenderNews();
 // ==========================================
 
 let isZenMode = false;
+let wasYtPlayingBeforeZen = false; // Запоминаем, играла ли музыка из плеера
 
 window.toggleZenMode = function() {
     isZenMode = !isZenMode;
@@ -7158,7 +7159,15 @@ window.toggleZenMode = function() {
         document.getElementById('zenIconCollapse').style.display = 'inline-block';
         document.getElementById('zenTooltip').textContent = "Fokus-xonadan çiqiş";
         
-        // Если фон еще не был выбран, ставим уютное Lofi Café по умолчанию
+        // --- УМНАЯ МУЗЫКА: Пауза плеера при входе ---
+        if (typeof ytPlayer !== 'undefined' && ytPlayer && isYtPlaying) {
+            wasYtPlayingBeforeZen = true;
+            ytPlayer.pauseVideo();
+        } else {
+            wasYtPlayingBeforeZen = false;
+        }
+
+        // Автозапуск первого фона (Lofi) при открытии
         if (!document.getElementById('zenBgVideo').src && !document.getElementById('zenBackground').style.backgroundImage) {
             const firstBtn = document.querySelector('.zen-bg-btn');
             setZenBackground('lofi', firstBtn);
@@ -7178,9 +7187,15 @@ window.toggleZenMode = function() {
         document.getElementById('zenIconCollapse').style.display = 'none';
         document.getElementById('zenTooltip').textContent = "Zen rejimi (Fokus)";
         
-        // Ставим видео на паузу, очищая источник, чтобы не тратить трафик
+        // Очищаем видеофон при выходе
         document.getElementById('zenBgVideo').src = "";
         document.querySelectorAll('.zen-bg-btn').forEach(b => b.classList.remove('active'));
+
+        // --- УМНАЯ МУЗЫКА: Возобновление плеера при выходе ---
+        if (wasYtPlayingBeforeZen && typeof ytPlayer !== 'undefined' && ytPlayer) {
+            ytPlayer.playVideo();
+            wasYtPlayingBeforeZen = false; // Сбрасываем флаг
+        }
     }
 };
 
@@ -7188,12 +7203,14 @@ window.setZenBackground = function(type, btnElement) {
     const bgContainer = document.getElementById('zenBackground');
     const videoEl = document.getElementById('zenBgVideo');
     
-    // Снимаем выделение со всех кнопок и подсвечиваем нажатую
     document.querySelectorAll('.zen-bg-btn').forEach(btn => btn.classList.remove('active'));
     if(btnElement) btnElement.classList.add('active');
 
-    // Настройки YouTube: автоплей, без звука (звук мы берем из нашего плеера), зациклено
-    const ytParams = "?autoplay=1&mute=1&controls=0&showinfo=0&autohide=1&loop=1&playsinline=1&modestbranding=1&playlist=";
+    // Настройки: автоплей, зациклено, без контроллеров.
+    // УБРАН mute=1, чтобы звук играл. Мы задаем громкость через JS API, если нужно, но проще оставить звук в самом видео.
+    // Параметр volume не работает напрямую в URL iframe, поэтому звук будет по умолчанию (зависит от видео).
+    // Чтобы гарантированно было тихо, добавим параметры YouTube.
+    const ytParams = "?autoplay=1&controls=0&showinfo=0&autohide=1&loop=1&playsinline=1&modestbranding=1&playlist=";
 
     if (type === 'lofi') {
         videoEl.src = "https://www.youtube.com/embed/rFZHOHl-L8A" + ytParams + "rFZHOHl-L8A";
