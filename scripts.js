@@ -9429,30 +9429,26 @@ function updateBellIcon() {
 }
 
 // 2. Управление вкладками и рендер
-window.switchNotifyTab = function(tab) {
-    // Поддержка и старых вызовов ('all') и новых из HTML ('new')
-    if (tab === 'new') tab = 'all'; 
-    currentNotifyTab = tab;
+window.switchNotifyTab = function(tabName) {
+    currentNotifyTab = (tabName === 'read') ? 'read' : 'all';
     
-    // Обновляем активные классы у вкладок, находя их по тексту
-    const tabs = document.querySelectorAll('.notify-tab');
-    if (tabs.length > 0) {
-        tabs.forEach(t => t.classList.remove('active'));
-        tabs.forEach(t => {
-            const text = t.textContent.trim().toLowerCase();
-            if (tab === 'all' && text === 'yangi') t.classList.add('active');
-            if (tab === 'read' && text === "o'qilgan") t.classList.add('active');
-        });
-    } else {
-        // Запасной вариант, если остались старые ID
-        const allTab = document.getElementById('tabNotifyAll');
-        const readTab = document.getElementById('tabNotifyRead');
-        if(allTab) allTab.classList.toggle('active', tab === 'all');
-        if(readTab) readTab.classList.toggle('active', tab === 'read');
+    // Жестко переключаем класс active по конкретным ID
+    const tabNew = document.getElementById('tabNotifyNew');
+    const tabRead = document.getElementById('tabNotifyRead');
+    
+    if (tabNew && tabRead) {
+        if (currentNotifyTab === 'all') {
+            tabNew.classList.add('active');
+            tabRead.classList.remove('active');
+        } else {
+            tabNew.classList.remove('active');
+            tabRead.classList.add('active');
+        }
     }
     
+    // Показываем/скрываем кнопку очистки прочитанных
     const clearWrap = document.getElementById('notifyClearAllWrap');
-    if (clearWrap) clearWrap.style.display = tab === 'read' ? 'block' : 'none';
+    if (clearWrap) clearWrap.style.display = currentNotifyTab === 'read' ? 'block' : 'none';
     
     renderNotifications();
 };
