@@ -8744,3 +8744,28 @@ body.zen-mode-active .section-header .ai-icon-btn:hover,
 body.zen-mode-active #copyBtn:hover {
     background: rgba(255, 255, 255, 0.2) !important;
 }
+
+/* --- 4. ЭСТЕТИКА ИКОНОК AI-МЕНЮ В ZEN MODE --- */
+body.zen-mode-active .ai-item-icon {
+    background: transparent !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: none !important;
+}
+
+/* Принудительно красим сами SVG внутри иконок в белый */
+body.zen-mode-active .ai-item-icon svg {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+}
+
+/* Красивый эффект свечения при наведении на пункт меню */
+body.zen-mode-active .ai-menu-item:hover .ai-item-icon {
+    color: #38BDF8 !important;
+    border-color: rgba(56, 189, 248, 0.5) !important;
+    background: rgba(56, 189, 248, 0.1) !important;
+}
+body.zen-mode-active .ai-menu-item:hover .ai-item-icon svg {
+    color: #38BDF8 !important;
+    stroke: #38BDF8 !important;
+}
