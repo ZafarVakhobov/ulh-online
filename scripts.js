@@ -7156,18 +7156,17 @@ window.toggleZenMode = function() {
         body.classList.add('zen-mode-active');
         document.getElementById('zenIconExpand').style.display = 'none';
         document.getElementById('zenIconCollapse').style.display = 'inline-block';
-        document.getElementById('zenTooltip').textContent = "Fokus-xonadan chiqish";
+        document.getElementById('zenTooltip').textContent = "Fokus-xonadan çiqiş";
         
         // Если фон еще не был выбран, ставим уютное Lofi Café по умолчанию
         if (!document.getElementById('zenBgVideo').src && !document.getElementById('zenBackground').style.backgroundImage) {
-            // Ищем первую кнопку и симулируем клик для установки первого фона
             const firstBtn = document.querySelector('.zen-bg-btn');
             setZenBackground('lofi', firstBtn);
         }
         
         if (typeof addNotification === "function") {
             addNotification({
-                type: 'system', title: 'Fokus-Xona faollaşdi', 
+                type: 'system', title: 'Fokus-Xona faollashdi', 
                 desc: 'Diqqatni jamlang. Orqa fonni ekrandagi tugmalar orqali özgartirişingiz mumkin.',
                 iconBg: '#EDE9FE', iconColor: '#7C3AED',
                 iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5v14M7 5v14M22 8v8M2 8v8"/></svg>`
@@ -7206,7 +7205,6 @@ window.setZenBackground = function(type, btnElement) {
         videoEl.src = "https://www.youtube.com/embed/R68KY-dBg2M" + ytParams + "R68KY-dBg2M";
         bgContainer.style.backgroundImage = "none";
     } else if (type === 'samarkand') {
-        // Для Самарканда используем шикарное статичное фото высокого разрешения, чтобы не грузить систему
         videoEl.src = "https://www.youtube.com/embed/jxeorC_f6qw" + ytParams + "jxeorC_f6qw";
         bgContainer.style.backgroundImage = "none";
     }
