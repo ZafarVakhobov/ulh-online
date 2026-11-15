@@ -9461,6 +9461,42 @@ window.markNotificationsViewed = function() {
     renderNotifications();
 };
 
+// Функция "Прочитать все"
+window.markAllNotificationsAsRead = function() {
+    // Находим все уведомления, у которых НЕТ класса 'read' (то есть все новые)
+    const newItems = document.querySelectorAll('.notify-item:not(.read)');
+    
+    if (newItems.length === 0) return; // Если новых нет, ничего не делаем
+
+    newItems.forEach(item => {
+        // Добавляем класс 'read', который переносит их во вкладку "Прочитанные"
+        item.classList.add('read');
+        
+        // Убираем синюю точку индикатора у каждого прочитанного уведомления
+        const dot = item.querySelector('.notify-dot');
+        if (dot) dot.style.display = 'none';
+    });
+
+    // Сбрасываем общий счетчик уведомлений на колокольчике
+    const badge = document.getElementById('navNotifyBadge');
+    if (badge) {
+        badge.style.display = 'none';
+        badge.textContent = '0';
+    }
+
+    // Если сейчас открыта вкладка "Yangi", обновляем её отображение (она опустеет)
+    const activeTab = document.querySelector('.notify-tab.active');
+    if (activeTab && activeTab.textContent.trim().toLowerCase() === 'yangi') {
+        switchNotifyTab('new'); 
+    }
+    
+    // Опционально: можно показать мини-уведомление системы об успехе
+    if (typeof addNotification === "function") {
+         // Делаем тихий вызов без анимации колокольчика, просто для информирования
+         console.log("Barça bildirişnomalar öqilgan deb belgilandi.");
+    }
+};
+
 // 3. Функция отрисовки + Динамический подхват из Календаря и Канбана
 function renderNotifications() {
     const container = document.getElementById('notifyListContainer');
