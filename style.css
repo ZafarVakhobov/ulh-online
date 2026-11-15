@@ -8674,3 +8674,40 @@ body.zen-mode-active .music-subtitle, body.zen-mode-active .music-history-header
 body.zen-mode-active .zen-settings-panel { opacity: 1; visibility: visible; transform: translateY(0); }
 .zen-bg-btn { width: 44px; height: 44px; border-radius: 10px; border: 2px solid transparent; background-size: cover; background-position: center; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
 .zen-bg-btn.active { border-color: #10B981; transform: scale(1.05); }
+
+/* --- ЭСТЕТИЧЕСКИЕ ПРАВКИ ДЛЯ ZEN MODE --- */
+
+/* 1. Убираем белую рамку вокруг текстового поля (outline) */
+body.zen-mode-active textarea#editor {
+    outline: none !important;
+    border: none !important;
+}
+body.zen-mode-active textarea#editor:focus {
+    outline: none !important;
+}
+
+/* 2. Убираем белый фон у иконок внутри выпадающего меню инструментов (Asboblar) */
+body.zen-mode-active .tools-text-badge {
+    background: transparent !important;
+    color: #FFFFFF !important; /* Иконки станут белыми */
+}
+body.zen-mode-active .tools-menu-item:hover .tools-text-badge {
+    color: #38BDF8 !important; /* Легкая подсветка при наведении */
+}
+
+/* 3. Делаем фон всех кнопок в верхней панели одинаковым (исправляем кнопку копирования) */
+body.zen-mode-active .action-icon-btn,
+body.zen-mode-active .tools-icon-btn,
+body.zen-mode-active .ai-icon-btn,
+body.zen-mode-active .stats-icon-btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #FFFFFF !important;
+    box-shadow: none !important;
+}
+body.zen-mode-active .action-icon-btn:hover,
+body.zen-mode-active .tools-icon-btn:hover,
+body.zen-mode-active .ai-icon-btn:hover,
+body.zen-mode-active .stats-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+}
