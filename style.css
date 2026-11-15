@@ -9090,96 +9090,17 @@ body.zen-mode-active .ai-dropdown-wrap {
 
 
 /* ========================================== */
-/* --- 100% РАБОЧИЙ ФИКС ЦЕНТРА УВЕДОМЛЕНИЙ ДЛЯ ТЕМНОЙ ТЕМЫ --- */
+/* --- УНИВЕРСАЛЬНЫЙ ТЕМНЫЙ ФИКС ДЛЯ УВЕДОМЛЕНИЙ --- */
 /* ========================================== */
 
-/* Охватываем абсолютно все возможные варианты переключения тем на сайтах */
-html.dark-theme .notify-tabs,
-body.dark-theme .notify-tabs,
-.dark-theme .notify-tabs,
-[data-theme="dark"] .notify-tabs,
-body[data-theme="dark"] .notify-tabs {
+/* Если сайт в темной теме, принудительно перекрашиваем вкладки */
+html[data-theme="dark"] .notify-tabs, body.dark-theme .notify-tabs, .dark .notify-tabs {
     background: rgba(255, 255, 255, 0.08) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
-
-html.dark-theme .notify-tab,
-body.dark-theme .notify-tab,
-.dark-theme .notify-tab,
-[data-theme="dark"] .notify-tab,
-body[data-theme="dark"] .notify-tab {
+html[data-theme="dark"] .notify-tab, body.dark-theme .notify-tab, .dark .notify-tab {
     color: #94A3B8 !important;
-    background: transparent !important;
 }
-
-html.dark-theme .notify-tab:hover,
-body.dark-theme .notify-tab:hover,
-.dark-theme .notify-tab:hover,
-[data-theme="dark"] .notify-tab:hover,
-body[data-theme="dark"] .notify-tab:hover {
-    color: #F8FAFC !important;
-}
-
-/* Активная вкладка («кирпичик») в темной теме — становится темно-серой со светлым текстом */
-html.dark-theme .notify-tab.active,
-body.dark-theme .notify-tab.active,
-.dark-theme .notify-tab.active,
-[data-theme="dark"] .notify-tab.active,
-body[data-theme="dark"] .notify-tab.active {
+html[data-theme="dark"] .notify-tab.active, body.dark-theme .notify-tab.active, .dark .notify-tab.active {
     background: rgba(255, 255, 255, 0.15) !important;
     color: #FFFFFF !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
-}
-
-/* Иконки уведомлений в темной теме (убираем белые/яркие пятна) */
-html.dark-theme .notify-icon,
-body.dark-theme .notify-icon,
-.dark-theme .notify-icon,
-[data-theme="dark"] .notify-icon,
-body[data-theme="dark"] .notify-icon {
-    background: rgba(255, 255, 255, 0.08) !important;
-    color: #38BDF8 !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-}
-
-/* Кнопки действий внутри карточек (Fayni saqlaş, PDF saqlaş и др.) в темной теме */
-html.dark-theme .notify-btn,
-body.dark-theme .notify-btn,
-.dark-theme .notify-btn,
-[data-theme="dark"] .notify-btn,
-body[data-theme="dark"] .notify-btn {
-    background: rgba(255, 255, 255, 0.08) !important;
-    color: #E2E8F0 !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    transition: all 0.2s ease !important;
-}
-
-/* Живой ховер-эффект для кнопок в темной теме */
-html.dark-theme .notify-btn:hover,
-body.dark-theme .notify-btn:hover,
-.dark-theme .notify-btn:hover,
-[data-theme="dark"] .notify-btn:hover,
-body[data-theme="dark"] .notify-btn:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
-    border-color: rgba(255, 255, 255, 0.3) !important;
-    color: #FFFFFF !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
-    transform: translateY(-1px);
-}
-
-/* Кнопка "Прочитать все" (двойная галочка) */
-html.dark-theme #markAllReadBtn,
-body.dark-theme #markAllReadBtn,
-.dark-theme #markAllReadBtn,
-[data-theme="dark"] #markAllReadBtn,
-body[data-theme="dark"] #markAllReadBtn {
-    color: #94A3B8 !important;
-}
-html.dark-theme #markAllReadBtn:hover,
-body.dark-theme #markAllReadBtn:hover,
-.dark-theme #markAllReadBtn:hover,
-[data-theme="dark"] #markAllReadBtn:hover,
-body[data-theme="dark"] #markAllReadBtn:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: #34D399 !important;
 }
