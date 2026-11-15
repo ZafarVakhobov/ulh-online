@@ -8795,7 +8795,7 @@ body.zen-mode-active .news-ticker-wrapper {
 /* 1. Гарантированный отступ между лентой и редактором */
 body.zen-mode-active .workspace {
     align-items: flex-start !important; /* Прижимаем контент к верху */
-    padding: 50px 20px 24px 20px !important; /* 50px сверху (место под ленту + зазор) */
+    padding: 40px 20px 24px 20px !important; /* 40px сверху (место под ленту + зазор) */
 }
 body.zen-mode-active .editor-wrapper {
     height: 100% !important; /* Растягивается на оставшуюся высоту */
@@ -8808,10 +8808,10 @@ body.zen-mode-active .news-ticker-wrapper {
     top: 24px !important; /* Отступ от самого верха экрана */
     left: 50% !important;
     transform: translateX(-50%) !important;
-    z-index: 10100 !important;
+    z-index: 2000 !important;
     
     width: calc(100% - 40px) !important; /* Точно совпадает с редактором (100% минус padding workspace) */
-    max-width: 950px !important; /* Максимальная ширина точь-в-точь как у редактора */
+    max-width: 855px !important; /* Максимальная ширина точь-в-точь как у редактора */
     
     /* Принудительный темный дизайн (перебивает светлую тему сайта) */
     background: rgba(15, 23, 42, 0.85) !important;
