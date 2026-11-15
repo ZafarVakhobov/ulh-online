@@ -10751,3 +10751,41 @@ document.addEventListener("keydown", (e) => {
         closeFileSaveMenu();
     }
 });
+
+
+// Автоматический фикс темной темы для вкладок уведомлений
+function fixNotifyDarkTheme() {
+    const isDark = document.documentElement.classList.contains('dark-theme') || 
+                   document.body.classList.contains('dark-theme') || 
+                   document.documentElement.getAttribute('data-theme') === 'dark' ||
+                   document.body.getAttribute('data-theme') === 'dark' ||
+                   document.documentElement.classList.contains('dark') ||
+                   document.body.classList.contains('dark');
+
+    const tabsWrap = document.querySelector('.notify-tabs');
+    const tabs = document.querySelectorAll('.notify-tab');
+
+    if (isDark) {
+        if (tabsWrap) {
+            tabsWrap.style.background = 'rgba(255, 255, 255, 0.08)';
+            tabsWrap.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+        }
+        tabs.forEach(t => {
+            if (t.classList.contains('active')) {
+                t.style.background = '#1E293B'; // Тот самый темный "кирпичик"
+                t.style.color = '#FFFFFF';
+                t.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
+            } else {
+                t.style.background = 'transparent';
+                t.style.color = '#94A3B8';
+            }
+        });
+    }
+}
+
+// Запускаем при открытии уведомлений и при клике на вкладки
+document.addEventListener('click', (e) => {
+    if (e.target.closest('#notifyToggleBtn') || e.target.closest('.notify-tab')) {
+        setTimeout(fixNotifyDarkTheme, 10);
+    }
+});
