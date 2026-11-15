@@ -432,30 +432,47 @@
     </button>
 </div>
 
-                    <hr class="dropdown-divider" style="margin-top: 12px; margin-bottom: 8px;">
+              <hr class="dropdown-divider" style="margin-top: 12px; margin-bottom: 8px;">
 
-                    <!-- История прослушиваний -->
+                    <!-- Плейлист и добавление треков -->
                     <div class="music-history-section">
                         <div class="music-history-header">
-                            <span style="font-size: 11px; font-weight: 800; color: #64748B; text-transform: uppercase;">Tinglaş tarixi</span>
-                            <div style="position: relative;">
-                                <button type="button" class="music-history-clear-btn" id="musicHistoryClearBtn" onclick="toggleMusicHistoryConfirm(event)" title="Tarixni öçiriş">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            <span style="font-size: 11px; font-weight: 800; color: #64748B; text-transform: uppercase;">PLEYLIST</span>
+                            
+                            <!-- НОВЫЙ БЛОК: Кнопки добавления и очистки -->
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <button type="button" class="music-add-track-btn" id="musicAddTrackBtn" onclick="toggleMusicInputRow()" title="Yangi trek qöşiş">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    <span>Yangi trek qöşiş</span>
                                 </button>
-                                <div id="musicHistoryConfirm" class="music-history-confirm">
-                                    <div class="music-confirm-title" style="font-size: 12px;margin-bottom: 10px;text-align: -webkit-center;">Tarixni butunlay öçirmoqçimisiz?</div>
-                                    <div class="osha-confirm-actions">
-                                        <button type="button" id="musicConfirmYes" class="osha-confirm-btn osha-btn-danger" onclick="clearMusicHistory(event)">Ha, öçiriş!</button>
-                                        <button type="button" id="musicConfirmNo" class="osha-confirm-btn osha-btn-safe" onclick="toggleMusicHistoryConfirm(event)">Saqlaş</button>
+
+                                <div style="position: relative;">
+                                    <button type="button" class="music-history-clear-btn" id="musicHistoryClearBtn" onclick="toggleMusicHistoryConfirm(event)" title="Tarixni öçiriş">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    </button>
+                                    <div id="musicHistoryConfirm" class="music-history-confirm">
+                                        <div class="music-confirm-title" style="font-size: 12px;margin-bottom: 10px;text-align: -webkit-center;">Butun pleylistni öçirmoqçimisiz?</div>
+                                        <div class="osha-confirm-actions">
+                                            <button type="button" id="musicConfirmYes" class="osha-confirm-btn osha-btn-danger" onclick="clearMusicHistory(event)">Ha, öçiriş!</button>
+                                            <button type="button" id="musicConfirmNo" class="osha-confirm-btn osha-btn-safe" onclick="toggleMusicHistoryConfirm(event)">Saqlaş</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Скрытое поле ввода для добавления нового трека (появляется по кнопке +) -->
+                        <div class="music-custom-input-row" id="musicCustomInputRow" style="display: none; margin-top: 6px; margin-bottom: 10px;">
+                            <input type="url" id="customMusicUrl" placeholder="YouTube havolasini kiriting..." class="music-url-input">
+                            <button type="button" id="loadCustomMusicBtn" class="music-ok-btn" onclick="loadCustomYoutube()">OK</button>
+                        </div>
+
                         <div id="musicHistoryList" class="music-history-list">
                             <div style="text-align: center; color: #94A3B8; font-size: 11.5px; padding: 10px 0;">Hozirça böş</div>
                         </div>
-                    </div>
-                    <!-- ВНИМАНИЕ: Скрытый контейнер YT удален отсюда -->
+                    </div>     
+
+                    
                 </div>
             </div>
 
