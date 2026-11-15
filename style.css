@@ -9119,3 +9119,41 @@ body[data-theme="dark"] .notify-tab.active {
     color: #FFFFFF !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
+
+/* ========================================== */
+/* --- 100% РАБОЧИЙ ФИКС ВКЛАДОК В ТЕМНОЙ ТЕМЕ --- */
+/* ========================================== */
+
+/* Принудительно перекрашиваем контейнер вкладок */
+html.dark-theme .notify-tabs,
+body.dark-theme .notify-tabs,
+.dark-theme .notify-tabs,
+[data-theme="dark"] .notify-tabs,
+body[data-theme="dark"] .notify-tabs,
+.dark .notify-tabs {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Неактивные вкладки в темной теме */
+html.dark-theme .notify-tab,
+body.dark-theme .notify-tab,
+.dark-theme .notify-tab,
+[data-theme="dark"] .notify-tab,
+body[data-theme="dark"] .notify-tab,
+.dark .notify-tab {
+    color: #94A3B8 !important;
+    background: transparent !important;
+}
+
+/* АКТИВНАЯ ВКЛАДКА («КИРПИЧИК») — ЖЕСТКИЙ ТЕМНЫЙ ФОН */
+html.dark-theme .notify-tab.active,
+body.dark-theme .notify-tab.active,
+.dark-theme .notify-tab.active,
+[data-theme="dark"] .notify-tab.active,
+body[data-theme="dark"] .notify-tab.active,
+.dark .notify-tab.active {
+    background: #1E293B !important; /* Глубокий темный оттенок вместо белого */
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
