@@ -8711,3 +8711,36 @@ body.zen-mode-active .ai-icon-btn:hover,
 body.zen-mode-active .stats-icon-btn:hover {
     background: rgba(255, 255, 255, 0.2) !important;
 }
+
+/* --- ЖЕСТКИЙ СТИЛЬ ДЛЯ ВСЕХ КНОПОК РЕДАКТОРА В ZEN MODE --- */
+body.zen-mode-active .section-header .action-icon-btn,
+body.zen-mode-active .section-header .copy-icon-btn,
+body.zen-mode-active .section-header .clear-icon-btn,
+body.zen-mode-active .section-header .mic-icon-btn,
+body.zen-mode-active .section-header .archive-icon-btn,
+body.zen-mode-active .section-header .zen-icon-btn,
+body.zen-mode-active .section-header .stats-icon-btn,
+body.zen-mode-active .section-header .tools-icon-btn,
+body.zen-mode-active .section-header .ai-icon-btn,
+body.zen-mode-active #copyBtn,
+body.zen-mode-active #clearBtn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #FFFFFF !important;
+    box-shadow: none !important;
+}
+
+/* Принудительно красим SVG-иконки внутри кнопок в белый цвет */
+body.zen-mode-active .section-header svg {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+}
+
+/* Эффект наведения */
+body.zen-mode-active .section-header .action-icon-btn:hover,
+body.zen-mode-active .section-header .copy-icon-btn:hover,
+body.zen-mode-active .section-header .tools-icon-btn:hover,
+body.zen-mode-active .section-header .ai-icon-btn:hover,
+body.zen-mode-active #copyBtn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+}
