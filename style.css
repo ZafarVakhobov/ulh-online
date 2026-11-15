@@ -9090,17 +9090,32 @@ body.zen-mode-active .ai-dropdown-wrap {
 
 
 /* ========================================== */
-/* --- УНИВЕРСАЛЬНЫЙ ТЕМНЫЙ ФИКС ДЛЯ УВЕДОМЛЕНИЙ --- */
+/* --- ЖЕСТКИЙ ФИКС ВКЛАДОК В ТЕМНОЙ ТЕМЕ --- */
 /* ========================================== */
-
-/* Если сайт в темной теме, принудительно перекрашиваем вкладки */
-html[data-theme="dark"] .notify-tabs, body.dark-theme .notify-tabs, .dark .notify-tabs {
+html.dark-theme .notify-tabs,
+body.dark-theme .notify-tabs,
+.dark-theme .notify-tabs,
+[data-theme="dark"] .notify-tabs,
+body[data-theme="dark"] .notify-tabs {
     background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
-html[data-theme="dark"] .notify-tab, body.dark-theme .notify-tab, .dark .notify-tab {
+
+html.dark-theme .notify-tab,
+body.dark-theme .notify-tab,
+.dark-theme .notify-tab,
+[data-theme="dark"] .notify-tab,
+body[data-theme="dark"] .notify-tab {
     color: #94A3B8 !important;
+    background: transparent !important;
 }
-html[data-theme="dark"] .notify-tab.active, body.dark-theme .notify-tab.active, .dark .notify-tab.active {
-    background: rgba(255, 255, 255, 0.15) !important;
+
+html.dark-theme .notify-tab.active,
+body.dark-theme .notify-tab.active,
+.dark-theme .notify-tab.active,
+[data-theme="dark"] .notify-tab.active,
+body[data-theme="dark"] .notify-tab.active {
+    background: rgba(255, 255, 255, 0.18) !important;
     color: #FFFFFF !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
