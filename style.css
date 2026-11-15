@@ -8995,3 +8995,49 @@ body.zen-mode-active .clipboard-panel {
         z-index: 109999 !important;
     }
 }
+
+
+/* ========================================== */
+/* --- 14. ФИНАЛЬНЫЙ ФИКС СЛОЕВ ДЛЯ МЕНЮ РЕДАКТОРА (ТОЛЬКО МОБИЛКИ) --- */
+/* ========================================== */
+
+@media (max-width: 768px) {
+    /* 1. Вытаскиваем панель с кнопками поверх всех мутных экранов */
+    body.zen-mode-active .section-header {
+        z-index: 12800 !important; 
+    }
+
+    /* 2. Принудительно "топим" системный мутный оверлей */
+    body.zen-mode-active #mobileMenuOverlay {
+        z-index: 10500 !important; 
+    }
+
+    /* 3. Гарантируем, что сами менюшки выпадают поверх своей панели */
+    body.zen-mode-active .editor-tools-wrap {
+        z-index: 12850 !important;
+    }
+}
+
+/* ========================================== */
+/* --- 15. ФИНАЛЬНЫЙ ФИКС ДЛЯ МЕНЮ ИИ В ZEN MODE --- */
+/* ========================================== */
+
+/* 1. Выравнивание слоев безопасно для всех устройств (ПК и телефонов) */
+body.zen-mode-active .editor-ai-wrap,
+body.zen-mode-active .ai-tools-wrap,
+body.zen-mode-active .ai-dropdown-wrap {
+    z-index: 12850 !important;
+}
+
+/* 2. Отключение "стекла" и заливка сплошным цветом — СТРОГО ТОЛЬКО ДЛЯ ТЕЛЕФОНОВ! */
+@media (max-width: 768px) {
+    body.zen-mode-active .editor-ai-dropdown,
+    body.zen-mode-active .ai-dropdown {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: #0F172A !important; /* Сплошной темный цвет */
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        z-index: 12900 !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8) !important;
+    }
+}
