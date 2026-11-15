@@ -8589,9 +8589,9 @@ body.zen-mode-active #zenBackground { opacity: 1; visibility: visible; }
     width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh;
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;
 }
-.zen-bg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.35); }
+.zen-bg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); }
 
-/* Скрываем всё лишнее, кроме редактора, плеера и левого меню */
+/* Скрываем всё лишнее на странице в режиме фокуса */
 body.zen-mode-active .hero-slider,
 body.zen-mode-active .news-ticker-wrapper,
 body.zen-mode-active .converter-box,
@@ -8609,27 +8609,28 @@ body.zen-mode-active #navUserWrap,
 body.zen-mode-active .nav-tg-btn,
 body.zen-mode-active .mobile-burger-btn { display: none !important; }
 
-
-/* --- 1. ТЕКСТОВАЯ ПАНЕЛЬ (ПОЛУПРОЗРАЧНОЕ СТЕКЛО) --- */
+/* --- 1. ТЕКСТОВАЯ ПАНЕЛЬ (ПОЛУПРОЗРАЧНОЕ ТЕМНОЕ СТЕКЛО) --- */
 body.zen-mode-active { overflow: hidden; }
 body.zen-mode-active .workspace {
     position: relative; z-index: 9950; padding: 20px !important; height: 100vh !important; display: flex; justify-content: center; align-items: center; overflow: hidden;
 }
 body.zen-mode-active .editor-wrapper {
-    background: rgba(15, 23, 42, 0.45) !important; /* Мягкое полупрозрачное темное стекло */
+    background: rgba(15, 23, 42, 0.45) !important; /* Полупрозрачное стекло, видеофон просвечивает */
     backdrop-filter: blur(18px) !important; -webkit-backdrop-filter: blur(18px) !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4) !important;
     height: 85vh !important; max-width: 950px !important; width: 100% !important; margin: 0 auto !important;
     display: flex; flex-direction: column; border-radius: 20px !important; overflow: visible !important;
 }
 
-/* Верхняя панель инструментов редактора */
+/* Верхняя панель инструментов редактора (кнопки очистки, копирования, AI, Asboblar) */
 body.zen-mode-active .section-header {
     display: flex !important; background: rgba(15, 23, 42, 0.3) !important; 
     border-bottom: 1px solid rgba(255,255,255,0.1) !important; padding: 12px 20px !important;
-    border-radius: 20px 20px 0 0 !important;
+    border-radius: 20px 20px 0 0 !important; z-index: 9960;
 }
-body.zen-mode-active .action-icon-btn { color: #FFFFFF !important; background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.2) !important; }
+body.zen-mode-active .action-icon-btn, 
+body.zen-mode-active .ai-icon-btn,
+body.zen-mode-active .tools-icon-btn { color: #FFFFFF !important; background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.2) !important; }
 body.zen-mode-active .action-icon-btn:hover { background: rgba(255,255,255,0.2) !important; }
 body.zen-mode-active .autosave-badge { color: #A7F3D0 !important; }
 body.zen-mode-active .stats-number-only { color: #FFFFFF !important; }
@@ -8641,11 +8642,12 @@ body.zen-mode-active textarea#editor {
 }
 body.zen-mode-active textarea#editor::placeholder { color: rgba(255,255,255,0.5) !important; }
 
-/* Выпадающие меню инструментов в фокусе */
+/* Выпадающие меню инструментов и AI в фокус-режиме */
 body.zen-mode-active .editor-tools-dropdown,
 body.zen-mode-active .editor-ai-dropdown {
     background: rgba(15, 23, 42, 0.95) !important; backdrop-filter: blur(24px) !important;
     border: 1px solid rgba(255,255,255,0.15) !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
+    z-index: 10700 !important;
 }
 body.zen-mode-active .tools-group-label { color: #94A3B8 !important; }
 body.zen-mode-active .tools-menu-item span, body.zen-mode-active .ai-item-title { color: #F8FAFC !important; }
