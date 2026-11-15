@@ -3422,11 +3422,7 @@ body.dark-mode .custom-tooltip::after {
 .music-history-confirm.show { opacity: 1; visibility: visible; transform: translateY(0); }
 
 .music-history-list { display: flex; flex-direction: column; gap: 6px; }
-.music-history-item {
-    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
-    background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;
-    cursor: pointer; transition: all 0.15s ease;
-}
+
 .music-history-item:hover { background: #F1F5F9; border-color: #CBD5E1; transform: translateX(2px); }
 .music-history-item-icon {
     width: 26px; height: 26px; border-radius: 6px; background: #E2E8F0;
@@ -3439,6 +3435,51 @@ body.dark-mode .custom-tooltip::after {
 .music-history-item-sub {
     font-size: 10px; font-weight: 600; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+
+/* === ПЛЕЙЛИСТ (DRAG & DROP, АКТИВНЫЙ ТРЕК И УДАЛЕНИЕ) === */
+.music-history-list { display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto; padding-right: 4px; }
+.music-history-list::-webkit-scrollbar { width: 4px; }
+.music-history-list::-webkit-scrollbar-track { background: transparent; }
+.music-history-list::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 4px; }
+
+.music-history-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 4px;
+    background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;
+    transition: all 0.15s ease;
+}
+.music-history-item:hover { background: #F1F5F9; border-color: #CBD5E1; }
+
+/* Состояние активного (играющего) трека */
+.music-history-item.active-track {
+    background: #F0F9FF;
+    border-color: #BAE6FD;
+}
+.music-history-item.active-track .music-history-item-icon {
+    background: #0284C7;
+    color: #FFFFFF;
+}
+
+/* Ползунок для перетаскивания (Drag Handle) */
+.music-drag-handle {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    width: 24px; color: #CBD5E1; cursor: grab; opacity: 0.5; transition: opacity 0.2s;
+}
+.music-history-item:hover .music-drag-handle { opacity: 1; color: #94A3B8; }
+.music-history-item.dragging { opacity: 0.5; border: 1.5px dashed #0284C7; background: #FFFFFF; }
+.music-history-item.drag-over { border-top: 2.5px solid #0284C7; transform: translateY(2px); }
+
+/* Кнопка удаления одного трека */
+.music-del-btn {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 6px; background: transparent;
+    color: #94A3B8; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.15s;
+}
+.music-del-btn:hover { background: #FEE2E2; color: #E11D48; }
+
+/* Темная тема для новых элементов плейлиста */
+body.dark-mode .music-history-item.active-track { background: rgba(2, 132, 199, 0.2); border-color: rgba(2, 132, 199, 0.4); }
+body.dark-mode .music-history-list::-webkit-scrollbar-thumb { background-color: #475569; }
+body.dark-mode .music-del-btn:hover { background: rgba(225, 29, 72, 0.2); color: #FB7185; }
+body.dark-mode .music-drag-handle { color: #475569; }
 
 @media (max-width: 640px) {
     .music-dropdown-box {
