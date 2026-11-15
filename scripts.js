@@ -7180,7 +7180,7 @@ window.toggleZenMode = function() {
         
         if (typeof addNotification === "function") {
             addNotification({
-                type: 'system', title: 'Fokus-Xona faollashdi', 
+                type: 'system', title: 'Fokus-Xona faollaşdi', 
                 desc: 'Diqqatni jamlang. Orqa fonni ekrandagi tugmalar orqali özgartirişingiz mumkin.',
                 iconBg: '#EDE9FE', iconColor: '#7C3AED',
                 iconSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5v14M7 5v14M22 8v8M2 8v8"/></svg>`
