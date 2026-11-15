@@ -7276,6 +7276,8 @@ body.dark-mode .browser-loader { color: #94A3B8; }
     color: #10B981;
 }
 
+
+
 /* Правая колонка: Карточки событий */
 .calendar-right-col {
     display: flex;
@@ -7971,6 +7973,12 @@ body.dark-mode .notify-toggle-btn.has-new { background: rgba(42, 171, 238, 0.15)
 .notify-card:hover .notify-mark-btn { opacity: 1; }
 .notify-mark-btn:hover { background: #E2E8F0; color: #0284C7; }
 .notify-del-btn:hover { background: #FEE2E2; color: #EF4444; }
+
+#markAllReadBtn:hover {
+    background: var(--bg-hover);
+    color: #10B981 !important; /* При наведении иконка становится зеленой */
+}
+
 
 /* Тёмная тема */
 body.dark-mode .notify-dropdown-box { background: #0F172A; border-color: #1E293B; box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7); }
