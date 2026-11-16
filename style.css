@@ -9513,3 +9513,30 @@ body.dark-mode .grid-cell-block { background: rgba(2, 132, 199, 0.2); border-col
 body.dark-mode .grid-cell-block.workshop { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #34d399; }
 body.dark-mode .grid-cell-block.presentation { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: #c4b5fd; }
 body.dark-mode .grid-cell-block.break { background: #1e293b; border-color: #334155; color: #94a3b8; }
+
+/* ========================================== */
+/* === ТЕМНАЯ ТЕМА ДЛЯ ЛЕВОЙ ПАНЕЛИ КОНСТРУКТОРА === */
+/* ========================================== */
+
+/* Левая карточка добавления блока */
+body.dark-mode #scheduler-modal .kanban-modal-content > div > div > div:first-child {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode #scheduler-modal .kanban-modal-content h4 {
+    color: #f8fafc !important;
+}
+
+/* Блок статуса проверки времени (зеленый / предупреждение) */
+body.dark-mode #scheduler-modal .status-box {
+    background: rgba(16, 185, 129, 0.15) !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+    color: #34d399 !important;
+}
+
+body.dark-mode #scheduler-modal .status-box.warning {
+    background: rgba(234, 179, 8, 0.15) !important;
+    border-color: rgba(234, 179, 8, 0.3) !important;
+    color: #facc15 !important;
+}
