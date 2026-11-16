@@ -9201,3 +9201,27 @@ body.dark-mode .cal-day-cell.selected.birthday-event:hover {
     background: #D97706 !important;
     color: #FFFFFF !important;
 }
+
+/* ========================================== */
+/* === ПЛАШКИ В ОКНЕ АЛФАВИТА (ТЕМНАЯ ТЕМА) === */
+/* ========================================== */
+
+/* Синие плашки новых букв (Ö ö, Ğ ğ, Ş ş, Ç ç) */
+body.dark-mode .alpha-badge-new {
+    background: rgba(56, 189, 248, 0.16) !important;
+    color: #38BDF8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.28);
+}
+
+/* Зеленые плашки правил (E va Ye qoidasi, S va Ts qoidasi) */
+body.dark-mode .alpha-rule-tag {
+    background: rgba(16, 185, 129, 0.16) !important;
+    color: #34D399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+/* Делаем текст старой латиницы и кириллицы чуть контрастнее на темном фоне */
+body.dark-mode .alpha-td-old,
+body.dark-mode .alpha-td-cyr {
+    color: #94A3B8 !important;
+}
