@@ -9225,3 +9225,69 @@ body.dark-mode .alpha-td-old,
 body.dark-mode .alpha-td-cyr {
     color: #94A3B8 !important;
 }
+
+
+/* ========================================== */
+/* === ИКОНКИ В МЕНЮ СОХРАНЕНИЯ ФАЙЛА (ТЕМНАЯ ТЕМА) === */
+/* ========================================== */
+
+/* 1. Первая кнопка (Asl formatda saqlash) — адаптируется под DOCX, XLSX, PPTX, TXT */
+body.dark-mode #saveOriginalBadge[style*="2, 132, 199"],
+body.dark-mode #saveOriginalBadge[style*="#0284C7" i] {
+    background: rgba(56, 189, 248, 0.16) !important;
+    color: #38BDF8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.28);
+}
+body.dark-mode #saveOriginalBadge[style*="16, 185, 129"],
+body.dark-mode #saveOriginalBadge[style*="#10B981" i] {
+    background: rgba(52, 211, 153, 0.16) !important;
+    color: #34D399 !important;
+    border: 1px solid rgba(52, 211, 153, 0.28);
+}
+body.dark-mode #saveOriginalBadge[style*="234, 88, 12"],
+body.dark-mode #saveOriginalBadge[style*="#EA580C" i] {
+    background: rgba(251, 146, 60, 0.16) !important;
+    color: #FB923C !important;
+    border: 1px solid rgba(251, 146, 60, 0.28);
+}
+body.dark-mode #saveOriginalBadge[style*="124, 58, 237"],
+body.dark-mode #saveOriginalBadge[style*="#7C3AED" i] {
+    background: rgba(167, 139, 250, 0.16) !important;
+    color: #A78BFA !important;
+    border: 1px solid rgba(167, 139, 250, 0.28);
+}
+
+/* 2. PDF formatida saqlash (Красный) */
+body.dark-mode #fileSaveDropdown button[onclick*="downloadPdfFile"] .tools-text-badge {
+    background: rgba(248, 113, 113, 0.16) !important;
+    color: #F87171 !important;
+    border: 1px solid rgba(248, 113, 113, 0.28);
+}
+
+/* 3. Avtokonspekt (Янтарный) */
+body.dark-mode #fileSaveDropdown button[onclick*="executeFileSummary"] .tools-text-badge {
+    background: rgba(251, 191, 36, 0.16) !important;
+    color: #FBBF24 !important;
+    border: 1px solid rgba(251, 191, 36, 0.28);
+}
+
+/* 4. AI Opponent (Розовый) */
+body.dark-mode #fileSaveDropdown button[onclick*="runAiOpponent"] .tools-text-badge {
+    background: rgba(244, 114, 182, 0.16) !important;
+    color: #F472B6 !important;
+    border: 1px solid rgba(244, 114, 182, 0.28);
+}
+
+/* 5. Antiplagiat (Фиолетовый) */
+body.dark-mode #fileSaveDropdown button[onclick*="openPlagiatModal"] .tools-text-badge {
+    background: rgba(167, 139, 250, 0.16) !important;
+    color: #A78BFA !important;
+    border: 1px solid rgba(167, 139, 250, 0.28);
+}
+
+/* 6. Öşa AIga yuborish (Индиго) */
+body.dark-mode #fileSaveDropdown button[onclick*="sendFileToOsha"] .tools-text-badge {
+    background: rgba(129, 140, 248, 0.16) !important;
+    color: #818CF8 !important;
+    border: 1px solid rgba(129, 140, 248, 0.28);
+}
