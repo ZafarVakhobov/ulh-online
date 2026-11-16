@@ -10834,3 +10834,158 @@ document.addEventListener('click', (e) => {
         setTimeout(fixNotifyDarkTheme, 10);
     }
 });
+
+
+// ==========================================
+// === ЛОГИКА КОНСТРУКТОРА РАСПИСАНИЙ (ШАХМАТКА) ===
+// ==========================================
+const SCHEDULER_STORAGE_KEY = "ulh_scheduler_data_v1";
+
+let scheduleData = JSON.parse(localStorage.getItem(SCHEDULER_STORAGE_KEY)) || [
+    { id: "1", title: "Ma'ruza: Algoritmlar", meta: "Aud. 402 • Ismoilov T.", type: "lecture", slot: "09:00 - 10:30", stream: "streamA" },
+    { id: "2", title: "Vоркшоп: React & Vite", meta: "Kompyuter zali • Mentorlar", type: "workshop", slot: "10:45 - 12:15", stream: "streamB" }
+];
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('scheduler-toggle-btn');
+    const modal = document.getElementById('scheduler-modal');
+    const closeBtn = document.getElementById('scheduler-close-btn');
+
+    if (modal && closeBtn) {
+        // Если кнопка на панели дока существует, оставляем для неё слушатель
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                openSchedulerModal(e);
+            });
+        }
+        closeBtn.addEventListener('click', () => modal.classList.remove('open'));
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('open');
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('open')) modal.classList.remove('open');
+        });
+    }
+});
+
+// Глобальная функция открытия модального окна (вызывается из меню "Foydali resurslar" и с дока)
+window.openSchedulerModal = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    // Закрываем выпадающее меню "Foydali resurslar"
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    
+    const modal = document.getElementById('scheduler-modal');
+    if (modal) {
+        modal.classList.add('open');
+        if (typeof renderSchedulerGrid === 'function') {
+            renderSchedulerGrid();
+        }
+    }
+};
+
+window.addSchedulerBlock = function() {
+    const title = document.getElementById('sch-title').value.trim();
+    const meta = document.getElementById('sch-meta').value.trim();
+    const type = document.getElementById('sch-type').value;
+    const slot = document.getElementById('sch-slot').value;
+    const stream = document.getElementById('sch-stream').value;
+
+    if (!title) {
+        alert("Iltimos, dars yoki tadbir nomini kiriting!");
+        return;
+    }
+
+    // Проверка на временной конфликт в том же потоке
+    const conflict = scheduleData.find(item => item.slot === slot && item.stream === stream);
+    const statusBox = document.getElementById('schStatusBox');
+
+    if (conflict) {
+        if (statusBox) {
+            statusBox.className = "status-box warning";
+            statusBox.textContent = `⚠ Diqqat! Bu vaqtda (${slot}) uşbu oqimda allaqaçon "${conflict.title}" band!`;
+        }
+    } else {
+        if (statusBox) {
+            statusBox.className = "status-box";
+            statusBox.textContent = "✓ Vaqt böyiça ziddiyatlar aniqlanmadi.";
+        }
+    }
+
+    scheduleData.push({ id: Date.now().toString(), title, meta, type, slot, stream });
+    localStorage.setItem(SCHEDULER_STORAGE_KEY, JSON.stringify(scheduleData));
+
+    document.getElementById('sch-title').value = '';
+    document.getElementById('sch-meta').value = '';
+    renderSchedulerGrid();
+};
+
+window.deleteSchedulerBlock = function(id) {
+    scheduleData = scheduleData.filter(item => item.id !== id);
+    localStorage.setItem(SCHEDULER_STORAGE_KEY, JSON.stringify(scheduleData));
+    renderSchedulerGrid();
+};
+
+function renderSchedulerGrid() {
+    const tbody = document.getElementById('schGridBody');
+    if (!tbody) return;
+
+    const slots = ["09:00 - 10:30", "10:45 - 12:15", "13:00 - 14:30", "14:45 - 16:15"];
+    tbody.innerHTML = "";
+
+    slots.forEach(slot => {
+        const tr = document.createElement('tr');
+        
+        let html = `<td style="border: 1px solid #cbd5e1; padding: 8px; font-weight: 700; font-size: 11.5px;">${slot}</td>`;
+        
+        ['streamA', 'streamB', 'hall'].forEach(stream => {
+            const item = scheduleData.find(d => d.slot === slot && d.stream === stream);
+            if (item) {
+                html += `
+                    <td style="border: 1px solid #cbd5e1; padding: 6px; position: relative;">
+                        <div class="grid-cell-block ${item.type}">
+                            <div style="font-weight: 800; margin-bottom: 2px;">${item.title}</div>
+                            <div style="font-size: 10px; opacity: 0.85;">${item.meta}</div>
+                            <button onclick="deleteSchedulerBlock('${item.id}')" style="position: absolute; top: 4px; right: 4px; background: none; border: none; color: inherit; cursor: pointer; font-weight: bold; font-size: 13px;" title="Öçiriş">×</button>
+                        </div>
+                    </td>
+                `;
+            } else {
+                html += `<td style="border: 1px solid #cbd5e1; padding: 8px; color: #94a3b8; font-size: 12px;">—</td>`;
+            }
+        });
+
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+    });
+}
+
+// Экспорт расписания в PDF с использованием вашего встроенного jsPDF
+window.exportSchedulerToPdf = async function() {
+    const modalContent = document.querySelector('.scheduler-wrapper');
+    if (!modalContent || !window.jspdf || typeof html2canvas !== "function") return;
+
+    if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("PDF tayyorlanmoqda...");
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const canvas = await html2canvas(modalContent, { scale: 2, backgroundColor: "#FFFFFF", logging: false });
+        const pdf = new jsPDF({ orientation: "l", unit: "mm", format: "a4", compress: true });
+        
+        const pageWidthMm = 297;
+        const pageHeightMm = 210;
+        const imgData = canvas.toDataURL("image/jpeg", 0.96);
+        const renderedHeightMm = Math.min(pageHeightMm - 20, (canvas.height / canvas.width) * (pageWidthMm - 20));
+        
+        pdf.addImage(imgData, "JPEG", 10, 10, pageWidthMm - 20, renderedHeightMm, undefined, "FAST");
+        pdf.save("akademik_jadval.pdf");
+
+        if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("PDF yuklab olindi ✓");
+    } catch (e) {
+        console.error("PDF export error:", e);
+        alert("PDF eksport qilişda xatolik yuz berdi.");
+    }
+};
