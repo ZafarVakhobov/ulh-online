@@ -9140,3 +9140,31 @@ body.dark-mode .n-btn-pptx:hover { background: #EA580C !important; color: #FFFFF
 body.dark-mode .n-btn-txt:hover  { background: #7C3AED !important; color: #FFFFFF !important; }
 body.dark-mode .n-btn-pdf:hover  { background: #EF4444 !important; color: #FFFFFF !important; }
 body.dark-mode .n-btn-neutral:hover { background: #475569 !important; color: #FFFFFF !important; }
+
+/* ========================================== */
+/* === ИКОНКА КАЛЕНДАРЯ В DOCK (ТЕМНАЯ ТЕМА) === */
+/* ========================================== */
+
+/* Обычное событие сегодня (мягкий неоново-голубой полупрозрачный круг) */
+body.dark-mode .dock-icon-btn.has-event-other {
+    background: rgba(56, 189, 248, 0.16) !important;
+    color: #38BDF8 !important;
+    box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.28);
+}
+
+body.dark-mode .dock-icon-btn.has-event-other:hover {
+    background: rgba(56, 189, 248, 0.26) !important;
+    color: #7DD3FC !important;
+}
+
+/* День рождения сегодня (мягкий янтарный полупрозрачный круг) */
+body.dark-mode .dock-icon-btn.has-event-birthday {
+    background: rgba(251, 191, 36, 0.16) !important;
+    color: #FBBF24 !important;
+    box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.28);
+}
+
+body.dark-mode .dock-icon-btn.has-event-birthday:hover {
+    background: rgba(251, 191, 36, 0.26) !important;
+    color: #FDE68A !important;
+}
