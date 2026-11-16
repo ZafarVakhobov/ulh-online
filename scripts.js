@@ -10970,25 +10970,37 @@ function renderSchedulerGrid() {
     });
 }
 
-// Экспорт расписания в PDF
+// Экспорт шахматки в PDF (сохраняется только таблица и заголовок)
 window.exportSchedulerToPdf = async function() {
-    const modalContent = document.querySelector('.scheduler-wrapper');
-    if (!modalContent || !window.jspdf || typeof html2canvas !== "function") return;
+    // Выбираем только правую панель с таблицей расписания
+    const targetElement = document.querySelector('.scheduler-wrapper .schedule-grid')?.closest('.panel') || document.querySelector('.scheduler-wrapper');
+    
+    if (!targetElement || !window.jspdf || typeof html2canvas !== "function") return;
 
     if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("PDF tayyorlanmoqda...");
 
     try {
         const { jsPDF } = window.jspdf;
-        const canvas = await html2canvas(modalContent, { scale: 2, backgroundColor: "#FFFFFF", logging: false });
+        
+        // Делаем скриншот только таблицы расписания
+        const canvas = await html2canvas(targetElement, { 
+            scale: 2, 
+            backgroundColor: "#FFFFFF", 
+            logging: false 
+        });
+        
         const pdf = new jsPDF({ orientation: "l", unit: "mm", format: "a4", compress: true });
         
         const pageWidthMm = 297;
         const pageHeightMm = 210;
         const imgData = canvas.toDataURL("image/jpeg", 0.96);
-        const renderedHeightMm = Math.min(pageHeightMm - 20, (canvas.height / canvas.width) * (pageWidthMm - 20));
         
-        pdf.addImage(imgData, "JPEG", 10, 10, pageWidthMm - 20, renderedHeightMm, undefined, "FAST");
-        pdf.save("akademik_jadval.pdf");
+        const imgWidth = pageWidthMm - 20;
+        const imgHeight = (canvas.height / canvas.width) * imgWidth;
+        const renderedHeightMm = Math.min(pageHeightMm - 20, imgHeight);
+        
+        pdf.addImage(imgData, "JPEG", 10, 10, imgWidth, renderedHeightMm, undefined, "FAST");
+        pdf.save("akademik_shaxmatka.pdf");
 
         if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("PDF yuklab olindi ✓");
     } catch (e) {
