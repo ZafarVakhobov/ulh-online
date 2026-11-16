@@ -10970,20 +10970,36 @@ function renderSchedulerGrid() {
     });
 }
 
-// Экспорт шахматки в PDF (сохраняется только таблица и заголовок)
+// Экспорт расписания в PDF (только сетка, всегда в светлой теме)
 window.exportSchedulerToPdf = async function() {
-    // Выбираем только правую панель с таблицей расписания
-    const targetElement = document.querySelector('.scheduler-wrapper .schedule-grid')?.closest('.panel') || document.querySelector('.scheduler-wrapper');
-    
-    if (!targetElement || !window.jspdf || typeof html2canvas !== "function") return;
+    const modalContent = document.querySelector('.scheduler-wrapper');
+    if (!modalContent || !window.jspdf || typeof html2canvas !== "function") return;
 
     if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("PDF tayyorlanmoqda...");
 
+    // 1. Ищем левую панель и кнопку экспорта, чтобы скрыть их на фото
+    const columnsContainer = modalContent.children[1];
+    const leftPanel = columnsContainer ? columnsContainer.children[0] : null;
+    const exportBtn = modalContent.querySelector('button[onclick="exportSchedulerToPdf()"]');
+    
+    // 2. Запоминаем, была ли включена темная тема
+    const isDarkMode = document.body.classList.contains('dark-mode');
+
     try {
-        const { jsPDF } = window.jspdf;
+        // --- ПОДГОТОВКА К ЭКСПОРТУ (МАГИЯ) ---
+        // Временно отключаем темную тему, чтобы PDF всегда был светлым
+        if (isDarkMode) document.body.classList.remove('dark-mode');
         
-        // Делаем скриншот только таблицы расписания
-        const canvas = await html2canvas(targetElement, { 
+        // Прячем левую панель ввода и саму кнопку PDF
+        if (leftPanel) leftPanel.style.display = 'none';
+        if (exportBtn) exportBtn.style.display = 'none';
+
+        // Даем браузеру 50 миллисекунд, чтобы применить стили перед скриншотом
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        // --- ГЕНЕРАЦИЯ PDF ---
+        const { jsPDF } = window.jspdf;
+        const canvas = await html2canvas(modalContent, { 
             scale: 2, 
             backgroundColor: "#FFFFFF", 
             logging: false 
@@ -10995,6 +11011,7 @@ window.exportSchedulerToPdf = async function() {
         const pageHeightMm = 210;
         const imgData = canvas.toDataURL("image/jpeg", 0.96);
         
+        // Рассчитываем пропорции (с отступами)
         const imgWidth = pageWidthMm - 20;
         const imgHeight = (canvas.height / canvas.width) * imgWidth;
         const renderedHeightMm = Math.min(pageHeightMm - 20, imgHeight);
@@ -11003,8 +11020,15 @@ window.exportSchedulerToPdf = async function() {
         pdf.save("akademik_shaxmatka.pdf");
 
         if (typeof showAutosaveIndicator === "function") showAutosaveIndicator("PDF yuklab olindi ✓");
+        
     } catch (e) {
         console.error("PDF export error:", e);
         alert("PDF eksport qilişda xatolik yuz berdi.");
+    } finally {
+        // --- ВОЗВРАТ ИНТЕРФЕЙСА (ОБЯЗАТЕЛЬНО) ---
+        // В блоке finally мы гарантированно возвращаем всё на место, даже если была ошибка
+        if (isDarkMode) document.body.classList.add('dark-mode');
+        if (leftPanel) leftPanel.style.display = '';
+        if (exportBtn) exportBtn.style.display = '';
     }
 };
