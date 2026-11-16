@@ -8562,9 +8562,9 @@ function applyAccentColorToDOM(color, hoverColor, lightBgColor) {
         .dropdown-link:hover { color: ${color} !important; }
         .alpha-letter-pill:hover { background: ${color} !important; border-color: ${color} !important; }
         .alpha-copy-btn:hover { background: ${color} !important; border-color: ${color} !important; }
-        .cal-day-cell.selected { background: ${color} !important; box-shadow: 0 4px 10px rgba(${rgb}, 0.3) !important; }
-        .cal-day-cell.selected:hover { background: ${hoverColor} !important; }
-        .cal-event-dot { background: ${color} !important; }
+        .cal-day-cell.selected:not(.birthday-event) { background: ${color} !important; box-shadow: 0 4px 10px rgba(${rgb}, 0.3) !important; }
+        .cal-day-cell.selected:not(.birthday-event):hover { background: ${hoverColor} !important; }
+        .cal-event-dot:not(.birthday) { background: ${color} !important; }
         .clipboard-header svg { stroke: ${color} !important; }
     `;
 }
