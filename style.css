@@ -9540,3 +9540,19 @@ body.dark-mode #scheduler-modal .status-box.warning {
     border-color: rgba(234, 179, 8, 0.3) !important;
     color: #facc15 !important;
 }
+
+/* ========================================== */
+/* === ИСПРАВЛЕНИЕ ФОНА ЗАГОЛОВКА ШАХМАТКИ === */
+/* ========================================== */
+
+/* Убираем ошибочный прямоугольник позади заголовка */
+body.dark-mode #scheduler-modal .scheduler-wrapper > div:first-child > div:first-child {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Убеждаемся, что левая панель "Blok qo'shish" остается темной */
+body.dark-mode #scheduler-modal .scheduler-wrapper > div:nth-child(2) > div:first-child {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
