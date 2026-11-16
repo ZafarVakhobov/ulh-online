@@ -10842,8 +10842,8 @@ document.addEventListener('click', (e) => {
 const SCHEDULER_STORAGE_KEY = "ulh_scheduler_data_v1";
 
 let scheduleData = JSON.parse(localStorage.getItem(SCHEDULER_STORAGE_KEY)) || [
-    { id: "1", title: "Ma'ruza: Algoritmlar", meta: "Aud. 402 • Ismoilov T.", type: "lecture", slot: "09:00 - 10:30", stream: "streamA" },
-    { id: "2", title: "Vоркшоп: React & Vite", meta: "Kompyuter zali • Mentorlar", type: "workshop", slot: "10:45 - 12:15", stream: "streamB" }
+    { id: "1", title: "Ma'ruza: Algoritmlar", meta: "Aud. 402 • Vaxobov T.", type: "lecture", slot: "09:00 - 10:30", stream: "streamA" },
+    { id: "2", title: "Workshop: React & Vite", meta: "Kompyuter xona • Faxriy mehmon", type: "workshop", slot: "10:45 - 12:15", stream: "streamB" }
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10852,7 +10852,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.getElementById('scheduler-close-btn');
 
     if (modal && closeBtn) {
-        // Если кнопка на панели дока существует, оставляем для неё слушатель
         if (btn) {
             btn.addEventListener('click', (e) => {
                 e.preventDefault(); e.stopPropagation();
@@ -10869,13 +10868,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Глобальная функция открытия модального окна (вызывается из меню "Foydali resurslar" и с дока)
 window.openSchedulerModal = function(event) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
-    // Закрываем выпадающее меню "Foydali resurslar"
     document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
     
     const modal = document.getElementById('scheduler-modal');
@@ -10891,7 +10888,7 @@ window.addSchedulerBlock = function() {
     const title = document.getElementById('sch-title').value.trim();
     const meta = document.getElementById('sch-meta').value.trim();
     const type = document.getElementById('sch-type').value;
-    const slot = document.getElementById('sch-slot').value;
+    let slot = document.getElementById('sch-slot').value.trim();
     const stream = document.getElementById('sch-stream').value;
 
     if (!title) {
@@ -10899,8 +10896,12 @@ window.addSchedulerBlock = function() {
         return;
     }
 
+    if (!slot) {
+        slot = "Belgilanmagan";
+    }
+
     // Проверка на временной конфликт в том же потоке
-    const conflict = scheduleData.find(item => item.slot === slot && item.stream === stream);
+    const conflict = scheduleData.find(item => item.slot.toLowerCase() === slot.toLowerCase() && item.stream === stream);
     const statusBox = document.getElementById('schStatusBox');
 
     if (conflict) {
@@ -10920,6 +10921,7 @@ window.addSchedulerBlock = function() {
 
     document.getElementById('sch-title').value = '';
     document.getElementById('sch-meta').value = '';
+    document.getElementById('sch-slot').value = '';
     renderSchedulerGrid();
 };
 
@@ -10933,7 +10935,12 @@ function renderSchedulerGrid() {
     const tbody = document.getElementById('schGridBody');
     if (!tbody) return;
 
-    const slots = ["09:00 - 10:30", "10:45 - 12:15", "13:00 - 14:30", "14:45 - 16:15"];
+    // Собираем все уникальные таймслоты из данных + дефолтные на случай пустого списка
+    let slots = [...new Set(scheduleData.map(item => item.slot))];
+    if (slots.length === 0) {
+        slots = ["09:00 - 10:30"];
+    }
+
     tbody.innerHTML = "";
 
     slots.forEach(slot => {
@@ -10963,7 +10970,7 @@ function renderSchedulerGrid() {
     });
 }
 
-// Экспорт расписания в PDF с использованием вашего встроенного jsPDF
+// Экспорт расписания в PDF
 window.exportSchedulerToPdf = async function() {
     const modalContent = document.querySelector('.scheduler-wrapper');
     if (!modalContent || !window.jspdf || typeof html2canvas !== "function") return;
