@@ -9090,70 +9090,53 @@ body.zen-mode-active .ai-dropdown-wrap {
 
 
 /* ========================================== */
-/* --- ЖЕСТКИЙ ФИКС ВКЛАДОК В ТЕМНОЙ ТЕМЕ --- */
+/* === ИДЕАЛЬНАЯ ТЕМНАЯ ТЕМА ДЛЯ ЦЕНТРА УВЕДОМЛЕНИЙ === */
 /* ========================================== */
-html.dark-theme .notify-tabs,
-body.dark-theme .notify-tabs,
-.dark-theme .notify-tabs,
-[data-theme="dark"] .notify-tabs,
-body[data-theme="dark"] .notify-tabs {
-    background: rgba(255, 255, 255, 0.08) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+/* 1. Заголовок и кнопка "Прочитать все" (двойная галочка) */
+body.dark-mode .notify-header h3 {
+    color: #F8FAFC !important;
 }
 
-html.dark-theme .notify-tab,
-body.dark-theme .notify-tab,
-.dark-theme .notify-tab,
-[data-theme="dark"] .notify-tab,
-body[data-theme="dark"] .notify-tab {
+body.dark-mode #markAllReadBtn {
     color: #94A3B8 !important;
+}
+
+body.dark-mode #markAllReadBtn:hover {
+    background: #1E293B !important;
+    color: #34D399 !important;
+}
+
+/* 2. Поле переключения вкладок (капсула) */
+body.dark-mode .notify-tabs {
+    background: #1E293B !important;
+    border: 1px solid #334155 !important;
+    padding: 3px !important;
+    border-radius: 10px !important;
+}
+
+/* 3. Неактивные вкладки и плавный hover-эффект */
+body.dark-mode .notify-tab {
     background: transparent !important;
-}
-
-html.dark-theme .notify-tab.active,
-body.dark-theme .notify-tab.active,
-.dark-theme .notify-tab.active,
-[data-theme="dark"] .notify-tab.active,
-body[data-theme="dark"] .notify-tab.active {
-    background: rgba(255, 255, 255, 0.18) !important;
-    color: #FFFFFF !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
-}
-
-/* ========================================== */
-/* --- 100% РАБОЧИЙ ФИКС ВКЛАДОК В ТЕМНОЙ ТЕМЕ --- */
-/* ========================================== */
-
-/* Принудительно перекрашиваем контейнер вкладок */
-html.dark-theme .notify-tabs,
-body.dark-theme .notify-tabs,
-.dark-theme .notify-tabs,
-[data-theme="dark"] .notify-tabs,
-body[data-theme="dark"] .notify-tabs,
-.dark .notify-tabs {
-    background: rgba(255, 255, 255, 0.08) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Неактивные вкладки в темной теме */
-html.dark-theme .notify-tab,
-body.dark-theme .notify-tab,
-.dark-theme .notify-tab,
-[data-theme="dark"] .notify-tab,
-body[data-theme="dark"] .notify-tab,
-.dark .notify-tab {
     color: #94A3B8 !important;
-    background: transparent !important;
 }
 
-/* АКТИВНАЯ ВКЛАДКА («КИРПИЧИК») — ЖЕСТКИЙ ТЕМНЫЙ ФОН */
-html.dark-theme .notify-tab.active,
-body.dark-theme .notify-tab.active,
-.dark-theme .notify-tab.active,
-[data-theme="dark"] .notify-tab.active,
-body[data-theme="dark"] .notify-tab.active,
-.dark .notify-tab.active {
-    background: #1E293B !important; /* Глубокий темный оттенок вместо белого */
-    color: #FFFFFF !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+body.dark-mode .notify-tab:hover:not(.active) {
+    color: #F8FAFC !important;
+    background: rgba(255, 255, 255, 0.04) !important;
 }
+
+/* 4. Активная вкладка («кирпичик») в темной теме */
+body.dark-mode .notify-tab.active {
+    background: #334155 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* 5. Кнопки действий внутри карточек уведомлений + живые hover-эффекты */
+body.dark-mode .n-btn-docx:hover { background: #0284C7 !important; color: #FFFFFF !important; }
+body.dark-mode .n-btn-xlsx:hover { background: #10B981 !important; color: #FFFFFF !important; }
+body.dark-mode .n-btn-pptx:hover { background: #EA580C !important; color: #FFFFFF !important; }
+body.dark-mode .n-btn-txt:hover  { background: #7C3AED !important; color: #FFFFFF !important; }
+body.dark-mode .n-btn-pdf:hover  { background: #EF4444 !important; color: #FFFFFF !important; }
+body.dark-mode .n-btn-neutral:hover { background: #475569 !important; color: #FFFFFF !important; }
