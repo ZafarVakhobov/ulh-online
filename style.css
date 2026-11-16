@@ -72,6 +72,17 @@ body.dark-mode ::-webkit-scrollbar-thumb:hover {
     background-color: #64748B; /* Слегка светлеет при захвате мышью */
 }
 
+/* ========================================== */
+/* === УДАЛЕНИЕ СТРЕЛОК (КНОПОК) У СКРОЛЛБАРА === */
+/* ========================================== */
+
+/* Убираем стандартные кнопки прокрутки со стрелками вверх/вниз в WebKit (Chrome, Edge, Safari) */
+::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
 /* === СТИЛИ ВЕРХНЕГО МЕНЮ (NAVBAR) === */
 .top-navbar {
     width: 100%;
