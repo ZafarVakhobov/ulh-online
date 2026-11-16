@@ -3053,17 +3053,13 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
                         <select id="sch-type" class="src-input" style="margin-bottom: 0 !important; cursor: pointer;">
-                            <option value="lecture">Ma'ruza (Leksiyalar)</option>
-                            <option value="workshop">Amaliy / Workshop</option>
+                            <option value="lecture">Ma'ruza (Leksiya)</option>
+                            <option value="workshop">Amaliy dars / Workshop</option>
                             <option value="presentation">Taqdimot / Himoya</option>
                             <option value="break">Tanaffus / Kofe-breyk</option>
                         </select>
-                        <select id="sch-slot" class="src-input" style="margin-bottom: 0 !important; cursor: pointer;">
-                            <option value="09:00 - 10:30">09:00 - 10:30</option>
-                            <option value="10:45 - 12:15">10:45 - 12:15</option>
-                            <option value="13:00 - 14:30">13:00 - 14:30</option>
-                            <option value="14:45 - 16:15">14:45 - 16:15</option>
-                        </select>
+                        <!-- ИЗМЕНЕНО: Селект заменен на кастомный инпут времени -->
+                        <input type="text" id="sch-slot" class="src-input" placeholder="Vaqt (masalan: 08:30 - 09:50)" style="margin-bottom: 0 !important;">
                     </div>
 
                     <select id="sch-stream" class="src-input" style="cursor: pointer;">
