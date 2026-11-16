@@ -325,8 +325,26 @@
 
                     
 <hr class="currency-Block-divider">
+                    
+                  <!-- НОВАЯ КНОПКА: AKADEMIK JADVAL VA SHAXMATKA (SCHEDULER) -->
+                    <div class="qr-mini-card" role="button" tabindex="0" onclick="openSchedulerModal(event)" aria-label="Öquv jadvali va şaxmatka">
+                        <div class="qr-mini-left">
+                            <div class="qr-mini-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 12 13 15 16"/></svg>
+                            </div>
+                            <div class="qr-mini-text">
+                                <span class="qr-mini-title">ÖQUV JADVALI VA ŞAXMATKA</span>
+                                <span class="qr-mini-sub">Akademik reja va tadbirlar</span>
+                            </div>
+                        </div>
+                        <span class="currency-nbu-pill">
+                            <span>Oçiş</span>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                    </div>  
+                    
                     <!-- НОВАЯ КНОПКА: ГЕНЕРАТОР СЕРТИФИКАТОВ -->
-                    <div class="qr-mini-card" role="button" tabindex="0" onclick="openCertModal(event)" aria-label="Avto-Sertifikat">
+                    <div class="qr-mini-card" role="button" tabindex="0" onclick="openCertModal(event)" aria-label="Avto-Sertifikat" style="display:none;">
                         <div class="qr-mini-left">
                             <div class="qr-mini-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15l-2 5l9-4l-9-4l2 5z" style="display:none;"/><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3l-5 3l1.523-9.11"/></svg>
@@ -341,6 +359,8 @@
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </span>
                     </div>
+
+                    
                 </div>
             </div>
         </div>
@@ -3004,6 +3024,84 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         </div>
     </div>
 </div>
+
+
+   <!-- === МОДАЛЬНОЕ ОКНО: ACADEMIC & EVENT SCHEDULER (ШАХМАТКА) === -->
+<div id="scheduler-modal" class="kanban-modal-backdrop">
+    <div class="kanban-modal-content" style="max-width: 950px; padding: 24px;">
+        <button id="scheduler-close-btn" class="kanban-close-btn" title="Yopiş">×</button>
+        
+        <div class="scheduler-wrapper" style="font-family: 'Manrope', sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div>
+                    <h3 style="font-size: 18px; font-weight: 800; color: #1e293b; margin: 0;" class="dark:text-white">Akademik jadval va şaxmatka</h3>
+                    <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Öquv jarayoni va tadbirlarni oqilona rejalaştiring</p>
+                </div>
+                <button type="button" class="pill-btn" onclick="exportSchedulerToPdf()" style="background: #2563EB; height: 36px; font-size: 12px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>PDF saqlaş</span>
+                </button>
+            </div>
+
+            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                <!-- ЛЕВАЯ ПАНЕЛЬ: Пул блоков -->
+                <div style="flex: 1; min-width: 280px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0;" class="dark:bg-slate-800 dark:border-slate-700">
+                    <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #334155; font-weight: 700;" class="dark:text-slate-300">Blok qöşiş</h4>
+                    
+                    <input type="text" id="sch-title" class="src-input" placeholder="Nomi (masalan: Ma'ruza: Algoritmlar)">
+                    <input type="text" id="sch-meta" class="src-input" placeholder="Auditoriya / Öqituvçi (Aud. 302 • Ismoilov T.)">
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                        <select id="sch-type" class="src-input" style="margin-bottom: 0 !important; cursor: pointer;">
+                            <option value="lecture">Ma'ruza (Leksiyalar)</option>
+                            <option value="workshop">Amaliy / Workshop</option>
+                            <option value="presentation">Taqdimot / Himoya</option>
+                            <option value="break">Tanaffus / Kofe-breyk</option>
+                        </select>
+                        <select id="sch-slot" class="src-input" style="margin-bottom: 0 !important; cursor: pointer;">
+                            <option value="09:00 - 10:30">09:00 - 10:30</option>
+                            <option value="10:45 - 12:15">10:45 - 12:15</option>
+                            <option value="13:00 - 14:30">13:00 - 14:30</option>
+                            <option value="14:45 - 16:15">14:45 - 16:15</option>
+                        </select>
+                    </div>
+
+                    <select id="sch-stream" class="src-input" style="cursor: pointer;">
+                        <option value="streamA">Oqim A (Talabalar guruhi 1)</option>
+                        <option value="streamB">Oqim B (Talabalar guruhi 2)</option>
+                        <option value="hall">Akt zal (Umumiy tadbir)</option>
+                    </select>
+
+                    <button type="button" class="src-save-btn" onclick="addSchedulerBlock()">+ Jadvalga qöşiş</button>
+                    
+                    <div id="schStatusBox" class="status-box" style="margin-top: 12px;">
+                        ✓ Vaqt böyiça ziddiyatlar aniqlanmadi.
+                    </div>
+                </div>
+
+                <!-- ПРАВАЯ ПАНЕЛЬ: Шахматка сетки -->
+                <div style="flex: 2; min-width: 400px; display: flex; flex-direction: column;">
+                    <div style="overflow-x: auto; max-height: 400px;" class="custom-scrollbar">
+                        <table class="schedule-grid" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <thead>
+                                <tr style="background: #f1f5f9;" class="dark:bg-slate-800">
+                                    <th style="border: 1px solid #cbd5e1; padding: 8px; width: 20%;">Vaqt</th>
+                                    <th style="border: 1px solid #cbd5e1; padding: 8px; width: 26%;">Oqim A</th>
+                                    <th style="border: 1px solid #cbd5e1; padding: 8px; width: 26%;">Oqim B</th>
+                                    <th style="border: 1px solid #cbd5e1; padding: 8px; width: 28%;">Akt zal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schGridBody">
+                                <!-- Динамически заполняется через JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
+
     
 <!-- === 20-20-20 QOIDASI (SOG'LOM KO'ZLAR) === -->
 <div id="eyeCareOverlay" class="eye-care-overlay">
