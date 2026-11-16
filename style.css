@@ -9168,3 +9168,36 @@ body.dark-mode .dock-icon-btn.has-event-birthday:hover {
     background: rgba(251, 191, 36, 0.26) !important;
     color: #FDE68A !important;
 }
+
+/* ========================================== */
+/* === ПРИОРИТЕТ ОРАНЖЕВОГО ЦВЕТА ДЛЯ ДНЕЙ РОЖДЕНИЯ В КАЛЕНДАРЕ === */
+/* ========================================== */
+
+/* Оранжевая точка под датой */
+.cal-event-dot.birthday {
+    background: #D97706 !important;
+}
+body.dark-mode .cal-event-dot.birthday {
+    background: #F59E0B !important;
+}
+
+/* Оранжевый круг выбранной даты (Светлая тема) */
+.cal-day-cell.selected.birthday-event {
+    background: #D97706 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.35) !important;
+}
+.cal-day-cell.selected.birthday-event:hover {
+    background: #B45309 !important;
+}
+
+/* Оранжевый круг выбранной даты (Темная тема) */
+body.dark-mode .cal-day-cell.selected.birthday-event {
+    background: #F59E0B !important;
+    color: #0F172A !important;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35) !important;
+}
+body.dark-mode .cal-day-cell.selected.birthday-event:hover {
+    background: #D97706 !important;
+    color: #FFFFFF !important;
+}
