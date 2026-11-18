@@ -9571,14 +9571,41 @@ body.dark-mode #scheduler-modal .scheduler-wrapper > div:nth-child(2) > div:firs
     overflow-y: auto !important;
 }
 
-/* Размещаем кнопки действий слева от сообщений пользователя в Öşa AI */
-.osha-msg-user-wrap .osha-msg-container {
-    flex-direction: row-reverse;
+/* ========================================== */
+/* === КНОПКИ И ТУЛТИПЫ СООБЩЕНИЙ ПОЛЬЗОВАТЕЛЯ В ÖŞA AI === */
+/* ========================================== */
+
+/* 1. Сжимаем контейнер ровно по ширине синего баббла и прижимаем вправо */
+.osha-msg-user-wrap {
+    display: flex !important;
+    justify-content: flex-end !important;
 }
 
-/* Если кнопки позиционируются через absolute, переносим их на левую сторону для user */
+.osha-msg-user-wrap .osha-msg-container {
+    width: fit-content !important;
+    max-width: 82% !important;
+    margin-left: auto !important;
+    position: relative !important;
+}
+
+/* 2. Ставим кнопки аккуратно вплотную слева от синего баббла */
 .osha-msg-user-wrap .osha-edit-msg-btn,
 .osha-msg-user-wrap .osha-copy-msg-btn {
     right: auto !important;
-    left: -34px !important;
+    left: -32px !important;
+}
+
+/* 3. Разворачиваем тултипы так, чтобы они выскакивали СПРАВА от кнопок */
+.osha-msg-user-wrap .osha-tooltip {
+    right: auto !important;
+    left: calc(100% + 8px) !important;
+    z-index: 50 !important;
+}
+
+/* 4. Переносим треугольный хвостик тултипа на левую сторону (если он есть) */
+.osha-msg-user-wrap .osha-tooltip::after,
+.osha-msg-user-wrap .osha-tooltip::before {
+    left: -4px !important;
+    right: auto !important;
+    transform: translateY(-50%) rotate(180deg) !important;
 }
