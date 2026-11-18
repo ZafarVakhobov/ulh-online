@@ -342,25 +342,7 @@
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </span>
                     </div>  
-                    
-                    <!-- НОВАЯ КНОПКА: ГЕНЕРАТОР СЕРТИФИКАТОВ -->
-                    <div class="qr-mini-card" role="button" tabindex="0" onclick="openCertModal(event)" aria-label="Avto-Sertifikat" style="display:none;">
-                        <div class="qr-mini-left">
-                            <div class="qr-mini-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15l-2 5l9-4l-9-4l2 5z" style="display:none;"/><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3l-5 3l1.523-9.11"/></svg>
-                            </div>
-                            <div class="qr-mini-text">
-                                <span class="qr-mini-title">AVTO-SERTIFIKAT</span>
-                                <span class="qr-mini-sub">Sertifikat, diplom yaratiş</span>
-                            </div>
-                        </div>
-                        <span class="currency-nbu-pill">
-                            <span>Oçiş</span>
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                        </span>
-                    </div>
-
-                    
+                                                            
                 </div>
             </div>
         </div>
@@ -2556,11 +2538,11 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
 
 <hr class="dropdown-divider" style="margin: 4px 0;">
 
-        <!-- Блок 4: Горячие клавиши (Qaynoq tugmalar) -->
+        <!-- Блок 4: Дополнительные возможности (Горячие клавиши + Авто-Сертификат) -->
         <div>
             <div style="font-size: 12px; font-weight: 800; color: #64748B; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.05em;">Qöşimça imkoniyatlar</div>
             
-            <!-- При клике панель дизайна закроется и откроется модалка -->
+            <!-- 4.1. Горячие клавиши (Qaynoq tugmalar) -->
             <div class="asmr-toggle-row" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 12px; transition: all 0.2s;" onclick="closeThemeStudioPanel(event); openHotkeysModal(event)">
                 
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -2573,7 +2555,26 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                     </div>
                 </div>
                 
-                <!-- Стильный бейдж-кнопка (адаптируется под тёмную тему автоматически) -->
+                <div class="alpha-rules-trigger" style="margin: 0; pointer-events: none; box-shadow: none;">
+                    <span>Oçiş</span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+                
+            </div>
+
+            <!-- 4.2. Авто-Сертификат (Avto-Sertifikat) -->
+            <div class="asmr-toggle-row" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 12px; transition: all 0.2s; margin-top: 8px;" onclick="closeThemeStudioPanel(event); openCertModal(event)">
+                
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="color: #0284C7; display: flex; align-items: center; justify-content: center; width: 24px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89L17 22l-5-3l-5 3l1.523-9.11"></path></svg>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <span style="font-size: 13.5px; font-weight: 800; color: #1E293B;" class="asmr-title-text">Avto-Sertifikat</span>
+                        <span style="font-size: 11px; color: #64748B; font-weight: 600;">Sertifikat, diplom yaratiş</span>
+                    </div>
+                </div>
+                
                 <div class="alpha-rules-trigger" style="margin: 0; pointer-events: none; box-shadow: none;">
                     <span>Oçiş</span>
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
