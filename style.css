@@ -9663,3 +9663,20 @@ body.dark-mode #scheduler-modal .scheduler-wrapper > div:nth-child(2) > div:firs
 }
 
 #osha-messages::-webkit-scrollbar-button { display: none !important; }
+
+
+/* ========================================== */
+/* === УДАЛЕНИЕ СТРЕЛОК (ТРЕУГОЛЬНИКОВ) СО ВСЕХ СКРОЛЛБАРОВ === */
+/* ========================================== */
+
+/* Для WebKit браузеров (Chrome, Edge, Safari, Opera) */
+::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Дополнительно для элементов с кастомными скроллами */
+*::-webkit-scrollbar-button {
+    display: none !important;
+}
