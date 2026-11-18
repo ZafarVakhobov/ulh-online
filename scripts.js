@@ -11040,3 +11040,76 @@ window.exportSchedulerToPdf = async function() {
         if (exportBtn) exportBtn.style.display = '';
     }
 };
+
+// ==========================================
+// === ИЗМЕНЕНИЕ ВЫСОТЫ ОКНА ЧАТА ÖŞA AI (VERTICAL RESIZE) ===
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const chatModal = document.getElementById('osha-chat');
+    if (!chatModal) return;
+
+    const HEIGHT_STORAGE_KEY = 'ulh_osha_chat_height_v1';
+    const MIN_HEIGHT = 380;
+
+    // 1. Создаем ползунок в верхней части окна чата
+    const handle = document.createElement('div');
+    handle.className = 'osha-resize-handle';
+    handle.title = "Balandlikni özgartiriş (ikki marta bosing — maksimum)";
+    handle.innerHTML = `<div class="osha-resize-pill"></div>`;
+    chatModal.insertBefore(handle, chatModal.firstChild);
+
+    // 2. Восстанавливаем сохраненную пользователем высоту
+    const savedHeight = localStorage.getItem(HEIGHT_STORAGE_KEY);
+    if (savedHeight) {
+        const maxAllowed = window.innerHeight - 110;
+        const h = Math.min(Math.max(parseInt(savedHeight, 10), MIN_HEIGHT), maxAllowed);
+        chatModal.style.height = h + 'px';
+    }
+
+    let isResizing = false;
+    let startY = 0;
+    let startHeight = 0;
+
+    // 3. Начало перетаскивания (мышь или тач)
+    handle.addEventListener('pointerdown', (e) => {
+        if (window.innerWidth <= 768) return; // На мобильных высота фиксирована под экран
+        e.preventDefault();
+        isResizing = true;
+        startY = e.clientY;
+        startHeight = chatModal.getBoundingClientRect().height;
+        chatModal.classList.add('is-resizing');
+        if (handle.setPointerCapture) handle.setPointerCapture(e.pointerId);
+    });
+
+    // 4. Изменение высоты при движении вверх/вниз
+    handle.addEventListener('pointermove', (e) => {
+        if (!isResizing) return;
+        const deltaY = startY - e.clientY; // Тянем вверх -> высота растет
+        const maxAllowed = window.innerHeight - 110;
+        const newHeight = Math.min(Math.max(startHeight + deltaY, MIN_HEIGHT), maxAllowed);
+        chatModal.style.height = newHeight + 'px';
+    });
+
+    // 5. Завершение перетаскивания и сохранение
+    function stopResize(e) {
+        if (!isResizing) return;
+        isResizing = false;
+        chatModal.classList.remove('is-resizing');
+        if (e && e.pointerId !== undefined && handle.releasePointerCapture) {
+            try { handle.releasePointerCapture(e.pointerId); } catch (_) {}
+        }
+        localStorage.setItem(HEIGHT_STORAGE_KEY, Math.round(chatModal.getBoundingClientRect().height));
+    }
+
+    handle.addEventListener('pointerup', stopResize);
+    handle.addEventListener('pointercancel', stopResize);
+
+    // 6. Бонус: Двойной клик по ползунку разворачивает чат на максимум или возвращает к стандарту (500px)
+    handle.addEventListener('dblclick', () => {
+        const currentH = chatModal.getBoundingClientRect().height;
+        const maxAllowed = window.innerHeight - 110;
+        const targetH = (maxAllowed - currentH > 40) ? maxAllowed : 500;
+        chatModal.style.height = targetH + 'px';
+        localStorage.setItem(HEIGHT_STORAGE_KEY, Math.round(targetH));
+    });
+});
