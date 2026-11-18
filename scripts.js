@@ -1,4 +1,4 @@
-    // === 1. ИНИЦИАЛИЗАЦИЯ TELEGRAM MINI APP ===
+// === 1. ИНИЦИАЛИЗАЦИЯ TELEGRAM MINI APP ===
 const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 if (tg) {
     tg.ready();
@@ -11042,86 +11042,98 @@ window.exportSchedulerToPdf = async function() {
 };
 
 // ==========================================
-// === ИЗМЕНЕНИЕ ВЫСОТЫ ОКНА ЧАТА ÖŞA AI (ABSOLUTE RESIZE) ===
+// === ИЗМЕНЕНИЕ ВЫСОТЫ ОКНА ЧАТА ÖŞA AI ===
 // ==========================================
+// Высота хранится в CSS-переменной --osha-chat-h (её читает style.css),
+// поэтому !important в стилях больше не мешает. Работает на ПК и телефонах.
 document.addEventListener('DOMContentLoaded', () => {
-    const chatModal = document.getElementById('osha-chat');
-    if (!chatModal) return;
+    const chat = document.getElementById('osha-chat');
+    if (!chat || chat.querySelector('.osha-resize-handle')) return;
 
-    const HEIGHT_STORAGE_KEY = 'ulh_osha_chat_height_v1';
-    const MIN_HEIGHT = 380;
+    const KEY = 'ulh_osha_chat_height_v2';
+    const MIN_H = 320;       // минимальная высота, px
+    const DEFAULT_H = 520;   // «обычная» высота (как в CSS)
+    const TOP_GAP = 16;      // отступ от верхнего края экрана, px
 
-    // 1. Создаем ползунок, если его еще нет
-    if (!chatModal.querySelector('.osha-resize-handle')) {
-        const handle = document.createElement('div');
-        handle.className = 'osha-resize-handle';
-        handle.title = "Balandlikni özgartiriş uchun torting";
-        handle.innerHTML = `<div class="osha-resize-pill"></div>`;
-        chatModal.insertBefore(handle, chatModal.firstChild);
+    const maxH = () => {
+        const bottom = parseFloat(getComputedStyle(chat).bottom) || 105;
+        return Math.max(MIN_H, window.innerHeight - bottom - TOP_GAP);
+    };
+    const clamp = (h) => Math.round(Math.min(Math.max(h, MIN_H), maxH()));
+    const setH = (h) => { const v = clamp(h); chat.style.setProperty('--osha-chat-h', v + 'px'); return v; };
+    const save = (h) => { try { localStorage.setItem(KEY, String(h)); } catch (e) {} };
 
-        let isResizing = false;
-        let startY = 0;
-        let startHeight = 0;
+    let prefH = null; // высота, выбранная пользователем
 
-        handle.addEventListener('mousedown', (e) => {
-            if (window.innerWidth <= 768) return;
-            e.preventDefault();
-            e.stopPropagation();
-            
-            isResizing = true;
-            startY = e.clientY;
-            // Жестко фиксируем текущую высоту в пикселях перед началом движения
-            startHeight = chatModal.getBoundingClientRect().height;
-            
-            chatModal.classList.add('is-resizing');
-            document.body.style.cursor = 'ns-resize';
-        });
+    // Ручка
+    const handle = document.createElement('div');
+    handle.className = 'osha-resize-handle';
+    handle.title = 'Balandlikni özgartiriş uchun torting (ikki marta bosiş — maksimum)';
+    handle.setAttribute('role', 'separator');
+    handle.setAttribute('aria-orientation', 'horizontal');
+    handle.setAttribute('aria-label', 'Çat oynasi balandligi');
+    handle.tabIndex = 0;
+    handle.innerHTML = '<div class="osha-resize-pill"></div>';
+    chat.insertBefore(handle, chat.firstChild);
 
-        const onMouseMove = (e) => {
-            if (!isResizing) return;
-            e.preventDefault();
-            
-            // Поскольку окно растет ВВЕРХ от низа экрана, движение мыши ВВЕРХ (уменьшение clientY) 
-            // должно увеличивать высоту. Поэтому используем (startY - e.clientY).
-            const deltaY = startY - e.clientY;
-            const maxAllowed = window.innerHeight - 80;
-            const newHeight = Math.min(Math.max(startHeight + deltaY, MIN_HEIGHT), maxAllowed);
+    let dragging = false, moved = false, startY = 0, startH = 0, lastTap = 0;
 
-            // Принудительно задаем и height, и max-height, чтобы перебить любые стили CSS
-            chatModal.style.height = newHeight + 'px';
-            chatModal.style.maxHeight = newHeight + 'px';
-        };
+    handle.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        e.preventDefault();
+        dragging = true;
+        moved = false;
+        startY = e.clientY;
+        startH = chat.offsetHeight; // offsetHeight не зависит от transform: scale
+        try { handle.setPointerCapture(e.pointerId); } catch (err) {}
+        chat.classList.add('is-resizing');
+        document.body.classList.add('osha-resizing');
+    });
 
-        const onMouseUp = () => {
-            if (!isResizing) return;
-            isResizing = false;
-            chatModal.classList.remove('is-resizing');
-            document.body.style.cursor = '';
-            
-            localStorage.setItem(HEIGHT_STORAGE_KEY, Math.round(chatModal.getBoundingClientRect().height));
-        };
+    handle.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const dy = startY - e.clientY; // тянем вверх — окно выше
+        if (Math.abs(dy) > 3) moved = true;
+        prefH = setH(startH + dy);
+    });
 
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+    const endDrag = (e) => {
+        if (!dragging) return;
+        dragging = false;
+        try { handle.releasePointerCapture(e.pointerId); } catch (err) {}
+        chat.classList.remove('is-resizing');
+        document.body.classList.remove('osha-resizing');
 
-        // Двойной клик для разворота на максимум / сброса
-        handle.addEventListener('dblclick', () => {
-            const currentH = chatModal.getBoundingClientRect().height;
-            const maxAllowed = window.innerHeight - 100;
-            const targetH = (maxAllowed - currentH > 40) ? maxAllowed : 500;
-            
-            chatModal.style.height = targetH + 'px';
-            chatModal.style.maxHeight = targetH + 'px';
-            localStorage.setItem(HEIGHT_STORAGE_KEY, Math.round(targetH));
-        });
-    }
+        if (moved) { if (prefH) save(prefH); return; }
 
-    // Восстанавливаем сохраненную высоту при загрузке
-    const savedHeight = localStorage.getItem(HEIGHT_STORAGE_KEY);
-    if (savedHeight) {
-        const maxAllowed = window.innerHeight - 80;
-        const h = Math.min(Math.max(parseInt(savedHeight, 10), MIN_HEIGHT), maxAllowed);
-        chatModal.style.height = h + 'px';
-        chatModal.style.maxHeight = h + 'px';
-    }
+        // Двойной клик / двойной тап: максимум <-> обычная высота
+        const now = Date.now();
+        if (now - lastTap < 350) {
+            const target = (maxH() - chat.offsetHeight > 40) ? maxH() : DEFAULT_H;
+            prefH = setH(target);
+            save(prefH);
+            lastTap = 0;
+        } else {
+            lastTap = now;
+        }
+    };
+    handle.addEventListener('pointerup', endDrag);
+    handle.addEventListener('pointercancel', endDrag);
+
+    // Клавиатура: стрелки вверх/вниз
+    handle.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+        e.preventDefault();
+        prefH = setH(chat.offsetHeight + (e.key === 'ArrowUp' ? 24 : -24));
+        save(prefH);
+    });
+
+    // Восстанавливаем сохранённую высоту
+    try {
+        const saved = parseInt(localStorage.getItem(KEY), 10);
+        if (Number.isFinite(saved)) prefH = setH(saved);
+    } catch (e) {}
+
+    // При изменении размера окна браузера — не даём чату вылезти за экран
+    window.addEventListener('resize', () => { if (prefH) setH(prefH); });
 });
