@@ -9570,3 +9570,15 @@ body.dark-mode #scheduler-modal .scheduler-wrapper > div:nth-child(2) > div:firs
     resize: none !important;
     overflow-y: auto !important;
 }
+
+/* Размещаем кнопки действий слева от сообщений пользователя в Öşa AI */
+.osha-msg-user-wrap .osha-msg-container {
+    flex-direction: row-reverse;
+}
+
+/* Если кнопки позиционируются через absolute, переносим их на левую сторону для user */
+.osha-msg-user-wrap .osha-edit-msg-btn,
+.osha-msg-user-wrap .osha-copy-msg-btn {
+    right: auto !important;
+    left: -34px !important;
+}
