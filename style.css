@@ -9556,3 +9556,17 @@ body.dark-mode #scheduler-modal .scheduler-wrapper > div:nth-child(2) > div:firs
     background: #1e293b !important;
     border-color: #334155 !important;
 }
+
+/* ========================================== */
+/* === ФИКС ВЫСОТЫ ПОЛЯ ВВОДА ÖŞA AI === */
+/* ========================================== */
+#osha-input {
+    height: 42px;
+    min-height: 42px !important;
+    max-height: 110px !important;
+    padding: 10px 14px !important;
+    line-height: 20px !important;
+    box-sizing: border-box !important;
+    resize: none !important;
+    overflow-y: auto !important;
+}
