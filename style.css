@@ -9609,3 +9609,57 @@ body.dark-mode #scheduler-modal .scheduler-wrapper > div:nth-child(2) > div:firs
     right: auto !important;
     transform: translateY(-50%) rotate(180deg) !important;
 }
+
+/* ========================================== */
+/* === КАСТОМНОЕ ИЗМЕНЕНИЕ ВЫСОТЫ ЧАТА ÖŞA AI === */
+/* ========================================== */
+#osha-chat {
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: calc(100vh - 110px) !important;
+    min-height: 380px !important;
+}
+
+/* Растягиваем область сообщений на всю доступную высоту окна */
+#osha-messages {
+    flex: 1 1 auto !important;
+    max-height: none !important;
+}
+
+/* Верхняя зона захвата (хэндл) для изменения высоты */
+.osha-resize-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 12px;
+    cursor: ns-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    user-select: none;
+}
+
+/* Визуальная полоска-индикатор по центру сверху */
+.osha-resize-pill {
+    width: 36px;
+    height: 4px;
+    border-radius: 4px;
+    background: rgba(148, 163, 184, 0.35);
+    transition: all 0.2s ease;
+}
+
+.osha-resize-handle:hover .osha-resize-pill,
+#osha-chat.is-resizing .osha-resize-pill {
+    width: 48px;
+    background: #0284C7;
+}
+
+/* Отключаем плавные переходы во время перетаскивания, чтобы не было задержки */
+#osha-chat.is-resizing {
+    transition: none !important;
+    user-select: none !important;
+}
+
+#osha-messages::-webkit-scrollbar-button { display: none !important; }
