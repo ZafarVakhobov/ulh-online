@@ -7674,41 +7674,49 @@ document.addEventListener('DOMContentLoaded', () => {
         msgDiv.innerHTML = formattedContent;
         containerDiv.appendChild(msgDiv);
 
-        if (role === 'assistant') {
-            const copyBtn = document.createElement('button');
-            copyBtn.className = 'osha-copy-msg-btn';
-            copyBtn.innerHTML = `
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                <span class="osha-tooltip">Nusxa oliş</span>
-            `;
-            copyBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                navigator.clipboard.writeText(content).then(() => {
-                    const tooltip = copyBtn.querySelector('.osha-tooltip');
-                    if (tooltip) {
-                        tooltip.textContent = "Nusxalandi ✓";
-                        setTimeout(() => { tooltip.textContent = "Nusxa oliş"; }, 1400);
-                    }
-                }).catch(() => {});
-            });
+        // Создаем кнопки Копирования и Редактирования и для бота, и для пользователя
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'osha-copy-msg-btn';
+        copyBtn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span class="osha-tooltip">Nusxa oliş</span>
+        `;
+        copyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const cleanText = content.replace(/<[^>]*>?/gm, '');
+            navigator.clipboard.writeText(cleanText).then(() => {
+                const tooltip = copyBtn.querySelector('.osha-tooltip');
+                if (tooltip) {
+                    tooltip.textContent = "Nusxalandi ✓";
+                    setTimeout(() => { tooltip.textContent = "Nusxa oliş"; }, 1400);
+                }
+            }).catch(() => {});
+        });
 
-            const editBtn = document.createElement('button');
-            editBtn.className = 'osha-edit-msg-btn';
-            editBtn.innerHTML = `
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                <span class="osha-tooltip">Tahrirlaş</span>
-            `;
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
+        const editBtn = document.createElement('button');
+        editBtn.className = 'osha-edit-msg-btn';
+        editBtn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            <span class="osha-tooltip">Tahrirlaş</span>
+        `;
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (role === 'user') {
+                // Если это сообщение пользователя — возвращаем текст в поле ввода чата для быстрого редактирования
+                inputField.value = content.replace(/<[^>]*>?/gm, '');
+                inputField.focus();
+                inputField.dispatchEvent(new Event('input'));
+            } else {
+                // Если это ответ ИИ — открываем в большом визуальном редакторе
                 const editorField = document.getElementById('aiResultContent'); 
                 if (editorField) editorField.innerHTML = content.replace(/\n/g, '<br>'); 
                 const editorModal = document.getElementById('aiResultModalBackdrop');
                 if (editorModal) editorModal.classList.add('open'); 
-            });
+            }
+        });
 
-            containerDiv.appendChild(editBtn);
-            containerDiv.appendChild(copyBtn);
-        }
+        containerDiv.appendChild(editBtn);
+        containerDiv.appendChild(copyBtn);
         
         wrapDiv.appendChild(containerDiv);
         messagesContainer.appendChild(wrapDiv);
