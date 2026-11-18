@@ -9611,64 +9611,82 @@ body.dark-mode #scheduler-modal .scheduler-wrapper > div:nth-child(2) > div:firs
 }
 
 /* ========================================== */
-/* === КАСТОМНОЕ ИЗМЕНЕНИЕ ВЫСОТЫ ЧАТА ÖŞA AI === */
+/* === ИЗМЕНЕНИЕ ВЫСОТЫ ЧАТА ÖŞA AI === */
 /* ========================================== */
+/* Высота берётся из переменной --osha-chat-h (её меняет JS).
+   Раньше inline-height не работал, потому что выше стоял
+   "height: 520px !important" — inline-стиль без !important его не перебивает. */
 #osha-chat {
-    display: flex !important;
-    flex-direction: column !important;
-    max-height: calc(100vh - 110px) !important;
-    min-height: 380px !important;
-    padding-top: 10px !important;
-    height: auto;
+    --osha-chat-h: 520px;
+    height: var(--osha-chat-h) !important;
+    min-height: 320px !important;
+    max-height: calc(100vh - 121px) !important;
+    max-height: calc(100dvh - 121px) !important; /* корректно на телефонах */
 }
 
-/* Растягиваем область сообщений на всю доступную высоту окна */
 #osha-messages {
     flex: 1 1 auto !important;
+    min-height: 0 !important;
     max-height: none !important;
 }
 
-/* Верхняя зона захвата (хэндл) для изменения высоты */
+/* Ручка (полоска-захват) сверху окна */
 .osha-resize-handle {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 18px;
-    cursor: ns-resize;
+    top: 0; left: 0; right: 0;
+    height: 22px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    z-index: 50;
+    padding-top: 7px;
+    box-sizing: border-box;
+    border-radius: 20px 20px 0 0;
+    cursor: ns-resize;
+    z-index: 60;
+    touch-action: none; /* чтобы палец не прокручивал страницу при перетаскивании */
     user-select: none;
-    /* Делаем область клика чуть шире самой полоски */
-    padding-top: 4px;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
 }
 
-/* Визуальная полоска-индикатор по центру сверху */
 .osha-resize-pill {
-    width: 42px;
+    width: 36px;
     height: 4px;
-    border-radius: 4px;
-    background: rgba(148, 163, 184, 0.6);
-    transition: all 0.2s ease;
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.35);
+    transition: width 0.2s ease, background 0.2s ease;
 }
 
 .osha-resize-handle:hover .osha-resize-pill,
+.osha-resize-handle:focus-visible .osha-resize-pill {
+    width: 48px;
+    background: rgba(100, 116, 139, 0.6);
+}
+
 #osha-chat.is-resizing .osha-resize-pill {
-    width: 60px;
-    background: #0284C7;
+    width: 56px;
+    background: #3b82f6;
 }
 
+body.dark-mode .osha-resize-pill,
+.dark .osha-resize-pill { background: rgba(148, 163, 184, 0.4); }
+
+body.dark-mode .osha-resize-handle:hover .osha-resize-pill,
+.dark .osha-resize-handle:hover .osha-resize-pill { background: rgba(148, 163, 184, 0.7); }
+
+body.dark-mode #osha-chat.is-resizing .osha-resize-pill { background: #60a5fa; }
+
+/* Во время перетаскивания: без плавных переходов и без выделения текста */
 #osha-chat.is-resizing {
     transition: none !important;
     user-select: none !important;
 }
-
-/* Отключаем плавные переходы во время перетаскивания, чтобы не было задержки */
-#osha-chat.is-resizing {
-    transition: none !important;
+body.osha-resizing,
+body.osha-resizing * {
+    cursor: ns-resize !important;
     user-select: none !important;
+    -webkit-user-select: none !important;
 }
 
 #osha-messages::-webkit-scrollbar-button { display: none !important; }
