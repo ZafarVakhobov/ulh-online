@@ -11042,7 +11042,7 @@ window.exportSchedulerToPdf = async function() {
 };
 
 // ==========================================
-// === ИЗМЕНЕНИЕ ВЫСОТЫ ОКНА ЧАТА ÖŞA AI (FIXED) ===
+// === ИЗМЕНЕНИЕ ВЫСОТЫ ОКНА ЧАТА ÖŞA AI (ABSOLUTE RESIZE) ===
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const chatModal = document.getElementById('osha-chat');
@@ -11066,44 +11066,57 @@ document.addEventListener('DOMContentLoaded', () => {
         handle.addEventListener('mousedown', (e) => {
             if (window.innerWidth <= 768) return;
             e.preventDefault();
+            e.stopPropagation();
+            
             isResizing = true;
             startY = e.clientY;
+            // Жестко фиксируем текущую высоту в пикселях перед началом движения
             startHeight = chatModal.getBoundingClientRect().height;
+            
             chatModal.classList.add('is-resizing');
             document.body.style.cursor = 'ns-resize';
         });
 
-        document.addEventListener('mousemove', (e) => {
+        const onMouseMove = (e) => {
             if (!isResizing) return;
-            // При движении мыши вверх (clientY уменьшается) высота увеличивается
-            const deltaY = startY - e.clientY; 
+            e.preventDefault();
+            
+            // Поскольку окно растет ВВЕРХ от низа экрана, движение мыши ВВЕРХ (уменьшение clientY) 
+            // должно увеличивать высоту. Поэтому используем (startY - e.clientY).
+            const deltaY = startY - e.clientY;
             const maxAllowed = window.innerHeight - 80;
             const newHeight = Math.min(Math.max(startHeight + deltaY, MIN_HEIGHT), maxAllowed);
-            
+
+            // Принудительно задаем и height, и max-height, чтобы перебить любые стили CSS
             chatModal.style.height = newHeight + 'px';
             chatModal.style.maxHeight = newHeight + 'px';
-        });
+        };
 
-        document.addEventListener('mouseup', () => {
+        const onMouseUp = () => {
             if (!isResizing) return;
             isResizing = false;
             chatModal.classList.remove('is-resizing');
             document.body.style.cursor = '';
+            
             localStorage.setItem(HEIGHT_STORAGE_KEY, Math.round(chatModal.getBoundingClientRect().height));
-        });
+        };
 
-        // Двойной клик сбрасывает или разворачивает на максимум
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+
+        // Двойной клик для разворота на максимум / сброса
         handle.addEventListener('dblclick', () => {
             const currentH = chatModal.getBoundingClientRect().height;
             const maxAllowed = window.innerHeight - 100;
             const targetH = (maxAllowed - currentH > 40) ? maxAllowed : 500;
+            
             chatModal.style.height = targetH + 'px';
             chatModal.style.maxHeight = targetH + 'px';
             localStorage.setItem(HEIGHT_STORAGE_KEY, Math.round(targetH));
         });
     }
 
-    // Восстанавливаем сохраненную высоту при открытии
+    // Восстанавливаем сохраненную высоту при загрузке
     const savedHeight = localStorage.getItem(HEIGHT_STORAGE_KEY);
     if (savedHeight) {
         const maxAllowed = window.innerHeight - 80;
