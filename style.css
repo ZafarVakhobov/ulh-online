@@ -9629,15 +9629,15 @@ body.dark-mode #scheduler-modal .scheduler-wrapper > div:nth-child(2) > div:firs
 /* Верхняя зона захвата (хэндл) для изменения высоты */
 .osha-resize-handle {
     position: absolute;
-    top: 0;
+    top: -8px;
     left: 0;
     right: 0;
-    height: 12px;
+    height: 20px;
     cursor: ns-resize;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 30;
+    z-index: 50;
     user-select: none;
 }
 
@@ -9646,14 +9646,19 @@ body.dark-mode #scheduler-modal .scheduler-wrapper > div:nth-child(2) > div:firs
     width: 36px;
     height: 4px;
     border-radius: 4px;
-    background: rgba(148, 163, 184, 0.35);
+    background: rgba(148, 163, 184, 0.5);
     transition: all 0.2s ease;
 }
 
 .osha-resize-handle:hover .osha-resize-pill,
 #osha-chat.is-resizing .osha-resize-pill {
-    width: 48px;
+    width: 50px;
     background: #0284C7;
+}
+
+#osha-chat.is-resizing {
+    transition: none !important;
+    user-select: none !important;
 }
 
 /* Отключаем плавные переходы во время перетаскивания, чтобы не было задержки */
