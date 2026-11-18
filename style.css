@@ -9618,6 +9618,8 @@ body.dark-mode #scheduler-modal .scheduler-wrapper > div:nth-child(2) > div:firs
     flex-direction: column !important;
     max-height: calc(100vh - 110px) !important;
     min-height: 380px !important;
+    padding-top: 10px !important;
+    height: auto;
 }
 
 /* Растягиваем область сообщений на всю доступную высоту окна */
@@ -9629,30 +9631,32 @@ body.dark-mode #scheduler-modal .scheduler-wrapper > div:nth-child(2) > div:firs
 /* Верхняя зона захвата (хэндл) для изменения высоты */
 .osha-resize-handle {
     position: absolute;
-    top: -8px;
+    top: 0;
     left: 0;
     right: 0;
-    height: 20px;
+    height: 18px;
     cursor: ns-resize;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 50;
     user-select: none;
+    /* Делаем область клика чуть шире самой полоски */
+    padding-top: 4px;
 }
 
 /* Визуальная полоска-индикатор по центру сверху */
 .osha-resize-pill {
-    width: 36px;
+    width: 42px;
     height: 4px;
     border-radius: 4px;
-    background: rgba(148, 163, 184, 0.5);
+    background: rgba(148, 163, 184, 0.6);
     transition: all 0.2s ease;
 }
 
 .osha-resize-handle:hover .osha-resize-pill,
 #osha-chat.is-resizing .osha-resize-pill {
-    width: 50px;
+    width: 60px;
     background: #0284C7;
 }
 
