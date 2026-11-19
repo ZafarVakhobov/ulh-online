@@ -2273,6 +2273,23 @@ body.dark-mode .footer {
     .hero-slider-dots { bottom: 6px; padding: 3px 8px; }
 }
 
+/* Перетаскивание баннеров мышью */
+.hero-slider {
+    cursor: grab;
+}
+.hero-slider.is-dragging,
+.hero-slider.is-dragging .hero-slide {
+    cursor: grabbing;
+}
+.hero-slider.is-dragging .hero-slide:hover img {
+    transform: scale(1);
+}
+.hero-slider img,
+.hero-slider a {
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+
 /* === СТИЛИ МОДАЛЬНОГО ОКНА РЕКЛАМНЫХ ТАРИФОВ === */
 .ads-modal-card {
     max-width: 470px;
