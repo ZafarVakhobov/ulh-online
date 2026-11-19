@@ -1,4 +1,4 @@
-// === 1. ИНИЦИАЛИЗАЦИЯ TELEGRAM MINI APP ===
+    // === 1. ИНИЦИАЛИЗАЦИЯ TELEGRAM MINI APP ===
 const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
 if (tg) {
     tg.ready();
@@ -10545,6 +10545,9 @@ function showQuizFinalScore() {
 
     // Плавный скролл к результату
     resultBox.scrollIntoView({ behavior: 'smooth' });
+
+    // Geymifikatsiya: viktorina natijasi uçun XP va nişonlar
+    if (window.ULHGame && typeof window.ULHGame.onQuizFinished === 'function') window.ULHGame.onQuizFinished(quizUserScore, total);
 }
 
 document.addEventListener("keydown", (e) => {
@@ -11137,3 +11140,532 @@ document.addEventListener('DOMContentLoaded', () => {
     // При изменении размера окна браузера — не даём чату вылезти за экран
     window.addEventListener('resize', () => { if (prefH) setH(prefH); });
 });
+
+// ==========================================
+// === 41. KUNLIK MAŞQ (GEYMIFIKATSIYA) ===
+// ==========================================
+// Kun sözi + kunlik topşiriq + seriya + XP + nişonlar.
+// Hammasi brauzerda (localStorage) saqlanadi, serverga hech narsa yuborilmaydi.
+// Lotincha yozilişlar mavjud cyrillicToLatin() orqali avtomatik hosil qilinadi,
+// shuning uçun saytdagi konvertor qoidalari bilan doim mos tüşadi.
+(function () {
+    'use strict';
+
+    const STORE_KEY = 'ulh_game_v1';
+    const XP_PER_LEVEL = 120;
+    const CORE_LETTERS = ['ö', 'ğ', 'ş', 'ç'];
+
+    // [kirill so'z, kirill izoh] — lotincha avtomatik hosil qilinadi
+    const WORDS = [
+        ['ўқитувчи', 'Мактабда болаларга билим берадиган инсон'],
+        ['ғалаба', 'Мусобақа ёки курашда қўлга киритилган ютуқ'],
+        ['шаҳар', 'Кўп одам яшайдиган катта жой'],
+        ['чироқ', 'Хонани ёритадиган нарса'],
+        ['қалам', 'Ёзиш ва чизиш учун асбоб'],
+        ['мактаб', 'Болалар таълим оладиган жой'],
+        ['китоб', 'Саҳифаларга битилган асар'],
+        ['ҳаво', 'Нафас оладиган муҳит'],
+        ['оқшом', 'Кун ботган пайт, кечки вақт'],
+        ['ёмғир', 'Булутдан томчи бўлиб ёғадиган сув'],
+        ['қуёш', 'Ерга нур ва иссиқлик берадиган юлдуз'],
+        ['дўст', 'Ишончли ва яқин одам'],
+        ['тоғ', 'Ер юзининг баланд қисми'],
+        ['дарё', 'Катта оқар сув'],
+        ['бозор', 'Савдо қиладиган жой'],
+        ['мева', 'Дарахтда пишадиган ширин егулик'],
+        ['чой', 'Қайнатиб ичиладиган ичимлик'],
+        ['шоир', 'Шеър ёзадиган ижодкор'],
+        ['ҳикоя', 'Қисқа бадиий асар'],
+        ['қўшиқ', 'Куйлаб айтиладиган асар'],
+        ['ўйин', 'Қувноқ машғулот'],
+        ['чақалоқ', 'Янги туғилган бола'],
+        ['ҳунар', 'Қўл меҳнатига асосланган касб'],
+        ['ўрмон', 'Дарахтлар кўп ўсадиган жой'],
+        ['Тошкент', 'Ўзбекистоннинг пойтахти'],
+        ['ёзув', 'Ҳарфлар ёрдамида фикрни ифодалаш'],
+        ['ҳарф', 'Ёзувдаги белги'],
+        ['алифбо', 'Ҳарфлар тизими'],
+        ['маъно', 'Сўзнинг мазмуни'],
+        ['шеър', 'Ритмик ва қофиядор асар'],
+        ['эълон', 'Ҳамма билиши учун айтилган хабар'],
+        ['санъат', 'Гўзал асар яратиш маҳорати'],
+        ['шамол', 'Ҳавонинг ҳаракати'],
+        ['баҳор', 'Йилнинг биринчи фасли'],
+        ['юлдуз', 'Осмонда ярқираб турадиган нур'],
+        ['яхши', 'Ёмоннинг акси'],
+        ['ғор', 'Тоғдаги катта бўшлиқ'],
+        ['чегара', 'Икки давлат орасидаги чизиқ'],
+        ['қишлоқ', 'Кичик аҳоли манзили'],
+        ['ўрик', 'Сариқ ширин мева'],
+        ['анор', 'Қизил донли мева'],
+        ['дарахт', 'Мева ва соя берадиган ўсимлик'],
+        ['чизғич', 'Тўғри чизиқ чизиш асбоби'],
+        ['қўғирчоқ', 'Болалар ўйинчоғи'],
+        ['ғўза', 'Пахта ўсимлиги'],
+        ['чўл', 'Қумли кенг ҳудуд'],
+        ['ҳовли', 'Уй олдидаги очиқ жой'],
+        ['ёнғоқ', 'Қаттиқ пўчоқли мағиз'],
+        ['гўзал', 'Кўркам ва чиройли'],
+        ['тўй', 'Оилавий қувноқ байрам'],
+        ['қўшни', 'Ёнингиздаги уйда яшайдиган киши'],
+        ['ўғил', 'Эркак фарзанд'],
+        ['шўрва', 'Суюқ иссиқ таом'],
+        ['ҳайвон', 'Тирик мавжудот'],
+        ['ўқиш', 'Матнни ўзлаштириш жараёни'],
+        ['Ўзбекистон', 'Ватанимиз'],
+        ['ҳосил', 'Экилган экиннинг натижаси'],
+        ['қанот', 'Қушнинг учиш аъзоси'],
+        ['чумоли', 'Меҳнаткаш кичик ҳашарот'],
+        ['ширинлик', 'Ширин таом ёки егулик'],
+        ['ғишт', 'Девор қуриладиган тайёр бўлак'],
+        ['қизғалдоқ', 'Баҳорда ўсадиган қизил гул'],
+        ['ёрдам', 'Бировга қилинган яхшилик'],
+        ['қўл', 'Инсоннинг ушлаш аъзоси'],
+        ['тил', 'Мулоқот воситаси'],
+        ['дафтар', 'Ёзиш учун саҳифалар'],
+        ['чорва', 'Уй ҳайвонлари'],
+        ['шер', 'Ёввойи йиртқич']
+    ];
+
+    // Harf juftliklari (lotin <-> kirill) + chalg'ituvçi variantlar
+    const LETTERS = [
+        { lat: 'Ö', cyr: 'Ў', dLat: ['O', 'U', 'Ğ'], dCyr: ['О', 'У', 'Ғ'] },
+        { lat: 'Ğ', cyr: 'Ғ', dLat: ['G', 'Ö', 'Q'], dCyr: ['Г', 'Ў', 'Қ'] },
+        { lat: 'Ş', cyr: 'Ш', dLat: ['S', 'Ç', 'X'], dCyr: ['С', 'Ч', 'Х'] },
+        { lat: 'Ç', cyr: 'Ч', dLat: ['C', 'Ş', 'S'], dCyr: ['Ц', 'Ш', 'С'] },
+        { lat: 'Q', cyr: 'Қ', dLat: ['K', 'G', 'X'], dCyr: ['К', 'Г', 'Х'] },
+        { lat: 'H', cyr: 'Ҳ', dLat: ['X', 'G', 'Ğ'], dCyr: ['Х', 'Г', 'Ғ'] },
+        { lat: 'X', cyr: 'Х', dLat: ['H', 'Ş', 'K'], dCyr: ['Ҳ', 'Ш', 'К'] },
+        { lat: 'J', cyr: 'Ж', dLat: ['Z', 'Ç', 'Y'], dCyr: ['З', 'Ч', 'Й'] },
+        { lat: 'Y', cyr: 'Й', dLat: ['J', 'I', 'Ö'], dCyr: ['Ж', 'И', 'Ў'] }
+    ];
+
+    const TIPS = { 'ў': 'ö', 'ғ': 'ğ', 'ш': 'ş', 'ч': 'ç', 'қ': 'q', 'ҳ': 'h', 'х': 'x', 'ъ': '’', 'ё': 'yo', 'ю': 'yu', 'я': 'ya', 'й': 'y', 'ж': 'j' };
+
+    const LEVEL_TITLES = ['Yangi boşlovçi', 'Izlanuvçi', 'Bilimdon', 'Alifbo ustasi', 'Mutaxassis', 'Ustoz'];
+    const MONTHS = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
+    const WEEKDAYS = ['Yakşanba', 'Duşanba', 'Seşanba', 'Çorşanba', 'Payşanba', 'Juma', 'Şanba'];
+
+    const BADGES = [
+        { id: 'first',      icon: '🌱', title: 'Birinçi qadam',     desc: 'Birinçi kunlik topşiriqni bajardingiz',     ok: s => Object.keys(s.history).length >= 1 },
+        { id: 'streak3',    icon: '🔥', title: '3 kunlik seriya',   desc: 'Ketma-ket 3 kun maşq qildingiz',            ok: s => s.best >= 3 },
+        { id: 'streak7',    icon: '⚡', title: 'Haftalik seriya',   desc: 'Ketma-ket 7 kun',                           ok: s => s.best >= 7 },
+        { id: 'streak30',   icon: '👑', title: 'Oylik seriya',      desc: 'Ketma-ket 30 kun',                          ok: s => s.best >= 30 },
+        { id: 'perfect',    icon: '🏆', title: 'Mukammal natija',   desc: 'Topşiriqda 5/5 töğri javob',                ok: s => s.perfect >= 1 },
+        { id: 'learn10',    icon: '📚', title: 'Sözlar xazinasi',   desc: '10 ta söz örgandingiz',                     ok: s => s.learned.length >= 10 },
+        { id: 'alphabet',   icon: '🔤', title: 'Alifbo ustasi',     desc: 'Ö, Ğ, Ş, Ç harflarini mustahkamladingiz',   ok: s => CORE_LETTERS.every(k => (s.letters[k] || 0) >= 5) },
+        { id: 'correct100', icon: '🎯', title: '100 ta töğri javob', desc: 'Jami 100 ta töğri javob berdingiz',        ok: s => s.correct >= 100 },
+        { id: 'quiz',       icon: '🧠', title: 'Viktorina ustasi',  desc: 'Viktorinada 100% natija',                   ok: s => s.quizPerfect >= 1 }
+    ];
+
+    const FLAME_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>';
+
+    // ---------- yordamçi funksiyalar ----------
+    const pad = n => String(n).padStart(2, '0');
+    const dayOffset = () => (window.__ulhDayOffset || 0);
+    const now = () => new Date(Date.now() + dayOffset() * 86400000);
+    const todayKey = () => { const d = now(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+    const keyToDays = k => { const p = k.split('-').map(Number); return Math.floor(Date.UTC(p[0], p[1] - 1, p[2]) / 86400000); };
+    const toLat = s => (typeof cyrillicToLatin === 'function' ? cyrillicToLatin(s) : s);
+
+    function mulberry32(a) {
+        return function () {
+            a |= 0; a = a + 0x6D2B79F5 | 0;
+            let t = Math.imul(a ^ a >>> 15, 1 | a);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+    function shuffle(arr, rnd) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(rnd() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    // ---------- saqlash ----------
+    const defaultState = () => ({
+        xp: 0, streak: 0, best: 0, lastDone: null, history: {},
+        learned: [], correct: 0, perfect: 0, letters: {}, badges: {},
+        quizXp: { day: '', xp: 0 }, quizPerfect: 0
+    });
+    function load() {
+        try {
+            const s = JSON.parse(localStorage.getItem(STORE_KEY));
+            return Object.assign(defaultState(), s && typeof s === 'object' ? s : {});
+        } catch (e) { return defaultState(); }
+    }
+    let state = load();
+    function save() {
+        try {
+            const keys = Object.keys(state.history).sort();
+            while (keys.length > 60) delete state.history[keys.shift()];
+            localStorage.setItem(STORE_KEY, JSON.stringify(state));
+        } catch (e) { /* private mode — jim */ }
+    }
+
+    // ---------- daraja / seriya ----------
+    const levelOf = xp => Math.floor(xp / XP_PER_LEVEL) + 1;
+    const levelTitle = lv => LEVEL_TITLES[Math.min(lv - 1, LEVEL_TITLES.length - 1)];
+    function currentStreak() {
+        if (!state.lastDone) return 0;
+        return (keyToDays(todayKey()) - keyToDays(state.lastDone) <= 1) ? state.streak : 0;
+    }
+    const isDoneToday = () => !!state.history[todayKey()];
+
+    // ---------- kun sözi ----------
+    const wordIndexFor = days => ((days % WORDS.length) + WORDS.length) % WORDS.length;
+    function tipsFor(cyr) {
+        const seen = [];
+        cyr.toLowerCase().split('').forEach(ch => { if (TIPS[ch] && !seen.includes(ch)) seen.push(ch); });
+        return seen.slice(0, 5).map(ch => ch.toUpperCase() + ' → ' + TIPS[ch]);
+    }
+
+    // ---------- savollar ----------
+    const MUT = [['ö', 'o'], ['ö', 'u'], ['ö', 'o’'], ['ğ', 'g'], ['ğ', 'g’'], ['ş', 'sh'], ['ş', 's'], ['ç', 'ch'], ['ç', 'c'],
+        ['q', 'k'], ['q', 'g'], ['h', 'x'], ['x', 'h'], ['’', ''], ['y', 'j'], ['Ö', 'O'], ['Ş', 'Sh'], ['Ç', 'Ch'], ['Ğ', 'G'],
+        ['yo', 'o'], ['ya', 'a'], ['yu', 'u'], ['ye', 'e']];
+    const FALLBACK = { a: 'o', o: 'a', i: 'e', e: 'i', u: 'o', k: 'q', d: 't', t: 'd', b: 'p', z: 's', s: 'z', r: 'l', l: 'r', n: 'm', m: 'n', g: 'k' };
+
+    function wrongVariants(lat, rnd) {
+        const set = new Set();
+        MUT.forEach(([a, b]) => {
+            const i = lat.indexOf(a);
+            if (i > -1) { const v = lat.slice(0, i) + b + lat.slice(i + a.length); if (v !== lat && v) set.add(v); }
+        });
+        const arr = shuffle(Array.from(set), rnd);
+        let guard = 0;
+        while (arr.length < 3 && guard++ < 60) {
+            const i = Math.floor(rnd() * lat.length);
+            const rep = FALLBACK[lat[i]];
+            if (rep) { const v = lat.slice(0, i) + rep + lat.slice(i + 1); if (v !== lat && !arr.includes(v)) arr.push(v); }
+        }
+        return arr;
+    }
+    const coreIn = lat => CORE_LETTERS.filter(k => lat.toLowerCase().indexOf(k) > -1);
+
+    function qWord(wi, rnd) {
+        const cyr = WORDS[wi][0], lat = toLat(cyr);
+        const opts = shuffle([lat].concat(wrongVariants(lat, rnd).slice(0, 3)), rnd);
+        const tips = tipsFor(cyr);
+        return {
+            prompt: '«' + cyr + '» sözi yangi lotinda qanday yoziladi?',
+            options: opts, correct: opts.indexOf(lat),
+            explain: 'Töğri yozilişi: ' + lat + (tips.length ? '  ·  ' + tips.join(', ') : ''),
+            letters: coreIn(lat)
+        };
+    }
+    function qLetter(rnd, avoidIdx) {
+        let idx;
+        do {
+            idx = rnd() < 0.7 ? Math.floor(rnd() * 4) : Math.floor(rnd() * LETTERS.length);
+        } while (idx === avoidIdx);
+        const L = LETTERS[idx];
+        const forward = rnd() < 0.5;
+        const correctText = forward ? L.lat : L.cyr;
+        const opts = shuffle([correctText].concat(forward ? L.dLat : L.dCyr), rnd);
+        return {
+            prompt: forward
+                ? 'Kirill «' + L.cyr + '» harfi yangi lotinda qaysi belgiga mos?'
+                : 'Lotin «' + L.lat + '» belgisi qaysi kirill harfiga mos?',
+            options: opts, correct: opts.indexOf(correctText),
+            explain: L.cyr + ' ↔ ' + L.lat,
+            letters: CORE_LETTERS.indexOf(L.lat.toLowerCase()) > -1 ? [L.lat.toLowerCase()] : [],
+            _idx: idx
+        };
+    }
+    function qFindError(pick, rnd) {
+        const ids = [pick(), pick(), pick(), pick()];
+        const lats = ids.map(i => toLat(WORDS[i][0]));
+        const badPos = Math.floor(rnd() * 4);
+        const wrong = wrongVariants(lats[badPos], rnd)[0];
+        const opts = lats.slice();
+        opts[badPos] = wrong;
+        return {
+            prompt: 'Qaysi söz xato yozilgan?',
+            options: opts, correct: badPos,
+            explain: 'Xato yozilgan: ' + wrong + '  ·  töğrisi: ' + lats[badPos],
+            letters: []
+        };
+    }
+    function buildTask(key) {
+        const days = keyToDays(key);
+        const rnd = mulberry32(days * 7919 + 13);
+        const wi = wordIndexFor(days);
+        const used = new Set([wi]);
+        const pick = () => { let i; do { i = Math.floor(rnd() * WORDS.length); } while (used.has(i)); used.add(i); return i; };
+        const q2 = qLetter(rnd, -1);
+        return [
+            qWord(wi, rnd),
+            q2,
+            qWord(pick(), rnd),
+            qFindError(pick, rnd),
+            qLetter(rnd, q2._idx)
+        ];
+    }
+
+    // ---------- nişonlar ----------
+    function evalBadges() {
+        const fresh = [];
+        BADGES.forEach(b => {
+            if (!state.badges[b.id] && b.ok(state)) { state.badges[b.id] = todayKey(); fresh.push(b); }
+        });
+        return fresh;
+    }
+
+    // ---------- toast ----------
+    function toast(html) {
+        let box = document.getElementById('gmToastBox');
+        if (!box) { box = document.createElement('div'); box.id = 'gmToastBox'; document.body.appendChild(box); }
+        const t = document.createElement('div');
+        t.className = 'gm-toast';
+        t.innerHTML = html;
+        box.appendChild(t);
+        requestAnimationFrame(() => t.classList.add('show'));
+        setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3400);
+    }
+    function announceBadges(list) {
+        list.forEach((b, i) => setTimeout(() => toast('<span class="gm-toast-ico">' + b.icon + '</span><span><b>Yangi nişon!</b><br>' + b.title + '</span>'), 400 + i * 900));
+    }
+
+    // ---------- nav tugmasi ----------
+    function refreshNav() {
+        const btn = document.getElementById('gmNavBtn');
+        const num = document.getElementById('gmNavStreak');
+        if (num) num.textContent = currentStreak();
+        if (btn) btn.classList.toggle('gm-pending', !isDoneToday());
+    }
+
+    // ---------- UI ----------
+    let view = 'home', task = null, qi = 0, answers = [], lastResult = null;
+    const body = () => document.getElementById('gmBody');
+
+    function dateLabel() {
+        const d = now();
+        return WEEKDAYS[d.getDay()] + ', ' + d.getDate() + '-' + MONTHS[d.getMonth()];
+    }
+
+    function renderHome() {
+        const key = todayKey();
+        const days = keyToDays(key);
+        const wi = wordIndexFor(days);
+        const cyr = WORDS[wi][0], lat = toLat(cyr), mean = toLat(WORDS[wi][1]);
+        const streak = currentStreak();
+        const lv = levelOf(state.xp);
+        const inLv = state.xp % XP_PER_LEVEL;
+        const pct = Math.round(inLv / XP_PER_LEVEL * 100);
+        const learned = state.learned.indexOf(wi) > -1;
+        const done = state.history[key];
+
+        let streakNote = '';
+        if (!done) {
+            if (streak > 0) streakNote = 'Seriyani saqlab qoliş uçun bugungi topşiriqni bajaring!';
+            else if (state.streak > 0) streakNote = 'Seriya uzilgan — bugun yangidan boşlang!';
+        }
+
+        const tips = tipsFor(cyr).map(t => '<span class="gm-chip">' + t + '</span>').join('');
+
+        const badgesHtml = BADGES.map(b => {
+            const got = state.badges[b.id];
+            return '<div class="gm-badge' + (got ? ' got' : '') + '" title="' + b.desc + '">' +
+                '<div class="gm-badge-ico">' + (got ? b.icon : '🔒') + '</div>' +
+                '<div class="gm-badge-t">' + b.title + '</div>' +
+                '<div class="gm-badge-d">' + b.desc + '</div></div>';
+        }).join('');
+
+        const taskCard = done
+            ? '<div class="gm-done"><div class="gm-done-ico">✓</div><div><div class="gm-done-t">Bugungi topşiriq bajarildi: ' + done.score + '/' + done.total + '</div>' +
+              '<div class="gm-done-s">Ertaga yangi topşiriq böladi.</div></div></div>'
+            : '<div class="gm-task-row"><div><div class="gm-task-t">5 ta savol · taxminan 1 daqiqa</div>' +
+              (streakNote ? '<div class="gm-task-note">' + streakNote + '</div>' : '<div class="gm-task-s">Söz yozilişi, harflar va xatolarni topiş</div>') +
+              '</div><button type="button" class="pill-btn gm-start" onclick="ULHGame.start()">Boşlaş</button></div>';
+
+        body().innerHTML =
+            '<div class="gm-hero">' +
+              '<div class="gm-hero-top"><span class="gm-tag">KUNLIK MAŞQ</span><span class="gm-date">' + dateLabel() + '</span></div>' +
+              '<div class="gm-stats">' +
+                '<div class="gm-stat gm-stat-fire"><div class="gm-stat-num">' + FLAME_SVG + '<span>' + streak + '</span></div><div class="gm-stat-lbl">kunlik seriya</div></div>' +
+                '<div class="gm-stat"><div class="gm-stat-num">' + state.xp + '</div><div class="gm-stat-lbl">tajriba (XP)</div></div>' +
+                '<div class="gm-stat"><div class="gm-stat-num">' + lv + '</div><div class="gm-stat-lbl">' + levelTitle(lv) + '</div></div>' +
+              '</div>' +
+              '<div class="gm-bar"><div class="gm-bar-fill" style="width:' + pct + '%"></div></div>' +
+              '<div class="gm-bar-cap">Keyingi darajagaçha: ' + (XP_PER_LEVEL - inLv) + ' XP</div>' +
+            '</div>' +
+
+            '<div class="gm-card">' +
+              '<div class="gm-card-tag">KUN SÖZI</div>' +
+              '<div class="gm-word-lat">' + lat + '</div>' +
+              '<div class="gm-word-cyr">' + cyr + '</div>' +
+              '<div class="gm-word-mean">' + mean + '</div>' +
+              (tips ? '<div class="gm-chips">' + tips + '</div>' : '') +
+              '<div class="gm-actions">' +
+                '<button type="button" class="gm-btn' + (learned ? ' gm-btn-ok' : ' gm-btn-main') + '" ' + (learned ? 'disabled' : '') + ' onclick="ULHGame.learn(' + wi + ')">' + (learned ? 'Örgandim ✓' : 'Örgandim +5 XP') + '</button>' +
+                '<button type="button" class="gm-btn" onclick="ULHGame.copyWord(' + wi + ')">Nusxa oliş</button>' +
+                '<button type="button" class="gm-btn" onclick="ULHGame.askOsha(' + wi + ')">Öşa’dan söraş</button>' +
+              '</div>' +
+            '</div>' +
+
+            '<div class="gm-card"><div class="gm-card-tag">BUGUNGI TOPŞIRIQ</div>' + taskCard + '</div>' +
+
+            '<div class="gm-card"><div class="gm-card-tag">NIŞONLAR · ' + Object.keys(state.badges).length + '/' + BADGES.length + '</div>' +
+              '<div class="gm-badges">' + badgesHtml + '</div></div>';
+    }
+
+    function renderQuestion() {
+        const q = task[qi];
+        const answered = answers[qi] !== undefined;
+        const opts = q.options.map((o, i) => {
+            let cls = 'quiz-opt-btn';
+            if (answered) {
+                if (i === q.correct) cls += ' correct';
+                else if (i === answers[qi]) cls += ' wrong';
+            }
+            return '<button type="button" class="' + cls + '" ' + (answered ? 'disabled' : '') + ' onclick="ULHGame.answer(' + i + ')">' + (i + 1) + '. ' + o + '</button>';
+        }).join('');
+
+        let fb = '';
+        if (answered) {
+            const ok = answers[qi] === q.correct;
+            fb = '<div class="gm-fb ' + (ok ? 'ok' : 'bad') + '"><b>' + (ok ? 'Töğri! +10 XP' : 'Xato.') + '</b><div>' + q.explain + '</div></div>' +
+                 '<button type="button" class="pill-btn gm-next" onclick="ULHGame.next()">' + (qi === task.length - 1 ? 'Natijani köriş' : 'Keyingi →') + '</button>';
+        }
+
+        body().innerHTML =
+            '<div class="gm-q-head"><button type="button" class="gm-back" onclick="ULHGame.home()">← Ortga</button>' +
+            '<span class="gm-q-count">Savol ' + (qi + 1) + ' / ' + task.length + '</span></div>' +
+            '<div class="gm-bar"><div class="gm-bar-fill" style="width:' + (qi / task.length * 100) + '%"></div></div>' +
+            '<div class="quiz-question-card gm-qcard"><div class="quiz-q-title">' + q.prompt + '</div><div class="quiz-options-grid">' + opts + '</div></div>' + fb;
+    }
+
+    function renderResult() {
+        const r = lastResult;
+        let comment = 'Maşq qiling, ertaga yana urinib köring 💪';
+        if (r.score === r.total) comment = 'Mukammal! 🏆';
+        else if (r.score >= 4) comment = 'Ajoyib natija! 👏';
+        else if (r.score >= 3) comment = 'Yaxşi, davom eting! 🙂';
+        const badges = r.badges.map(b => '<div class="gm-newbadge"><span>' + b.icon + '</span> ' + b.title + '</div>').join('');
+        body().innerHTML =
+            '<div class="gm-result">' +
+              '<div class="gm-result-score">' + r.score + ' / ' + r.total + '</div>' +
+              '<div class="gm-result-c">' + comment + '</div>' +
+              '<div class="gm-result-grid">' +
+                '<div><b>+' + r.xp + '</b><span>XP</span></div>' +
+                '<div><b>' + FLAME_SVG + ' ' + r.streak + '</b><span>kunlik seriya</span></div>' +
+              '</div>' +
+              (badges ? '<div class="gm-newbadges"><div class="gm-card-tag">YANGI NIŞONLAR</div>' + badges + '</div>' : '') +
+              '<button type="button" class="pill-btn gm-start" onclick="ULHGame.home()">Boş sahifaga</button>' +
+            '</div>';
+    }
+
+    function render() {
+        if (!body()) return;
+        if (view === 'quiz') renderQuestion();
+        else if (view === 'result') renderResult();
+        else renderHome();
+        refreshNav();
+    }
+
+    // ---------- harakatlar ----------
+    function finish() {
+        const key = todayKey();
+        const score = answers.reduce((s, a, i) => s + (a === task[i].correct ? 1 : 0), 0);
+        const total = task.length;
+
+        // Seriya
+        const gap = state.lastDone ? keyToDays(key) - keyToDays(state.lastDone) : Infinity;
+        state.streak = (gap === 1) ? state.streak + 1 : 1;
+        state.best = Math.max(state.best, state.streak);
+        state.lastDone = key;
+        state.history[key] = { score: score, total: total };
+
+        // XP
+        const xp = score * 10 + 20 + Math.min(state.streak, 10) * 2;
+        state.xp += xp;
+        state.correct += score;
+        if (score === total) state.perfect++;
+
+        const fresh = evalBadges();
+        save();
+        lastResult = { score: score, total: total, xp: xp, streak: state.streak, badges: fresh };
+        view = 'result';
+        render();
+        announceBadges(fresh);
+    }
+
+    const api = {
+        open() { view = 'home'; render(); const m = document.getElementById('dailyModalBackdrop'); if (m) m.classList.add('open'); },
+        close(event) {
+            const m = document.getElementById('dailyModalBackdrop');
+            if (!m) return;
+            if (event && event.target && event.target !== m) return;
+            m.classList.remove('open');
+        },
+        home() { view = 'home'; render(); },
+        start() {
+            if (isDoneToday()) return;
+            task = buildTask(todayKey()); qi = 0; answers = []; view = 'quiz'; render();
+        },
+        answer(i) {
+            if (view !== 'quiz' || answers[qi] !== undefined) return;
+            const q = task[qi];
+            answers[qi] = i;
+            if (i === q.correct) q.letters.forEach(k => { state.letters[k] = (state.letters[k] || 0) + 1; });
+            render();
+        },
+        next() {
+            if (answers[qi] === undefined) return;
+            if (qi < task.length - 1) { qi++; render(); } else finish();
+        },
+        learn(wi) {
+            if (state.learned.indexOf(wi) > -1) return;
+            state.learned.push(wi);
+            state.xp += 5;
+            const fresh = evalBadges();
+            save(); render(); announceBadges(fresh);
+        },
+        copyWord(wi) {
+            const text = toLat(WORDS[wi][0]);
+            if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast('<span class="gm-toast-ico">📋</span><span>Nusxalandi: <b>' + text + '</b></span>')).catch(() => {});
+        },
+        askOsha(wi) {
+            const btn = document.getElementById('osha-btn');
+            const inp = document.getElementById('osha-input');
+            if (!btn || !inp) return;
+            const lat = toLat(WORDS[wi][0]);
+            api.close();
+            btn.click();
+            setTimeout(() => {
+                inp.value = '«' + lat + '» sözi nima uçun şunday yoziladi? Harflar qoidasini qisqa tuşuntirib ber.';
+                inp.dispatchEvent(new Event('input'));
+                inp.focus();
+            }, 380);
+        },
+        // Mavjud AI-viktorina tugagaç çaqiriladi
+        onQuizFinished(score, total) {
+            if (!total) return;
+            const key = todayKey();
+            if (state.quizXp.day !== key) state.quizXp = { day: key, xp: 0 };
+            const gain = Math.max(0, Math.min(score * 2, 30 - state.quizXp.xp)); // kuniga ko'pi bilan 30 XP
+            state.quizXp.xp += gain;
+            state.xp += gain;
+            if (score === total && total >= 3) state.quizPerfect++;
+            const fresh = evalBadges();
+            save(); refreshNav(); announceBadges(fresh);
+            if (gain > 0) toast('<span class="gm-toast-ico">⭐</span><span><b>+' + gain + ' XP</b><br>Viktorina uçun</span>');
+        },
+        // Sinov uçun (konsolda): ULHGame.debugAdvanceDay(1)
+        debugAdvanceDay(n) { window.__ulhDayOffset = dayOffset() + (n || 1); render(); return todayKey(); },
+        reset() { state = defaultState(); try { localStorage.removeItem(STORE_KEY); } catch (e) {} render(); }
+    };
+
+    window.ULHGame = api;
+    window.openDailyModal = api.open;
+    window.closeDailyModal = api.close;
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') api.close(); });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshNav(); });
+    document.addEventListener('DOMContentLoaded', refreshNav);
+    if (document.readyState !== 'loading') refreshNav();
+})();
