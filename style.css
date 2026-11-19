@@ -10138,3 +10138,4 @@ body.dark-mode .pdf-dropzone:hover { border-color: #38BDF8; color: #38BDF8; }
 body.dark-mode .pdf-file-item { background: #1E293B; border-color: #334155; color: #E2E8F0; }
 body.dark-mode .pdf-field-group,
 body.dark-mode .pdf-checkbox-row { color: #CBD5E1; }
+body.dark-mode .pdf-studio-icon-badge { background: rgba(244, 63, 94, 0.16); color: #FB7185; border: 1px solid rgba(244, 63, 94, 0.28); }
