@@ -9929,3 +9929,24 @@ body.dark-mode .gm-newbadge { background: rgba(245, 158, 11, 0.18); color: #FCD3
     .gm-word-lat { font-size: 26px; }
     .gm-nav-btn { padding: 0 11px 0 9px; }
 }
+
+/* ========================================== */
+/* === ССЫЛКИ В СООБЩЕНИЯХ ПОЛЬЗОВАТЕЛЯ ÖŞA AI === */
+/* ========================================== */
+.osha-msg-user a {
+    color: #ffffff !important;
+    font-weight: 600;
+    text-decoration: underline !important;
+    text-decoration-color: rgba(255, 255, 255, 0.65);
+    text-underline-offset: 3px;
+    padding: 1px 4px;
+    margin: 0 -4px;
+    border-radius: 5px;
+    word-break: break-word;
+    transition: background-color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.osha-msg-user a:hover {
+    background-color: rgba(255, 255, 255, 0.22);
+    text-decoration-color: #ffffff;
+}
