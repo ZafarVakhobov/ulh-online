@@ -11213,3 +11213,238 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('DOMContentLoaded', refreshNav);
     if (document.readyState !== 'loading') refreshNav();
 })();
+
+// === ПОИСК ПО ИНСТРУМЕНТАМ И ИЗБРАННОЕ ===
+const TOOL_FAVORITES_KEY = "ulh_tool_favorites_v1";
+const ULH_TOOL_CATALOG = [
+    { id: "editor", name: "Matn muharriri", description: "Jonli transliteratsiya va matnni tahrirlaş", category: "Matn", keywords: "editor text transliteratsiya transliteration кириллица латиница кирилл лотин транслитерация yozuv", focus: "#editor" },
+    { id: "converter", name: "Fayl konverteri", description: "Office hujjatlari, PDF va rasmlardan matn oliş", category: "Matn", keywords: "file fayl файл файлы документ документы конвертер doc docx xls xlsx ppt pptx pdf ocr rasm image konvertatsiya", selector: "#fileInput" },
+    { id: "alphabet", name: "Yangi alifbo qoidalari", description: "Ö, Ğ, Ş va Ç harflari böyiça qöllanma", category: "Matn", keywords: "alphabet alifbo harf qoida harflar letters алфавит буквы правила ö ğ ş ç", action: "openAlphabetModal" },
+    { id: "stats", name: "Matn statistikasi", description: "Sözlar, belgilar va matn hajmi", category: "Matn", keywords: "statistics statistika statistika symbol belgi word soz character статистика слова символы знаки", action: "openStatsModal" },
+    { id: "text-tools", name: "Matn asboblari", description: "Formatlaş, tozalaş va qöşimça amallar", category: "Matn", keywords: "tools vositalar format cleanup tozalash", selector: "#toolsBtn" },
+    { id: "diff", name: "Matnlarni soliştiriş", description: "Ikki matn orasidagi farqlarni köriş", category: "Matn", keywords: "diff compare farq taqqoslash сравнить сравнение различия", action: "openDiffModal" },
+    { id: "archive", name: "Matn arxivi", description: "Saqlangan matnlarni topiş va tiklaş", category: "Matn", keywords: "archive saqlangan matnlar history архив сохраненные тексты", action: "openArchiveModal" },
+    { id: "time-machine", name: "Matn tarixi", description: "Oldingi tahrirlarni köriş va tiklaş", category: "Matn", keywords: "history versions vaqt machine qayta tiklash история версии восстановить", action: "openTimeMachineModal" },
+    { id: "dictation", name: "Ovozli diktant", description: "Ovoz yordamida matn kiritiş", category: "Matn", keywords: "speech voice microphone diktovka govor диктовка голос микрофон", action: "toggleDictation" },
+    { id: "translator", name: "AI tarjimon", description: "Matnni boşqa tilga tarjima qiliş", category: "AI", keywords: "translate tarjima translation til language перевод переводчик", action: "openTranslatorPanel" },
+    { id: "ai-fix", name: "AI yordamida matnni tuzatiş", description: "Imlo va uslubni yaxşilaş", category: "AI", keywords: "proofread spelling grammar xato imlo", action: "runAiPreset", args: ["fix_errors"] },
+    { id: "ai-post", name: "Ijtimoiy tarmoq uçun post", description: "Telegram va Instagram uçun matn", category: "AI", keywords: "social media telegram instagram post smm", action: "runAiPreset", args: ["social_post"] },
+    { id: "glossary", name: "Atamalar luğati", description: "Matndan asosiy atamalarni ajratiş", category: "AI", keywords: "glossary terms lugat terminlar", action: "generateGlossary" },
+    { id: "ai-menu", name: "AI yordamçi vositalari", description: "Tarjima, tahrirlaş, testlar va boşqa AI amallari", category: "AI", keywords: "ai assistant yordamchi suniy intellekt", selector: "#aiHelperBtn" },
+    { id: "osha", name: "Öşa AI bilan suhbat", description: "Sayt yordamçisiga savol bering", category: "AI", keywords: "chat chatbot osha yordam bot", selector: "#osha-btn" },
+    { id: "uniqueness", name: "Matn unikalligini tekşiriş", description: "Akademik qolip va iboralarni aniqlaş", category: "AI", keywords: "plagiarism originality uniqueness antiplagiat", action: "checkTextUniqueness" },
+    { id: "daily", name: "Kunlik maşq", description: "Har kuni qisqa alifbo va söz maşqlari", category: "Örganiş", keywords: "daily practice mashq word learning streak seriya", action: "openDailyModal" },
+    { id: "quiz", name: "Interaktiv viktorina", description: "Bilimingizni savollar bilan tekşiring", category: "Örganiş", keywords: "quiz test viktorina savol", action: "openInteractiveTestModal" },
+    { id: "weather", name: "Ob-havo", description: "Özbekiston hududlari böyiça prognoz", category: "Foydali vositalar", keywords: "weather forecast shahar hudud погода прогноз город", action: "openWeatherModal" },
+    { id: "currency", name: "Valyuta kalkulyatori", description: "Valyuta kurslari va miqdor hisoblaş", category: "Foydali vositalar", keywords: "currency money kurs dollar euro rubl валюта курс конвертер", action: "openCurrencyModal" },
+    { id: "qr", name: "QR-kod generatori", description: "Matn yoki havoladan QR-kod yaratiş", category: "Foydali vositalar", keywords: "qr code kod link havola png svg qr код ссылка", action: "openQrModal" },
+    { id: "bibliography", name: "Iqtibos va adabiyotlar", description: "Manba va bibliografik yozuv yaratiş", category: "Foydali vositalar", keywords: "citation bibliography reference vak iqtibos adabiyot", action: "openBiblioModal" },
+    { id: "templates", name: "Aqlli andozalar", description: "Rasmiy hujjat andozalarini töldiriş", category: "Foydali vositalar", keywords: "template document letter ariza hujjat", action: "openAndozaModal" },
+    { id: "news", name: "Yangiliklar", description: "Yangiliklar lentasi va manbalar", category: "Foydali vositalar", keywords: "news rss yangiliklar feed новости лента", action: "openNewsModal" },
+    { id: "word-cloud", name: "Söz buluti", description: "Matndagi asosiy, kalit sözlarni vizuallaştiriş", category: "Foydali vositalar", keywords: "word cloud visualization bulut", action: "openWordCloudModal" },
+    { id: "quote", name: "Iqtibos dizayneri", description: "Matndan bezatilgan iqtibos rasmi yaratiş", category: "Foydali vositalar", keywords: "quote design image rasm", action: "openQuoteModal" },
+    { id: "certificate", name: "Sertifikat va diplomlar", description: "Sertifikatlarni tayyorlaş", category: "Foydali vositalar", keywords: "certificate diploma badge sertifikat", action: "openCertModal" },
+    { id: "schedule", name: "Öquv jadvali", description: "Dars jadvali va akademik reja", category: "Rejalaştiriş", keywords: "schedule timetable class jadval dars расписание уроки", action: "openSchedulerModal" },
+    { id: "calendar", name: "Taqvim va tadbirlar", description: "Tadbirlar va eslatmalarni boşqariş", category: "Rejalaştiriş", keywords: "calendar event reminder taqvim eslatma", selector: "#calendar-toggle-btn" },
+    { id: "kanban", name: "Rejalar doskasi", description: "Vazifalarni doskada tartiblaş", category: "Rejalaştiriş", keywords: "kanban tasks task board reja vazifa задачи доска", selector: "#kanban-toggle-btn" },
+    { id: "pomodoro", name: "Pomodoro taymeri", description: "Fokusli iş va tanaffus intervallari", category: "Rejalaştiriş", keywords: "pomodoro timer focus таймер", selector: "#pomodoro-toggle-btn" },
+    { id: "scratchpad", name: "Tezkor qaydlar", description: "Brauzerda vaqtinçalik qaydlar", category: "Rejalaştiriş", keywords: "notes memo scratchpad qayd daftar заметки записи", selector: "#scratchpad-toggle-btn" },
+    { id: "focus-room", name: "Fokus xonasi", description: "Tinç muhit, fon va konsentratsiya", category: "Rejalaştiriş", keywords: "focus zen relax concentration fokus", action: "toggleZenMode" },
+    { id: "sources", name: "Ilmiy manbalar", description: "Saqlangan ilmiy manbalar röyxati", category: "Rejalaştiriş", keywords: "sources research scholarly ilmiy manba", selector: "#sources-toggle-btn" },
+    { id: "clipboard", name: "Nusxalar tarixi", description: "Sönggi nusxalangan matnlar", category: "Rejalaştiriş", keywords: "clipboard copy history nusxa", selector: "#clipboard-toggle-btn" },
+    { id: "web-search", name: "Tezkor qidiruv mini-brauzeri", description: "Sayt içidagi mini-brauzerda qidiriş", category: "Boşqa", keywords: "browser web internet google qidiruv mini", selector: "#browser-toggle-btn" },
+    { id: "music", name: "Musiqa pleyeri", description: "Konsentratsiya uçun musiqa va pleylist", category: "Boşqa", keywords: "music audio youtube player musiqa", selector: "#musicToggleBtn" },
+    { id: "theme", name: "Tungi va kunduzgi mavzu", description: "Sayt rang mavzusini almaştiriş", category: "Boşqa", keywords: "theme dark light tun kun rang тема темная светлая оформление", action: "toggleDarkMode" },
+    { id: "design", name: "Sayt dizayni", description: "Ranglar va fonni moslaştiriş", category: "Boşqa", keywords: "customize appearance style dizayn background", selector: "#themeStudioBtn" },
+    { id: "hotkeys", name: "Klaviatura tugmalari", description: "Mavjud tezkor tugmalar röyxati", category: "Boşqa", keywords: "keyboard shortcut hotkey klaviatura клавиши сочетания горячие клавиши", action: "openHotkeysModal" },
+    { id: "p2p", name: "Matnni QR orqali uzatiş", description: "Qurilmalar orasida matn ulaşiş", category: "Boşqa", keywords: "p2p share transfer qr device", action: "openP2pModal" }
+];
+
+let toolSearchFavoriteIds = [];
+let toolSearchActiveIndex = -1;
+
+function loadToolSearchFavorites() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(TOOL_FAVORITES_KEY) || "[]");
+        toolSearchFavoriteIds = Array.isArray(saved) ? saved.filter(id => ULH_TOOL_CATALOG.some(tool => tool.id === id)) : [];
+    } catch (_) { toolSearchFavoriteIds = []; }
+}
+
+function saveToolSearchFavorites() {
+    try { localStorage.setItem(TOOL_FAVORITES_KEY, JSON.stringify(toolSearchFavoriteIds)); } catch (_) {}
+}
+
+function normalizeToolSearchText(value) {
+    return String(value || "").toLocaleLowerCase().replace(/ё/g, "е").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function createToolSearchSection(title, items, resultsRoot) {
+    if (!items.length) return;
+    const sectionTitle = document.createElement("div");
+    sectionTitle.className = "tool-search-section-title";
+    sectionTitle.textContent = title;
+    resultsRoot.appendChild(sectionTitle);
+
+    items.forEach(tool => {
+        const row = document.createElement("div");
+        row.className = "tool-search-result-row";
+        const openButton = document.createElement("button");
+        openButton.type = "button";
+        openButton.className = "tool-search-result";
+        openButton.setAttribute("role", "option");
+        openButton.setAttribute("aria-selected", "false");
+        openButton.dataset.toolId = tool.id;
+        openButton.dataset.searchIndex = String(toolSearchActiveIndex++);
+
+        const icon = document.createElement("span");
+        icon.className = "tool-search-result-icon";
+        icon.setAttribute("aria-hidden", "true");
+        icon.textContent = tool.name.trim().charAt(0).toLocaleUpperCase();
+
+        const copy = document.createElement("span");
+        copy.className = "tool-search-result-copy";
+        const name = document.createElement("span");
+        name.className = "tool-search-result-name";
+        name.textContent = tool.name;
+        const description = document.createElement("span");
+        description.className = "tool-search-result-description";
+        description.textContent = tool.description;
+        copy.append(name, description);
+        openButton.append(icon, copy);
+        openButton.addEventListener("click", () => activateSearchedTool(tool));
+
+        const favoriteButton = document.createElement("button");
+        const isFavorite = toolSearchFavoriteIds.includes(tool.id);
+        favoriteButton.type = "button";
+        favoriteButton.className = "tool-search-favorite" + (isFavorite ? " is-favorite" : "");
+        favoriteButton.textContent = isFavorite ? "★" : "☆";
+        favoriteButton.setAttribute("aria-label", isFavorite ? "Tanlanganlardan olib taşlaş" : "Tanlanganlarga qöşiş");
+        favoriteButton.setAttribute("aria-pressed", String(isFavorite));
+        favoriteButton.title = favoriteButton.getAttribute("aria-label");
+        favoriteButton.addEventListener("click", event => {
+            event.stopPropagation();
+            toggleToolFavorite(tool.id);
+        });
+        row.append(openButton, favoriteButton);
+        resultsRoot.appendChild(row);
+    });
+}
+
+function renderToolSearchResults() {
+    const input = document.getElementById("toolSearchInput");
+    const resultsRoot = document.getElementById("toolSearchResults");
+    if (!input || !resultsRoot) return;
+    const query = normalizeToolSearchText(input.value).trim();
+    const filtered = ULH_TOOL_CATALOG.filter(tool => {
+        const searchable = normalizeToolSearchText([tool.name, tool.description, tool.category, tool.keywords].join(" "));
+        return !query || searchable.includes(query);
+    });
+    resultsRoot.replaceChildren();
+    toolSearchActiveIndex = 0;
+
+    if (query) {
+        createToolSearchSection("Qidiruv natijalari", filtered, resultsRoot);
+    } else {
+        const favorites = filtered.filter(tool => toolSearchFavoriteIds.includes(tool.id));
+        const others = filtered.filter(tool => !toolSearchFavoriteIds.includes(tool.id));
+        createToolSearchSection("Tanlanganlar", favorites, resultsRoot);
+        createToolSearchSection("Barça vositalar", others, resultsRoot);
+    }
+
+    const resultButtons = resultsRoot.querySelectorAll(".tool-search-result");
+    if (!resultButtons.length) {
+        const empty = document.createElement("div");
+        empty.className = "tool-search-empty";
+        empty.textContent = query ? "Mos vosita topilmadi. Boşqa söz bilan qidirib köring." : "Vositalar topilmadi.";
+        resultsRoot.appendChild(empty);
+        toolSearchActiveIndex = -1;
+        return;
+    }
+    setToolSearchActiveResult(query ? 0 : -1);
+}
+
+function setToolSearchActiveResult(index) {
+    const buttons = Array.from(document.querySelectorAll("#toolSearchResults .tool-search-result"));
+    if (!buttons.length) { toolSearchActiveIndex = -1; return; }
+    if (index < 0) index = buttons.length - 1;
+    if (index >= buttons.length) index = 0;
+    toolSearchActiveIndex = index;
+    buttons.forEach((button, i) => {
+        const active = i === index;
+        button.setAttribute("aria-selected", String(active));
+        if (active) button.scrollIntoView({ block: "nearest" });
+    });
+}
+
+function toggleToolFavorite(id) {
+    if (toolSearchFavoriteIds.includes(id)) toolSearchFavoriteIds = toolSearchFavoriteIds.filter(itemId => itemId !== id);
+    else toolSearchFavoriteIds.push(id);
+    saveToolSearchFavorites();
+    renderToolSearchResults();
+    const input = document.getElementById("toolSearchInput");
+    if (input) input.focus();
+}
+
+function activateSearchedTool(tool) {
+    closeToolSearch(false);
+    if (tool.focus) {
+        const target = document.querySelector(tool.focus);
+        if (target) {
+            target.scrollIntoView({ behavior: "smooth", block: "center" });
+            target.focus({ preventScroll: true });
+        }
+        return;
+    }
+    if (tool.selector) {
+        const trigger = document.querySelector(tool.selector);
+        if (trigger) trigger.click();
+        return;
+    }
+    const action = window[tool.action];
+    if (typeof action === "function") action(...(tool.args || []));
+}
+
+function openToolSearch() {
+    const backdrop = document.getElementById("toolSearchBackdrop");
+    const input = document.getElementById("toolSearchInput");
+    if (!backdrop || !input) return;
+    backdrop.classList.add("open");
+    backdrop.setAttribute("aria-hidden", "false");
+    input.value = "";
+    renderToolSearchResults();
+    requestAnimationFrame(() => input.focus());
+}
+
+function closeToolSearch(returnFocus = true) {
+    const backdrop = document.getElementById("toolSearchBackdrop");
+    if (!backdrop) return;
+    backdrop.classList.remove("open");
+    backdrop.setAttribute("aria-hidden", "true");
+    if (returnFocus) document.getElementById("toolSearchOpenBtn")?.focus();
+}
+
+const toolSearchInputEl = document.getElementById("toolSearchInput");
+if (toolSearchInputEl) {
+    toolSearchInputEl.addEventListener("input", renderToolSearchResults);
+    toolSearchInputEl.addEventListener("keydown", event => {
+        if (event.key === "ArrowDown") { event.preventDefault(); setToolSearchActiveResult(toolSearchActiveIndex + 1); }
+        else if (event.key === "ArrowUp") { event.preventDefault(); setToolSearchActiveResult(toolSearchActiveIndex - 1); }
+        else if (event.key === "Enter") {
+            const active = document.querySelector(`#toolSearchResults .tool-search-result[data-search-index="${toolSearchActiveIndex}"]`);
+            if (active) { event.preventDefault(); active.click(); }
+        } else if (event.key === "Escape") { event.preventDefault(); closeToolSearch(); }
+    });
+}
+
+document.addEventListener("keydown", event => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLocaleLowerCase() === "k") {
+        event.preventDefault();
+        openToolSearch();
+    }
+    if (event.key === "Escape") {
+        const backdrop = document.getElementById("toolSearchBackdrop");
+        if (backdrop?.classList.contains("open")) closeToolSearch();
+    }
+});
+
+loadToolSearchFavorites();
