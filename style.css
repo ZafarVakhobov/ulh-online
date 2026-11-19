@@ -10008,6 +10008,34 @@ body.dark-mode .tool-search-result-description { color: #94A3B8; }
 .tool-search-favorite { width: 36px; height: 36px; flex: 0 0 36px; display: grid; place-items: center; border: 0; border-radius: 9px; background: transparent; color: #94A3B8; font-size: 21px; cursor: pointer; }
 .tool-search-favorite:hover { background: #FEF3C7; color: #D97706; }
 .tool-search-favorite.is-favorite { color: #F59E0B; }
+
+/* === ОРАНЖЕВЫЙ ОТТЕНОК ДЛЯ ИЗБРАННЫХ ИНСТРУМЕНТОВ === */
+.tool-search-result-row:has(.tool-search-favorite.is-favorite) .tool-search-result-icon {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.tool-search-result-row:has(.tool-search-favorite.is-favorite) .tool-search-result:hover,
+.tool-search-result-row:has(.tool-search-favorite.is-favorite) .tool-search-result[aria-selected="true"] {
+    background: #FFFBEB;
+}
+
+/* Тёмная тема для избранных */
+body.dark-mode .tool-search-result-row:has(.tool-search-favorite.is-favorite) .tool-search-result-icon {
+    background: rgba(245, 158, 11, 0.18);
+    color: #FBBF24;
+}
+
+body.dark-mode .tool-search-result-row:has(.tool-search-favorite.is-favorite) .tool-search-result:hover,
+body.dark-mode .tool-search-result-row:has(.tool-search-favorite.is-favorite) .tool-search-result[aria-selected="true"] {
+    background: rgba(245, 158, 11, 0.12);
+}
+
+body.dark-mode .tool-search-favorite:hover {
+    background: rgba(245, 158, 11, 0.18);
+    color: #FBBF24;
+}
+
 .tool-search-empty { padding: 28px 16px; color: #64748B; text-align: center; font-size: 13px; }
 .tool-search-footer { display: flex; justify-content: space-between; gap: 12px; padding: 10px 16px; border-top: 1px solid #E2E8F0; color: #64748B; font-size: 11px; }
 body.dark-mode .tool-search-footer { border-color: #334155; color: #94A3B8; }
