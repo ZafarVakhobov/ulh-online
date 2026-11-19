@@ -54,7 +54,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
     
     <!-- Основные стили сайта -->
-    <link rel="stylesheet" href="style.css?v=3.2">
+    <link rel="stylesheet" href="style.css?v=3.3">
 </head>
 <body>
 
@@ -351,7 +351,11 @@
         
 <!-- Правая группа: Мини-плеер + Переключатель тёмной темы + Кнопка Telegram -->
         <div class="nav-right-actions">
-<!-- === KUNLIK MAŞQ: tugma (seriya hisoblagiçi) === -->
+<!-- Qidiruv: sayt vositalarini topish (Ctrl+K) -->
+            <button type="button" class="tool-search-open-btn" id="toolSearchOpenBtn" onclick="openToolSearch()" title="Vositalarni qidiriş (Ctrl+K)" aria-label="Sayt vositalarini qidiriş">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m16.5 16.5 4 4"/></svg>
+            </button>
+            <!-- === KUNLIK MAŞQ: tugma (seriya hisoblagiçi) === -->
             <button type="button" class="gm-nav-btn" id="gmNavBtn" onclick="openDailyModal()" title="Kunlik maşq va seriya" aria-label="Kunlik maşq">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
                 <span id="gmNavStreak">0</span>
@@ -616,6 +620,19 @@
         </div>
         
     </nav>
+    <!-- Быстрый поиск по инструментам и избранное -->
+    <div class="tool-search-backdrop" id="toolSearchBackdrop" aria-hidden="true" onclick="if(event.target === this) closeToolSearch()">
+        <section class="tool-search-dialog" role="dialog" aria-modal="true" aria-labelledby="toolSearchTitle">
+            <h2 class="tool-search-sr-only" id="toolSearchTitle">Sayt vositalarini qidiriş</h2>
+            <div class="tool-search-input-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m16.5 16.5 4 4"/></svg>
+                <input id="toolSearchInput" type="search" autocomplete="off" placeholder="Vosita yoki vazifani qidiring..." aria-label="Sayt vositalarini qidiring">
+                <button type="button" class="tool-search-close" onclick="closeToolSearch()" aria-label="Yopish">Esc</button>
+            </div>
+            <div class="tool-search-results" id="toolSearchResults" role="listbox" aria-label="Natijalar"></div>
+            <div class="tool-search-footer"><span>Tanlaş uchun Enter bosing</span><span><kbd>↑</kbd><kbd>↓</kbd> yuriş <kbd>Ctrl</kbd><kbd>K</kbd> qidiruv</span></div>
+        </section>
+    </div>
 
 <!-- Универсальный фон для мобильных всплывающих меню -->
     <div class="weather-modal-backdrop" id="mobileMenuOverlay" style="z-index: 10550;" onclick="closeAllMobileMenus()"></div>
@@ -2021,7 +2038,7 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
 </SCRIPT><NOSCRIPT><IMG height=0 src="http://cnt0.www.uz/counter/collect?id=48162&pg=http%3A//uzinfocom.uz&col=340F6E&t=ffffff&p=BD6F6F" width=0 border=0 /></NOSCRIPT><!-- FINISH WWW.UZ TOP-RATING -->
 
 <script src="./holidays.js?v=1.0" defer></script>
-<script src="./scripts.js?v=3.3" defer></script>
+<script src="./scripts.js?v=3.4" defer></script>
 <script src="./adverts.js?v=1.0" defer></script>
 
 <div id="osha-ai-widget-root">
