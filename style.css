@@ -6734,8 +6734,6 @@ body.dark-mode .plagiat-source-link { color: #60A5FA; }
     color: #94A3B8;
 }
 
-
-
 /* Карточки источников в модалке */
 .news-source-card {
     background: #F8FAFC;
@@ -6745,6 +6743,15 @@ body.dark-mode .plagiat-source-link { color: #60A5FA; }
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+/* ========================================== */
+/* === ПЛАШКА КАТЕГОРИИ НОВОСТИ В ТЁМНОЙ ТЕМЕ === */
+/* ========================================== */
+body.dark-mode .news-popup-footer span:last-child {
+    background: rgba(56, 189, 248, 0.15) !important;
+    color: #38BDF8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
 /* Темная тема */
