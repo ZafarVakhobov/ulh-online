@@ -8509,21 +8509,61 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener('DOMContentLoaded', initTimeMachine);
 
 // ==========================================
-// === 29. ASMR MEXANIK KLAVIATURA OVOZI ===
+// === 29. ASMR MEXANIK KLAVIATURA OVOZI (CUSTOM SAMPLES) ===
 // ==========================================
 const ASMR_STORAGE_KEY = "ulh_asmr_mode_v1";
 let isAsmrEnabled = false;
 let asmrAudioCtx = null;
+let asmrSamplesLoaded = false;
 
-// Инициализируем аудио движок только после первого взаимодействия пользователя
-function initAsmrAudio() {
+// ПУТИ К ТВОИМ ЗВУКАМ (можно указать 1 файл или несколько для обычных клавиш)
+const ASMR_SOUND_PATHS = {
+    normal: [
+        "./sounds/key1.wav",
+        "./sounds/key2.wav", 
+        "./sounds/key3.wav"
+    ],
+    space: "./sounds/space.wav",
+    backspace: "./sounds/backspace.wav"
+};
+
+const ASMR_VOLUME = 1.0; // Громкость от 0.1 до 1.0
+const asmrBuffers = { normal: [], space: null, backspace: null };
+
+// Инициализация аудио и фоновая загрузка сэмплов в память
+async function initAsmrAudio() {
     if (!asmrAudioCtx) {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (AudioContextClass) asmrAudioCtx = new AudioContextClass();
     }
     if (asmrAudioCtx && asmrAudioCtx.state === 'suspended') {
-        asmrAudioCtx.resume();
+        await asmrAudioCtx.resume();
     }
+    if (!asmrSamplesLoaded && asmrAudioCtx) {
+        asmrSamplesLoaded = true;
+        await loadAsmrSamples();
+    }
+}
+
+async function fetchAudioBuffer(url) {
+    try {
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const arrayBuffer = await res.arrayBuffer();
+        return await asmrAudioCtx.decodeAudioData(arrayBuffer);
+    } catch (e) {
+        console.warn("ASMR sound load error:", url, e);
+        return null;
+    }
+}
+
+async function loadAsmrSamples() {
+    const normalPromises = ASMR_SOUND_PATHS.normal.map(url => fetchAudioBuffer(url));
+    const loadedNormals = await Promise.all(normalPromises);
+    asmrBuffers.normal = loadedNormals.filter(Boolean);
+
+    asmrBuffers.space = await fetchAudioBuffer(ASMR_SOUND_PATHS.space);
+    asmrBuffers.backspace = await fetchAudioBuffer(ASMR_SOUND_PATHS.backspace);
 }
 
 // Загрузка сохраненного состояния при старте
@@ -8536,135 +8576,70 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Кнопка-переключатель в студии кастомизации
-window.toggleAsmrMode = function(checkbox) {
+// Переключатель в боковой панели "Sayt dizayni"
+window.toggleAsmrMode = async function(checkbox) {
     isAsmrEnabled = checkbox.checked;
     localStorage.setItem(ASMR_STORAGE_KEY, isAsmrEnabled ? "1" : "0");
     
     if (isAsmrEnabled) {
-        initAsmrAudio();
-        playAsmrSound('enter'); // Тестовый звук при включении
+        await initAsmrAudio();
+        playAsmrSound('space'); // Тестовый клик при включении
     }
 };
 
-// Процедурный генератор звука механического свитча (White Noise + Oscillator)
+// Воспроизведение загруженного сэмпла
 function playAsmrSound(keyType) {
     if (!isAsmrEnabled || !asmrAudioCtx) return;
 
-    const time = asmrAudioCtx.currentTime;
-    
-    // 1. Создаем буфер белого шума (имитация трения пластика)
-    const bufferSize = asmrAudioCtx.sampleRate * 0.1; 
-    const buffer = asmrAudioCtx.createBuffer(1, bufferSize, asmrAudioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-    }
-    
-    const noise = asmrAudioCtx.createBufferSource();
-    noise.buffer = buffer;
-    const noiseFilter = asmrAudioCtx.createBiquadFilter();
-    noiseFilter.type = 'bandpass';
-    const noiseGain = asmrAudioCtx.createGain();
-    
-    // 2. Создаем осциллятор (имитация удара пластика о плату - "Thock")
-    const osc = asmrAudioCtx.createOscillator();
-    const oscGain = asmrAudioCtx.createGain();
-    
-    // Подключения
-    osc.connect(oscGain);
-    noise.connect(noiseFilter);
-    noiseFilter.connect(noiseGain);
-    
-    oscGain.connect(asmrAudioCtx.destination);
-    noiseGain.connect(asmrAudioCtx.destination);
-
-    // 3. Формируем звук в зависимости от клавиши
+    let buffer = null;
     if (keyType === 'space') {
-        // Пробел - глубокий "thock"
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(80, time);
-        osc.frequency.exponentialRampToValueAtTime(40, time + 0.05);
-        oscGain.gain.setValueAtTime(0.5, time);
-        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.06);
-        
-        noiseFilter.frequency.value = 800;
-        noiseGain.gain.setValueAtTime(0.3, time);
-        noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.04);
-        
-        osc.start(time); osc.stop(time + 0.1);
-        noise.start(time); noise.stop(time + 0.1);
-        
-    } else if (keyType === 'enter') {
-        // Enter - тяжелый и чуть звонкий щелчок
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(100, time);
-        osc.frequency.exponentialRampToValueAtTime(50, time + 0.05);
-        oscGain.gain.setValueAtTime(0.4, time);
-        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
-        
-        noiseFilter.frequency.value = 1200;
-        noiseGain.gain.setValueAtTime(0.4, time);
-        noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
-        
-        osc.start(time); osc.stop(time + 0.1);
-        noise.start(time); noise.stop(time + 0.1);
-        
+        buffer = asmrBuffers.space;
     } else if (keyType === 'backspace') {
-        // Backspace - высокий резкий клик
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(250, time);
-        osc.frequency.exponentialRampToValueAtTime(100, time + 0.03);
-        oscGain.gain.setValueAtTime(0.15, time);
-        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.04);
-        
-        noiseFilter.frequency.value = 3500;
-        noiseGain.gain.setValueAtTime(0.25, time);
-        noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.03);
-        
-        osc.start(time); osc.stop(time + 0.1);
-        noise.start(time); noise.stop(time + 0.1);
-        
-    } else {
-        // Обычные буквы (Cherry MX) - короткий четкий пластиковый клик
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(300, time);
-        osc.frequency.exponentialRampToValueAtTime(100, time + 0.02);
-        oscGain.gain.setValueAtTime(0.15, time);
-        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.03);
-        
-        noiseFilter.frequency.value = 4000; 
-        noiseFilter.Q.value = 1;
-        noiseGain.gain.setValueAtTime(0.2, time);
-        noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.02);
-        
-        osc.start(time); osc.stop(time + 0.05);
-        noise.start(time); noise.stop(time + 0.05);
+        buffer = asmrBuffers.backspace;
+    } else if (asmrBuffers.normal.length > 0) {
+        // Берем случайный звук из набора для обычных клавиш
+        const idx = Math.floor(Math.random() * asmrBuffers.normal.length);
+        buffer = asmrBuffers.normal[idx];
     }
+
+    if (!buffer) return;
+
+    const source = asmrAudioCtx.createBufferSource();
+    source.buffer = buffer;
+
+    // Лёгкая вариация тона (±4%) для живого звучания при быстрой печати
+    source.playbackRate.value = 0.96 + Math.random() * 0.08;
+
+    const gainNode = asmrAudioCtx.createGain();
+    gainNode.gain.value = ASMR_VOLUME;
+
+    source.connect(gainNode);
+    gainNode.connect(asmrAudioCtx.destination);
+    source.start(0);
 }
 
-// 4. Перехватчик нажатий клавиш для главного редактора и блока заметок
+// Перехватчик нажатий клавиш в текстовых полях
 document.addEventListener('keydown', (e) => {
     if (!isAsmrEnabled) return;
     
-    // Проверяем, находится ли фокус в текстовом поле, чтобы не щелкать просто так
     const activeEl = document.activeElement;
     if (activeEl && (activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'INPUT' || activeEl.getAttribute('contenteditable') === 'true')) {
-        
-        if (!asmrAudioCtx) initAsmrAudio();
+        if (!asmrAudioCtx || !asmrSamplesLoaded) {
+            initAsmrAudio();
+        }
+
+        const ignoredKeys = [
+            'ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight',
+            'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight', 'CapsLock', 'Tab', 'Escape'
+        ];
+        if (ignoredKeys.includes(e.code)) return;
 
         if (e.code === 'Space') {
             playAsmrSound('space');
-        } else if (e.code === 'Enter' || e.code === 'NumpadEnter') {
-            playAsmrSound('enter');
         } else if (e.code === 'Backspace' || e.code === 'Delete') {
             playAsmrSound('backspace');
         } else {
-            // Исключаем системные беззвучные клавиши (Shift, Ctrl, Alt и т.д.)
-            if (!['ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight', 'CapsLock'].includes(e.code)) {
-                // Создаем легкий рандом для обычных букв, чтобы звук не сливался в одну ноту
-                setTimeout(() => playAsmrSound('normal'), Math.random() * 5);
-            }
+            playAsmrSound('normal');
         }
     }
 });
