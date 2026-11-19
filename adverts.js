@@ -218,8 +218,82 @@
 
     const heroSliderBox = document.getElementById("heroSlider");
     if (heroSliderBox) {
+        let isDragging = false;
+        let hasDragged = false;
+        let dragStartX = 0;
+        let dragDeltaX = 0;
+
         heroSliderBox.addEventListener("mouseenter", stopHeroAutoPlay);
-        heroSliderBox.addEventListener("mouseleave", startHeroAutoPlay);
+        heroSliderBox.addEventListener("mouseleave", () => {
+            if (!isDragging) startHeroAutoPlay();
+        });
+
+        // --- Перетаскивание мышью (Drag-to-Swipe) ---
+        heroSliderBox.addEventListener("mousedown", event => {
+            if (event.button !== 0 || heroSlidesData.length <= 1) return;
+            if (event.target.closest(".hero-nav-btn, .hero-slider-dots")) return;
+
+            const track = document.getElementById("heroSliderTrack");
+            if (!track) return;
+
+            isDragging = true;
+            hasDragged = false;
+            dragStartX = event.clientX;
+            dragDeltaX = 0;
+
+            stopHeroAutoPlay();
+            heroSliderBox.classList.add("is-dragging");
+            track.style.transition = "none";
+        });
+
+        document.addEventListener("mousemove", event => {
+            if (!isDragging) return;
+            const track = document.getElementById("heroSliderTrack");
+            if (!track) return;
+
+            dragDeltaX = event.clientX - dragStartX;
+            if (Math.abs(dragDeltaX) > 6) hasDragged = true;
+
+            const width = heroSliderBox.offsetWidth || 1;
+            const offsetPx = -currentHeroIndex * width + dragDeltaX;
+            track.style.transform = `translate3d(${offsetPx}px, 0, 0)`;
+        });
+
+        const finishMouseDrag = () => {
+            if (!isDragging) return;
+            const track = document.getElementById("heroSliderTrack");
+
+            isDragging = false;
+            heroSliderBox.classList.remove("is-dragging");
+            if (track) track.style.transition = "";
+
+            const threshold = 60;
+            if (dragDeltaX < -threshold) {
+                goToHeroSlide(currentHeroIndex + 1);
+            } else if (dragDeltaX > threshold) {
+                goToHeroSlide(currentHeroIndex - 1);
+            } else {
+                updateHeroSliderPosition();
+            }
+
+            if (!heroSliderBox.matches(":hover")) {
+                startHeroAutoPlay();
+            }
+        };
+
+        document.addEventListener("mouseup", finishMouseDrag);
+        window.addEventListener("blur", finishMouseDrag);
+
+        // Блокируем переход по ссылке/открытие модалки, если было перетаскивание
+        heroSliderBox.addEventListener("click", event => {
+            if (hasDragged) {
+                event.preventDefault();
+                event.stopPropagation();
+                hasDragged = false;
+            }
+        }, true);
+
+        // --- Свайп на мобильных ---
         let touchStartX = 0;
         heroSliderBox.addEventListener("touchstart", event => {
             if (event.touches.length) touchStartX = event.touches[0].clientX;
