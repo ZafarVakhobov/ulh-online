@@ -54,7 +54,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
     
     <!-- Основные стили сайта -->
-    <link rel="stylesheet" href="style.css?v=3.0">
+    <link rel="stylesheet" href="style.css?v=3.2">
 </head>
 <body>
 
@@ -351,6 +351,11 @@
         
 <!-- Правая группа: Мини-плеер + Переключатель тёмной темы + Кнопка Telegram -->
         <div class="nav-right-actions">
+<!-- === KUNLIK MAŞQ: tugma (seriya hisoblagiçi) === -->
+            <button type="button" class="gm-nav-btn" id="gmNavBtn" onclick="openDailyModal()" title="Kunlik maşq va seriya" aria-label="Kunlik maşq">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                <span id="gmNavStreak">0</span>
+            </button>
 <!-- === ЦЕНТР УВЕДОМЛЕНИЙ (NOTIFICATIONS) === -->
             <div class="nav-item has-dropdown" id="navNotifyWrap">
                 <button type="button" class="theme-toggle-btn notify-toggle-btn" id="notifyToggleBtn" onclick="toggleNavDropdown('navNotifyWrap', event); markNotificationsViewed();" title="Bildirişnomalar" aria-label="Bildirişnomalar" aria-expanded="false">
@@ -2015,7 +2020,7 @@ top_js="1.3";
 top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('<img src="http://cnt0.www.uz/counter/collect?'+top_r+top_rat+'" width=0 height=0 border=0 />')//-->
 </SCRIPT><NOSCRIPT><IMG height=0 src="http://cnt0.www.uz/counter/collect?id=48162&pg=http%3A//uzinfocom.uz&col=340F6E&t=ffffff&p=BD6F6F" width=0 border=0 /></NOSCRIPT><!-- FINISH WWW.UZ TOP-RATING -->
 
-    <script src="./scripts.js?v=3.1" defer></script>
+    <script src="./scripts.js?v=3.2" defer></script>
 
 <div id="osha-ai-widget-root">
     <div id="osha-bubble">Men Sizga yordam berişga tayyorman! 💙</div>
@@ -2123,6 +2128,17 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
     </div>
 </div>
 
+
+<!-- === МОДАЛЬНОЕ ОКНО: КУНЛИК МАШҚ (ГЕЙМИФИКАЦИЯ) === -->
+<div class="weather-modal-backdrop" id="dailyModalBackdrop" onclick="closeDailyModal(event)" role="dialog" aria-modal="true" aria-label="Kunlik maşq">
+    <div class="weather-modal-card custom-scrollbar" style="max-width: 520px;" onclick="event.stopPropagation()">
+        <div id="gmBody"></div>
+        <div class="weather-modal-footer" style="margin-top: 4px;">
+            <span>Natijalar shu qurilmada saqlanadi</span>
+            <button type="button" class="weather-modal-close" onclick="closeDailyModal()">Yopiş</button>
+        </div>
+    </div>
+</div>
 
 <!-- Модальное окно доски -->
 <div id="kanban-modal" class="kanban-modal-backdrop">
