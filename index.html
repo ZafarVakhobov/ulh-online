@@ -271,14 +271,14 @@
                     <hr class="currency-Block-divider">
 
                     <!-- Компактная кнопка-карточка QR-генератора -->
-                    <div class="qr-mini-card" role="button" tabindex="0" onclick="openQrModal(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openQrModal(event);}" aria-label="QR-kod generatorini oçiş">
+                    <div class="qr-mini-card" role="button" tabindex="0" onclick="openPdfStudioModal(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openQrModal(event);}" aria-label="QR-kod generatorini oçiş">
                         <div class="qr-mini-left">
                             <div class="qr-mini-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M7 7h.01"/><path d="M17 7h.01"/><path d="M7 17h.01"/><path d="M17 17h.01"/></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h6"/><path d="M12 12v6"/></svg>
                             </div>
                             <div class="qr-mini-text">
-                                <span class="qr-mini-title">QR-KOD GENERATORI</span>
-                                <span class="qr-mini-sub">Matn yoki havola uçun</span>
+                                <span class="qr-mini-title">PDF STUDIYA</span>
+                                <span class="qr-mini-sub">Birlaştiriş, ajratiş, watermark</span>
                             </div>
                         </div>
                         <span class="currency-nbu-pill">
@@ -2603,6 +2603,22 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                 
             </div>
 
+<div class="asmr-toggle-row" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 12px; transition: all 0.2s; margin-top: 8px;" onclick="closeThemeStudioPanel(event); openQrModal(event)">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="color: #0284C7; display: flex; align-items: center; justify-content: center; width: 24px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 13.5px; font-weight: 800; color: #1E293B;" class="asmr-title-text">QR-kod generatori</span>
+            <span style="font-size: 11px; color: #64748B; font-weight: 600;">Matn yoki havola uçun</span>
+        </div>
+    </div>
+    <div class="alpha-rules-trigger" style="margin: 0; pointer-events: none; box-shadow: none;">
+        <span>Oçiş</span>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+</div>
+            
             <!-- 4.2. Авто-Сертификат (Avto-Sertifikat) -->
             <div class="asmr-toggle-row" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 12px; transition: all 0.2s; margin-top: 8px;" onclick="closeThemeStudioPanel(event); openCertModal(event)">
                 
@@ -3068,6 +3084,80 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
 </div>
 
 
+ <!-- === PDF STUDIYA MODAL === -->
+<div id="pdfStudioModalBackdrop" class="pdf-studio-backdrop" onclick="closePdfStudioModal(event)">
+    <div class="pdf-studio-modal" onclick="event.stopPropagation()">
+        <div class="pdf-studio-header">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="pdf-studio-icon-badge">PDF</div>
+                <div>
+                    <div class="pdf-studio-title">PDF Studiya</div>
+                    <div class="pdf-studio-sub">Fayllar brauzerda qayta işlanadi (serverga yuklanmaydi)</div>
+                </div>
+            </div>
+            <button type="button" class="pdf-studio-close" onclick="closePdfStudioModal()">×</button>
+        </div>
+
+        <!-- Вкладки -->
+        <div class="pdf-studio-tabs">
+            <button type="button" class="pdf-tab-btn active" onclick="switchPdfTab('merge', this)">Birlaştiriş</button>
+            <button type="button" class="pdf-tab-btn" onclick="switchPdfTab('split', this)">Ajratiş</button>
+            <button type="button" class="pdf-tab-btn" onclick="switchPdfTab('watermark', this)">Belgi & Raqam</button>
+        </div>
+
+        <!-- Вкладка 1: Склеить -->
+        <div id="pdfTabMerge" class="pdf-tab-pane active">
+            <label class="pdf-dropzone">
+                <input type="file" id="pdfMergeInput" accept=".pdf" multiple hidden onchange="handlePdfMergeSelect(this)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span>Bir neçta PDF faylni tanlang (yoki qöşing)</span>
+            </label>
+            <div id="pdfMergeList" class="pdf-file-list"></div>
+            <button type="button" class="pdf-action-btn" id="pdfMergeRunBtn" onclick="runPdfMerge()">
+                PDF fayllarni birlaştiriş
+            </button>
+        </div>
+
+        <!-- Вкладка 2: Вырезать страницы -->
+        <div id="pdfTabSplit" class="pdf-tab-pane">
+            <label class="pdf-dropzone">
+                <input type="file" id="pdfSplitInput" accept=".pdf" hidden onchange="handlePdfSplitSelect(this)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span id="pdfSplitFileLabel">PDF faylni tanlang</span>
+            </label>
+            <div class="pdf-field-group">
+                <label>Kerakli sahifalar (masalan: <b>1-3, 5, 8-10</b>):</label>
+                <input type="text" id="pdfSplitRange" class="bib-custom-input" placeholder="1-3, 5">
+            </div>
+            <button type="button" class="pdf-action-btn" id="pdfSplitRunBtn" onclick="runPdfSplit()">
+                Sahifalarni ajratib oliş
+            </button>
+        </div>
+
+        <!-- Вкладка 3: Водяной знак и нумерация -->
+        <div id="pdfTabWatermark" class="pdf-tab-pane">
+            <label class="pdf-dropzone">
+                <input type="file" id="pdfWmInput" accept=".pdf" hidden onchange="handlePdfWmSelect(this)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span id="pdfWmFileLabel">PDF faylni tanlang</span>
+            </label>
+            <div class="pdf-field-group">
+                <label>Suv belgisi matni (ixtiyoriy):</label>
+                <input type="text" id="pdfWmText" class="bib-custom-input" placeholder="Masalan: ULH-ONLINE.UZ yoki Maxfiy">
+            </div>
+            <label class="pdf-checkbox-row">
+                <input type="checkbox" id="pdfAddPageNums" checked>
+                <span>Sahifalarni pastki öng burçakda raqamlaş (1 / 10)</span>
+            </label>
+            <button type="button" class="pdf-action-btn" id="pdfWmRunBtn" onclick="runPdfWatermark()">
+                Qöllab-quvvatlaş va yuklab oliş
+            </button>
+        </div>
+
+        <div id="pdfStudioStatus" class="pdf-studio-status"></div>
+    </div>
+</div>   
+
    <!-- === МОДАЛЬНОЕ ОКНО: ACADEMIC & EVENT SCHEDULER (ШАХМАТКА) === -->
 <div id="scheduler-modal" class="kanban-modal-backdrop">
     <div class="kanban-modal-content" style="max-width: 950px; padding: 24px;">
@@ -3160,6 +3250,11 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         <button type="button" class="eye-care-skip" onclick="skipEyeCare()">Hozir emas (ötkazib yuboriş)</button>
     </div>
 </div>
+
+<!-- Библиотека для работы с PDF прямо в браузере -->
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<!-- Наш модуль PDF-комбайна -->
+<script src="./pdf-studio.js"></script>
     
 </body>
 </html>
