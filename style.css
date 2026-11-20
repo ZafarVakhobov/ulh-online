@@ -10308,10 +10308,9 @@ body.dark-mode .curr-export-opt:hover {
 }
 
 .curr-inf-logo {
-    height: 36px;
-    width: auto;
-    max-width: 180px;
-    object-fit: contain;
+    width: 185px;
+    height: auto;
+    flex-shrink: 0;
     display: block;
 }
 
