@@ -1246,6 +1246,9 @@ const CURRENCY_NUMERIC = {
     CNY: 1780
 };
 
+// Изменения курсов (Diff) из API ЦБ для информера
+window.CURRENCY_DIFFS = {};
+
 const CURRENCY_META = [
     { code: "UZS", symbol: "Söm", name: "Özbek sömi" },
     { code: "USD", symbol: "$", name: "AQŞ dollari" },
@@ -1469,6 +1472,7 @@ async function fetchNbuCurrencyRates() {
                         CURRENCY_NUMERIC[item.Ccy] = num;
                         CURRENCY_RATES[item.Ccy] = formatUzPrice(num);
                     }
+                    window.CURRENCY_DIFFS[item.Ccy] = parseFloat(item.Diff) || 0;
                 }
             });
             updateCurrencyDOM();
@@ -1528,6 +1532,140 @@ async function fetchNbuCurrencyRates() {
         } catch (_) {}
     }
 }
+
+// === ГЕНЕРАТОР PNG-ИНФОРМЕРА КУРСОВ ВАЛЮТ ===
+window.toggleCurrencyExportMenu = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    const wrap = document.getElementById("currExportWrap");
+    if (wrap) wrap.classList.toggle("open");
+};
+
+document.addEventListener("click", (e) => {
+    const wrap = document.getElementById("currExportWrap");
+    if (wrap && !wrap.contains(e.target)) {
+        wrap.classList.remove("open");
+    }
+});
+
+function formatInformerPrice(val) {
+    const num = Number(val) || 0;
+    const parts = num.toFixed(2).split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return parts.join(",");
+}
+
+window.downloadCurrencyInformer = async function(theme) {
+    const wrap = document.getElementById("currExportWrap");
+    const btn = document.getElementById("currExportBtn");
+    const stage = document.getElementById("currencyInformerStage");
+    if (wrap) wrap.classList.remove("open");
+    if (!stage || typeof html2canvas !== "function") return;
+
+    const btnSpan = btn ? btn.querySelector("span") : null;
+    const origText = btnSpan ? btnSpan.textContent : "Rasm yuklaş";
+    if (btnSpan) btnSpan.textContent = "Tayyorlanmoqda...";
+    if (btn) btn.disabled = true;
+
+    try {
+        // Актуальная дата по Ташкенту (UTC+5)
+        const tzDate = new Date(Date.now() + 5 * 60 * 60 * 1000);
+        const dd = String(tzDate.getUTCDate()).padStart(2, "0");
+        const mm = String(tzDate.getUTCMonth() + 1).padStart(2, "0");
+        const yyyy = tzDate.getUTCFullYear();
+        const dateStr = `${dd}.${mm}.${yyyy}`;
+
+        const logoPath = theme === "dark" ? "/logo-dark.svg" : "/logo.svg";
+        const diffs = window.CURRENCY_DIFFS || {};
+
+        const items = [
+            { code: "USD", sym: "$", rate: CURRENCY_NUMERIC.USD, diff: diffs.USD },
+            { code: "EUR", sym: "€", rate: CURRENCY_NUMERIC.EUR, diff: diffs.EUR },
+            { code: "RUB", sym: "₽", rate: CURRENCY_NUMERIC.RUB, diff: diffs.RUB },
+            { code: "CNY", sym: "¥", rate: CURRENCY_NUMERIC.CNY, diff: diffs.CNY }
+        ];
+
+        const rowsHtml = items.map(item => {
+            const hasDiff = typeof item.diff === "number" && !isNaN(item.diff);
+            const diffClass = !hasDiff || item.diff === 0 ? "flat" : (item.diff > 0 ? "up" : "down");
+            const arrow = diffClass === "up" ? "↑" : (diffClass === "down" ? "↓" : "•");
+            const diffVal = hasDiff ? Math.abs(item.diff).toFixed(2).replace(".", ",") : "0,00";
+
+            const diffBlock = hasDiff ? `
+                <div class="curr-inf-diff ${diffClass}">
+                    <span class="curr-inf-diff-num">${diffVal}</span>
+                    <div class="curr-inf-arrow">${arrow}</div>
+                </div>
+            ` : "";
+
+            return `
+                <div class="curr-inf-row">
+                    <div class="curr-inf-left">
+                        <div class="curr-inf-code">${item.code}</div>
+                        <div class="curr-inf-sym">${item.sym}</div>
+                        <div class="curr-inf-val">${formatInformerPrice(item.rate)}<span>söm</span></div>
+                    </div>
+                    ${diffBlock}
+                </div>
+            `;
+        }).join("");
+
+        stage.innerHTML = `
+            <div class="curr-inf-card ${theme}" id="currInfCardNode">
+                <div class="curr-inf-top">
+                    <div>
+                        <h2 class="curr-inf-title">VALYUTALAR KURSI</h2>
+                        <div class="curr-inf-date">${dateStr} holatiga köra</div>
+                    </div>
+                    <img src="${logoPath}" alt="Logo" class="curr-inf-logo" id="currInfLogoImg">
+                </div>
+                <div class="curr-inf-accent-line"></div>
+                <div class="curr-inf-rows">${rowsHtml}</div>
+                <div class="curr-inf-footer">
+                    <span>Özbekiston Markaziy banki ma'lumotlari</span>
+                    <span>ulh-online.uz</span>
+                </div>
+            </div>
+        `;
+
+        // Ждём загрузки SVG-логотипа и шрифта Manrope перед рендером
+        const logoImg = document.getElementById("currInfLogoImg");
+        if (logoImg && !logoImg.complete) {
+            await new Promise(resolve => {
+                logoImg.onload = resolve;
+                logoImg.onerror = resolve;
+            });
+        }
+        if (document.fonts && document.fonts.ready) {
+            await document.fonts.ready;
+        }
+
+        const cardNode = document.getElementById("currInfCardNode");
+        const canvas = await html2canvas(cardNode, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: null,
+            logging: false
+        });
+
+        const link = document.createElement("a");
+        link.download = `valyuta_kursi_${dd}-${mm}-${yyyy}_${theme}.png`;
+        link.href = canvas.toDataURL("image/png");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        stage.innerHTML = "";
+    } catch (err) {
+        console.error("Currency Informer Error:", err);
+        alert("Rasmni yaratişda xatolik yuz berdi.");
+    } finally {
+        if (btnSpan) btnSpan.textContent = origText;
+        if (btn) btn.disabled = false;
+    }
+};
 
 renderWeatherUI();
 fetchAllRegionsWeather();
