@@ -1147,8 +1147,7 @@ function renderWeatherUI() {
 function selectWeatherRegion(regionId) {
     selectedRegionId = regionId;
     renderWeatherUI();
-    closeWeatherModal();
-}
+    }
 
 async function fetchAllRegionsWeather() {
     try {
