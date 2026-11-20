@@ -8505,7 +8505,6 @@ body.dark-mode .mic-icon-btn.recording {
 
     /* ЖЕСТКО СКРЫВАЕМ ВСЁ ЛИШНЕЕ ИЗ ШАПКИ (СТРОГИЙ МИНИМАЛИЗМ) */
     .nav-links,
-    #navNotifyWrap,
     #navUserWrap,
     #navMusicWrap,
     .mobile-burger-btn,
