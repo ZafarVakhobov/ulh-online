@@ -10571,3 +10571,27 @@ body.dark-mode .curr-export-opt:hover {
     font-weight: 700;
     opacity: 0.58;
 }
+
+/* === МОБИЛЬНЫЙ ЛОГОТИП === */
+.nav-brand .logo-mobile-light,
+.nav-brand .logo-mobile-dark {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .nav-brand .logo-desktop {
+        display: none !important;
+    }
+
+    body:not(.dark-mode) .nav-brand .logo-mobile-light {
+        display: block !important;
+        height: 36px;
+        width: auto;
+    }
+
+    body.dark-mode .nav-brand .logo-mobile-dark {
+        display: block !important;
+        height: 36px;
+        width: auto;
+    }
+}
