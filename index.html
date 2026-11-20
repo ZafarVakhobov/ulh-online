@@ -660,7 +660,24 @@
             <div class="weather-cities-grid" id="weatherCitiesGrid"></div>
 
             <div class="weather-modal-footer">
-                <a href="https://www.accuweather.com/uz/uz/samarkand/355776/weather-forecast/355776" target="_blank" rel="noopener" id="modalAccuLink" class="weather-accu-link">AccuWeather sahifasini oçiş ↗</a>
+                <a id="modalAccuLink" href="https://www.accuweather.com/uz/uz/samarkand/355776/weather-forecast/355776" target="_blank" rel="noopener" class="curr-export-btn">
+    <span>AccuWeather</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+</a>
+        <div class="curr-export-wrap" id="weatherExportWrap">
+    <button type="button" class="curr-export-btn" id="weatherExportBtn" onclick="toggleWeatherExportMenu(event)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Ob-havo informeri</span>
+    </button>
+    <div class="curr-export-menu" id="weatherExportMenu">
+        <button type="button" class="curr-export-opt" onclick="downloadWeatherInformer('light')">
+            <span>⚪</span> Yoruğ mavzuda
+        </button>
+        <button type="button" class="curr-export-opt" onclick="downloadWeatherInformer('dark')">
+            <span>⚫</span> Qoronği mavzuda
+        </button>
+    </div>
+</div>        
                 <button type="button" class="weather-modal-close" onclick="closeWeatherModal()">Yopiş</button>
             </div>
         </div>
