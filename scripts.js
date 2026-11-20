@@ -11717,7 +11717,9 @@ window.downloadWeatherInformer = async function(theme) {
 // ==========================================
 const CHART_PALETTE = [
     "#0284C7", "#10B981", "#F59E0B", "#8B5CF6",
-    "#EF4444", "#EC4899", "#14B8A6", "#6366F1"
+    "#EF4444", "#EC4899", "#14B8A6", "#6366F1",
+    "#F97316", "#84CC16", "#06B6D4", "#D946EF",
+    "#E11D48", "#3B82F6", "#22C55E", "#A855F7"
 ];
 
 let chartState = {
@@ -11773,8 +11775,8 @@ window.setChartTheme = function(theme) {
 };
 
 window.addChartRow = function() {
-    if (chartState.rows.length >= 8) return;
-    chartState.rows.push({ label: `Körsatkiç ${chartState.rows.length + 1}`, value: 15 });
+    if (chartState.rows.length >= 20) return;
+    chartState.rows.push({ label: `Körsatkiç ${chartState.rows.length + 1}`, value: 1 });
     renderChartRowsInputs();
     renderChartPreview();
 };
