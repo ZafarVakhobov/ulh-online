@@ -7959,9 +7959,26 @@ body.dark-mode .notify-toggle-btn.has-new { background: rgba(42, 171, 238, 0.15)
     width: 340px;
     padding: 14px;
 }
-@media (max-width: 760px) {
-    .notify-dropdown-box { width: calc(100vw - 20px) !important; left: -60px !important; right: auto !important; }
+
+@media (max-width: 768px) {
+    #navNotifyWrap {
+        position: static !important;
+    }
+
+    .notify-dropdown-box {
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        top: calc(100% + 10px) !important;
+        transform: translateY(8px) !important;
+    }
+
+    #navNotifyWrap.open .notify-dropdown-box {
+        transform: translateY(0) !important;
+    }
 }
+
 
 .notify-header {
     display: flex;
