@@ -736,20 +736,23 @@
             
             <!-- Нижняя панель со ссылкой на NBU.uz и кнопкой закрытия -->
             <div class="weather-modal-footer">
-                <a href="https://nbu.uz/jismoniy-shaxslar-valyutalar-kursi" target="_blank" rel="noopener" class="weather-accu-link">NBU sahifasini oçiş ↗</a>
+                <a href="https://nbu.uz/uz/exchange-rates/" target="_blank" rel="noopener" class="curr-export-btn">
+    <span>Manba: NBU</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+</a>
 
 <!-- Разместите в футере #currencyModalBackdrop слева от кнопки Yopiş -->
 <div class="curr-export-wrap" id="currExportWrap">
     <button type="button" class="curr-export-btn" id="currExportBtn" onclick="toggleCurrencyExportMenu(event)">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>Rasm yuklaş</span>
+        <span>Valyuta kurslari informeri</span>
     </button>
     <div class="curr-export-menu" id="currExportMenu">
         <button type="button" class="curr-export-opt" onclick="downloadCurrencyInformer('light')">
-            <span>☀️</span> Yoruğ mavzu (PNG)
+            <span>⚪</span> Yoruğ mavzuda
         </button>
         <button type="button" class="curr-export-opt" onclick="downloadCurrencyInformer('dark')">
-            <span>🌙</span> Qoronği mavzu (PNG)
+            <span>⚫</span> Qoronği mavzuda
         </button>
     </div>
 </div>
