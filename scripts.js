@@ -11562,3 +11562,147 @@ document.addEventListener("keydown", event => {
 });
 
 loadToolSearchFavorites();
+
+// ==========================================
+// === ГЕНЕРАТОР PNG-ИНФОРМЕРА ПРОГНОЗА ПОГОДЫ ===
+// ==========================================
+window.toggleWeatherExportMenu = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    const wrap = document.getElementById("weatherExportWrap");
+    if (wrap) wrap.classList.toggle("open");
+};
+
+document.addEventListener("click", (e) => {
+    const wrap = document.getElementById("weatherExportWrap");
+    if (wrap && !wrap.contains(e.target)) {
+        wrap.classList.remove("open");
+    }
+});
+
+window.downloadWeatherInformer = async function(theme) {
+    const wrap = document.getElementById("weatherExportWrap");
+    const btn = document.getElementById("weatherExportBtn");
+    const stage = document.getElementById("currencyInformerStage");
+    if (wrap) wrap.classList.remove("open");
+    if (!stage || typeof html2canvas !== "function") return;
+
+    const btnSpan = btn ? btn.querySelector("span") : null;
+    const origText = btnSpan ? btnSpan.textContent : "Rasm yuklaş";
+    if (btnSpan) btnSpan.textContent = "Tayyorlanmoqda...";
+    if (btn) btn.disabled = true;
+
+    try {
+        const current = UZ_REGIONS.find(r => r.id === selectedRegionId) || UZ_REGIONS[0];
+        const tzDate = new Date(Date.now() + 5 * 60 * 60 * 1000);
+        const dd = String(tzDate.getUTCDate()).padStart(2, "0");
+        const mm = String(tzDate.getUTCMonth() + 1).padStart(2, "0");
+        const yyyy = tzDate.getUTCFullYear();
+        const todayStr = `${dd}.${mm}.${yyyy}`;
+
+        // Запрашиваем прогноз на 3 следующих дня для выбранного региона
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${current.lat}&longitude=${current.lon}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTashkent&forecast_days=4`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Ob-havo ma'lumotini olib bölmadi");
+        const data = await res.json();
+
+        const uzWeekdays = ["Yakşanba", "Duşanba", "Seşanba", "Çorşanba", "Payşanba", "Juma", "Şanba"];
+        const daily = data.daily || {};
+        const times = daily.time || [];
+        const codes = daily.weather_code || [];
+        const maxTemps = daily.temperature_2m_max || [];
+        const minTemps = daily.temperature_2m_min || [];
+
+        let forecastHtml = "";
+        for (let i = 1; i <= 3; i++) {
+            if (!times[i]) continue;
+            const [y, m, d] = times[i].split("-").map(Number);
+            const dayObj = new Date(Date.UTC(y, m - 1, d));
+            const dayName = uzWeekdays[dayObj.getUTCDay()];
+            const dayDate = `${String(d).padStart(2, "0")}.${String(m).padStart(2, "0")}`;
+            const mapped = mapWmoCodeToUzbek(codes[i]);
+            const tMax = Math.round(maxTemps[i]);
+            const tMin = Math.round(minTemps[i]);
+
+            forecastHtml += `
+                <div class="weather-inf-day">
+                    <div class="weather-inf-day-name">${dayName}</div>
+                    <div class="weather-inf-day-date">${dayDate}</div>
+                    <div style="margin: 2px 0;">${getWeatherSvg(mapped.type, 40)}</div>
+                    <div class="weather-inf-day-cond">${mapped.cond}</div>
+                    <div class="weather-inf-day-temps">
+                        <span>${tMax > 0 ? "+" + tMax : tMax}°</span>
+                        <span class="weather-inf-day-min">${tMin > 0 ? "+" + tMin : tMin}°</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        const logoPath = theme === "dark" ? "/logo-dark.svg" : "/logo.svg";
+        const nowTemp = current.temp > 0 ? `+${current.temp}°` : `${current.temp}°`;
+
+        stage.innerHTML = `
+            <div class="curr-inf-card ${theme}" id="weatherInfCardNode">
+                <div class="curr-inf-top">
+                    <div>
+                        <h2 class="curr-inf-title">OB-HAVO PROGNOZI</h2>
+                        <div class="curr-inf-date">${todayStr} holatiga köra</div>
+                    </div>
+                    <img src="${logoPath}" alt="Logo" class="curr-inf-logo" id="weatherInfLogoImg">
+                </div>
+                <div class="weather-inf-accent-line"></div>
+                <div class="weather-inf-hero">
+                    <div>
+                        <div class="weather-inf-city">${current.name}</div>
+                        <div class="weather-inf-cond">Bugun • ${current.cond}</div>
+                    </div>
+                    <div class="weather-inf-now-right">
+                        ${getWeatherSvg(current.type, 56)}
+                        <div class="weather-inf-temp">${nowTemp}</div>
+                    </div>
+                </div>
+                <div class="weather-inf-grid">${forecastHtml}</div>
+                <div class="curr-inf-footer">
+                    <span>3 kunlik ob-havo prognozi</span>
+                    <span>ulh-online.uz</span>
+                </div>
+            </div>
+        `;
+
+        const logoImg = document.getElementById("weatherInfLogoImg");
+        if (logoImg && !logoImg.complete) {
+            await new Promise(resolve => {
+                logoImg.onload = resolve;
+                logoImg.onerror = resolve;
+            });
+        }
+        if (document.fonts && document.fonts.ready) {
+            await document.fonts.ready;
+        }
+
+        const cardNode = document.getElementById("weatherInfCardNode");
+        const canvas = await html2canvas(cardNode, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: null,
+            logging: false
+        });
+
+        const link = document.createElement("a");
+        link.download = `ob_havo_${current.id}_${dd}-${mm}-${yyyy}_${theme}.png`;
+        link.href = canvas.toDataURL("image/png");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        stage.innerHTML = "";
+    } catch (err) {
+        console.error("Weather Informer Error:", err);
+        alert("Ob-havo rasmini yaratişda xatolik yuz berdi.");
+    } finally {
+        if (btnSpan) btnSpan.textContent = origText;
+        if (btn) btn.disabled = false;
+    }
+};
