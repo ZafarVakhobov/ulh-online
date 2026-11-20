@@ -11474,7 +11474,12 @@ function renderToolSearchResults() {
         toolSearchActiveIndex = -1;
         return;
     }
-    setToolSearchActiveResult(query ? 0 : -1);
+    if (query) {
+        setToolSearchActiveResult(0);
+    } else {
+        toolSearchActiveIndex = -1;
+        resultsRoot.scrollTop = 0;
+    }
 }
 
 function setToolSearchActiveResult(index) {
