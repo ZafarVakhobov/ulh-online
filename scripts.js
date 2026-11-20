@@ -11350,6 +11350,7 @@ const ULH_TOOL_CATALOG = [
     { id: "weather", name: "Ob-havo", description: "Özbekiston hududlari böyiça prognoz", category: "Foydali vositalar", keywords: "weather forecast shahar hudud погода прогноз город", action: "openWeatherModal" },
     { id: "currency", name: "Valyuta kalkulyatori", description: "Valyuta kurslari va miqdor hisoblaş", category: "Foydali vositalar", keywords: "currency money kurs dollar euro rubl валюта курс конвертер", action: "openCurrencyModal" },
     { id: "pdf-studio", name: "PDF Studiya", description: "PDF fayllarni birlaştiriş, sahifa ajratiş va watermark örnatiş", category: "Foydali vositalar", keywords: "pdf studio merge split watermark page numbers birlashtirish ajratish suv belgisi raqamlash пдф склеить объединить вырезать разделить водяной знак нумерация страницы", action: "openPdfStudioModal" },
+    { id: "chart", name: "Grafik konstruktori", description: "Ustunli va doiraviy PNG infografika yaratiş", category: "Foydali vositalar", keywords: "grafik diagramma chart infografika statistika png ustunli doiraviy график диаграмма инфографика статистика", action: "openChartModal" },
     { id: "qr", name: "QR-kod generatori", description: "Matn yoki havoladan QR-kod yaratiş", category: "Foydali vositalar", keywords: "qr code kod link havola png svg qr код ссылка", action: "openQrModal" },
     { id: "bibliography", name: "Iqtibos va adabiyotlar", description: "Manba va bibliografik yozuv yaratiş", category: "Foydali vositalar", keywords: "citation bibliography reference vak iqtibos adabiyot", action: "openBiblioModal" },
     { id: "templates", name: "Aqlli andozalar", description: "Rasmiy hujjat andozalarini töldiriş", category: "Foydali vositalar", keywords: "template document letter ariza hujjat", action: "openAndozaModal" },
@@ -11700,6 +11701,254 @@ window.downloadWeatherInformer = async function(theme) {
     } catch (err) {
         console.error("Weather Informer Error:", err);
         alert("Ob-havo rasmini yaratişda xatolik yuz berdi.");
+    } finally {
+        if (btnSpan) btnSpan.textContent = origText;
+        if (btn) btn.disabled = false;
+    }
+};
+
+// ==========================================
+// === КОНСТРУКТОР МИНИ-ГРАФИКОВ (PNG) ===
+// ==========================================
+const CHART_PALETTE = [
+    "#0284C7", "#10B981", "#F59E0B", "#8B5CF6",
+    "#EF4444", "#EC4899", "#14B8A6", "#6366F1"
+];
+
+let chartState = {
+    type: "bar",     // "bar" | "donut"
+    theme: "light",  // "light" | "dark"
+    rows: [
+        { label: "Samarqand", value: 42 },
+        { label: "Toşkent", value: 31 },
+        { label: "Buxoro", value: 18 },
+        { label: "Xiva", value: 9 }
+    ]
+};
+
+window.openChartModal = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    const modal = document.getElementById("chartModalBackdrop");
+    if (modal) {
+        modal.classList.add("open");
+        renderChartRowsInputs();
+        renderChartPreview();
+    }
+};
+
+window.closeChartModal = function(event) {
+    const modal = document.getElementById("chartModalBackdrop");
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove("open");
+};
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeChartModal();
+});
+
+window.setChartType = function(type) {
+    chartState.type = type;
+    document.querySelectorAll("#chartTypeGroup .chart-seg-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.type === type);
+    });
+    renderChartPreview();
+};
+
+window.setChartTheme = function(theme) {
+    chartState.theme = theme;
+    document.querySelectorAll("#chartThemeGroup .chart-seg-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.theme === theme);
+    });
+    renderChartPreview();
+};
+
+window.addChartRow = function() {
+    if (chartState.rows.length >= 8) return;
+    chartState.rows.push({ label: `Körsatkiç ${chartState.rows.length + 1}`, value: 15 });
+    renderChartRowsInputs();
+    renderChartPreview();
+};
+
+window.removeChartRow = function(idx) {
+    if (chartState.rows.length <= 2) return;
+    chartState.rows.splice(idx, 1);
+    renderChartRowsInputs();
+    renderChartPreview();
+};
+
+window.updateChartRow = function(idx, field, val) {
+    if (!chartState.rows[idx]) return;
+    chartState.rows[idx][field] = field === "value" ? (parseFloat(val) || 0) : val;
+    renderChartPreview();
+};
+
+function renderChartRowsInputs() {
+    const box = document.getElementById("chartRowsContainer");
+    if (!box) return;
+    box.innerHTML = chartState.rows.map((row, idx) => `
+        <div class="chart-data-row">
+            <span class="chart-row-dot" style="background:${CHART_PALETTE[idx % CHART_PALETTE.length]};"></span>
+            <input type="text" class="bib-custom-input" value="${escapeHTML(row.label)}" placeholder="Nomi" oninput="updateChartRow(${idx}, 'label', this.value)">
+            <input type="number" class="bib-custom-input" value="${row.value}" placeholder="0" oninput="updateChartRow(${idx}, 'value', this.value)">
+            <button type="button" class="chart-del-row-btn" onclick="removeChartRow(${idx})" title="Öçiriş">×</button>
+        </div>
+    `).join("");
+}
+
+function buildChartCardHTML(isExport) {
+    const title = (document.getElementById("chartTitleInput")?.value || "STATISTIKA").trim();
+    const sub = (document.getElementById("chartSubInput")?.value || "").trim();
+    const unit = (document.getElementById("chartUnitInput")?.value || "").trim();
+    const theme = chartState.theme;
+    const logoPath = theme === "dark" ? "/logo-dark.svg" : "/logo.svg";
+
+    const validRows = chartState.rows.filter(r => r.label.trim() !== "");
+    const total = validRows.reduce((sum, r) => sum + Math.max(0, Number(r.value) || 0), 0) || 1;
+    const maxVal = Math.max(...validRows.map(r => Math.max(0, Number(r.value) || 0)), 1);
+
+    let bodyHtml = "";
+
+    if (chartState.type === "bar") {
+        bodyHtml = `<div class="chart-bars-wrap">` + validRows.map((row, idx) => {
+            const val = Math.max(0, Number(row.value) || 0);
+            const pct = Math.max(3, Math.round((val / maxVal) * 100));
+            const color = CHART_PALETTE[idx % CHART_PALETTE.length];
+            const valText = unit ? `${val}${unit === "%" ? "%" : " " + unit}` : `${val}`;
+            return `
+                <div class="chart-bar-item">
+                    <div class="chart-bar-head">
+                        <span>${escapeHTML(row.label)}</span>
+                        <span class="chart-bar-val" style="color:${color};">${valText}</span>
+                    </div>
+                    <div class="chart-bar-track">
+                        <div class="chart-bar-fill" style="width:${pct}%; background:${color};"></div>
+                    </div>
+                </div>
+            `;
+        }).join("") + `</div>`;
+    } else {
+        // Кольцевая диаграмма на чистом SVG
+        const radius = 70;
+        const circumference = 2 * Math.PI * radius;
+        let offset = 0;
+
+        const circlesHtml = validRows.map((row, idx) => {
+            const val = Math.max(0, Number(row.value) || 0);
+            const segLen = (val / total) * circumference;
+            const color = CHART_PALETTE[idx % CHART_PALETTE.length];
+            const circle = `<circle cx="95" cy="95" r="${radius}" fill="none" stroke="${color}" stroke-width="26" stroke-dasharray="${segLen.toFixed(2)} ${circumference.toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}"></circle>`;
+            offset += segLen;
+            return circle;
+        }).join("");
+
+        const legendHtml = validRows.map((row, idx) => {
+            const val = Math.max(0, Number(row.value) || 0);
+            const color = CHART_PALETTE[idx % CHART_PALETTE.length];
+            const valText = unit ? `${val}${unit === "%" ? "%" : " " + unit}` : `${val}`;
+            return `
+                <div class="chart-legend-row">
+                    <div class="chart-legend-left">
+                        <span class="chart-legend-dot" style="background:${color};"></span>
+                        <span>${escapeHTML(row.label)}</span>
+                    </div>
+                    <span class="chart-legend-val">${valText}</span>
+                </div>
+            `;
+        }).join("");
+
+        const totalDisplay = Number.isInteger(total) ? total : total.toFixed(1);
+        bodyHtml = `
+            <div class="chart-donut-wrap">
+                <div class="chart-donut-svg-box">
+                    <svg width="190" height="190" viewBox="0 0 190 190">
+                        <g transform="rotate(-90 95 95)">${circlesHtml}</g>
+                    </svg>
+                    <div class="chart-donut-center">
+                        <div class="chart-donut-total">${totalDisplay}${unit === "%" ? "%" : ""}</div>
+                        <div class="chart-donut-lbl">Jami</div>
+                    </div>
+                </div>
+                <div class="chart-donut-legend">${legendHtml}</div>
+            </div>
+        `;
+    }
+
+    const idAttr = isExport ? 'id="chartInfCardNode"' : '';
+    const logoId = isExport ? 'id="chartInfLogoImg"' : '';
+
+    return `
+        <div class="curr-inf-card ${theme}" ${idAttr}>
+            <div class="curr-inf-top">
+                <div>
+                    <h2 class="curr-inf-title">${escapeHTML(title)}</h2>
+                    ${sub ? `<div class="curr-inf-date">${escapeHTML(sub)}</div>` : ""}
+                </div>
+                <img src="${logoPath}" alt="Logo" class="curr-inf-logo" ${logoId}>
+            </div>
+            <div class="chart-inf-accent-line"></div>
+            ${bodyHtml}
+            <div class="curr-inf-footer">
+                <span>ULH Infografika</span>
+                <span>ulh-online.uz</span>
+            </div>
+        </div>
+    `;
+}
+
+function renderChartPreview() {
+    const frame = document.getElementById("chartPreviewFrame");
+    if (!frame) return;
+    frame.innerHTML = buildChartCardHTML(false);
+}
+
+window.downloadChartInformer = async function() {
+    const stage = document.getElementById("currencyInformerStage");
+    const btn = document.getElementById("chartDownloadBtn");
+    if (!stage || typeof html2canvas !== "function") return;
+
+    const btnSpan = btn ? btn.querySelector("span") : null;
+    const origText = btnSpan ? btnSpan.textContent : "PNG yuklab oliş";
+    if (btnSpan) btnSpan.textContent = "Tayyorlanmoqda...";
+    if (btn) btn.disabled = true;
+
+    try {
+        stage.innerHTML = buildChartCardHTML(true);
+
+        const logoImg = document.getElementById("chartInfLogoImg");
+        if (logoImg && !logoImg.complete) {
+            await new Promise(resolve => {
+                logoImg.onload = resolve;
+                logoImg.onerror = resolve;
+            });
+        }
+        if (document.fonts && document.fonts.ready) {
+            await document.fonts.ready;
+        }
+
+        const cardNode = document.getElementById("chartInfCardNode");
+        const canvas = await html2canvas(cardNode, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: null,
+            logging: false
+        });
+
+        const link = document.createElement("a");
+        link.download = `ulh_grafik_${chartState.type}_${chartState.theme}.png`;
+        link.href = canvas.toDataURL("image/png");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        stage.innerHTML = "";
+    } catch (err) {
+        console.error("Chart Informer Error:", err);
+        alert("Grafikni yaratişda xatolik yuz berdi.");
     } finally {
         if (btnSpan) btnSpan.textContent = origText;
         if (btn) btn.disabled = false;
