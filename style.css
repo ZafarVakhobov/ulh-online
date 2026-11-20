@@ -10923,3 +10923,11 @@ body.dark-mode .chart-del-row-btn { background: rgba(239, 68, 68, 0.18); color: 
         flex-direction: column;
     }
 }
+
+/* Панель «Sayt dizayni» поверх виджета Öşa AI */
+#themeStudioOverlay {
+    z-index: 1000001 !important;
+}
+#themeStudioPanel {
+    z-index: 1000002 !important;
+}
