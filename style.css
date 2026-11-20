@@ -10611,3 +10611,15 @@ body.dark-mode .curr-export-opt:hover {
         width: auto;
     }
 }
+
+/* === ФИКС БЛЮРА ДЛЯ ОКНА УВЕДОМЛЕНИЙ НА МОБИЛЬНОМ === */
+@media (max-width: 768px) {
+    .top-navbar:has(#navNotifyWrap.open) {
+        z-index: 10600 !important;
+    }
+
+    /* Убираем зависающий тултип на тач-экранах */
+    #ulh-tooltip {
+        display: none !important;
+    }
+}
