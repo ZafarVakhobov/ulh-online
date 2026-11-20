@@ -737,6 +737,23 @@
             <!-- Нижняя панель со ссылкой на NBU.uz и кнопкой закрытия -->
             <div class="weather-modal-footer">
                 <a href="https://nbu.uz/jismoniy-shaxslar-valyutalar-kursi" target="_blank" rel="noopener" class="weather-accu-link">NBU sahifasini oçiş ↗</a>
+
+<!-- Разместите в футере #currencyModalBackdrop слева от кнопки Yopiş -->
+<div class="curr-export-wrap" id="currExportWrap">
+    <button type="button" class="curr-export-btn" id="currExportBtn" onclick="toggleCurrencyExportMenu(event)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Rasm yuklaş</span>
+    </button>
+    <div class="curr-export-menu" id="currExportMenu">
+        <button type="button" class="curr-export-opt" onclick="downloadCurrencyInformer('light')">
+            <span>☀️</span> Yoruğ mavzu (PNG)
+        </button>
+        <button type="button" class="curr-export-opt" onclick="downloadCurrencyInformer('dark')">
+            <span>🌙</span> Qoronği mavzu (PNG)
+        </button>
+    </div>
+</div>
+                
                 <button type="button" class="weather-modal-close" onclick="closeCurrencyModal()">Yopiş</button>
             </div>
         </div>
@@ -3230,6 +3247,8 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
     </div>
 </div> 
 
+    <!-- Скрытый контейнер для генерации PNG-информера валют -->
+<div id="currencyInformerStage" aria-hidden="true"></div>
     
 <!-- === 20-20-20 QOIDASI (SOG'LOM KO'ZLAR) === -->
 <div id="eyeCareOverlay" class="eye-care-overlay">
