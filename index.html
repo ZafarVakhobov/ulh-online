@@ -3271,6 +3271,69 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
 
     <!-- Скрытый контейнер для генерации PNG-информера валют -->
 <div id="currencyInformerStage" aria-hidden="true"></div>
+
+<!-- === МОДАЛЬНОЕ ОКНО: КОНСТРУКТОР МИНИ-ГРАФИКОВ (PNG) === -->
+<div class="weather-modal-backdrop" id="chartModalBackdrop" onclick="closeChartModal(event)">
+    <div class="weather-modal-card chart-modal-card" onclick="event.stopPropagation()">
+        <div class="pdf-studio-header" style="margin-bottom: 14px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="chart-icon-badge">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </div>
+                <div>
+                    <div class="pdf-studio-title">Grafik konstruktori</div>
+                    <div class="pdf-studio-sub">Taqdimotlar uçun PNG infografika</div>
+                </div>
+            </div>
+            <button type="button" class="pdf-studio-close" onclick="closeChartModal()">×</button>
+        </div>
+
+        <div class="chart-builder-layout">
+            <!-- Левая часть: Настройки и данные -->
+            <div class="chart-controls-col">
+                <div class="chart-toggle-row">
+                    <div class="chart-seg-group" id="chartTypeGroup">
+                        <button type="button" class="chart-seg-btn active" data-type="bar" onclick="setChartType('bar')">📊 Ustunli</button>
+                        <button type="button" class="chart-seg-btn" data-type="donut" onclick="setChartType('donut')">🍩 Doiraviy</button>
+                    </div>
+                    <div class="chart-seg-group" id="chartThemeGroup">
+                        <button type="button" class="chart-seg-btn active" data-theme="light" onclick="setChartTheme('light')">⚪</button>
+                        <button type="button" class="chart-seg-btn" data-theme="dark" onclick="setChartTheme('dark')">⚫</button>
+                    </div>
+                </div>
+
+                <input type="text" id="chartTitleInput" class="bib-custom-input" placeholder="Sarlavha (masalan: Yillik ösiş)" value="YILLIK STATISTIKA" oninput="renderChartPreview()">
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:8px;">
+                    <input type="text" id="chartSubInput" class="bib-custom-input" placeholder="Izoh yoki sana" value="2026-yil yakunlari böyiça" oninput="renderChartPreview()">
+                    <input type="text" id="chartUnitInput" class="bib-custom-input" placeholder="Birlik (%, ta)" value="%" oninput="renderChartPreview()">
+                </div>
+
+                <div class="chart-items-head">
+                    <span>Körsatkiçlar</span>
+                    <button type="button" class="chart-add-row-btn" onclick="addChartRow()">+ Qöşiş</button>
+                </div>
+                <div id="chartRowsContainer" class="chart-rows-list custom-scrollbar"></div>
+            </div>
+
+            <!-- Правая часть: Живой предпросмотр -->
+            <div class="chart-preview-col">
+                <div class="chart-preview-frame" id="chartPreviewFrame"></div>
+            </div>
+        </div>
+
+        <div class="weather-modal-footer" style="margin-top: 14px;">
+            <span style="font-size:11.5px; color:#64748B; font-weight:600;">Yuqori sifatli PNG (1200 px)</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" class="curr-export-btn" id="chartDownloadBtn" onclick="downloadChartInformer()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>PNG yuklab oliş</span>
+                </button>
+                <button type="button" class="weather-modal-close" onclick="closeChartModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     
 <!-- === 20-20-20 QOIDASI (SOG'LOM KO'ZLAR) === -->
 <div id="eyeCareOverlay" class="eye-care-overlay">
