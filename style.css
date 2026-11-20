@@ -10180,6 +10180,8 @@ body.dark-mode .pdf-studio-icon-badge { background: rgba(244, 63, 94, 0.16); col
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
+    text-decoration: none;
+    line-height: 1.2;
 }
 
 .curr-export-btn:hover {
