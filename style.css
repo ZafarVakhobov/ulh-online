@@ -10455,3 +10455,119 @@ body.dark-mode .curr-export-opt:hover {
     font-weight: 600;
     opacity: 0.65;
 }
+
+/* ========================================== */
+/* === PNG-ИНФОРМЕР ПРОГНОЗА ПОГОДЫ === */
+/* ========================================== */
+.weather-inf-accent-line {
+    height: 3px;
+    width: 140px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #0284C7 0%, #38BDF8 100%);
+    margin-bottom: 22px;
+}
+
+.weather-inf-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-radius: 18px;
+    margin-bottom: 14px;
+}
+
+.curr-inf-card.dark .weather-inf-hero {
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.22) 0%, rgba(56, 189, 248, 0.08) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.curr-inf-card.light .weather-inf-hero {
+    background: linear-gradient(135deg, #E0F2FE 0%, #F0F9FF 100%);
+    border: 1px solid #BAE6FD;
+}
+
+.weather-inf-city {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 4px;
+}
+
+.weather-inf-cond {
+    font-size: 15px;
+    font-weight: 700;
+    opacity: 0.78;
+}
+
+.weather-inf-now-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.weather-inf-temp {
+    font-size: 46px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.weather-inf-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.weather-inf-day {
+    border-radius: 16px;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+}
+
+.curr-inf-card.dark .weather-inf-day {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.curr-inf-card.light .weather-inf-day {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.weather-inf-day-name {
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.weather-inf-day-date {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.65;
+    margin-top: -5px;
+}
+
+.weather-inf-day-cond {
+    font-size: 12px;
+    font-weight: 700;
+    opacity: 0.75;
+}
+
+.weather-inf-day-temps {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 800;
+    margin-top: 2px;
+}
+
+.weather-inf-day-min {
+    font-size: 14px;
+    font-weight: 700;
+    opacity: 0.58;
+}
