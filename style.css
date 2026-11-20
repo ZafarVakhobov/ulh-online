@@ -10156,3 +10156,301 @@ body.dark-mode .pdf-file-item { background: #1E293B; border-color: #334155; colo
 body.dark-mode .pdf-field-group,
 body.dark-mode .pdf-checkbox-row { color: #CBD5E1; }
 body.dark-mode .pdf-studio-icon-badge { background: rgba(244, 63, 94, 0.16); color: #FB7185; border: 1px solid rgba(244, 63, 94, 0.28); }
+
+/* ========================================== */
+/* === ЭКСПОРТ ИНФОРМЕРА ВАЛЮТ В PNG === */
+/* ========================================== */
+.curr-export-wrap {
+    position: relative;
+    display: inline-flex;
+    margin-right: 8px;
+}
+
+.curr-export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    color: #0F172A;
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.curr-export-btn:hover {
+    background: #E0F2FE;
+    border-color: #BAE6FD;
+    color: #0284C7;
+}
+
+.curr-export-menu {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    min-width: 185px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 5px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+    display: none;
+    flex-direction: column;
+    gap: 3px;
+    z-index: 50;
+}
+
+.curr-export-wrap.open .curr-export-menu {
+    display: flex;
+}
+
+.curr-export-opt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 11px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #1E293B;
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.curr-export-opt:hover {
+    background: #F1F5F9;
+    color: #0284C7;
+}
+
+/* Тёмная тема для кнопки и меню */
+body.dark-mode .curr-export-btn {
+    background: #1E293B;
+    border-color: #334155;
+    color: #F1F5F9;
+}
+body.dark-mode .curr-export-btn:hover {
+    background: #0C4A6E;
+    border-color: #0369A1;
+    color: #38BDF8;
+}
+body.dark-mode .curr-export-menu {
+    background: #0F172A;
+    border-color: #334155;
+}
+body.dark-mode .curr-export-opt {
+    color: #E2E8F0;
+}
+body.dark-mode .curr-export-opt:hover {
+    background: #1E293B;
+    color: #38BDF8;
+}
+
+/* Скрытая сцена рендера PNG */
+#currencyInformerStage {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Карточка информера (600px -> при scale:2 даст 1200px) */
+.curr-inf-card {
+    width: 600px;
+    padding: 36px 34px 28px;
+    font-family: 'Manrope', Arial, sans-serif;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+}
+
+.curr-inf-card.dark {
+    background: linear-gradient(155deg, #0F172A 0%, #111827 55%, #0B1120 100%);
+    color: #F8FAFC;
+}
+
+.curr-inf-card.light {
+    background: linear-gradient(155deg, #FFFFFF 0%, #F8FAFC 60%, #F1F5F9 100%);
+    color: #0F172A;
+}
+
+.curr-inf-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.curr-inf-title {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin: 0 0 6px;
+}
+
+.curr-inf-date {
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 0.78;
+}
+
+.curr-inf-logo {
+    height: 36px;
+    width: auto;
+    max-width: 180px;
+    object-fit: contain;
+    display: block;
+}
+
+.curr-inf-accent-line {
+    height: 3px;
+    width: 140px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
+    margin-bottom: 22px;
+}
+
+.curr-inf-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.curr-inf-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    border-radius: 16px;
+    box-sizing: border-box;
+}
+
+.curr-inf-card.dark .curr-inf-row {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.curr-inf-card.light .curr-inf-row {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.curr-inf-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.curr-inf-code {
+    width: 62px;
+    height: 44px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.02em;
+}
+
+.curr-inf-sym {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 21px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #10B981;
+}
+
+.curr-inf-card.dark .curr-inf-sym {
+    background: rgba(16, 185, 129, 0.14);
+    color: #FFFFFF;
+}
+
+.curr-inf-card.light .curr-inf-sym {
+    background: #ECFDF5;
+    color: #059669;
+}
+
+.curr-inf-val {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.curr-inf-val span {
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 0.72;
+    margin-left: 4px;
+}
+
+.curr-inf-diff {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-left: 14px;
+    border-left: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.curr-inf-diff-num {
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.curr-inf-diff.up .curr-inf-diff-num { color: #10B981; }
+.curr-inf-diff.down .curr-inf-diff-num { color: #EF4444; }
+.curr-inf-diff.flat .curr-inf-diff-num { color: #94A3B8; }
+
+.curr-inf-arrow {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.curr-inf-diff.up .curr-inf-arrow {
+    background: rgba(16, 185, 129, 0.18);
+    color: #10B981;
+}
+
+.curr-inf-diff.down .curr-inf-arrow {
+    background: rgba(239, 68, 68, 0.18);
+    color: #EF4444;
+}
+
+.curr-inf-diff.flat .curr-inf-arrow {
+    background: rgba(148, 163, 184, 0.18);
+    color: #94A3B8;
+}
+
+.curr-inf-footer {
+    margin-top: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.65;
+}
