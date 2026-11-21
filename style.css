@@ -11086,3 +11086,42 @@ body.dark-mode .mindmap-tool-btn.neutral:hover { background: #334155; color: #F8
     .mindmap-text-input { width: 100% !important; }
     .mindmap-canvas-wrap { aspect-ratio: 4 / 3; }
 }
+
+/* === IZOHLI LUĞAT (izoh.uz + AI) === */
+.izoh-modal-card { max-width: 620px !important; padding: 20px !important; }
+.izoh-icon-badge {
+    width: 38px; height: 38px; border-radius: 11px;
+    background: #FEF3C7; color: #D97706;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.izoh-search-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+.izoh-search-bar input { flex: 1; }
+.izoh-result-box {
+    min-height: 150px; max-height: 360px; overflow-y: auto;
+    background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px;
+    padding: 16px; font-size: 14px; line-height: 1.65; color: #0F172A;
+}
+.izoh-placeholder { color: #64748B; text-align: center; padding: 28px 12px; font-size: 13.5px; }
+.izoh-result-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #E2E8F0;
+}
+.izoh-word-title { font-size: 19px; font-weight: 800; color: #0F172A; }
+.izoh-badge {
+    font-size: 11.5px; font-weight: 800; padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+}
+.izoh-badge.dict { background: #DCFCE7; color: #15803D; }
+.izoh-badge.ai { background: #EDE9FE; color: #7C3AED; }
+.izoh-def-text { white-space: pre-line; }
+.izoh-source-link {
+    display: inline-block; margin-top: 12px; font-size: 12.5px; font-weight: 700;
+    color: #0284C7; text-decoration: none;
+}
+.izoh-source-link:hover { text-decoration: underline; }
+
+body.dark-mode .izoh-icon-badge { background: rgba(245, 158, 11, 0.18); color: #FBBF24; }
+body.dark-mode .izoh-result-box { background: #0F172A; border-color: #334155; color: #E2E8F0; }
+body.dark-mode .izoh-result-head { border-color: #1E293B; }
+body.dark-mode .izoh-word-title { color: #F8FAFC; }
+body.dark-mode .izoh-badge.dict { background: rgba(16, 185, 129, 0.18); color: #34D399; }
+body.dark-mode .izoh-badge.ai { background: rgba(139, 92, 246, 0.2); color: #C4B5FD; }
