@@ -12749,6 +12749,16 @@ window.addCrosswordRow = function() {
     }
 };
 
+window.clearCrosswordRows = function() {
+    cwState.rows = [
+        { word: "", clue: "" },
+        { word: "", clue: "" },
+        { word: "", clue: "" }
+    ];
+    renderCrosswordRows();
+    renderCrossword();
+};
+
 window.removeCrosswordRow = function(idx) {
     if (cwState.rows.length <= 2) return;
     cwState.rows.splice(idx, 1);
@@ -13028,7 +13038,7 @@ window.generateCrosswordWithAI = async function() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                model: "qwen/qwen3.8-27b",
+                model: "openai/gpt-oss-120b",
                 messages: [
                     { role: "system", content: sysPrompt },
                     { role: "user", content: userPrompt }
