@@ -12614,13 +12614,39 @@ window.searchIzohWord = async function(event) {
 
 // Запрос к твоему AI-воркеру (ulh-ai-helper)
 async function fetchAiWordDefinition(word) {
-    const prompt = `"${word}" sözining özbek tilidagi qisqa va aniq izohli ma'nosini ber (1-2 gapda ta'rif va 1 ta misol). Javobni faqat oddiy matnda yoz.`;
-    // Подставь сюда свой формат запроса к ulh-ai-helper:
+    const sysPrompt = "Sen o'zbek tilining izohli lug'ati bo'yicha mutaxassissan. So'ralgan so'zning qisqa, aniq va tushunarli izohini (1-2 gapda) hamda 1 ta misol keltir. Faqat oddiy matn yoz, ortiqcha salomlashishsiz.";
+    const userPrompt = `"${word}" so'zining ma'nosini izohlab ber.`;
+
     const res = await fetch("https://ulh-ai-helper.lanigirodesigner.workers.dev/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({
+            model: "qwen/qwen3.8-27b",
+            messages: [
+                { role: "system", content: sysPrompt },
+                { role: "user", content: userPrompt }
+            ],
+            temperature: 0.3,
+            max_tokens: 1024,
+            mode: "chat",
+            text: userPrompt,
+            customPrompt: sysPrompt
+        })
     });
+
     const data = await res.json();
-    return data.reply || data.text || data.result || "AI javob bera olmadi.";
+    let reply = "";
+    if (data.choices && data.choices[0] && data.choices[0].message) {
+        reply = data.choices[0].message.content;
+    } else if (data.result) {
+        reply = data.result;
+    } else if (data.message) {
+        reply = data.message;
+    } else {
+        return "AI javob bera olmadi.";
+    }
+
+    return typeof enforceNewUzbekAlphabet === "function"
+        ? enforceNewUzbekAlphabet(reply.trim())
+        : reply.trim();
 }
