@@ -687,8 +687,9 @@
                 <small>Furye qatori</small><span>f(x) = a₀ + Σ (aₙ cos(nπx/L) + bₙ sin(nπx/L))</span>
             </button>
             <button type="button" class="eq-tpl-btn" onclick="insertEquationTemplate('frac')">
-                <small>Kasr (A / B)</small><span>a / b = c</span>
-            </button>
+    <small>Kasr (Surat / Maxraj)</small>
+    <span class="math-frac"><span class="math-num">a + b</span><span class="math-den">c</span></span>
+</button>
         </div>
     </div>
 </div>
@@ -705,8 +706,37 @@
         <button onclick="applyImgWrap('topbottom')">Yuqori va pastdan</button>
         <button onclick="applyImgWrap('behind')">Matn orqasida</button>
         <button onclick="applyImgWrap('front')">Matn oldida</button>
+        <hr style="border:0;border-top:1px solid #E2E8F0;margin:3px 0;">
+<button onclick="openImgCropModal()">Qirqiş (Crop)</button>
     </div>
     <div class="img-resize-corner" id="imgResizeCorner" title="Ölçamni özgartiriş"></div>
+</div>
+
+<!-- Круглые кнопки + для добавления строки/столбца в Word-таблицу -->
+<button type="button" id="tblAddRowBtn" class="tbl-float-plus" onclick="addWordTableRow()" title="Yangi qator qöşiş">+</button>
+<button type="button" id="tblAddColBtn" class="tbl-float-plus" onclick="addWordTableCol()" title="Yangi ustun qöşiş">+</button>
+
+<!-- Модалка произвольной обрезки изображения -->
+<div id="imgCropModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="weather-modal-card" style="max-width:440px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <b style="font-size:16px;">Rasmni qirqiş (Crop)</b>
+            <button type="button" class="pdf-studio-close" onclick="document.getElementById('imgCropModal').classList.remove('open')">×</button>
+        </div>
+        <div style="text-align:center; margin-bottom:12px; background:#F8FAFC; padding:10px; border-radius:10px;">
+            <canvas id="imgCropPreview" style="max-width:100%; max-height:220px; border-radius:6px;"></canvas>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:12px; font-weight:700; margin-bottom:14px;">
+            <label>Yuqori (%)<input type="range" id="cropTop" min="0" max="45" value="0" oninput="updateCropPreview()"></label>
+            <label>Pastki (%)<input type="range" id="cropBottom" min="0" max="45" value="0" oninput="updateCropPreview()"></label>
+            <label>Çap (%)<input type="range" id="cropLeft" min="0" max="45" value="0" oninput="updateCropPreview()"></label>
+            <label>Öng (%)<input type="range" id="cropRight" min="0" max="45" value="0" oninput="updateCropPreview()"></label>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="office-btn primary" onclick="applyImgCrop()">Qirqiş</button>
+            <button type="button" class="office-btn" onclick="document.getElementById('imgCropModal').classList.remove('open')">Bekor</button>
+        </div>
+    </div>
 </div>
     
     <script src="../scripts.js"></script>
