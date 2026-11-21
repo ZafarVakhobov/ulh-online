@@ -11963,6 +11963,163 @@ window.downloadChartInformer = async function() {
     }
 };
 
+// === МЕНЮ И ЭКСПОРТ ГРАФИКОВ В SVG ===
+window.toggleChartExportMenu = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    const wrap = document.getElementById("chartExportWrap");
+    if (wrap) wrap.classList.toggle("open");
+};
+
+window.closeChartExportMenu = function() {
+    const wrap = document.getElementById("chartExportWrap");
+    if (wrap) wrap.classList.remove("open");
+};
+
+document.addEventListener("click", (e) => {
+    const wrap = document.getElementById("chartExportWrap");
+    if (wrap && !wrap.contains(e.target)) {
+        wrap.classList.remove("open");
+    }
+});
+
+function escapeChartSvgXml(str) {
+    return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+}
+
+async function getChartLogoSvg(logoPath, x, y, targetWidth) {
+    try {
+        const res = await fetch(logoPath);
+        if (!res.ok) return "";
+        const text = await res.text();
+        const doc = new DOMParser().parseFromString(text, "image/svg+xml");
+        const svgEl = doc.querySelector("svg");
+        if (!svgEl) return "";
+
+        const vb = svgEl.getAttribute("viewBox");
+        let w = parseFloat(svgEl.getAttribute("width")) || 185;
+        let h = parseFloat(svgEl.getAttribute("height")) || 40;
+        if (vb) {
+            const p = vb.trim().split(/[\s,]+/).map(Number);
+            if (p.length === 4 && p[2] > 0) { w = p[2]; h = p[3]; }
+        }
+        const targetHeight = Math.round((h / w) * targetWidth);
+        return `<svg x="${x}" y="${y}" width="${targetWidth}" height="${targetHeight}" viewBox="${vb || `0 0 ${w} ${h}`}">${svgEl.innerHTML}</svg>`;
+    } catch (_) {
+        return "";
+    }
+}
+
+window.downloadChartInformerSVG = async function() {
+    const title = (document.getElementById("chartTitleInput")?.value || "STATISTIKA").trim();
+    const sub = (document.getElementById("chartSubInput")?.value || "").trim();
+    const unit = (document.getElementById("chartUnitInput")?.value || "").trim();
+    const theme = chartState.theme;
+    const isDark = theme === "dark";
+    const textCol = isDark ? "#F8FAFC" : "#0F172A";
+    const trackBg = isDark ? "rgba(255,255,255,0.1)" : "#E2E8F0";
+
+    const validRows = chartState.rows.filter(r => r.label.trim() !== "");
+    const total = validRows.reduce((s, r) => s + Math.max(0, Number(r.value) || 0), 0) || 1;
+    const maxVal = Math.max(...validRows.map(r => Math.max(0, Number(r.value) || 0)), 1);
+
+    const logoSvg = await getChartLogoSvg(isDark ? "/logo-dark.svg" : "/logo.svg", 381, 34, 185);
+    let bodySvg = "";
+    let svgHeight = 420;
+
+    if (chartState.type === "bar") {
+        svgHeight = 148 + validRows.length * 54 + 62;
+        bodySvg = validRows.map((row, idx) => {
+            const val = Math.max(0, Number(row.value) || 0);
+            const barW = Math.max(16, Math.round((val / maxVal) * 532));
+            const color = CHART_PALETTE[idx % CHART_PALETTE.length];
+            const valText = unit ? `${val}${unit === "%" ? "%" : " " + unit}` : `${val}`;
+            const y = 148 + idx * 54;
+            return `
+                <text x="34" y="${y + 14}" font-size="15" font-weight="700" fill="${textCol}">${escapeChartSvgXml(row.label)}</text>
+                <text x="566" y="${y + 14}" text-anchor="end" font-size="16" font-weight="800" fill="${color}">${escapeChartSvgXml(valText)}</text>
+                <rect x="34" y="${y + 24}" width="532" height="14" rx="7" fill="${trackBg}"/>
+                <rect x="34" y="${y + 24}" width="${barW}" height="14" rx="7" fill="${color}"/>
+            `;
+        }).join("");
+    } else {
+        const radius = 70;
+        const circumference = 2 * Math.PI * radius;
+        const legendHeight = validRows.length * 30;
+        svgHeight = Math.max(410, 160 + legendHeight + 70);
+        const donutCy = 148 + Math.max(95, legendHeight / 2);
+
+        let offset = 0;
+        const circlesSvg = validRows.map((row, idx) => {
+            const val = Math.max(0, Number(row.value) || 0);
+            const segLen = (val / total) * circumference;
+            const color = CHART_PALETTE[idx % CHART_PALETTE.length];
+            const c = `<circle cx="132" cy="${donutCy}" r="${radius}" fill="none" stroke="${color}" stroke-width="26" stroke-dasharray="${segLen.toFixed(2)} ${circumference.toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 132 ${donutCy})"/>`;
+            offset += segLen;
+            return c;
+        }).join("");
+
+        const legendStartY = donutCy - (legendHeight / 2) + 18;
+        const legendSvg = validRows.map((row, idx) => {
+            const val = Math.max(0, Number(row.value) || 0);
+            const color = CHART_PALETTE[idx % CHART_PALETTE.length];
+            const valText = unit ? `${val}${unit === "%" ? "%" : " " + unit}` : `${val}`;
+            const y = legendStartY + idx * 30;
+            return `
+                <circle cx="268" cy="${y - 5}" r="5.5" fill="${color}"/>
+                <text x="284" y="${y}" font-size="14" font-weight="700" fill="${textCol}">${escapeChartSvgXml(row.label)}</text>
+                <text x="566" y="${y}" text-anchor="end" font-size="14" font-weight="800" fill="${textCol}">${escapeChartSvgXml(valText)}</text>
+            `;
+        }).join("");
+
+        const totalDisplay = Number.isInteger(total) ? total : total.toFixed(1);
+        bodySvg = `
+            ${circlesSvg}
+            <text x="132" y="${donutCy + 2}" text-anchor="middle" font-size="24" font-weight="800" fill="${textCol}">${totalDisplay}${unit === "%" ? "%" : ""}</text>
+            <text x="132" y="${donutCy + 20}" text-anchor="middle" font-size="11" font-weight="700" fill="${textCol}" opacity="0.65">JAMI</text>
+            ${legendSvg}
+        `;
+    }
+
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="${svgHeight}" viewBox="0 0 600 ${svgHeight}" style="font-family: Manrope, Arial, sans-serif;">
+        <defs>
+            <linearGradient id="ulhChartBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="${isDark ? "#0F172A" : "#FFFFFF"}"/>
+                <stop offset="55%" stop-color="${isDark ? "#111827" : "#F8FAFC"}"/>
+                <stop offset="100%" stop-color="${isDark ? "#0B1120" : "#F1F5F9"}"/>
+            </linearGradient>
+            <linearGradient id="ulhChartLine" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#0284C7"/>
+                <stop offset="100%" stop-color="#6366F1"/>
+            </linearGradient>
+        </defs>
+        <rect width="600" height="${svgHeight}" fill="url(#ulhChartBg)"/>
+        <text x="34" y="64" font-size="28" font-weight="800" fill="${textCol}">${escapeChartSvgXml(title)}</text>
+        ${sub ? `<text x="34" y="92" font-size="16" font-weight="600" fill="${textCol}" opacity="0.78">${escapeChartSvgXml(sub)}</text>` : ""}
+        ${logoSvg}
+        <rect x="34" y="114" width="140" height="3" rx="1.5" fill="url(#ulhChartLine)"/>
+        ${bodySvg}
+        <text x="34" y="${svgHeight - 26}" font-size="13" font-weight="600" fill="${textCol}" opacity="0.65">ULH Infografika</text>
+        <text x="566" y="${svgHeight - 26}" text-anchor="end" font-size="13" font-weight="600" fill="${textCol}" opacity="0.65">ulh-online.uz</text>
+    </svg>`;
+
+    const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = `ulh_grafik_${chartState.type}_${theme}.svg`;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
 
 // ==========================================
 // === AQL XARITASI (MIND MAP -> PNG / SVG) ===
