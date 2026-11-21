@@ -1016,3 +1016,68 @@ body.col-resizing * {
     box-sizing: border-box;
     overflow-wrap: break-word;
 }
+
+/* === ВКЛАДКИ ЛИСТОВ В ULH TABLES (КАК В EXCEL) === */
+.tables-sheets-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #F8FAFC;
+    border-top: 1px solid #E2E8F0;
+    overflow-x: auto;
+}
+.sheet-tab-btn {
+    border: 1px solid #CBD5E1;
+    background: #FFFFFF;
+    color: #475569;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+}
+.sheet-tab-btn:hover {
+    border-color: #10B981;
+    color: #059669;
+}
+.sheet-tab-btn.active {
+    background: #10B981;
+    border-color: #10B981;
+    color: #FFFFFF;
+}
+body.dark-mode .tables-sheets-bar {
+    background: #0F172A;
+    border-color: #1E293B;
+}
+body.dark-mode .sheet-tab-btn {
+    background: #1E293B;
+    border-color: #334155;
+    color: #CBD5E1;
+}
+body.dark-mode .sheet-tab-btn.active {
+    background: #10B981;
+    border-color: #10B981;
+    color: #FFFFFF;
+}
+
+/* Встроенные картинки и таблицы в ULH Slides */
+.slide-body-box img {
+    max-width: 100%;
+    max-height: 280px;
+    border-radius: 8px;
+    margin: 8px 0;
+    display: block;
+}
+.slide-body-box table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 14px;
+}
+.slide-body-box td, .slide-body-box th {
+    border: 1px solid #CBD5E1;
+    padding: 6px 8px;
+}
