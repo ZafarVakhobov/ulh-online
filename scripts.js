@@ -13161,13 +13161,14 @@ window.downloadCrosswordPNG = async function() {
 function lemmatizeUzbekWord(raw) {
     let w = String(raw || "")
         .trim()
+        // Убираем внешнюю пунктуацию, сохраняя внутренние апострофы/дефисы внутри слова
         .replace(/^[^\p{L}]+|[^\p{L}]+$/gu, "");
 
     if (!w) return "";
 
     const lower = w.toLowerCase();
 
-    // Порядок важен: сначала более длинные окончания (-dagi, -larimiz, -lari, -ning и т.д.)
+    // Сначала длинные окончания, затем короткие (защита коротких основ — минимум 3 символа)
     const suffixes = [
         // Латиница (новая и стандартная)
         "larimizni", "laringizni", "larimizga", "laringizga",
@@ -13197,7 +13198,7 @@ function lemmatizeUzbekWord(raw) {
         }
     }
 
-    // Сохраняем исходный регистр первой буквы
+    // Сохраняем регистр первой буквы исходного слова
     if (/^[A-ZÖĞŞÇА-ЯЁЎҚҒҲ]/.test(w)) {
         candidate = candidate.charAt(0).toUpperCase() + candidate.slice(1);
     }
@@ -13206,11 +13207,22 @@ function lemmatizeUzbekWord(raw) {
 }
 
 function getSingleSelectedWord() {
-    const sel = window.getSelection ? window.getSelection() : null;
-    const rawText = sel ? sel.toString().trim() : "";
+    const activeEl = document.activeElement;
+    let rawText = "";
+
+    if (activeEl && (activeEl.tagName === "TEXTAREA" || (activeEl.tagName === "INPUT" && activeEl.type === "text"))) {
+        const start = activeEl.selectionStart;
+        const end = activeEl.selectionEnd;
+        if (typeof start === "number" && typeof end === "number" && end > start) {
+            rawText = activeEl.value.substring(start, end).trim();
+        }
+    } else if (window.getSelection) {
+        rawText = window.getSelection().toString().trim();
+    }
+
     if (!rawText) return null;
 
-    // Разбиваем по пробелам/переносам — если слов больше одного, кнопку не показываем
+    // Если выделено больше одного слова (есть пробелы или переносы) — словарь не показываем
     const parts = rawText.split(/\s+/).filter(Boolean);
     if (parts.length !== 1) return null;
 
@@ -13220,41 +13232,54 @@ function getSingleSelectedWord() {
     return lemmatizeUzbekWord(cleanWord);
 }
 
+function findSelectionTriggersContainer() {
+    const floatingMenu = document.getElementById("aiFloatingMenu");
+    if (floatingMenu) {
+        const triggersWrap = floatingMenu.querySelector(".ai-float-triggers-wrap");
+        if (triggersWrap) return triggersWrap;
+        const firstBtn = floatingMenu.querySelector("button");
+        if (firstBtn && firstBtn.parentElement) return firstBtn.parentElement;
+    }
+
+    const existingActionBtn = document.querySelector(
+        '[onclick*="fetchSynonymsForSelection"], [onclick*="fetchTranslationForSelection"], [onclick*="Synonym" i], [onclick*="Translat" i], .sel-synonym-btn, .sel-translate-btn'
+    );
+    return existingActionBtn ? existingActionBtn.parentElement : null;
+}
+
 function ensureIzohSelectionButton() {
     let btn = document.getElementById("selIzohBtn");
-    if (btn) return btn;
+    const container = findSelectionTriggersContainer();
+    if (!container) return null;
 
-    // Ищем контейнер кнопок синонимов/перевода по уже существующим элементам
-    const existingActionBtn = document.querySelector(
-        '[onclick*="Synonym" i], [onclick*="Translat" i], [id*="synonym" i], [id*="translate" i], .sel-synonym-btn, .sel-translate-btn'
-    );
-    const toolbar = existingActionBtn ? existingActionBtn.parentElement : null;
-    if (!toolbar) return null;
-
-    btn = document.createElement("button");
-    btn.type = "button";
-    btn.id = "selIzohBtn";
-    btn.className = "sel-izoh-btn";
-    btn.innerHTML = `<span>Sözning izohi</span>`;
-    btn.style.display = "none";
-
-    btn.addEventListener("mousedown", (e) => {
-        // Не даём выделению сброситься до клика
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const word = btn.dataset.word || getSingleSelectedWord();
+    if (!btn) {
+        btn = document.createElement("button");
+        btn.type = "button";
+        btn.id = "selIzohBtn";
+        btn.className = "sel-izoh-btn";
+        btn.innerHTML = `<span>📖</span><span>Izohlar luğati</span>`;
         btn.style.display = "none";
-        if (word && typeof window.openIzohModal === "function") {
-            window.openIzohModal(e, word);
-        }
-    });
 
-    toolbar.appendChild(btn);
+        btn.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const word = btn.dataset.word || getSingleSelectedWord();
+            btn.style.display = "none";
+            if (word && typeof window.openIzohModal === "function") {
+                window.openIzohModal(e, word);
+            }
+        });
+    }
+
+    if (btn.parentElement !== container) {
+        container.appendChild(btn);
+    }
+
     return btn;
 }
 
@@ -13263,35 +13288,30 @@ function syncIzohSelectionButton() {
     if (!btn) return;
 
     const lemmaWord = getSingleSelectedWord();
-    if (!lemmaWord) {
+    const floatingMenu = document.getElementById("aiFloatingMenu");
+
+    const isMenuVisible = floatingMenu
+        ? floatingMenu.classList.contains("visible")
+        : (btn.parentElement && getComputedStyle(btn.parentElement).display !== "none");
+
+    if (!lemmaWord || !isMenuVisible) {
         btn.style.display = "none";
         btn.dataset.word = "";
         return;
     }
 
-    // Показываем кнопку только если сам плавающий тулбар сейчас виден
-    const toolbar = btn.parentElement;
-    const isToolbarVisible = toolbar &&
-        getComputedStyle(toolbar).display !== "none" &&
-        getComputedStyle(toolbar).visibility !== "hidden" &&
-        getComputedStyle(toolbar).opacity !== "0";
-
-    if (isToolbarVisible) {
-        btn.dataset.word = lemmaWord;
-        btn.style.display = "inline-flex";
-    } else {
-        btn.style.display = "none";
-    }
+    btn.dataset.word = lemmaWord;
+    btn.style.display = "inline-flex";
 }
 
-document.addEventListener("selectionchange", () => {
-    requestAnimationFrame(syncIzohSelectionButton);
-});
+function scheduleIzohButtonSync() {
+    requestAnimationFrame(() => {
+        syncIzohSelectionButton();
+        setTimeout(syncIzohSelectionButton, 30);
+    });
+}
 
-document.addEventListener("mouseup", () => {
-    setTimeout(syncIzohSelectionButton, 20);
-});
-
-document.addEventListener("keyup", () => {
-    setTimeout(syncIzohSelectionButton, 20);
-});
+document.addEventListener("selectionchange", scheduleIzohButtonSync);
+document.addEventListener("mouseup", scheduleIzohButtonSync);
+document.addEventListener("keyup", scheduleIzohButtonSync);
+document.addEventListener("DOMContentLoaded", scheduleIzohButtonSync);
