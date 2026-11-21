@@ -12125,7 +12125,7 @@ window.downloadChartInformerSVG = async function() {
 // === AQL XARITASI (MIND MAP -> PNG / SVG) ===
 // ==========================================
 const MM_STORAGE_KEY = "ulh_mindmap_v1";
-const MM_COLORS = ["#0284C7", "#10B981", "#F59E0B", "#8B5CF6", "#EF4444", "#EC4899", "#14B8A6"];
+const MM_COLORS = ["#0284C7", "#10B981", "#F59E0B", "#8B5CF6", "#EF4444", "#EC4899"];
 
 let mmState = {
     theme: "light",
@@ -12221,10 +12221,18 @@ function selectMindmapNode(id) {
 
     const colorBox = document.getElementById("mmColorPicker");
     if (colorBox) {
+        const isCustom = !MM_COLORS.includes(node.color);
         colorBox.innerHTML = MM_COLORS.map(c => `
             <button type="button" class="mm-color-dot ${node.color === c ? "active" : ""}"
                 style="background:${c};" onclick="setMindmapNodeColor('${c}')"></button>
-        `).join("");
+        `).join("") + `
+            <label class="qr-custom-color-wrap ${isCustom ? "active-custom" : ""}" title="Boşqa rang tanlaş">
+                <input type="color" value="${node.color}" oninput="setMindmapCustomColor(this.value)">
+                <span class="qr-custom-color-icon">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </span>
+            </label>
+        `;
     }
     renderMindmap();
 }
@@ -12243,6 +12251,18 @@ window.setMindmapNodeColor = function(color) {
     node.color = color;
     saveMindmapData();
     selectMindmapNode(node.id);
+};
+
+window.setMindmapCustomColor = function(color) {
+    const node = mmState.nodes.find(n => n.id === mmState.selectedId);
+    if (!node) return;
+    node.color = color;
+    saveMindmapData();
+    renderMindmap();
+
+    document.querySelectorAll("#mmColorPicker .mm-color-dot").forEach(btn => btn.classList.remove("active"));
+    const customWrap = document.querySelector("#mmColorPicker .qr-custom-color-wrap");
+    if (customWrap) customWrap.classList.add("active-custom");
 };
 
 window.addMindmapChild = function() {
@@ -12451,7 +12471,7 @@ window.downloadMindmapSVG = function() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
-// Экспорт в PNG высокого разрешения (1920x1120) с логотипом
+// Экспорт в PNG высокого разрешения (1920x1080) с логотипом
 window.downloadMindmapPNG = async function() {
     const btn = document.getElementById("mmPngBtn");
     const btnSpan = btn ? btn.querySelector("span") : null;
