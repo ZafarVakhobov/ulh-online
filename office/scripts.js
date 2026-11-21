@@ -1824,3 +1824,76 @@ document.addEventListener("DOMContentLoaded", () => {
         if (activeTbl) positionAndShow(activeTbl);
     };
 })();
+
+// === ФИКС ОБРЕЗКИ ИЗОБРАЖЕНИЙ (CROP) И КРУГЛЫХ ЦВЕТОВ В ГРАФИКАХ ===
+let cropTargetImg = null;
+
+window.openImgCropModal = function() {
+    if (!selectedImgEl) return;
+    cropTargetImg = selectedImgEl;
+
+    // Скрываем синюю рамку выделения, чтобы не мешала поверх модалки
+    document.getElementById("imgFloatControls")?.classList.remove("active");
+    document.getElementById("imgWrapMenu")?.classList.remove("open");
+
+    ["cropTop", "cropBottom", "cropLeft", "cropRight"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = 0;
+    });
+    document.getElementById("imgCropModal").classList.add("open");
+    updateCropPreview();
+};
+
+window.updateCropPreview = function() {
+    if (!cropTargetImg) return;
+    const canvas = document.getElementById("imgCropPreview");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    const nw = cropTargetImg.naturalWidth || cropTargetImg.width || 400;
+    const nh = cropTargetImg.naturalHeight || cropTargetImg.height || 300;
+    const t = (+document.getElementById("cropTop").value / 100) * nh;
+    const b = (+document.getElementById("cropBottom").value / 100) * nh;
+    const l = (+document.getElementById("cropLeft").value / 100) * nw;
+    const r = (+document.getElementById("cropRight").value / 100) * nw;
+
+    const cw = Math.max(10, nw - l - r);
+    const ch = Math.max(10, nh - t - b);
+
+    canvas.width = cw;
+    canvas.height = ch;
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(cropTargetImg, l, t, cw, ch, 0, 0, cw, ch);
+};
+
+window.applyImgCrop = function() {
+    if (!cropTargetImg) return;
+    const canvas = document.getElementById("imgCropPreview");
+    try {
+        cropTargetImg.src = canvas.toDataURL("image/png");
+        cropTargetImg.style.height = "auto";
+    } catch (_) {
+        // Резервный вариант для внешних картинок с CORS-ограничением
+        const t = document.getElementById("cropTop").value;
+        const r = document.getElementById("cropRight").value;
+        const b = document.getElementById("cropBottom").value;
+        const l = document.getElementById("cropLeft").value;
+        cropTargetImg.style.clipPath = `inset(${t}% ${r}% ${b}% ${l}%)`;
+    }
+    cropTargetImg = null;
+    document.getElementById("imgCropModal").classList.remove("open");
+    if (officeMode === "word") syncWordPagesFromDom();
+    saveCurrentOfficeDoc();
+};
+
+// Круглые кнопки выбора цвета без обводки в окне графиков
+window.renderOfficeChartRows = function() {
+    document.getElementById("ocRows").innerHTML = officeChartItems.map((it, i) => `
+        <div style="display:grid; grid-template-columns:minmax(0,1fr) 72px 30px 28px; gap:8px; align-items:center;">
+            <input class="bib-custom-input" value="${it.label}" oninput="officeChartItems[${i}].label=this.value; renderOfficeChartPreview()">
+            <input type="number" class="bib-custom-input" value="${it.val}" oninput="officeChartItems[${i}].val=+this.value||0; renderOfficeChartPreview()">
+            <input type="color" class="office-round-color" value="${it.color}" oninput="officeChartItems[${i}].color=this.value; renderOfficeChartPreview()">
+            <button type="button" class="cw-del-btn" onclick="officeChartItems.splice(${i},1); renderOfficeChartRows(); renderOfficeChartPreview()">×</button>
+        </div>
+    `).join("");
+};
