@@ -3566,9 +3566,12 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
 
                 <!-- Шапка списка слов -->
                 <div class="cw-list-head">
-                    <span>SÖZLAR VA SAVOLLAR (<b id="cwWordCount">0</b>)</span>
-                    <button type="button" class="cw-add-btn" onclick="addCrosswordRow()">+ Söz qöşiş</button>
-                </div>
+    <span>SÖZLAR VA SAVOLLAR (<b id="cwWordCount">0</b>)</span>
+    <div style="display:flex; gap:6px;">
+        <button type="button" class="cw-del-btn" style="width:auto; padding:0 10px; font-size:11.5px; height:26px;" onclick="clearCrosswordRows()">Tozalaş</button>
+        <button type="button" class="cw-add-btn" onclick="addCrosswordRow()">+ Söz qöşiş</button>
+    </div>
+</div>
 
                 <!-- Список слов без лимита -->
                 <div id="cwRowsContainer" class="cw-rows-list custom-scrollbar"></div>
