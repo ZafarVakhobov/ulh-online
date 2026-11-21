@@ -1948,3 +1948,440 @@ window.renderOfficeChartRows = function() {
         setTimeout(mountHRulerToBody, 120);
     });
 })();
+
+// === ИЗМЕНЕНИЕ ШИРИНЫ СТОЛБЦОВ В ULH WORD И ULH TABLES ===
+(function initTableColumnResizing() {
+    const EDGE_THRESHOLD = 6; // чувствительность у границы столбца (px)
+    const MIN_COL_PX = 36;
+
+    // Направляющая линия во время перетаскивания
+    const guide = document.createElement("div");
+    guide.className = "tbl-col-guide";
+    document.body.appendChild(guide);
+
+    let dragState = null;
+
+    function getBorderHit(e) {
+        // 1. Таблицы в ULH Word (внутри листа А4)
+        const wordCell = e.target.closest?.(".a4-sheet .word-table th, .a4-sheet .word-table td");
+        if (wordCell) {
+            const tbl = wordCell.closest(".word-table");
+            const row = wordCell.parentElement;
+            const colIdx = wordCell.cellIndex;
+            const totalCols = row.cells.length;
+            const rect = wordCell.getBoundingClientRect();
+
+            // Правая граница любой колонки, кроме последней (чтобы не выходить за линейку)
+            if (colIdx < totalCols - 1 && Math.abs(e.clientX - rect.right) <= EDGE_THRESHOLD) {
+                return { mode: "word", tbl, colIdx, rect };
+            }
+            // Левая граница любой колонки, кроме первой
+            if (colIdx > 0 && Math.abs(e.clientX - rect.left) <= EDGE_THRESHOLD) {
+                return { mode: "word", tbl, colIdx: colIdx - 1, rect };
+            }
+        }
+
+        // 2. Заголовки столбцов в ULH Tables (A, B, C...)
+        const sheetTh = e.target.closest?.("#ulhSpreadsheet thead th");
+        if (sheetTh && sheetTh.cellIndex > 0) {
+            const rect = sheetTh.getBoundingClientRect();
+            if (Math.abs(e.clientX - rect.right) <= EDGE_THRESHOLD) {
+                return { mode: "sheet", th: sheetTh, colIdx: sheetTh.cellIndex - 1, rect };
+            }
+        }
+
+        return null;
+    }
+
+    // Подсветка курсора col-resize при наведении на границу
+    document.addEventListener("mousemove", (e) => {
+        if (dragState) {
+            onResizeMove(e);
+            return;
+        }
+        const hit = getBorderHit(e);
+        const target = e.target.closest?.(".word-table th, .word-table td, #ulhSpreadsheet thead th");
+        if (target) {
+            target.style.cursor = hit ? "col-resize" : "";
+        }
+    });
+
+    // Старт перетаскивания
+    document.addEventListener("mousedown", (e) => {
+        if (e.button !== 0) return;
+        const hit = getBorderHit(e);
+        if (!hit) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const zoom = (typeof officeZoom === "number" && officeZoom > 0) ? officeZoom : 1;
+
+        if (hit.mode === "word") {
+            const tbl = hit.tbl;
+            const firstRow = tbl.rows[0];
+            if (!firstRow) return;
+
+            const tblRect = tbl.getBoundingClientRect();
+            const widthsPx = [...firstRow.cells].map(c => c.getBoundingClientRect().width / zoom);
+            const totalW = widthsPx.reduce((a, b) => a + b, 0) || 1;
+
+            // Фиксируем текущие пропорции всех колонок перед началом движения
+            [...firstRow.cells].forEach((c, i) => {
+                c.style.width = ((widthsPx[i] / totalW) * 100).toFixed(2) + "%";
+            });
+
+            dragState = {
+                mode: "word",
+                tbl,
+                firstRow,
+                colIdx: hit.colIdx,
+                startX: e.clientX,
+                startW1: widthsPx[hit.colIdx],
+                startW2: widthsPx[hit.colIdx + 1],
+                totalW,
+                zoom
+            };
+
+            guide.style.top = tblRect.top + "px";
+            guide.style.height = tblRect.height + "px";
+            guide.style.left = e.clientX + "px";
+            guide.style.display = "block";
+        } else {
+            const tblRect = document.getElementById("ulhSpreadsheet").getBoundingClientRect();
+            dragState = {
+                mode: "sheet",
+                th: hit.th,
+                colIdx: hit.colIdx,
+                startX: e.clientX,
+                startW: hit.rect.width / zoom,
+                zoom
+            };
+
+            guide.style.top = tblRect.top + "px";
+            guide.style.height = tblRect.height + "px";
+            guide.style.left = e.clientX + "px";
+            guide.style.display = "block";
+        }
+
+        document.body.classList.add("col-resizing");
+    });
+
+    function onResizeMove(e) {
+        if (!dragState) return;
+        const dx = (e.clientX - dragState.startX) / dragState.zoom;
+
+        if (dragState.mode === "word") {
+            const pairSum = dragState.startW1 + dragState.startW2;
+            const newW1 = Math.max(MIN_COL_PX, Math.min(pairSum - MIN_COL_PX, dragState.startW1 + dx));
+            const newW2 = pairSum - newW1;
+
+            const c1 = dragState.firstRow.cells[dragState.colIdx];
+            const c2 = dragState.firstRow.cells[dragState.colIdx + 1];
+            if (c1 && c2) {
+                c1.style.width = ((newW1 / dragState.totalW) * 100).toFixed(2) + "%";
+                c2.style.width = ((newW2 / dragState.totalW) * 100).toFixed(2) + "%";
+            }
+            guide.style.left = (dragState.startX + (newW1 - dragState.startW1) * dragState.zoom) + "px";
+        } else {
+            const newW = Math.max(50, Math.round(dragState.startW + dx));
+            dragState.th.style.width = newW + "px";
+            dragState.th.style.minWidth = newW + "px";
+            if (!tableData.colWidths) tableData.colWidths = {};
+            tableData.colWidths[dragState.colIdx] = newW;
+            guide.style.left = (dragState.startX + (newW - dragState.startW) * dragState.zoom) + "px";
+        }
+    }
+
+    document.addEventListener("mouseup", () => {
+        if (!dragState) return;
+        const finishedMode = dragState.mode;
+        dragState = null;
+        guide.style.display = "none";
+        document.body.classList.remove("col-resizing");
+
+        if (finishedMode === "word" && typeof syncWordPagesFromDom === "function") {
+            syncWordPagesFromDom();
+        }
+        if (typeof saveCurrentOfficeDoc === "function") {
+            saveCurrentOfficeDoc();
+        }
+    });
+
+    // Восстанавливаем сохранённую ширину колонок в ULH Tables при перерисовке
+    if (typeof renderSpreadsheet === "function") {
+        const _origRenderSheet = renderSpreadsheet;
+        renderSpreadsheet = function() {
+            _origRenderSheet();
+            if (tableData && tableData.colWidths) {
+                const ths = document.querySelectorAll("#ulhSpreadsheet thead th");
+                Object.keys(tableData.colWidths).forEach(idx => {
+                    const th = ths[Number(idx) + 1];
+                    if (th) {
+                        const w = tableData.colWidths[idx] + "px";
+                        th.style.width = w;
+                        th.style.minWidth = w;
+                    }
+                });
+            }
+        };
+    }
+})();
+
+// ==========================================
+// === ПОЛНОЦЕННЫЙ ИМПОРТ .DOCX СО СТИЛЯМИ И РАЗБИВКОЙ НА СТРАНИЦЫ А4 ===
+// ==========================================
+function parseDocxRunHtml(runNode) {
+    const rPr = runNode.getElementsByTagName("w:rPr")[0];
+    const styles = [];
+    let wrapTag = null;
+
+    if (rPr) {
+        const isOn = (tag) => {
+            const el = rPr.getElementsByTagName(tag)[0];
+            if (!el) return false;
+            const v = el.getAttribute("w:val");
+            return v !== "0" && v !== "false" && v !== "none";
+        };
+        if (isOn("w:b")) styles.push("font-weight:700");
+        if (isOn("w:i")) styles.push("font-style:italic");
+        if (isOn("w:u")) styles.push("text-decoration:underline");
+        if (isOn("w:strike")) styles.push("text-decoration:line-through");
+
+        const col = rPr.getElementsByTagName("w:color")[0]?.getAttribute("w:val");
+        if (col && col !== "auto" && /^[0-9A-Fa-f]{6}$/.test(col)) styles.push(`color:#${col}`);
+
+        const shd = rPr.getElementsByTagName("w:shd")[0]?.getAttribute("w:fill");
+        if (shd && shd !== "auto" && /^[0-9A-Fa-f]{6}$/.test(shd)) styles.push(`background-color:#${shd}`);
+
+        const sz = rPr.getElementsByTagName("w:sz")[0]?.getAttribute("w:val");
+        if (sz && !isNaN(sz)) styles.push(`font-size:${(parseInt(sz, 10) / 2)}pt`);
+
+        const rFonts = rPr.getElementsByTagName("w:rFonts")[0];
+        const fontName = rFonts?.getAttribute("w:ascii") || rFonts?.getAttribute("w:hAnsi");
+        if (fontName) styles.push(`font-family:'${fontName}', sans-serif`);
+
+        const vAlign = rPr.getElementsByTagName("w:vertAlign")[0]?.getAttribute("w:val");
+        if (vAlign === "superscript") wrapTag = "sup";
+        if (vAlign === "subscript") wrapTag = "sub";
+    }
+
+    let textHtml = "";
+    let hasPageBreak = false;
+
+    for (const child of runNode.childNodes) {
+        if (child.nodeName === "w:t") {
+            const safe = (child.textContent || "")
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            textHtml += safe;
+        } else if (child.nodeName === "w:tab") {
+            textHtml += "&nbsp;&nbsp;&nbsp;&nbsp;";
+        } else if (child.nodeName === "w:br") {
+            if (child.getAttribute("w:type") === "page") hasPageBreak = true;
+            else textHtml += "<br>";
+        }
+    }
+
+    if (wrapTag && textHtml) textHtml = `<${wrapTag}>${textHtml}</${wrapTag}>`;
+    if (styles.length && textHtml) textHtml = `<span style="${styles.join(";")}">${textHtml}</span>`;
+    return { html: textHtml, hasPageBreak };
+}
+
+function parseDocxParagraphHtml(pNode) {
+    const pPr = pNode.getElementsByTagName("w:pPr")[0];
+    const pStyles = [];
+    let tag = "p";
+    let pageBreakBefore = false;
+
+    if (pPr) {
+        const pStyleVal = pPr.getElementsByTagName("w:pStyle")[0]?.getAttribute("w:val") || "";
+        if (/Heading1|Title/i.test(pStyleVal)) tag = "h1";
+        else if (/Heading2/i.test(pStyleVal)) tag = "h2";
+        else if (/Heading3/i.test(pStyleVal)) tag = "h3";
+
+        const jc = pPr.getElementsByTagName("w:jc")[0]?.getAttribute("w:val");
+        if (jc === "center") pStyles.push("text-align:center");
+        else if (jc === "right") pStyles.push("text-align:right");
+        else if (jc === "both") pStyles.push("text-align:justify");
+
+        const ind = pPr.getElementsByTagName("w:ind")[0];
+        if (ind) {
+            const fl = parseInt(ind.getAttribute("w:firstLine") || "0", 10);
+            const lf = parseInt(ind.getAttribute("w:left") || "0", 10);
+            if (fl > 0) pStyles.push(`text-indent:${(fl / 20).toFixed(1)}pt`);
+            if (lf > 0) pStyles.push(`margin-left:${(lf / 20).toFixed(1)}pt`);
+        }
+
+        const sp = pPr.getElementsByTagName("w:spacing")[0];
+        if (sp) {
+            const before = parseInt(sp.getAttribute("w:before") || "0", 10);
+            const after = parseInt(sp.getAttribute("w:after") || "0", 10);
+            const line = parseInt(sp.getAttribute("w:line") || "0", 10);
+            if (before > 0) pStyles.push(`margin-top:${(before / 20).toFixed(1)}pt`);
+            if (after > 0) pStyles.push(`margin-bottom:${(after / 20).toFixed(1)}pt`);
+            if (line > 0 && sp.getAttribute("w:lineRule") !== "exact") {
+                pStyles.push(`line-height:${(line / 240).toFixed(2)}`);
+            }
+        }
+
+        if (pPr.getElementsByTagName("w:pageBreakBefore")[0]) pageBreakBefore = true;
+    }
+
+    let inner = "";
+    let hasPageBreak = false;
+
+    for (const child of pNode.childNodes) {
+        if (child.nodeName === "w:r") {
+            const res = parseDocxRunHtml(child);
+            inner += res.html;
+            if (res.hasPageBreak) hasPageBreak = true;
+        } else if (child.nodeName === "w:hyperlink") {
+            let linkInner = "";
+            for (const r of child.getElementsByTagName("w:r")) {
+                linkInner += parseDocxRunHtml(r).html;
+            }
+            if (linkInner) inner += `<a href="#" target="_blank">${linkInner}</a>`;
+        }
+    }
+
+    const styleAttr = pStyles.length ? ` style="${pStyles.join(";")}"` : "";
+    return {
+        html: `<${tag}${styleAttr}>${inner || "<br>"}</${tag}>`,
+        pageBreakBefore,
+        hasPageBreak
+    };
+}
+
+function parseDocxTableHtml(tblNode) {
+    let html = `<table class="word-table"><tbody>`;
+    const rows = [...tblNode.childNodes].filter(n => n.nodeName === "w:tr");
+    rows.forEach(tr => {
+        html += "<tr>";
+        const cells = [...tr.childNodes].filter(n => n.nodeName === "w:tc");
+        cells.forEach(tc => {
+            const shd = tc.getElementsByTagName("w:shd")[0]?.getAttribute("w:fill");
+            const bg = (shd && shd !== "auto" && /^[0-9A-Fa-f]{6}$/.test(shd)) ? ` style="background:#${shd};"` : "";
+            const cellParas = [...tc.childNodes].filter(n => n.nodeName === "w:p")
+                .map(p => parseDocxParagraphHtml(p).html).join("");
+            html += `<td${bg}>${cellParas || "&nbsp;"}</td>`;
+        });
+        html += "</tr>";
+    });
+    html += `</tbody></table>`;
+    return html;
+}
+
+// Автоматическая разбивка переполненных страниц А4 на несколько листов
+function paginateAllWordPages() {
+    let safety = 0;
+    while (safety < 60) {
+        safety++;
+        const sheets = [...document.querySelectorAll(".a4-sheet")];
+        let didSplit = false;
+
+        for (let i = 0; i < sheets.length; i++) {
+            const page = sheets[i];
+            if (page.scrollHeight > page.clientHeight + 4 && page.children.length > 1) {
+                const movedNodes = [];
+                while (page.scrollHeight > page.clientHeight + 4 && page.children.length > 1) {
+                    const last = page.lastElementChild;
+                    if (last.classList.contains("a4-page-num")) break;
+                    movedNodes.unshift(last.outerHTML);
+                    page.removeChild(last);
+                }
+                if (movedNodes.length) {
+                    wordPages[i] = page.innerHTML;
+                    if (i + 1 < wordPages.length) {
+                        wordPages[i + 1] = movedNodes.join("") + wordPages[i + 1];
+                    } else {
+                        wordPages.push(movedNodes.join(""));
+                    }
+                    didSplit = true;
+                    break;
+                }
+            }
+        }
+        if (!didSplit) break;
+        renderWordPages();
+    }
+    if (typeof applyPageNumbersToSheets === "function") applyPageNumbersToSheets();
+    if (typeof updatePageCounter === "function") updatePageCounter();
+    if (typeof updateOfficeLiveStats === "function") updateOfficeLiveStats();
+    saveCurrentOfficeDoc();
+}
+
+// Переопределяем открытие файлов с компьютера
+window.handleOfficeFileOpen = async function(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    const ext = f.name.split(".").pop().toLowerCase();
+    document.getElementById("officeDocTitle").value = f.name.replace(/\.[^.]+$/, "");
+
+    if (officeMode === "tables" && window.XLSX) {
+        const wb = XLSX.read(await f.arrayBuffer(), { type: "array" });
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+        tableData.cells = {};
+        tableData.rows = Math.max(20, rows.length + 5);
+        rows.forEach((r, ri) => r.forEach((v, ci) => {
+            if (ci < 26 && v !== undefined) tableData.cells[colLetter(ci) + (ri + 1)] = String(v);
+        }));
+        renderSpreadsheet();
+        saveCurrentOfficeDoc();
+    } else if (officeMode === "word" && ext === "docx" && window.JSZip) {
+        const zip = await JSZip.loadAsync(await f.arrayBuffer());
+        const xmlStr = await zip.file("word/document.xml")?.async("string");
+        if (xmlStr) {
+            const doc = new DOMParser().parseFromString(xmlStr, "application/xml");
+            const body = doc.getElementsByTagName("w:body")[0];
+
+            // Считываем ориентацию и поля документа
+            const sectPr = body?.getElementsByTagName("w:sectPr")[0];
+            if (sectPr) {
+                const pgSz = sectPr.getElementsByTagName("w:pgSz")[0];
+                const isLand = pgSz?.getAttribute("w:orient") === "landscape" ||
+                    (parseInt(pgSz?.getAttribute("w:w") || "0", 10) > parseInt(pgSz?.getAttribute("w:h") || "0", 10));
+                const pgMar = sectPr.getElementsByTagName("w:pgMar")[0];
+                if (pgMar) {
+                    const twipToMm = (attr, def) => {
+                        const v = parseInt(pgMar.getAttribute(attr) || "0", 10);
+                        return v > 0 ? Math.max(8, Math.min(70, Math.round(v / 56.7))) : def;
+                    };
+                    rulerMarginTop = twipToMm("w:top", 20);
+                    rulerMarginLeft = twipToMm("w:left", 20);
+                    rulerMarginRight = twipToMm("w:right", 20);
+                }
+                pageOrientations = [isLand ? "landscape" : "portrait"];
+                if (typeof rebuildRulersForOrientation === "function") rebuildRulersForOrientation(isLand);
+            }
+
+            // Собираем страницы с учётом явных разрывов
+            const pagesArr = [""];
+            for (const node of body.childNodes) {
+                if (node.nodeName === "w:p") {
+                    const p = parseDocxParagraphHtml(node);
+                    if (p.pageBreakBefore && pagesArr[pagesArr.length - 1].trim()) pagesArr.push("");
+                    pagesArr[pagesArr.length - 1] += p.html;
+                    if (p.hasPageBreak) pagesArr.push("");
+                } else if (node.nodeName === "w:tbl") {
+                    pagesArr[pagesArr.length - 1] += parseDocxTableHtml(node);
+                }
+            }
+
+            wordPages = pagesArr.filter(p => p.trim().length > 0);
+            if (!wordPages.length) wordPages = ["<p><br></p>"];
+
+            renderWordPages();
+            // После отрисовки в DOM разбиваем переполненные страницы на отдельные листы А4
+            requestAnimationFrame(() => paginateAllWordPages());
+        }
+    } else {
+        const txt = await f.text();
+        if (officeMode === "word") {
+            wordPages = [txt.includes("<") ? txt : txt.split(/\r?\n/).map(l => `<p>${l || "<br>"}</p>`).join("")];
+            renderWordPages();
+            requestAnimationFrame(() => paginateAllWordPages());
+        }
+    }
+
+    e.target.value = "";
+};
