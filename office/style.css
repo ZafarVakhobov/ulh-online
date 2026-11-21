@@ -991,3 +991,28 @@ body.dark-mode #imgCropModal canvas {
 body.dark-mode #imgCropModal div[style*="background:#F8FAFC"] {
     background: #1E293B !important;
 }
+
+/* === ИЗМЕНЕНИЕ ШИРИНЫ СТОЛБЦОВ ТАБЛИЦ === */
+body.col-resizing,
+body.col-resizing * {
+    cursor: col-resize !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+
+/* Тонкая направляющая линия при перетаскивании границы */
+.tbl-col-guide {
+    position: fixed;
+    top: 0;
+    width: 2px;
+    background: #0284C7;
+    pointer-events: none;
+    z-index: 9500;
+    display: none;
+}
+
+.word-table th,
+.word-table td {
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+}
