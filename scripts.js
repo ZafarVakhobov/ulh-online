@@ -13030,44 +13030,44 @@ window.generateCrosswordWithAI = async function() {
     if (btn) btn.disabled = true;
     if (statusEl) statusEl.textContent = `✨ Öşa AI «${topic}» mavzusida ${count} ta söz tayyorlamoqda...`;
 
-    const sysPrompt = "Sen krossvord tuzuvchisan. Faqat toza JSON massiv qaytar: [{\"word\":\"SOZ\",\"clue\":\"qisqa savol\"}]. So'zlar faqat bitta so'zdan iborat bo'lsin (bo'shliqsiz, defissiz, 4-11 harf). Hech qanday qo'shimcha matn yoki markdown yozma.";
-    const userPrompt = `"${topic}" mavzusida o'zbek tilida ${count} ta qiziqarli krossvord so'zi va qisqa savolini tuz.`;
+    const customPrompt =
+        `Berilgan mavzu böyiça özbek tilida aynan ${count} ta krossvord sözi va qisqa savolini tuz. ` +
+        `Har bir qatorni FAQAT şu formatda yoz: SÖZ | Qisqa savol. ` +
+        `Qoidalar: SÖZ faqat bitta sözdan iborat bölsin (böşliqsiz, defissiz, 4-11 harf). ` +
+        `Raqam, nuqta, yulduzça, markdown va ortiqça izoh yozma.`;
 
     try {
         const res = await fetch("https://ulh-ai-helper.lanigirodesigner.workers.dev/", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                model: "openai/gpt-oss-120b",
-                messages: [
-                    { role: "system", content: sysPrompt },
-                    { role: "user", content: userPrompt }
-                ],
-                temperature: 0.6,
-                max_tokens: 2048,
-                mode: "chat",
-                text: userPrompt,
-                customPrompt: sysPrompt
+                mode: "custom",
+                customPrompt: customPrompt,
+                text: `Mavzu: ${topic}`
             })
         });
 
         const data = await res.json();
-        let raw = data?.choices?.[0]?.message?.content || data?.result || "";
-        const match = raw.match(/\[[\s\S]*\]/);
-        if (!match) throw new Error("JSON topilmadi");
+        if (data.error) throw new Error(data.error);
 
-        const parsed = JSON.parse(match[0]);
-        const valid = parsed
-            .filter(x => x && x.word && x.clue)
-            .map(x => ({
-                word: typeof enforceNewUzbekAlphabet === "function"
-                    ? normalizeCwWord(enforceNewUzbekAlphabet(x.word))
-                    : normalizeCwWord(x.word),
-                clue: typeof enforceNewUzbekAlphabet === "function"
-                    ? enforceNewUzbekAlphabet(String(x.clue).trim())
-                    : String(x.clue).trim()
-            }))
-            .filter(x => x.word.length >= 3);
+        const raw = data?.result || "";
+
+        const valid = raw
+            .split("\n")
+            .map(line => line.replace(/^\s*[\d\-\*\•\.]+\s*/, "").trim())
+            .filter(line => line.includes("|"))
+            .map(line => {
+                const [w, ...rest] = line.split("|");
+                const clueRaw = rest.join("|").trim();
+                const wordClean = typeof enforceNewUzbekAlphabet === "function"
+                    ? normalizeCwWord(enforceNewUzbekAlphabet(w))
+                    : normalizeCwWord(w);
+                const clueClean = typeof enforceNewUzbekAlphabet === "function"
+                    ? enforceNewUzbekAlphabet(clueRaw)
+                    : clueRaw;
+                return { word: wordClean, clue: clueClean };
+            })
+            .filter(x => x.word.length >= 3 && x.clue.length >= 2);
 
         if (valid.length >= 2) {
             cwState.rows = valid;
