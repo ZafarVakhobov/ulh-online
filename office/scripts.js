@@ -1897,3 +1897,54 @@ window.renderOfficeChartRows = function() {
         </div>
     `).join("");
 };
+
+// === ПОЛНЫЙ ФИКС ГОРИЗОНТАЛЬНОЙ ЛИНЕЙКИ ПРИ МАСШТАБИРОВАНИИ ===
+(function fixHorizontalRulerPortal() {
+    function mountHRulerToBody() {
+        const hruler = document.querySelector(".word-ruler-top-row.sticky-ruler");
+        if (!hruler) return;
+
+        // Выносим линейку из #officeZoomWrapper в body, чтобы transform не ломал position: fixed
+        if (hruler.parentElement !== document.body) {
+            document.body.appendChild(hruler);
+        }
+        updateFixedHRuler();
+    }
+
+    window.updateFixedHRuler = function() {
+        const hruler = document.querySelector(".word-ruler-top-row.sticky-ruler");
+        const topbar = document.querySelector(".office-topbar");
+        if (!hruler || !topbar) return;
+
+        if (officeMode !== "word") {
+            hruler.style.display = "none";
+            return;
+        }
+
+        hruler.style.display = "flex";
+        hruler.style.top = topbar.offsetHeight + "px";
+        hruler.style.left = "50%";
+        hruler.style.transform = `translateX(-50%) scale(${officeZoom})`;
+        hruler.style.transformOrigin = "top center";
+    };
+
+    // Переопределяем syncFixedHRulerTop и переключение режимов
+    window.syncFixedHRulerTop = window.updateFixedHRuler;
+
+    const _prevApplyMode = applyOfficeModeUI;
+    applyOfficeModeUI = function(mode) {
+        _prevApplyMode(mode);
+        window.updateFixedHRuler();
+    };
+
+    const _prevZoom = window.adjustOfficeZoom;
+    window.adjustOfficeZoom = function(d) {
+        _prevZoom(d);
+        window.updateFixedHRuler();
+    };
+
+    window.addEventListener("resize", window.updateFixedHRuler);
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(mountHRulerToBody, 120);
+    });
+})();
