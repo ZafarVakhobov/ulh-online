@@ -122,84 +122,93 @@
             </div>
 
             <!-- Группа: Şrift -->
-            <div class="ribbon-group">
-                <div class="ribbon-group-title">Şrift</div>
-                <div class="ribbon-group-body col">
-                    <div class="ribbon-row">
-                        <select id="officeFontFamily" class="rb-select" onchange="applyOfficeFont(this.value)" title="Şrift">
-                            <option value="Manrope" selected>Manrope</option>
-                            <option value="Arial">Arial</option>
-                            <option value="Times New Roman">Times New Roman</option>
-                            <option value="Calibri">Calibri</option>
-                            <option value="Georgia">Georgia</option>
-                            <option value="Verdana">Verdana</option>
-                            <option value="Tahoma">Tahoma</option>
-                            <option value="Courier New">Courier New</option>
-                        </select>
-                        <select id="officeFontSize" class="rb-select small" onchange="applyOfficeFontSize(this.value)" title="Ölçam">
-                            <option value="10">10</option>
-                            <option value="12">12</option>
-                            <option value="14" selected>14</option>
-                            <option value="16">16</option>
-                            <option value="18">18</option>
-                            <option value="22">22</option>
-                            <option value="28">28</option>
-                            <option value="36">36</option>
-                        </select>
-                    </div>
-                    <div class="ribbon-row">
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('bold')" title="Qalin">
-                            <svg class="ti" viewBox="0 0 24 24"><path d="M7 5h6a3.5 3.5 0 0 1 0 7h-6z"/><path d="M13 12h1a3.5 3.5 0 0 1 0 7h-7v-7"/></svg>
-                        </button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('italic')" title="Kursiv">
-                            <svg class="ti" viewBox="0 0 24 24"><path d="M11 5l6 0"/><path d="M7 19l6 0"/><path d="M14 5l-4 14"/></svg>
-                        </button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('underline')" title="Tagiga çiziş">
-                            <svg class="ti" viewBox="0 0 24 24"><path d="M7 5v5a5 5 0 0 0 10 0v-5"/><path d="M5 19h14"/></svg>
-                        </button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('strikeThrough')" title="Ustidan çiziş">
-                            <svg class="ti" viewBox="0 0 24 24"><path d="M5 12l14 0"/><path d="M16 6.5a4 2 0 0 0 -4 -1.5h-1a3.5 3.5 0 0 0 0 7h2a3.5 3.5 0 0 1 0 7h-1.5a4 2 0 0 1 -4 -1.5"/></svg>
-                        </button>
-                        <input type="color" id="officeForeColor" class="office-color-inp" value="#0F172A" onchange="applyOfficeColor('foreColor', this.value)" title="Matn rangi">
-                        <input type="color" id="officeBackColor" class="office-color-inp" value="#FEF08A" onchange="applyOfficeColor('hiliteColor', this.value)" title="Fon rangi">
-                    </div>
-                </div>
-            </div>
+<div class="ribbon-group">
+    <div class="ribbon-group-title">Şrift</div>
+    <div class="ribbon-group-body col">
+        <div class="ribbon-row">
+            <select id="officeFontFamily" class="rb-select" onchange="applyOfficeFont(this.value)" title="Şrift">
+                <option value="Manrope" selected>Manrope</option>
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Calibri">Calibri</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Tahoma">Tahoma</option>
+                <option value="Courier New">Courier New</option>
+            </select>
+            <select id="officeFontSize" class="rb-select small" onchange="applyOfficeFontSize(this.value)" title="Ölçam">
+                <option value="10">10</option><option value="12">12</option><option value="14" selected>14</option>
+                <option value="16">16</option><option value="18">18</option><option value="22">22</option>
+                <option value="28">28</option><option value="36">36</option>
+            </select>
+        </div>
+        <div class="ribbon-row">
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('bold')" title="Qalin"><svg class="ti" viewBox="0 0 24 24"><path d="M7 5h6a3.5 3.5 0 0 1 0 7h-6z"/><path d="M13 12h1a3.5 3.5 0 0 1 0 7h-7v-7"/></svg></button>
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('italic')" title="Kursiv"><svg class="ti" viewBox="0 0 24 24"><path d="M11 5l6 0"/><path d="M7 19l6 0"/><path d="M14 5l-4 14"/></svg></button>
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('underline')" title="Tagiga çiziş"><svg class="ti" viewBox="0 0 24 24"><path d="M7 5v5a5 5 0 0 0 10 0v-5"/><path d="M5 19h14"/></svg></button>
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('strikeThrough')" title="Ustidan çiziş"><svg class="ti" viewBox="0 0 24 24"><path d="M5 12l14 0"/><path d="M16 6.5a4 2 0 0 0 -4 -1.5h-1a3.5 3.5 0 0 0 0 7h2a3.5 3.5 0 0 1 0 7h-1.5a4 2 0 0 1 -4 -1.5"/></svg></button>
+            <!-- Подстрочный / Надстрочный -->
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('subscript')" title="Pastki indeks (x₂)"><svg class="ti" viewBox="0 0 24 24"><path d="M5 7l8 10m-8 0l8 -10"/><path d="M21 20h-4l3.5 -4a1.73 1.73 0 0 0 -3.5 -2"/></svg></button>
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('superscript')" title="Yuqori indeks (x²)"><svg class="ti" viewBox="0 0 24 24"><path d="M5 7l8 10m-8 0l8 -10"/><path d="M21 11h-4l3.5 -4a1.73 1.73 0 0 0 -3.5 -2"/></svg></button>
 
-            <!-- Группа: Abzats -->
-            <div class="ribbon-group" id="rbGroupParagraph">
-                <div class="ribbon-group-title">Abzats</div>
-                <div class="ribbon-group-body col">
-                    <div class="ribbon-row">
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('insertUnorderedList')" title="Röyxat">
-                            <svg class="ti" viewBox="0 0 24 24"><path d="M9 6l11 0"/><path d="M9 12l11 0"/><path d="M9 18l11 0"/><path d="M5 6l0 .01"/><path d="M5 12l0 .01"/><path d="M5 18l0 .01"/></svg>
-                        </button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyLeft')" title="Çapga">
-                            <svg class="ti" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M4 12l10 0"/><path d="M4 18l14 0"/></svg>
-                        </button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyCenter')" title="Markazga">
-                            <svg class="ti" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M8 12l8 0"/><path d="M6 18l12 0"/></svg>
-                        </button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyRight')" title="Öngga">
-                            <svg class="ti" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M10 12l10 0"/><path d="M6 18l14 0"/></svg>
-                        </button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyFull')" title="Eniga">
-                            <svg class="ti" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M4 12l16 0"/><path d="M4 18l12 0"/></svg>
-                        </button>
-                    </div>
-                    <div class="ribbon-row">
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('insertOrderedList')" title="Raqamli röyxat">
-                            <svg class="ti" viewBox="0 0 24 24"><path d="M11 6h9"/><path d="M11 12h9"/><path d="M12 18h8"/><path d="M4 16a2 2 0 1 1 4 0c0 .591 -.5 1 -1 1.5l-3 2.5h4"/><path d="M6 10v-6l-2 2"/></svg>
-                        </button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('outdent')" title="Çapga suriş">
-                            <svg class="ti" viewBox="0 0 24 24"><path d="M20 6l-7 0"/><path d="M20 12l-9 0"/><path d="M20 18l-7 0"/><path d="M8 8l-4 4l4 4"/></svg>
-                        </button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('indent')" title="Öngga suriş">
-                            <svg class="ti" viewBox="0 0 24 24"><path d="M20 6l-11 0"/><path d="M20 12l-7 0"/><path d="M20 18l-11 0"/><path d="M4 8l4 4l-4 4"/></svg>
-                        </button>
-                    </div>
+            <!-- Круглая палитра цвета текста -->
+            <div class="office-dropdown-wrap color-pop-wrap" id="foreColorWrap">
+                <button type="button" class="rb-color-circle" id="foreColorCircle" style="background:#0F172A;" onmousedown="event.preventDefault()" onclick="toggleColorPop('foreColorWrap', event)" title="Matn rangi"></button>
+                <div class="office-color-popover" id="foreColorPop"></div>
+            </div>
+            <!-- Круглая палитра цвета фона -->
+            <div class="office-dropdown-wrap color-pop-wrap" id="backColorWrap">
+                <button type="button" class="rb-color-circle" id="backColorCircle" style="background:#FEF08A;" onmousedown="event.preventDefault()" onclick="toggleColorPop('backColorWrap', event)" title="Fon rangi"></button>
+                <div class="office-color-popover" id="backColorPop"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+           <!-- Группа: Abzats -->
+<div class="ribbon-group" id="rbGroupParagraph">
+    <div class="ribbon-group-title">Abzats</div>
+    <div class="ribbon-group-body col">
+        <div class="ribbon-row">
+            <!-- Буллеты с выбором типа -->
+            <div class="office-dropdown-wrap" id="bulletMenuWrap">
+                <button type="button" class="rb-btn save-trigger" onmousedown="event.preventDefault()" onclick="toggleSimpleDrop('bulletMenuWrap', event)" title="Belgili röyxat">
+                    <svg class="ti" viewBox="0 0 24 24"><path d="M9 6l11 0"/><path d="M9 12l11 0"/><path d="M9 18l11 0"/><path d="M5 6l0 .01"/><path d="M5 12l0 .01"/><path d="M5 18l0 .01"/></svg>
+                    <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M6 9l6 6l6 -6"/></svg>
+                </button>
+                <div class="office-dropdown-menu" style="min-width:130px;">
+                    <button onmousedown="event.preventDefault()" onclick="applyBulletStyle('disc')">● Doira (Töliq)</button>
+                    <button onmousedown="event.preventDefault()" onclick="applyBulletStyle('circle')">○ Doira (Böş)</button>
+                    <button onmousedown="event.preventDefault()" onclick="applyBulletStyle('square')">■ Kvadrat</button>
+                    <button onmousedown="event.preventDefault()" onclick="applyBulletStyle('none')">— Çiziqça</button>
                 </div>
             </div>
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyLeft')" title="Çapga"><svg class="ti" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M4 12l10 0"/><path d="M4 18l14 0"/></svg></button>
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyCenter')" title="Markazga"><svg class="ti" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M8 12l8 0"/><path d="M6 18l12 0"/></svg></button>
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyRight')" title="Öngga"><svg class="ti" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M10 12l10 0"/><path d="M6 18l14 0"/></svg></button>
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyFull')" title="Eniga"><svg class="ti" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M4 12l16 0"/><path d="M4 18l12 0"/></svg></button>
+        </div>
+        <div class="ribbon-row">
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('insertOrderedList')" title="Raqamli röyxat"><svg class="ti" viewBox="0 0 24 24"><path d="M11 6h9"/><path d="M11 12h9"/><path d="M12 18h8"/><path d="M4 16a2 2 0 1 1 4 0c0 .591 -.5 1 -1 1.5l-3 2.5h4"/><path d="M6 10v-6l-2 2"/></svg></button>
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('outdent')" title="Çapga suriş"><svg class="ti" viewBox="0 0 24 24"><path d="M20 6l-7 0"/><path d="M20 12l-9 0"/><path d="M20 18l-7 0"/><path d="M8 8l-4 4l4 4"/></svg></button>
+            <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('indent')" title="Öngga suriş"><svg class="ti" viewBox="0 0 24 24"><path d="M20 6l-11 0"/><path d="M20 12l-7 0"/><path d="M20 18l-11 0"/><path d="M4 8l4 4l-4 4"/></svg></button>
+            <!-- Межстрочный интервал -->
+            <div class="office-dropdown-wrap" id="lineHeightWrap">
+                <button type="button" class="rb-btn save-trigger" onmousedown="event.preventDefault()" onclick="toggleSimpleDrop('lineHeightWrap', event)" title="Qatorlararo interval">
+                    <svg class="ti" viewBox="0 0 24 24"><path d="M3 8l3 -3l3 3"/><path d="M3 16l3 3l3 -3"/><path d="M6 5l0 14"/><path d="M13 6l7 0"/><path d="M13 12l7 0"/><path d="M13 18l7 0"/></svg>
+                    <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M6 9l6 6l6 -6"/></svg>
+                </button>
+                <div class="office-dropdown-menu" style="min-width:90px;">
+                    <button onmousedown="event.preventDefault()" onclick="applyLineHeight('1')">1.0</button>
+                    <button onmousedown="event.preventDefault()" onclick="applyLineHeight('1.25')">1.25</button>
+                    <button onmousedown="event.preventDefault()" onclick="applyLineHeight('1.5')">1.5</button>
+                    <button onmousedown="event.preventDefault()" onclick="applyLineHeight('1.75')">1.75</button>
+                    <button onmousedown="event.preventDefault()" onclick="applyLineHeight('2')">2.0</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
             <!-- Группа: Uslub -->
             <div class="ribbon-group" id="rbGroupStyles">
@@ -268,27 +277,58 @@
             </div>
 
             <!-- Группа: Qöşiş -->
-            <div class="ribbon-group">
-                <div class="ribbon-group-title">Qöşiş</div>
-                <div class="ribbon-group-body">
-                    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="insertOfficeImage()" title="Rasm qöşiş">
-                        <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/></svg>
-                        <small>Rasm</small>
-                    </button>
-                    <button type="button" class="rb-big-btn" id="rbInsertTableBtn" onmousedown="event.preventDefault()" onclick="insertWordTable()" title="Jadval qöşiş">
-    <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z"/><path d="M3 10h18"/><path d="M10 3v18"/></svg>
-    <small>Jadval</small>
-</button>
-                    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="openOfficeChartModal()" title="Grafik yaratiş va qöşiş">
-                        <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M4 20h14"/></svg>
-                        <small>Grafik</small>
-                    </button>
-                    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="insertOfficeLink()" title="Havola qöşiş">
-                        <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/></svg>
-                        <small>Havola</small>
-                    </button>
+<div class="ribbon-group">
+    <div class="ribbon-group-title">Qöşiş</div>
+    <div class="ribbon-group-body">
+        <button type="button" class="rb-big-btn" id="rbInsertTableBtn" onmousedown="event.preventDefault()" onclick="openTableBuilderModal()" title="Jadval qöşiş">
+            <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z"/><path d="M3 10h18"/><path d="M10 3v18"/></svg>
+            <small>Jadval</small>
+        </button>
+        <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="openImageInsertModal()" title="Rasm qöşiş">
+            <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/></svg>
+            <small>Rasm</small>
+        </button>
+        <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="openOfficeChartModal()" title="Grafik qöşiş">
+            <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M4 20h14"/></svg>
+            <small>Grafik</small>
+        </button>
+        <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="insertOfficeLink()" title="Havola qöşiş">
+            <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/></svg>
+            <small>Havola</small>
+        </button>
+        <!-- Уравнения -->
+        <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="openEquationModal()" title="Tenglama / Formula qöşiş">
+            <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M19 5h-7l-4 14l-3 -6h-2"/><path d="M14 13l6 6"/><path d="M14 19l6 -6"/></svg>
+            <small>Formula</small>
+        </button>
+        <!-- Нумерация страниц (только Word) -->
+        <div class="office-dropdown-wrap" id="pageNumMenuWrap">
+            <button type="button" class="rb-big-btn" id="rbPageNumBtn" onclick="toggleSimpleDrop('pageNumMenuWrap', event)" title="Sahifa raqamlari">
+                <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 11l5 -5l5 5"/><path d="M12 6l0 10"/></svg>
+                <small>Raqam ▾</small>
+            </button>
+            <div class="office-dropdown-menu" style="min-width:165px;">
+                <div class="sub-drop-group">
+                    <span class="sub-drop-label">Yuqorida ▸</span>
+                    <div class="sub-drop-panel">
+                        <button onclick="setPageNumbers('top','left')">Çapda</button>
+                        <button onclick="setPageNumbers('top','center')">Markazda</button>
+                        <button onclick="setPageNumbers('top','right')">Öngda</button>
+                    </div>
                 </div>
+                <div class="sub-drop-group">
+                    <span class="sub-drop-label">Pastda ▸</span>
+                    <div class="sub-drop-panel">
+                        <button onclick="setPageNumbers('bottom','left')">Çapda</button>
+                        <button onclick="setPageNumbers('bottom','center')">Markazda</button>
+                        <button onclick="setPageNumbers('bottom','right')">Öngda</button>
+                    </div>
+                </div>
+                <button onclick="setPageNumbers('none','none')" style="color:#EF4444;">Öçiriş</button>
             </div>
+        </div>
+    </div>
+</div>
         </div>
     </header>
 
@@ -323,20 +363,20 @@
 <section id="paneWord" class="office-pane active">
     <div class="word-doc-column">
         <!-- Горизонтальная линейка (MS Word стиль: 2 бегунка слева + 1 справа) -->
-        <div class="word-ruler-top-row">
-            <div class="ruler-corner-box" title="Abzats">L</div>
-            <div class="word-ruler-wrap" id="wordRulerWrap">
-                <div class="ruler-margin-shade left" id="rulerShadeLeft"></div>
-                <div class="ruler-margin-shade right" id="rulerShadeRight"></div>
-                <div class="word-ruler-ticks" id="wordRulerTicks"></div>
-                <!-- Верхний бегунок слева: красная строка (abzats boshi) -->
-                <div class="ruler-handle first-line" id="rulerFirstLineHandle" title="Birinçi qator çegara (Qizil satr)"></div>
-                <!-- Нижний бегунок слева: левое поле -->
-                <div class="ruler-handle left-margin" id="rulerLeftHandle" title="Çap çegara (mm)"></div>
-                <!-- Бегунок справа: правое поле -->
-                <div class="ruler-handle right-margin" id="rulerRightHandle" title="Öng çegara (mm)"></div>
-            </div>
-        </div>
+        <div class="word-ruler-top-row sticky-ruler">
+    <button type="button" class="ruler-corner-box" onclick="openPageSetupModal()" title="Sahifa parametrlari (Orientatsiya va çegaralar)">
+        <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/></svg>
+    </button>
+    <div class="word-ruler-wrap" id="wordRulerWrap">
+        <div class="ruler-margin-shade left" id="rulerShadeLeft"></div>
+        <div class="ruler-margin-shade right" id="rulerShadeRight"></div>
+        <div class="word-ruler-ticks" id="wordRulerTicks"></div>
+        <div class="ruler-handle first-line" id="rulerFirstLineHandle" title="Birinçi qator (Qizil satr)"></div>
+        <div class="ruler-handle hanging-indent" id="rulerHangingHandle" title="Qolgan qatorlar çegarasi"></div>
+        <div class="ruler-handle both-indent" id="rulerBothHandle" title="Ikkalasini birga suriş (Abzats)"></div>
+        <div class="ruler-handle right-margin" id="rulerRightHandle" title="Öng çegara"></div>
+    </div>
+</div>
 
         <div class="word-body-with-vruler">
             <!-- Вертикальная линейка -->
@@ -417,46 +457,22 @@
 
     <!-- === ГОРИЗОНТАЛЬНОЕ КОНТЕКСТНОЕ МЕНЮ ПКМ (TABLER ICONS) === -->
     <div id="officeContextMenu" class="office-pill-ctx">
-        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('bold')" title="Qalin">
-            <svg class="ti" viewBox="0 0 24 24"><path d="M7 5h6a3.5 3.5 0 0 1 0 7h-6z"/><path d="M13 12h1a3.5 3.5 0 0 1 0 7h-7v-7"/></svg>
-        </button>
-        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('italic')" title="Kursiv">
-            <svg class="ti" viewBox="0 0 24 24"><path d="M11 5l6 0"/><path d="M7 19l6 0"/><path d="M14 5l-4 14"/></svg>
-        </button>
-        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('underline')" title="Tagiga çiziş">
-            <svg class="ti" viewBox="0 0 24 24"><path d="M7 5v5a5 5 0 0 0 10 0v-5"/><path d="M5 19h14"/></svg>
-        </button>
-        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('strikeThrough')" title="Ustidan çiziş">
-            <svg class="ti" viewBox="0 0 24 24"><path d="M5 12l14 0"/><path d="M16 6.5a4 2 0 0 0 -4 -1.5h-1a3.5 3.5 0 0 0 0 7h2a3.5 3.5 0 0 1 0 7h-1.5a4 2 0 0 1 -4 -1.5"/></svg>
-        </button>
-        <button type="button" onmousedown="event.preventDefault()" onclick="insertOfficeLink()" title="Havola">
-            <svg class="ti" viewBox="0 0 24 24"><path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/></svg>
-        </button>
-        <span class="ctx-sep"></span>
-        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('copy')" title="Nusxalaş">
-            <svg class="ti" viewBox="0 0 24 24"><path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"/><path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"/></svg>
-        </button>
-        <button type="button" onmousedown="event.preventDefault()" onclick="ctxPaste()" title="Joylaş">
-            <svg class="ti" viewBox="0 0 24 24"><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/></svg>
-        </button>
-        <span id="ctxSelSep" class="ctx-sep" style="display:none;"></span>
-        <button type="button" id="ctxTranslateBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxAiAction('translate')" title="Tarjima">
-            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 5h7"/><path d="M9 3v2c0 4.418 -2.239 8 -5 8"/><path d="M5 9c0 2.144 2.952 3.908 6.7 4"/><path d="M12 20l4 -9l4 9"/><path d="M19.1 18h-6.2"/></svg>
-            <span>Tarjima</span>
-        </button>
-        <button type="button" id="ctxSynonymBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxAiAction('synonym')" title="Sinonim">
-            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z"/></svg>
-            <span>Sinonim</span>
-        </button>
-        <button type="button" id="ctxIzohBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxIzohAction()" title="Izohli luğat">
-            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12z"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/></svg>
-            <span>Izoh</span>
-        </button>
-        <span class="ctx-sep"></span>
-        <button type="button" onclick="closeOfficeContextMenu()" title="Yopiş">
-            <svg class="ti" viewBox="0 0 24 24"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></svg>
-        </button>
-    </div>
+    <button type="button" id="ctxBold" onmousedown="event.preventDefault()" onclick="ctxExec('bold')" title="Qalin"><svg class="ti" viewBox="0 0 24 24"><path d="M7 5h6a3.5 3.5 0 0 1 0 7h-6z"/><path d="M13 12h1a3.5 3.5 0 0 1 0 7h-7v-7"/></svg></button>
+    <button type="button" id="ctxItalic" onmousedown="event.preventDefault()" onclick="ctxExec('italic')" title="Kursiv"><svg class="ti" viewBox="0 0 24 24"><path d="M11 5l6 0"/><path d="M7 19l6 0"/><path d="M14 5l-4 14"/></svg></button>
+    <button type="button" id="ctxUnderline" onmousedown="event.preventDefault()" onclick="ctxExec('underline')" title="Tagiga çiziş"><svg class="ti" viewBox="0 0 24 24"><path d="M7 5v5a5 5 0 0 0 10 0v-5"/><path d="M5 19h14"/></svg></button>
+    <button type="button" id="ctxStrike" onmousedown="event.preventDefault()" onclick="ctxExec('strikeThrough')" title="Ustidan çiziş"><svg class="ti" viewBox="0 0 24 24"><path d="M5 12l14 0"/><path d="M16 6.5a4 2 0 0 0 -4 -1.5h-1a3.5 3.5 0 0 0 0 7h2a3.5 3.5 0 0 1 0 7h-1.5a4 2 0 0 1 -4 -1.5"/></svg></button>
+    <button type="button" id="ctxLinkBtn" onmousedown="event.preventDefault()" onclick="ctxToggleLink()" title="Havola"></button>
+    <span class="ctx-sep"></span>
+    <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('copy')" title="Nusxalaş"><svg class="ti" viewBox="0 0 24 24"><path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"/><path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"/></svg></button>
+    <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('cut')" title="Qirqiş"><svg class="ti" viewBox="0 0 24 24"><path d="M6 7m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M6 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M8.6 8.6l10.4 10.4"/><path d="M8.6 15.4l10.4 -10.4"/></svg></button>
+    <button type="button" onmousedown="event.preventDefault()" onclick="ctxPaste()" title="Joylaş"><svg class="ti" viewBox="0 0 24 24"><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/></svg></button>
+    <span id="ctxSelSep" class="ctx-sep" style="display:none;"></span>
+    <button type="button" id="ctxTranslateBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxAiAction('translate')"><svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 5h7"/><path d="M9 3v2c0 4.418 -2.239 8 -5 8"/><path d="M5 9c0 2.144 2.952 3.908 6.7 4"/><path d="M12 20l4 -9l4 9"/><path d="M19.1 18h-6.2"/></svg><span>Tarjima</span></button>
+    <button type="button" id="ctxSynonymBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxAiAction('synonym')"><svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z"/></svg><span>Sinonim</span></button>
+    <button type="button" id="ctxIzohBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxIzohAction()"><svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12z"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/></svg><span>Izoh</span></button>
+    <span class="ctx-sep"></span>
+    <button type="button" onclick="closeOfficeContextMenu()" title="Yopiş"><svg class="ti" viewBox="0 0 24 24"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></svg></button>
+</div>
 
     <!-- === МОДАЛКА: КОНСТРУКТОР ГРАФИКОВ === -->
     <div id="officeChartModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
@@ -567,6 +583,132 @@
     </div>
 </div>
 
+
+<!-- 1. Параметры страницы (Ориентация + Поля) -->
+<div id="pageSetupModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="weather-modal-card" style="max-width:440px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <b style="font-size:16px;">Sahifa parametrlari</b>
+            <button type="button" class="pdf-studio-close" onclick="document.getElementById('pageSetupModal').classList.remove('open')">×</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+            <label style="font-size:12px;font-weight:700;">Yuqori (mm)<input type="number" id="psTop" class="bib-custom-input" value="20"></label>
+            <label style="font-size:12px;font-weight:700;">Pastki (mm)<input type="number" id="psBottom" class="bib-custom-input" value="20"></label>
+            <label style="font-size:12px;font-weight:700;">Çap (mm)<input type="number" id="psLeft" class="bib-custom-input" value="20"></label>
+            <label style="font-size:12px;font-weight:700;">Öng (mm)<input type="number" id="psRight" class="bib-custom-input" value="20"></label>
+        </div>
+        <div style="font-size:12px;font-weight:800;margin-bottom:6px;">Orientatsiya:</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+            <button type="button" class="ps-orient-btn active" id="psPortraitBtn" onclick="selectPageOrient('portrait')">📄 Kitob (Portrait)</button>
+            <button type="button" class="ps-orient-btn" id="psLandscapeBtn" onclick="selectPageOrient('landscape')">🖼️ Albom (Landscape)</button>
+        </div>
+        <label style="font-size:12px;font-weight:700;display:block;margin-bottom:14px;">Qöllanişi:
+            <select id="psScope" class="bib-custom-input" style="margin-top:4px;">
+                <option value="all">Butun hujjatga</option>
+                <option value="fromCurrent">Faqat joriy va keyingi sahifalarga</option>
+            </select>
+        </label>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="office-btn primary" onclick="applyPageSetup()">Saqlaş</button>
+            <button type="button" class="office-btn" onclick="document.getElementById('pageSetupModal').classList.remove('open')">Bekor</button>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Конструктор таблицы -->
+<div id="tableBuilderModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="weather-modal-card" style="max-width:420px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <b style="font-size:16px;">Jadval qöşiş</b>
+            <button type="button" class="pdf-studio-close" onclick="document.getElementById('tableBuilderModal').classList.remove('open')">×</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:700;">Qatorlar<input type="number" id="tbRows" class="bib-custom-input" value="4" min="1" max="30"></label>
+            <label style="font-size:12px;font-weight:700;">Ustunlar<input type="number" id="tbCols" class="bib-custom-input" value="4" min="1" max="12"></label>
+            <label style="font-size:12px;font-weight:700;">Sarlavha foni<input type="color" id="tbHeadBg" value="#0284C7" style="width:100%;height:38px;border:none;border-radius:8px;"></label>
+            <label style="font-size:12px;font-weight:700;">Sarlavha matni<input type="color" id="tbHeadColor" value="#FFFFFF" style="width:100%;height:38px;border:none;border-radius:8px;"></label>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin-bottom:8px;cursor:pointer;">
+            <input type="checkbox" id="tbStickyHead" checked> Sarlavha qatorini mahkamlaş (keyingi sahifada takrorlanadi)
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin-bottom:14px;cursor:pointer;">
+            <input type="checkbox" id="tbZebra" checked> Qatorlarni ranglaş (oq / kulrang)
+        </label>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="office-btn primary" onclick="confirmInsertWordTable()">Qöşiş</button>
+            <button type="button" class="office-btn" onclick="document.getElementById('tableBuilderModal').classList.remove('open')">Bekor</button>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Загрузка изображения (URL или с компьютера) -->
+<div id="imageInsertModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="weather-modal-card" style="max-width:420px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <b style="font-size:16px;">Rasm qöşiş</b>
+            <button type="button" class="pdf-studio-close" onclick="document.getElementById('imageInsertModal').classList.remove('open')">×</button>
+        </div>
+        <label style="font-size:12px;font-weight:700;display:block;margin-bottom:10px;">Havola (URL) orqali:
+            <input type="text" id="imgUrlInput" class="bib-custom-input" placeholder="https://..." style="margin-top:4px;">
+        </label>
+        <div style="text-align:center;font-size:12px;color:#64748B;margin:8px 0;">yoki</div>
+        <label class="pdf-dropzone" style="margin-bottom:14px;">
+            <input type="file" id="imgFileUpload" accept="image/*" style="display:none;" onchange="handleLocalImageUpload(event)">
+            <span>Kompyuterdan rasm tanlaş (PNG, JPG, WebP, SVG, GIF...)</span>
+        </label>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="office-btn primary" onclick="confirmInsertImageUrl()">Qöşiş</button>
+            <button type="button" class="office-btn" onclick="document.getElementById('imageInsertModal').classList.remove('open')">Yopiş</button>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Вставка уравнений -->
+<div id="equationModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="weather-modal-card" style="max-width:480px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <b style="font-size:16px;">Tenglama / Formula qöşiş</b>
+            <button type="button" class="pdf-studio-close" onclick="document.getElementById('equationModal').classList.remove('open')">×</button>
+        </div>
+        <div class="eq-templates-list">
+            <button type="button" class="eq-tpl-btn" onclick="insertEquationTemplate('quad')">
+                <small>Kvadrat tenglama</small><span>x = (−b ± √(b² − 4ac)) / 2a</span>
+            </button>
+            <button type="button" class="eq-tpl-btn" onclick="insertEquationTemplate('binom')">
+                <small>Nyuton binomi</small><span>(x + a)ⁿ = Σ C(n,k) xᵏ aⁿ⁻ᵏ</span>
+            </button>
+            <button type="button" class="eq-tpl-btn" onclick="insertEquationTemplate('circle')">
+                <small>Doira yuzi</small><span>A = πr²</span>
+            </button>
+            <button type="button" class="eq-tpl-btn" onclick="insertEquationTemplate('taylor')">
+                <small>Teylor qatori</small><span>eˣ = 1 + x/1! + x²/2! + x³/3! + …</span>
+            </button>
+            <button type="button" class="eq-tpl-btn" onclick="insertEquationTemplate('fourier')">
+                <small>Furye qatori</small><span>f(x) = a₀ + Σ (aₙ cos(nπx/L) + bₙ sin(nπx/L))</span>
+            </button>
+            <button type="button" class="eq-tpl-btn" onclick="insertEquationTemplate('frac')">
+                <small>Kasr (A / B)</small><span>a / b = c</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 5. Плавающая рамка ресайза и обтекания картинок -->
+<div id="imgFloatControls" class="img-float-controls">
+    <button type="button" class="img-wrap-trigger" onclick="toggleImgWrapMenu(event)" title="Matn bilan örab oliş">
+        <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M4 18l16 0"/><path d="M4 12h4"/><path d="M16 12h4"/><path d="M10 9h4v6h-4z"/></svg>
+    </button>
+    <div id="imgWrapMenu" class="img-wrap-menu">
+        <button onclick="applyImgWrap('inline')">Matn içida</button>
+        <button onclick="applyImgWrap('left')">Kvadrat (Çapda)</button>
+        <button onclick="applyImgWrap('right')">Kvadrat (Öngda)</button>
+        <button onclick="applyImgWrap('topbottom')">Yuqori va pastdan</button>
+        <button onclick="applyImgWrap('behind')">Matn orqasida</button>
+        <button onclick="applyImgWrap('front')">Matn oldida</button>
+    </div>
+    <div class="img-resize-corner" id="imgResizeCorner" title="Ölçamni özgartiriş"></div>
+</div>
+    
     <script src="../scripts.js"></script>
     <script src="./scripts.js"></script>
 </body>
