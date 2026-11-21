@@ -611,9 +611,15 @@
         </div>
         <div style="font-size:12px;font-weight:800;margin-bottom:6px;">Orientatsiya:</div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
-            <button type="button" class="ps-orient-btn active" id="psPortraitBtn" onclick="selectPageOrient('portrait')">📄 Kitob (Portrait)</button>
-            <button type="button" class="ps-orient-btn" id="psLandscapeBtn" onclick="selectPageOrient('landscape')">🖼️ Albom (Landscape)</button>
-        </div>
+    <button type="button" class="ps-orient-btn active" id="psPortraitBtn" onclick="selectPageOrient('portrait')">
+        <svg class="ti" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/></svg>
+        <span>Kitob (Portrait)</span>
+    </button>
+    <button type="button" class="ps-orient-btn" id="psLandscapeBtn" onclick="selectPageOrient('landscape')">
+        <svg class="ti" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"/></svg>
+        <span>Albom (Landscape)</span>
+    </button>
+</div>
         <label style="font-size:12px;font-weight:700;display:block;margin-bottom:14px;">Qöllanişi:
             <select id="psScope" class="bib-custom-input" style="margin-top:4px;">
                 <option value="all">Butun hujjatga</option>
@@ -629,24 +635,49 @@
 
 <!-- 2. Конструктор таблицы -->
 <div id="tableBuilderModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
-    <div class="weather-modal-card" style="max-width:420px; padding:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <b style="font-size:16px;">Jadval qöşiş</b>
+    <div class="weather-modal-card" style="max-width:440px; padding:22px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <b style="font-size:16px; display:inline-flex; align-items:center; gap:8px;">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z"/><path d="M3 10h18"/><path d="M10 3v18"/></svg>
+                Jadval qöşiş
+            </b>
             <button type="button" class="pdf-studio-close" onclick="document.getElementById('tableBuilderModal').classList.remove('open')">×</button>
         </div>
+
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-            <label style="font-size:12px;font-weight:700;">Qatorlar<input type="number" id="tbRows" class="bib-custom-input" value="4" min="1" max="30"></label>
-            <label style="font-size:12px;font-weight:700;">Ustunlar<input type="number" id="tbCols" class="bib-custom-input" value="4" min="1" max="12"></label>
-            <label style="font-size:12px;font-weight:700;">Sarlavha foni<input type="color" id="tbHeadBg" value="#0284C7" style="width:100%;height:38px;border:none;border-radius:8px;"></label>
-            <label style="font-size:12px;font-weight:700;">Sarlavha matni<input type="color" id="tbHeadColor" value="#FFFFFF" style="width:100%;height:38px;border:none;border-radius:8px;"></label>
+            <label class="tb-field-lbl">Qatorlar<input type="number" id="tbRows" class="bib-custom-input" value="4" min="1" max="30"></label>
+            <label class="tb-field-lbl">Ustunlar<input type="number" id="tbCols" class="bib-custom-input" value="4" min="1" max="12"></label>
         </div>
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin-bottom:8px;cursor:pointer;">
-            <input type="checkbox" id="tbStickyHead" checked> Sarlavha qatorini mahkamlaş (keyingi sahifada takrorlanadi)
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin-bottom:14px;cursor:pointer;">
-            <input type="checkbox" id="tbZebra" checked> Qatorlarni ranglaş (oq / kulrang)
-        </label>
-        <div style="display:flex; justify-content:flex-end; gap:8px;">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+            <label class="tb-color-pill">
+                <input type="color" id="tbHeadBg" class="office-round-color" value="#0284C7" oninput="document.getElementById('tbHeadBgHex').textContent=this.value.toUpperCase()">
+                <div>
+                    <div class="tb-color-title">Sarlavha foni</div>
+                    <div class="tb-color-hex" id="tbHeadBgHex">#0284C7</div>
+                </div>
+            </label>
+            <label class="tb-color-pill">
+                <input type="color" id="tbHeadColor" class="office-round-color" value="#FFFFFF" oninput="document.getElementById('tbHeadColHex').textContent=this.value.toUpperCase()">
+                <div>
+                    <div class="tb-color-title">Sarlavha matni</div>
+                    <div class="tb-color-hex" id="tbHeadColHex">#FFFFFF</div>
+                </div>
+            </label>
+        </div>
+
+        <div class="tb-options-box">
+            <label class="tb-check-row">
+                <input type="checkbox" id="tbStickyHead" checked>
+                <span>Sarlavha qatorini mahkamlaş (keyingi sahifada takrorlanadi)</span>
+            </label>
+            <label class="tb-check-row">
+                <input type="checkbox" id="tbZebra" checked>
+                <span>Qatorlarni ranglaş (oq / kulrang)</span>
+            </label>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
             <button type="button" class="office-btn primary" onclick="confirmInsertWordTable()">Qöşiş</button>
             <button type="button" class="office-btn" onclick="document.getElementById('tableBuilderModal').classList.remove('open')">Bekor</button>
         </div>
