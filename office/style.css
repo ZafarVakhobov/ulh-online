@@ -556,3 +556,117 @@ body.dark-mode .office-osha-header { background: #1E293B; border-color: #334155;
 body.dark-mode .office-osha-header h3 { color: #F8FAFC; }
 body.dark-mode .office-osha-footer input { background: #1E293B; color: #F8FAFC; }
 body.dark-mode .office-osha-head-btn:hover { background: #334155; color: #F8FAFC; }
+
+/* === ФИКСИРОВАННАЯ ЛИНЕЙКА + 3 БЕГУНКА СЛЕВА === */
+.word-ruler-top-row.sticky-ruler {
+    position: sticky; top: 108px; z-index: 800;
+    background: #E2E8F0; padding: 4px 0;
+}
+body.dark-mode .word-ruler-top-row.sticky-ruler { background: #0B1120; }
+.ruler-handle.hanging-indent { top: 10px; clip-path: polygon(50% 0, 100% 60%, 100% 100%, 0 100%, 0 60%); background: #0284C7; }
+.ruler-handle.both-indent { bottom: 0; height: 5px; width: 11px; clip-path: none; background: #0369A1; }
+
+/* === КРУГЛЫЕ ПАЛИТРЫ ЦВЕТОВ === */
+.rb-color-circle {
+    width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.15); transition: transform 0.15s;
+}
+.rb-color-circle:hover { transform: scale(1.12); }
+.office-color-popover {
+    position: absolute; top: calc(100% + 6px); left: 0; z-index: 99999;
+    background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 8px;
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.16);
+    display: none; grid-template-columns: repeat(6, 22px); gap: 6px;
+}
+.color-pop-wrap.open .office-color-popover { display: grid; }
+.pop-swatch { width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer; box-shadow: 0 0 0 1px rgba(0,0,0,0.12); }
+.pop-rainbow {
+    position: relative; width: 22px; height: 22px; border-radius: 50%; overflow: hidden; cursor: pointer;
+    background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+}
+.pop-rainbow input { position: absolute; inset: -6px; opacity: 0; cursor: pointer; }
+body.dark-mode .office-color-popover { background: #0F172A; border-color: #334155; }
+
+/* === ВЛОЖЕННОЕ ПОДМЕНЮ НУМЕРАЦИИ СТРАНИЦ === */
+.sub-drop-group { position: relative; padding: 8px 10px; font-size: 12.5px; font-weight: 700; cursor: pointer; border-radius: 8px; }
+.sub-drop-group:hover { background: #F1F5F9; color: #0284C7; }
+.sub-drop-panel {
+    position: absolute; left: 100%; top: 0; min-width: 115px; background: #FFFFFF;
+    border: 1px solid #E2E8F0; border-radius: 10px; padding: 4px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.15); display: none; flex-direction: column;
+}
+.sub-drop-group:hover .sub-drop-panel { display: flex; }
+body.dark-mode .sub-drop-group:hover { background: #1E293B; }
+body.dark-mode .sub-drop-panel { background: #0F172A; border-color: #334155; }
+
+/* === АЛЬБОМНАЯ ОРИЕНТАЦИЯ + НОМЕРА СТРАНИЦ === */
+.a4-sheet { position: relative; }
+.a4-sheet.landscape { width: 297mm !important; height: 210mm !important; }
+.a4-page-num {
+    position: absolute; font-size: 11.5px; font-weight: 700; color: #64748B; pointer-events: none; user-select: none;
+}
+.a4-page-num.top { top: 8mm; }
+.a4-page-num.bottom { bottom: 8mm; }
+.a4-page-num.left { left: 20mm; }
+.a4-page-num.center { left: 50%; transform: translateX(-50%); }
+.a4-page-num.right { right: 20mm; }
+.ps-orient-btn {
+    padding: 12px; border-radius: 10px; border: 1.5px solid #CBD5E1; background: #F8FAFC;
+    font-weight: 700; font-size: 12.5px; cursor: pointer;
+}
+.ps-orient-btn.active { border-color: #0284C7; background: #E0F2FE; color: #0284C7; }
+
+/* === ТАБЛИЦЫ (ЗЕБРА + ФИКСИРОВАННАЯ ШАПКА) === */
+.word-table.zebra tbody tr:nth-child(even) { background: #F1F5F9; }
+.word-table thead { display: table-header-group; }
+
+/* === АКТИВНЫЕ СТИЛИ В КОНТЕКСТНОМ МЕНЮ === */
+.office-pill-ctx button.is-active { background: #E0F2FE !important; color: #0284C7 !important; }
+body.dark-mode .office-pill-ctx button.is-active { background: rgba(56, 189, 248, 0.22) !important; color: #38BDF8 !important; }
+
+/* === ПЛАШКИ ФОРМАТОВ В МЕНЮ СОХРАНЕНИЯ === */
+.ext-badge {
+    font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px; color: #FFFFFF; min-width: 42px; text-align: center;
+}
+.ext-badge.doc, .ext-badge.docx { background: #0284C7; }
+.ext-badge.rtf, .ext-badge.xml { background: #7C3AED; }
+.ext-badge.pdf { background: #EF4444; }
+.ext-badge.ppt, .ext-badge.pptx { background: #EA580C; }
+.ext-badge.xlsx, .ext-badge.xls { background: #10B981; }
+
+/* === УРАВНЕНИЯ === */
+.eq-templates-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+.eq-tpl-btn {
+    text-align: left; padding: 10px 14px; border-radius: 10px; border: 1px solid #E2E8F0;
+    background: #F8FAFC; cursor: pointer; display: flex; flex-direction: column; gap: 4px;
+}
+.eq-tpl-btn:hover { border-color: #0284C7; background: #F0F9FF; }
+.eq-tpl-btn small { font-size: 11px; color: #64748B; font-weight: 700; }
+.eq-tpl-btn span { font-size: 15px; font-family: Georgia, serif; font-style: italic; color: #0F172A; }
+.office-eq-box {
+    display: inline-block; padding: 4px 10px; margin: 2px 4px; border-radius: 6px;
+    background: #F8FAFC; border: 1px dashed #CBD5E1; font-family: Georgia, serif; font-style: italic; font-size: 16px;
+}
+
+/* === РЕСАЙЗ И ОБТЕКАНИЕ КАРТИНОК === */
+.img-float-controls {
+    position: fixed; z-index: 9000; border: 2px solid #0284C7; pointer-events: none; display: none;
+}
+.img-float-controls.active { display: block; }
+.img-wrap-trigger {
+    position: absolute; top: 4px; right: -34px; width: 28px; height: 28px; pointer-events: auto;
+    border-radius: 7px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.img-wrap-menu {
+    position: absolute; top: 36px; right: -140px; width: 155px; pointer-events: auto;
+    background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; padding: 5px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18); display: none; flex-direction: column; gap: 2px;
+}
+.img-wrap-menu.open { display: flex; }
+.img-wrap-menu button { border: none; background: transparent; text-align: left; padding: 6px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.img-wrap-menu button:hover { background: #F1F5F9; color: #0284C7; }
+.img-resize-corner {
+    position: absolute; right: -6px; bottom: -6px; width: 12px; height: 12px;
+    background: #0284C7; border: 2px solid #FFFFFF; border-radius: 50%; cursor: nwse-resize; pointer-events: auto;
+}
