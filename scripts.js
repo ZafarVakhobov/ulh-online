@@ -11351,6 +11351,7 @@ const ULH_TOOL_CATALOG = [
     { id: "currency", name: "Valyuta kalkulyatori", description: "Valyuta kurslari va miqdor hisoblaş", category: "Foydali vositalar", keywords: "currency money kurs dollar euro rubl валюта курс конвертер", action: "openCurrencyModal" },
     { id: "pdf-studio", name: "PDF Studiya", description: "PDF fayllarni birlaştiriş, sahifa ajratiş va watermark örnatiş", category: "Foydali vositalar", keywords: "pdf studio merge split watermark page numbers birlashtirish ajratish suv belgisi raqamlash пдф склеить объединить вырезать разделить водяной знак нумерация страницы", action: "openPdfStudioModal" },
     { id: "mindmap", name: "Aql xaritasi (Mind Map)", description: "Ğoyalar xaritasini tuziş", category: "Foydali vositalar", keywords: "mindmap mind map aql xaritasi sxema goya png svg майндмап карта мыслей схема", action: "openMindmapModal" },
+    { id: "izoh", name: "Izohli luğat", description: "Sözlarning ma'nosi", category: "Örganiş", keywords: "izoh lugat slovar dictionary mano talqin словарь толкование значение", action: "openIzohModal" },
     { id: "chart", name: "Grafik konstruktori", description: "Ustunli va doiraviy PNG infografika yaratiş", category: "Foydali vositalar", keywords: "grafik diagramma chart infografika statistika png ustunli doiraviy график диаграмма инфографика статистика", action: "openChartModal" },
     { id: "qr", name: "QR-kod generatori", description: "Matn yoki havoladan QR-kod yaratiş", category: "Foydali vositalar", keywords: "qr code kod link havola png svg qr код ссылка", action: "openQrModal" },
     { id: "bibliography", name: "Iqtibos va adabiyotlar", description: "Manba va bibliografik yozuv yaratiş", category: "Foydali vositalar", keywords: "citation bibliography reference vak iqtibos adabiyot", action: "openBiblioModal" },
@@ -12526,3 +12527,100 @@ window.downloadMindmapPNG = async function() {
         if (btn) btn.disabled = false;
     }
 };
+
+// ==========================================
+// === IZOHLI LUĞAT (izoh.uz + AI FALLBACK) ===
+// ==========================================
+const IZOH_WORKER_URL = "https://ulh-izoh-proxy.lanigirodesigner.workers.dev/";
+
+window.openIzohModal = function(event, initialWord = "") {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    const modal = document.getElementById("izohModalBackdrop");
+    const input = document.getElementById("izohSearchInput");
+    if (modal) {
+        modal.classList.add("open");
+        if (input) {
+            if (initialWord) {
+                input.value = initialWord;
+                searchIzohWord();
+            } else {
+                requestAnimationFrame(() => input.focus());
+            }
+        }
+    }
+};
+
+window.closeIzohModal = function(event) {
+    const modal = document.getElementById("izohModalBackdrop");
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove("open");
+};
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeIzohModal();
+});
+
+window.searchIzohWord = async function(event) {
+    if (event) event.preventDefault();
+    const input = document.getElementById("izohSearchInput");
+    const box = document.getElementById("izohResultBox");
+    const btn = document.getElementById("izohSearchBtn");
+    const word = (input?.value || "").trim();
+    if (!word || !box) return;
+
+    if (btn) btn.disabled = true;
+    box.innerHTML = `<div class="izoh-placeholder">🔎 <b>${escapeHTML(word)}</b> izoh.uz bazasidan qidirilmoqda...</div>`;
+
+    try {
+        // 1. Запрос к izoh.uz через Cloudflare Worker
+        const res = await fetch(`${IZOH_WORKER_URL}?word=${encodeURIComponent(word)}`);
+        const data = await res.json();
+
+        if (data && data.found && data.definition) {
+            box.innerHTML = `
+                <div class="izoh-result-head">
+                    <span class="izoh-word-title">${escapeHTML(word)}</span>
+                    <span class="izoh-badge dict">📖 izoh.uz</span>
+                </div>
+                <div class="izoh-def-text">${escapeHTML(data.definition)}</div>
+                <a href="${data.sourceUrl}" target="_blank" rel="noopener" class="izoh-source-link">izoh.uz saytida töliq köriş →</a>
+            `;
+            return;
+        }
+
+        // 2. Если слова нет в базе — подключаем ИИ
+        box.innerHTML = `<div class="izoh-placeholder">✨ Söz bazada topilmadi. AI izoh tayyorlamoqda...</div>`;
+        const aiText = await fetchAiWordDefinition(word);
+
+        box.innerHTML = `
+            <div class="izoh-result-head">
+                <span class="izoh-word-title">${escapeHTML(word)}</span>
+                <span class="izoh-badge ai">✨ AI talqini</span>
+            </div>
+            <div class="izoh-def-text">${escapeHTML(aiText)}</div>
+        `;
+    } catch (err) {
+        console.error("Izoh search error:", err);
+        box.innerHTML = `<div class="izoh-placeholder" style="color:#EF4444;">Xatolik yuz berdi. Qayta urinib köring.</div>`;
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+};
+
+// Запрос к твоему AI-воркеру (ulh-ai-helper)
+async function fetchAiWordDefinition(word) {
+    const prompt = `"${word}" sözining özbek tilidagi qisqa va aniq izohli ma'nosini ber (1-2 gapda ta'rif va 1 ta misol). Javobni faqat oddiy matnda yoz.`;
+    // Подставь сюда свой формат запроса к ulh-ai-helper:
+    const res = await fetch("https://ulh-ai-helper.lanigirodesigner.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    return data.reply || data.text || data.result || "AI javob bera olmadi.";
+}
