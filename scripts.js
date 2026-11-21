@@ -13154,3 +13154,144 @@ window.downloadCrosswordPNG = async function() {
         if (btn) btn.disabled = false;
     }
 };
+
+// ==========================================
+// === КНОПКА "IZOHLAR LUĞATI" В МЕНЮ ВЫДЕЛЕНИЯ ===
+// ==========================================
+function lemmatizeUzbekWord(raw) {
+    let w = String(raw || "")
+        .trim()
+        .replace(/^[^\p{L}]+|[^\p{L}]+$/gu, "");
+
+    if (!w) return "";
+
+    const lower = w.toLowerCase();
+
+    // Порядок важен: сначала более длинные окончания (-dagi, -larimiz, -lari, -ning и т.д.)
+    const suffixes = [
+        // Латиница (новая и стандартная)
+        "larimizni", "laringizni", "larimizga", "laringizga",
+        "larimizda", "laringizda", "larimizdan", "laringizdan",
+        "larimizning", "laringizning",
+        "lardagi", "dagidek", "dagiday", "dagi",
+        "larning", "larni", "larga", "larda", "lardan", "lari",
+        "imizni", "ingizni", "imizga", "ingizga",
+        "imizda", "ingizda", "imizdan", "ingizdan",
+        "imizning", "ingizning",
+        "sining", "sini", "siga", "sida", "sidan",
+        "ning", "dagi", "dan", "ga", "da", "ni",
+        "imiz", "ingiz", "lari", "lar", "si",
+
+        // Кириллица
+        "ларимизни", "ларингизни", "ларимизга", "ларингизга",
+        "ларимизда", "ларингизда", "ларимиздан", "ларингиздан",
+        "ларнинг", "ларни", "ларга", "ларда", "лардан", "лари", "лар",
+        "даги", "нинг", "дан", "га", "да", "ни", "си"
+    ];
+
+    let candidate = lower;
+    for (const sfx of suffixes) {
+        if (candidate.endsWith(sfx) && candidate.length - sfx.length >= 3) {
+            candidate = candidate.slice(0, candidate.length - sfx.length);
+            break;
+        }
+    }
+
+    // Сохраняем исходный регистр первой буквы
+    if (/^[A-ZÖĞŞÇА-ЯЁЎҚҒҲ]/.test(w)) {
+        candidate = candidate.charAt(0).toUpperCase() + candidate.slice(1);
+    }
+
+    return candidate;
+}
+
+function getSingleSelectedWord() {
+    const sel = window.getSelection ? window.getSelection() : null;
+    const rawText = sel ? sel.toString().trim() : "";
+    if (!rawText) return null;
+
+    // Разбиваем по пробелам/переносам — если слов больше одного, кнопку не показываем
+    const parts = rawText.split(/\s+/).filter(Boolean);
+    if (parts.length !== 1) return null;
+
+    const cleanWord = parts[0].replace(/^[^\p{L}]+|[^\p{L}]+$/gu, "");
+    if (!cleanWord || cleanWord.length < 2) return null;
+
+    return lemmatizeUzbekWord(cleanWord);
+}
+
+function ensureIzohSelectionButton() {
+    let btn = document.getElementById("selIzohBtn");
+    if (btn) return btn;
+
+    // Ищем контейнер кнопок синонимов/перевода по уже существующим элементам
+    const existingActionBtn = document.querySelector(
+        '[onclick*="Synonym" i], [onclick*="Translat" i], [id*="synonym" i], [id*="translate" i], .sel-synonym-btn, .sel-translate-btn'
+    );
+    const toolbar = existingActionBtn ? existingActionBtn.parentElement : null;
+    if (!toolbar) return null;
+
+    btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = "selIzohBtn";
+    btn.className = "sel-izoh-btn";
+    btn.innerHTML = `<span>Sözning izohi</span>`;
+    btn.style.display = "none";
+
+    btn.addEventListener("mousedown", (e) => {
+        // Не даём выделению сброситься до клика
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const word = btn.dataset.word || getSingleSelectedWord();
+        btn.style.display = "none";
+        if (word && typeof window.openIzohModal === "function") {
+            window.openIzohModal(e, word);
+        }
+    });
+
+    toolbar.appendChild(btn);
+    return btn;
+}
+
+function syncIzohSelectionButton() {
+    const btn = ensureIzohSelectionButton();
+    if (!btn) return;
+
+    const lemmaWord = getSingleSelectedWord();
+    if (!lemmaWord) {
+        btn.style.display = "none";
+        btn.dataset.word = "";
+        return;
+    }
+
+    // Показываем кнопку только если сам плавающий тулбар сейчас виден
+    const toolbar = btn.parentElement;
+    const isToolbarVisible = toolbar &&
+        getComputedStyle(toolbar).display !== "none" &&
+        getComputedStyle(toolbar).visibility !== "hidden" &&
+        getComputedStyle(toolbar).opacity !== "0";
+
+    if (isToolbarVisible) {
+        btn.dataset.word = lemmaWord;
+        btn.style.display = "inline-flex";
+    } else {
+        btn.style.display = "none";
+    }
+}
+
+document.addEventListener("selectionchange", () => {
+    requestAnimationFrame(syncIzohSelectionButton);
+});
+
+document.addEventListener("mouseup", () => {
+    setTimeout(syncIzohSelectionButton, 20);
+});
+
+document.addEventListener("keyup", () => {
+    setTimeout(syncIzohSelectionButton, 20);
+});
