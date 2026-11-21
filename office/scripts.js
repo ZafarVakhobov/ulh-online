@@ -914,3 +914,284 @@ window.sendOfficeOsha = async () => {
         localStorage.setItem("oshaChatHistory", JSON.stringify(officeOshaChatHist)); renderOfficeOshaHistory();
     } catch (_) {}
 };
+
+// ==========================================
+// === ULH OFFICE v3 — 16 PRO UPGRADES ===
+// ==========================================
+let pageOrientations = JSON.parse(localStorage.getItem("ulh_office_orients_v1") || "[]");
+let pageNumConfig = JSON.parse(localStorage.getItem("ulh_office_pagenum_v1") || '{"pos":"none","align":"center"}');
+let activeWordPageIdx = 0;
+let selectedImgEl = null;
+
+// 1. Круглые палитры цветов (пресеты + радуга)
+const ULH_SWATCHES = ["#0F172A","#334155","#64748B","#EF4444","#F97316","#F59E0B","#10B981","#0284C7","#6366F1","#8B5CF6","#EC4899"];
+function initColorPopovers() {
+    [["foreColorPop","foreColor","foreColorCircle"], ["backColorPop","hiliteColor","backColorCircle"]].forEach(([popId, cmd, circId]) => {
+        const pop = document.getElementById(popId);
+        if (!pop) return;
+        pop.innerHTML = ULH_SWATCHES.map(c => `<button type="button" class="pop-swatch" style="background:${c}" onmousedown="event.preventDefault()" onclick="pickOfficeSwatch('${cmd}','${c}','${circId}')"></button>`).join("") +
+            `<label class="pop-rainbow" title="Boshqa rang"><input type="color" onchange="pickOfficeSwatch('${cmd}', this.value, '${circId}')"></label>`;
+    });
+}
+window.toggleColorPop = (id, e) => { e.stopPropagation(); document.querySelectorAll(".color-pop-wrap").forEach(w => { if (w.id !== id) w.classList.remove("open"); }); document.getElementById(id)?.classList.toggle("open"); };
+window.pickOfficeSwatch = (cmd, color, circId) => {
+    document.getElementById(circId).style.background = color;
+    applyOfficeColor(cmd, color);
+    document.querySelectorAll(".color-pop-wrap").forEach(w => w.classList.remove("open"));
+};
+window.toggleSimpleDrop = (id, e) => { e.stopPropagation(); document.getElementById(id)?.classList.toggle("open"); };
+document.addEventListener("click", () => document.querySelectorAll(".color-pop-wrap, #bulletMenuWrap, #lineHeightWrap, #pageNumMenuWrap").forEach(el => el.classList.remove("open")));
+
+// 2. Буллеты и межстрочный интервал
+window.applyBulletStyle = (styleType) => {
+    restoreSavedSelection();
+    document.execCommand("insertUnorderedList");
+    const sel = window.getSelection();
+    const ul = sel?.anchorNode?.parentElement?.closest("ul");
+    if (ul) ul.style.listStyleType = styleType;
+    document.getElementById("bulletMenuWrap")?.classList.remove("open");
+    syncWordPagesFromDom(); saveCurrentOfficeDoc();
+};
+window.applyLineHeight = (lh) => {
+    restoreSavedSelection();
+    const sel = window.getSelection();
+    const blk = sel?.anchorNode?.parentElement?.closest("p, div, li, h1, h2, h3");
+    if (blk && !blk.classList.contains("a4-sheet")) blk.style.lineHeight = lh;
+    else document.querySelectorAll(".a4-sheet").forEach(p => p.style.lineHeight = lh);
+    document.getElementById("lineHeightWrap")?.classList.remove("open");
+    syncWordPagesFromDom(); saveCurrentOfficeDoc();
+};
+
+// 3. Вставка графика строго по позиции курсора
+window.insertChartIntoOffice = function() {
+    const svg = buildOfficeChartSvg();
+    const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    const imgHtml = `<img src="${dataUrl}" class="office-resizable-img" alt="Grafik" style="max-width:100%; border-radius:10px; display:inline-block;">`;
+    if (officeMode === "word" || officeMode === "slides") {
+        restoreSavedSelection();
+        document.execCommand("insertHTML", false, imgHtml);
+        if (officeMode === "word") syncWordPagesFromDom();
+        else { slidesData[activeSlideIdx].body = document.getElementById("slideBodyBox").innerHTML; }
+    } else {
+        document.getElementById("tablesChartsShelf").innerHTML += `<p>${imgHtml}</p>`;
+    }
+    saveCurrentOfficeDoc();
+    document.getElementById("officeChartModal").classList.remove("open");
+};
+
+// 4. Параметры страницы (Ориентация + Поля)
+let psSelectedOrient = "portrait";
+window.openPageSetupModal = () => {
+    document.getElementById("psTop").value = rulerMarginTop;
+    document.getElementById("psLeft").value = rulerMarginLeft;
+    document.getElementById("psRight").value = rulerMarginRight;
+    document.getElementById("pageSetupModal").classList.add("open");
+};
+window.selectPageOrient = (o) => {
+    psSelectedOrient = o;
+    document.getElementById("psPortraitBtn").classList.toggle("active", o === "portrait");
+    document.getElementById("psLandscapeBtn").classList.toggle("active", o === "landscape");
+};
+window.applyPageSetup = () => {
+    rulerMarginTop = +document.getElementById("psTop").value || 20;
+    rulerMarginLeft = +document.getElementById("psLeft").value || 20;
+    rulerMarginRight = +document.getElementById("psRight").value || 20;
+    const scope = document.getElementById("psScope").value;
+    document.querySelectorAll(".a4-sheet").forEach((p, i) => {
+        if (scope === "all" || i >= activeWordPageIdx) {
+            pageOrientations[i] = psSelectedOrient;
+            p.classList.toggle("landscape", psSelectedOrient === "landscape");
+        }
+        p.style.paddingTop = rulerMarginTop + "mm";
+        p.style.paddingLeft = rulerMarginLeft + "mm";
+        p.style.paddingRight = rulerMarginRight + "mm";
+    });
+    localStorage.setItem("ulh_office_orients_v1", JSON.stringify(pageOrientations));
+    document.getElementById("pageSetupModal").classList.remove("open");
+};
+
+// 5. Конструктор таблицы (цвет шапки, зебра, фиксированный thead)
+window.openTableBuilderModal = () => document.getElementById("tableBuilderModal").classList.add("open");
+window.confirmInsertWordTable = () => {
+    const r = Math.min(30, Math.max(1, +document.getElementById("tbRows").value || 3));
+    const c = Math.min(12, Math.max(1, +document.getElementById("tbCols").value || 3));
+    const hBg = document.getElementById("tbHeadBg").value;
+    const hCol = document.getElementById("tbHeadColor").value;
+    const zebra = document.getElementById("tbZebra").checked ? "zebra" : "";
+    let html = `<table class="word-table ${zebra}"><thead><tr style="background:${hBg};color:${hCol};">${Array.from({length:c}, (_,i)=>`<th>Sarlavha ${i+1}</th>`).join("")}</tr></thead><tbody>`;
+    for (let i = 1; i < r; i++) html += `<tr>${Array.from({length:c}, ()=>`<td>&nbsp;</td>`).join("")}</tr>`;
+    html += `</tbody></table><p><br></p>`;
+    restoreSavedSelection();
+    document.execCommand("insertHTML", false, html);
+    syncWordPagesFromDom(); saveCurrentOfficeDoc();
+    document.getElementById("tableBuilderModal").classList.remove("open");
+};
+
+// 6. Нумерация страниц
+window.setPageNumbers = (pos, align) => {
+    pageNumConfig = { pos, align };
+    localStorage.setItem("ulh_office_pagenum_v1", JSON.stringify(pageNumConfig));
+    applyPageNumbersToSheets();
+    document.getElementById("pageNumMenuWrap")?.classList.remove("open");
+};
+function applyPageNumbersToSheets() {
+    document.querySelectorAll(".a4-sheet").forEach((p, i) => {
+        p.querySelectorAll(".a4-page-num").forEach(n => n.remove());
+        if (pageNumConfig.pos !== "none") {
+            const num = document.createElement("div");
+            num.className = `a4-page-num ${pageNumConfig.pos} ${pageNumConfig.align}`;
+            num.contentEditable = "false";
+            num.textContent = String(i + 1);
+            p.appendChild(num);
+        }
+        if (pageOrientations[i] === "landscape") p.classList.add("landscape");
+    });
+}
+
+// 7. Загрузка картинок (URL или локальный файл) + Ресайз + Обтекание
+window.openImageInsertModal = () => document.getElementById("imageInsertModal").classList.add("open");
+window.confirmInsertImageUrl = () => {
+    const url = (document.getElementById("imgUrlInput").value || "").trim();
+    if (url) insertConstrainedImage(url);
+    document.getElementById("imageInsertModal").classList.remove("open");
+};
+window.handleLocalImageUpload = (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { insertConstrainedImage(reader.result); document.getElementById("imageInsertModal").classList.remove("open"); };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+};
+function insertConstrainedImage(src) {
+    restoreSavedSelection();
+    document.execCommand("insertHTML", false, `<img src="${src}" class="office-resizable-img" style="max-width:100%; height:auto; border-radius:6px;">`);
+    if (officeMode === "word") syncWordPagesFromDom();
+    saveCurrentOfficeDoc();
+}
+
+document.addEventListener("click", (e) => {
+    const img = e.target.closest(".a4-sheet img, #slideCanvas img");
+    const box = document.getElementById("imgFloatControls");
+    if (img && box) {
+        selectedImgEl = img;
+        const r = img.getBoundingClientRect();
+        box.style.left = r.left + "px"; box.style.top = r.top + "px";
+        box.style.width = r.width + "px"; box.style.height = r.height + "px";
+        box.classList.add("active");
+    } else if (!e.target.closest("#imgFloatControls")) {
+        box?.classList.remove("active");
+        document.getElementById("imgWrapMenu")?.classList.remove("open");
+        selectedImgEl = null;
+    }
+});
+window.toggleImgWrapMenu = (e) => { e.stopPropagation(); document.getElementById("imgWrapMenu")?.classList.toggle("open"); };
+window.applyImgWrap = (mode) => {
+    if (!selectedImgEl) return;
+    selectedImgEl.style.float = "none"; selectedImgEl.style.display = "inline-block";
+    selectedImgEl.style.position = "static"; selectedImgEl.style.zIndex = ""; selectedImgEl.style.margin = "4px";
+    if (mode === "left") { selectedImgEl.style.float = "left"; selectedImgEl.style.margin = "4px 14px 8px 0"; }
+    else if (mode === "right") { selectedImgEl.style.float = "right"; selectedImgEl.style.margin = "4px 0 8px 14px"; }
+    else if (mode === "topbottom") { selectedImgEl.style.display = "block"; selectedImgEl.style.margin = "10px auto"; }
+    else if (mode === "behind") { selectedImgEl.style.position = "relative"; selectedImgEl.style.zIndex = "-1"; }
+    else if (mode === "front") { selectedImgEl.style.position = "relative"; selectedImgEl.style.zIndex = "10"; }
+    document.getElementById("imgWrapMenu")?.classList.remove("open");
+    syncWordPagesFromDom(); saveCurrentOfficeDoc();
+};
+
+// Ресайз картинки за угол строго в пределах линейки
+document.getElementById("imgResizeCorner")?.addEventListener("mousedown", (e) => {
+    e.preventDefault(); e.stopPropagation();
+    if (!selectedImgEl) return;
+    const startX = e.clientX, startW = selectedImgEl.offsetWidth;
+    const maxW = selectedImgEl.closest(".a4-sheet, #slideCanvas")?.clientWidth - 40 || 600;
+    const onMove = (ev) => {
+        const nw = Math.max(60, Math.min(maxW, startW + (ev.clientX - startX)));
+        selectedImgEl.style.width = nw + "px";
+        const r = selectedImgEl.getBoundingClientRect();
+        const box = document.getElementById("imgFloatControls");
+        box.style.width = r.width + "px"; box.style.height = r.height + "px";
+    };
+    const onUp = () => { document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); syncWordPagesFromDom(); saveCurrentOfficeDoc(); };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+});
+
+// 8. Уравнения
+window.openEquationModal = () => document.getElementById("equationModal").classList.add("open");
+window.insertEquationTemplate = (type) => {
+    const map = {
+        quad: `x = (−b ± √(b² − 4ac)) / 2a`,
+        binom: `(x + a)ⁿ = Σ C(n, k) xᵏ aⁿ⁻ᵏ`,
+        circle: `A = πr²`,
+        taylor: `eˣ = 1 + x/1! + x²/2! + x³/3! + …`,
+        fourier: `f(x) = a₀ + Σ (aₙ cos(nπx/L) + bₙ sin(nπx/L))`,
+        frac: `a / b = c`
+    };
+    restoreSavedSelection();
+    document.execCommand("insertHTML", false, `<span class="office-eq-box" contenteditable="true">${map[type] || "y = f(x)"}</span>&nbsp;`);
+    document.getElementById("equationModal").classList.remove("open");
+    syncWordPagesFromDom(); saveCurrentOfficeDoc();
+};
+
+// 9. Активные стили + ссылка/удаление ссылки в ПКМ
+const ICO_LINK = `<svg class="ti" viewBox="0 0 24 24"><path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/></svg>`;
+const ICO_UNLINK = `<svg class="ti" viewBox="0 0 24 24"><path d="M17 22v-2"/><path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/><path d="M20 17h2"/><path d="M2 7h2"/><path d="M7 2v2"/></svg>`;
+
+document.addEventListener("contextmenu", () => {
+    setTimeout(() => {
+        ["Bold","Italic","Underline","Strike"].forEach(st => {
+            const cmd = st === "Strike" ? "strikeThrough" : st.toLowerCase();
+            document.getElementById("ctx" + st)?.classList.toggle("is-active", document.queryCommandState(cmd));
+        });
+        const sel = window.getSelection();
+        const inLink = !!sel?.anchorNode?.parentElement?.closest("a");
+        const lBtn = document.getElementById("ctxLinkBtn");
+        if (lBtn) {
+            lBtn.innerHTML = inLink ? ICO_UNLINK : ICO_LINK;
+            lBtn.title = inLink ? "Havolani öçiriş" : "Havola qöşiş";
+            lBtn.classList.toggle("is-active", inLink);
+            lBtn.dataset.unlink = inLink ? "1" : "0";
+        }
+    }, 5);
+});
+window.ctxToggleLink = () => {
+    const lBtn = document.getElementById("ctxLinkBtn");
+    restoreSavedSelection();
+    if (lBtn?.dataset.unlink === "1") document.execCommand("unlink");
+    else insertOfficeLink();
+    closeOfficeContextMenu();
+    syncWordPagesFromDom(); saveCurrentOfficeDoc();
+};
+
+// 10. Глобальный Ctrl+A по всем страницам Word + плашки форматов сохранения
+document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a" && officeMode === "word" && e.target.closest(".a4-sheet")) {
+        e.preventDefault();
+        const container = document.getElementById("wordPagesContainer");
+        const range = document.createRange();
+        range.selectNodeContents(container);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+});
+
+// Переопределяем плашки в меню сохранения (цветные бейджи как на основном сайте)
+const _origApplyModeUI = applyOfficeModeUI;
+applyOfficeModeUI = function(mode) {
+    _origApplyModeUI(mode);
+    const saveMenu = document.getElementById("officeSaveMenu");
+    if (mode === "word") {
+        saveMenu.innerHTML = `<button onclick="exportOfficeFile('doc')"><span class="ext-badge doc">.DOC</span> Word 97-2003</button><button onclick="exportOfficeFile('docx')"><span class="ext-badge docx">.DOCX</span> Word hujjat</button><button onclick="exportOfficeFile('rtf')"><span class="ext-badge rtf">.RTF</span> Rich Text</button><button onclick="exportOfficeFile('pdf')"><span class="ext-badge pdf">.PDF</span> PDF hujjat</button>`;
+    } else if (mode === "slides") {
+        saveMenu.innerHTML = `<button onclick="exportOfficeFile('ppt')"><span class="ext-badge ppt">.PPT</span> PowerPoint</button><button onclick="exportOfficeFile('pptx')"><span class="ext-badge pptx">.PPTX</span> Taqdimot</button><button onclick="exportOfficeFile('pdf')"><span class="ext-badge pdf">.PDF</span> PDF slaydlar</button>`;
+    } else {
+        saveMenu.innerHTML = `<button onclick="exportOfficeFile('xlsx')"><span class="ext-badge xlsx">.XLSX</span> Excel jadval</button><button onclick="exportOfficeFile('xls')"><span class="ext-badge xls">.XLS</span> Excel 97-2003</button><button onclick="exportOfficeFile('xml')"><span class="ext-badge xml">.XML</span> XML jadval</button><button onclick="exportOfficeFile('pdf')"><span class="ext-badge pdf">.PDF</span> PDF jadval</button>`;
+    }
+    applyPageNumbersToSheets();
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+    initColorPopovers();
+    setTimeout(applyPageNumbersToSheets, 150);
+});
