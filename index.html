@@ -3497,6 +3497,85 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         </div>
     </div>
 </div>
+
+<!-- === МОДАЛЬНОЕ ОКНО: KROSSVORD KONSTRUKTORI (PNG / SVG + AI) === -->
+<div class="weather-modal-backdrop" id="crosswordModalBackdrop" onclick="closeCrosswordModal(event)">
+    <div class="weather-modal-card cw-modal-card" onclick="event.stopPropagation()">
+        <div class="pdf-studio-header" style="margin-bottom: 14px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="cw-icon-badge">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                </div>
+                <div>
+                    <div class="pdf-studio-title">Krossvord konstruktori</div>
+                    <div class="pdf-studio-sub">Avtomatik setka, Öşa AI generatsiyasi va PNG / SVG eksport</div>
+                </div>
+            </div>
+            <button type="button" class="pdf-studio-close" onclick="closeCrosswordModal()">×</button>
+        </div>
+
+        <div class="cw-layout">
+            <!-- Левая колонка: управление и слова -->
+            <div class="cw-controls">
+                <!-- Генерация через AI -->
+                <div class="cw-ai-box">
+                    <input type="text" id="cwAiTopicInput" class="bib-custom-input" placeholder="Mavzu (masalan: Samarqand, IT, Tarix)..." autocomplete="off">
+                    <select id="cwAiCountSelect" class="bib-custom-input cw-count-select" title="Sözlar soni">
+                        <option value="8">8 ta</option>
+                        <option value="12" selected>12 ta</option>
+                        <option value="16">16 ta</option>
+                        <option value="20">20 ta</option>
+                    </select>
+                    <button type="button" class="curr-export-btn cw-ai-btn" id="cwAiGenBtn" onclick="generateCrosswordWithAI()">
+                        <span>✨ Öşa AI</span>
+                    </button>
+                </div>
+
+                <!-- Заголовок и переключатели -->
+                <div class="cw-meta-row">
+                    <input type="text" id="cwTitleInput" class="bib-custom-input" value="KROSSVORD" oninput="renderCrossword()" placeholder="Sarlavha">
+                    <div class="chart-seg-group" id="cwModeGroup">
+                        <button type="button" class="chart-seg-btn active" data-mode="empty" onclick="setCrosswordMode('empty')">Böş</button>
+                        <button type="button" class="chart-seg-btn" data-mode="solved" onclick="setCrosswordMode('solved')">Javobli</button>
+                    </div>
+                    <div class="chart-seg-group" id="cwThemeGroup">
+                        <button type="button" class="chart-seg-btn active" data-theme="light" onclick="setCrosswordTheme('light')">⚪</button>
+                        <button type="button" class="chart-seg-btn" data-theme="dark" onclick="setCrosswordTheme('dark')">⚫</button>
+                    </div>
+                </div>
+
+                <!-- Шапка списка слов -->
+                <div class="cw-list-head">
+                    <span>SÖZLAR VA SAVOLLAR (<b id="cwWordCount">0</b>)</span>
+                    <button type="button" class="cw-add-btn" onclick="addCrosswordRow()">+ Söz qöşiş</button>
+                </div>
+
+                <!-- Список слов без лимита -->
+                <div id="cwRowsContainer" class="cw-rows-list custom-scrollbar"></div>
+
+                <div id="cwStatusMsg" class="cw-status-msg"></div>
+            </div>
+
+            <!-- Правая колонка: предпросмотр -->
+            <div class="cw-preview-wrap custom-scrollbar" id="cwPreviewWrap">
+                <div id="cwSvgContainer" class="cw-svg-container"></div>
+            </div>
+        </div>
+
+        <div class="weather-modal-footer" style="margin-top: 14px;">
+            <span style="font-size:11.5px; color:#64748B; font-weight:600;">«Böş» — çop etiş uçun, «Javobli» — tekşiriş uçun</span>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button type="button" class="curr-export-btn" id="cwPngBtn" onclick="downloadCrosswordPNG()">
+                    <span>🖼️ PNG formatda</span>
+                </button>
+                <button type="button" class="curr-export-btn" onclick="downloadCrosswordSVG()">
+                    <span>📐 SVG formatda</span>
+                </button>
+                <button type="button" class="weather-modal-close" onclick="closeCrosswordModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
+</div>
     
 <!-- === 20-20-20 QOIDASI (SOG'LOM KO'ZLAR) === -->
 <div id="eyeCareOverlay" class="eye-care-overlay">
