@@ -1706,3 +1706,121 @@ window.openOfficeStatsModal = () => {
 
 document.addEventListener("input", updateOfficeLiveStats);
 document.addEventListener("DOMContentLoaded", () => setTimeout(updateOfficeLiveStats, 250));
+
+// === ФИКС ПОЗИЦИИ ВЕРТИКАЛЬНОЙ И ГОРИЗОНТАЛЬНОЙ ЛИНЕЕК ===
+function syncFixedHRulerTop() {
+    const topbar = document.querySelector(".office-topbar");
+    const hruler = document.querySelector(".word-ruler-top-row.sticky-ruler");
+    if (topbar && hruler) {
+        hruler.style.top = topbar.offsetHeight + "px";
+        hruler.style.transform = `translateX(-50%) scale(${officeZoom})`;
+    }
+}
+
+// Переопределяем привязку вертикальной линейки: считаем строго от 1-й страницы
+syncActivePageAndVRuler = function(pageEl) {
+    if (!pageEl) return;
+    const idx = parseInt(pageEl.dataset.pageIndex, 10);
+    if (isNaN(idx)) return;
+    activeWordPageIdx = idx;
+
+    const firstPage = document.querySelector(".a4-sheet");
+    const vwrap = document.getElementById("wordVRulerWrap");
+    if (vwrap && firstPage) {
+        const relTop = Math.max(0, pageEl.offsetTop - firstPage.offsetTop);
+        vwrap.style.transform = `translateY(${relTop}px)`;
+    }
+
+    const isLand = pageEl.classList.contains("landscape");
+    if ((isLand && currentDocWidthMm !== 297) || (!isLand && currentDocWidthMm !== 210)) {
+        rebuildRulersForOrientation(isLand);
+    }
+
+    const el = document.getElementById("officePageCounter");
+    if (el && officeMode === "word") el.textContent = `Sahifa ${activeWordPageIdx + 1} / ${wordPages.length}`;
+    syncFixedHRulerTop();
+};
+
+// Обновляем позицию горизонтальной линейки при зуме и ресайзе окна
+const _origZoomForRuler = window.adjustOfficeZoom;
+window.adjustOfficeZoom = function(d) {
+    _origZoomForRuler(d);
+    syncFixedHRulerTop();
+};
+
+window.addEventListener("resize", syncFixedHRulerTop);
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => {
+        syncFixedHRulerTop();
+        const firstPage = document.querySelector(".a4-sheet");
+        if (firstPage) syncActivePageAndVRuler(firstPage);
+    }, 150);
+});
+
+// === ФИКС КНОПОК + У ТАБЛИЦ (НЕ ИСЧЕЗАЮТ ПРИ НАВЕДЕНИИ) ===
+(function initRockSolidTablePlusButtons() {
+    let activeTbl = null;
+    let hideTimer = null;
+
+    function positionAndShow(tbl) {
+        const rowBtn = document.getElementById("tblAddRowBtn");
+        const colBtn = document.getElementById("tblAddColBtn");
+        if (!tbl || !rowBtn || !colBtn) return;
+
+        clearTimeout(hideTimer);
+        activeTbl = tbl;
+        hoveredWordTable = tbl;
+
+        const r = tbl.getBoundingClientRect();
+        rowBtn.style.left = (r.left + r.width / 2 - 12) + "px";
+        rowBtn.style.top = (r.bottom + 4) + "px";
+        colBtn.style.left = (r.right + 4) + "px";
+        colBtn.style.top = (r.top + r.height / 2 - 12) + "px";
+
+        rowBtn.classList.add("tbl-plus-visible");
+        colBtn.classList.add("tbl-plus-visible");
+    }
+
+    function scheduleHide() {
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+            document.getElementById("tblAddRowBtn")?.classList.remove("tbl-plus-visible");
+            document.getElementById("tblAddColBtn")?.classList.remove("tbl-plus-visible");
+        }, 300);
+    }
+
+    document.addEventListener("mousemove", (e) => {
+        const tbl = e.target.closest(".a4-sheet .word-table");
+        if (tbl) {
+            positionAndShow(tbl);
+            return;
+        }
+        if (e.target.closest(".tbl-float-plus")) {
+            clearTimeout(hideTimer);
+            return;
+        }
+        if (activeTbl) {
+            const r = activeTbl.getBoundingClientRect();
+            const inZone = e.clientX >= r.left - 16 && e.clientX <= r.right + 48 &&
+                           e.clientY >= r.top - 16 && e.clientY <= r.bottom + 48;
+            if (inZone) {
+                clearTimeout(hideTimer);
+            } else {
+                scheduleHide();
+            }
+        }
+    });
+
+    // После добавления строки/столбца сразу обновляем позицию кнопок
+    const _oldAddRow = window.addWordTableRow;
+    window.addWordTableRow = () => {
+        if (_oldAddRow) _oldAddRow();
+        if (activeTbl) positionAndShow(activeTbl);
+    };
+
+    const _oldAddCol = window.addWordTableCol;
+    window.addWordTableCol = () => {
+        if (_oldAddCol) _oldAddCol();
+        if (activeTbl) positionAndShow(activeTbl);
+    };
+})();
