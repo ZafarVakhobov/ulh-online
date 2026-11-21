@@ -2717,6 +2717,26 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                 </div>
                 
             </div>
+
+             <!-- 4.4. Izohli luğat -->
+<div class="asmr-toggle-row" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 12px; transition: all 0.2s; margin-top: 8px;" onclick="closeThemeStudioPanel(); openIzohModal(event);">
+                
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="color: #0284C7; display: flex; align-items: center; justify-content: center; width: 24px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <span style="font-size: 13.5px; font-weight: 800; color: #1E293B;" class="asmr-title-text">Izohli luğat</span>
+                        <span style="font-size: 11px; color: #64748B; font-weight: 600;">Sözlarning ma'nosi (izoh.uz + AI)</span>
+                    </div>
+                </div>
+                
+                <div class="alpha-rules-trigger" style="margin: 0; pointer-events: none; box-shadow: none;">
+                    <span>Oçiş</span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+                
+            </div>
             
         </div>
         
@@ -3440,6 +3460,40 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                 </button>
                 <button type="button" class="weather-modal-close" onclick="closeMindmapModal()">Yopiş</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- === МОДАЛЬНОЕ ОКНО: IZOHLI LUĞAT (izoh.uz + AI) === -->
+<div class="weather-modal-backdrop" id="izohModalBackdrop" onclick="closeIzohModal(event)">
+    <div class="weather-modal-card izoh-modal-card" onclick="event.stopPropagation()">
+        <div class="pdf-studio-header" style="margin-bottom: 14px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="izoh-icon-badge">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+                <div>
+                    <div class="pdf-studio-title">Izohli luğat</div>
+                    <div class="pdf-studio-sub">izoh.uz bazasi va AI yordamida sözlar ma'nosi</div>
+                </div>
+            </div>
+            <button type="button" class="pdf-studio-close" onclick="closeIzohModal()">×</button>
+        </div>
+
+        <form class="izoh-search-bar" onsubmit="searchIzohWord(event)">
+            <input type="text" id="izohSearchInput" class="bib-custom-input" placeholder="Sözni kiriting (masalan: tafakkur, laqab, kreativ)..." autocomplete="off">
+            <button type="submit" class="curr-export-btn" id="izohSearchBtn">Qidiriş</button>
+        </form>
+
+        <div id="izohResultBox" class="izoh-result-box custom-scrollbar">
+            <div class="izoh-placeholder">
+                Istalgan özbekça sözni kiriting. Avval <b>izoh.uz</b> bazasidan qidiriladi, topilmasa <b>Öşa AI</b> darhol izohlab beradi.
+            </div>
+        </div>
+
+        <div class="weather-modal-footer" style="margin-top: 14px;">
+            <span style="font-size:11.5px; color:#64748B; font-weight:600;">Yangi lotin, eski lotin yoki kirillda yozişingiz mumkin</span>
+            <button type="button" class="weather-modal-close" onclick="closeIzohModal()">Yopiş</button>
         </div>
     </div>
 </div>
