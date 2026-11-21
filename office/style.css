@@ -880,3 +880,114 @@ body.dark-mode .word-ruler-top-row.sticky-ruler {
     display: inline-flex !important;
     pointer-events: auto !important;
 }
+
+
+/* === ФИКС Z-INDEX МОДАЛОК И КНОПКИ PRIMARY В ТЁМНОЙ ТЕМЕ === */
+body.office-body .weather-modal-backdrop {
+    z-index: 10050 !important;
+}
+body.dark-mode .office-btn.primary {
+    background: #0284C7 !important;
+    border-color: #0284C7 !important;
+    color: #FFFFFF !important;
+}
+body.dark-mode .office-btn.primary:hover {
+    background: #0369A1 !important;
+}
+
+/* === КРУГЛЫЕ КНОПКИ ВЫБОРА ЦВЕТА БЕЗ ОБВОДКИ (ГРАФИКИ И ТАБЛИЦЫ) === */
+.office-round-color {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 28px !important;
+    height: 28px !important;
+    border: none !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    background: transparent !important;
+    cursor: pointer;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+    transition: transform 0.15s ease;
+}
+.office-round-color:hover { transform: scale(1.1); }
+.office-round-color::-webkit-color-swatch-wrapper { padding: 0; }
+.office-round-color::-webkit-color-swatch { border: none; border-radius: 50%; }
+.office-round-color::-moz-color-swatch { border: none; border-radius: 50%; }
+
+/* === КРАСИВОЕ ОКНО ВСТАВКИ ТАБЛИЦЫ === */
+.tb-field-lbl {
+    font-size: 12px; font-weight: 700; display: flex; flex-direction: column; gap: 5px; color: #475569;
+}
+.tb-color-pill {
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+    border-radius: 12px; border: 1px solid #E2E8F0; background: #F8FAFC;
+    cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease;
+}
+.tb-color-pill:hover { border-color: #0284C7; background: #F0F9FF; }
+.tb-color-title { font-size: 12px; font-weight: 800; color: #0F172A; line-height: 1.2; }
+.tb-color-hex { font-size: 11px; font-weight: 700; color: #64748B; margin-top: 2px; }
+
+.tb-options-box {
+    display: flex; flex-direction: column; gap: 8px;
+    background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 12px;
+}
+.tb-check-row {
+    display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 700;
+    color: #1E293B; cursor: pointer;
+}
+.tb-check-row input[type="checkbox"] {
+    width: 16px; height: 16px; accent-color: #0284C7; cursor: pointer; flex-shrink: 0;
+}
+
+/* === КНОПКИ ОРИЕНТАЦИИ СТРАНИЦЫ === */
+.ps-orient-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 11px 12px; border-radius: 12px; border: 1.5px solid #E2E8F0;
+    background: #F8FAFC; color: #334155; font-weight: 700; font-size: 12.5px;
+    cursor: pointer; transition: all 0.15s ease;
+}
+.ps-orient-btn:hover { border-color: #94A3B8; }
+.ps-orient-btn.active { border-color: #0284C7; background: #E0F2FE; color: #0284C7; }
+
+/* === ТЁМНАЯ ТЕМА: ОРИЕНТАЦИЯ, ФОРМУЛЫ, ТАБЛИЦЫ, ГРАФИКИ, CROP === */
+body.dark-mode .ps-orient-btn {
+    background: #1E293B; border-color: #334155; color: #CBD5E1;
+}
+body.dark-mode .ps-orient-btn:hover {
+    border-color: #475569; color: #F8FAFC;
+}
+body.dark-mode .ps-orient-btn.active {
+    background: rgba(56, 189, 248, 0.16); border-color: #38BDF8; color: #38BDF8;
+}
+
+body.dark-mode .eq-tpl-btn {
+    background: #1E293B; border-color: #334155; color: #F8FAFC;
+}
+body.dark-mode .eq-tpl-btn:hover {
+    background: rgba(56, 189, 248, 0.14); border-color: #38BDF8;
+}
+body.dark-mode .eq-tpl-btn small { color: #94A3B8; }
+body.dark-mode .eq-tpl-btn span { color: #F8FAFC; }
+
+body.dark-mode .tb-field-lbl { color: #CBD5E1; }
+body.dark-mode .tb-color-pill,
+body.dark-mode .tb-options-box {
+    background: #1E293B; border-color: #334155;
+}
+body.dark-mode .tb-color-pill:hover {
+    border-color: #38BDF8; background: rgba(56, 189, 248, 0.1);
+}
+body.dark-mode .tb-color-title,
+body.dark-mode .tb-check-row { color: #F8FAFC; }
+body.dark-mode .tb-color-hex { color: #94A3B8; }
+
+body.dark-mode #ocPreview,
+body.dark-mode #imgCropModal canvas {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+}
+body.dark-mode #imgCropModal div[style*="background:#F8FAFC"] {
+    background: #1E293B !important;
+}
