@@ -12581,13 +12581,17 @@ window.searchIzohWord = async function(event) {
         const res = await fetch(`${IZOH_WORKER_URL}?word=${encodeURIComponent(word)}`);
         const data = await res.json();
 
-        if (data && data.found && data.definition) {
+        if (data && data.found && (data.definitionHtml || data.definition)) {
+            const contentHtml = data.definitionHtml
+                ? `<div class="izoh-rich-html">${data.definitionHtml}</div>`
+                : `<div class="izoh-def-text">${escapeHTML(data.definition)}</div>`;
+
             box.innerHTML = `
                 <div class="izoh-result-head">
                     <span class="izoh-word-title">${escapeHTML(word)}</span>
                     <span class="izoh-badge dict">📖 izoh.uz</span>
                 </div>
-                <div class="izoh-def-text">${escapeHTML(data.definition)}</div>
+                ${contentHtml}
                 <a href="${data.sourceUrl}" target="_blank" rel="noopener" class="izoh-source-link">izoh.uz saytida töliq köriş →</a>
             `;
             return;
