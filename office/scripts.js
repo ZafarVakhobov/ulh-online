@@ -122,15 +122,20 @@ function applyOfficeModeUI(mode) {
 
     const saveMenu = document.getElementById("officeSaveMenu");
     const fileInput = document.getElementById("officeFileInput");
+
+    const icoDoc = `<svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/></svg>`;
+    const icoSheet = `<svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z"/><path d="M3 10h18"/><path d="M10 3v18"/></svg>`;
+    const icoSlide = `<svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M3 4l18 0"/><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10"/><path d="M12 16l0 4"/><path d="M9 20l6 0"/></svg>`;
+
     if (mode === "word") {
         fileInput.accept = ".doc,.docx,.rtf,.txt,.html";
-        saveMenu.innerHTML = `<button onclick="exportOfficeFile('doc')">📄 .DOC</button><button onclick="exportOfficeFile('docx')">📘 .DOCX</button><button onclick="exportOfficeFile('rtf')">📝 .RTF</button><button onclick="exportOfficeFile('pdf')">📕 .PDF</button>`;
+        saveMenu.innerHTML = `<button onclick="exportOfficeFile('doc')">${icoDoc} .DOC</button><button onclick="exportOfficeFile('docx')">${icoDoc} .DOCX</button><button onclick="exportOfficeFile('rtf')">${icoDoc} .RTF</button><button onclick="exportOfficeFile('pdf')">${icoDoc} .PDF</button>`;
     } else if (mode === "slides") {
         fileInput.accept = ".ppt,.pptx,.html";
-        saveMenu.innerHTML = `<button onclick="exportOfficeFile('ppt')">📙 .PPT</button><button onclick="exportOfficeFile('pptx')">📕 .PPTX</button><button onclick="exportOfficeFile('pdf')">📄 .PDF</button>`;
+        saveMenu.innerHTML = `<button onclick="exportOfficeFile('ppt')">${icoSlide} .PPT</button><button onclick="exportOfficeFile('pptx')">${icoSlide} .PPTX</button><button onclick="exportOfficeFile('pdf')">${icoDoc} .PDF</button>`;
     } else {
         fileInput.accept = ".xlsx,.xls,.xml,.csv";
-        saveMenu.innerHTML = `<button onclick="exportOfficeFile('xlsx')">📗 .XLSX</button><button onclick="exportOfficeFile('xls')">📊 .XLS</button><button onclick="exportOfficeFile('xml')">🧾 .XML</button><button onclick="exportOfficeFile('pdf')">📕 .PDF</button>`;
+        saveMenu.innerHTML = `<button onclick="exportOfficeFile('xlsx')">${icoSheet} .XLSX</button><button onclick="exportOfficeFile('xls')">${icoSheet} .XLS</button><button onclick="exportOfficeFile('xml')">${icoDoc} .XML</button><button onclick="exportOfficeFile('pdf')">${icoDoc} .PDF</button>`;
     }
 }
 
@@ -522,7 +527,7 @@ window.ctxAiAction = async function(type) {
     closeOfficeContextMenu();
     if (!lastCtxSelectedText) return;
     const modal = document.getElementById("officeQuickResultModal");
-    document.getElementById("officeQuickTitle").textContent = type === "synonym" ? `✨ Sinonim: ${lastCtxSelectedText}` : `🌐 Tarjima`;
+    document.getElementById("officeQuickTitle").textContent = type === "synonym" ? `Sinonim: ${lastCtxSelectedText}` : `Tarjima`;
     document.getElementById("officeQuickBody").textContent = "Yuklanmoqda...";
     modal.classList.add("open");
 
@@ -542,7 +547,7 @@ window.ctxIzohAction = async function() {
     if (!lastCtxSelectedText) return;
     const word = typeof lemmatizeUzbekWord === "function" ? lemmatizeUzbekWord(lastCtxSelectedText) : lastCtxSelectedText;
     const modal = document.getElementById("officeQuickResultModal");
-    document.getElementById("officeQuickTitle").textContent = `📖 Izohli luğat: ${word}`;
+    document.getElementById("officeQuickTitle").textContent = `Izohli luğat: ${word}`;
     document.getElementById("officeQuickBody").textContent = "izoh.uz bazasidan qidirilmoqda...";
     modal.classList.add("open");
     const res = await fetch(`${OFFICE_IZOH_URL}?word=${encodeURIComponent(word)}`);
@@ -727,7 +732,7 @@ function renderOfficeOshaHistory() {
     box.innerHTML = officeOshaChatHist.slice(-15).map((m, idx) => `
         <div class="office-osha-msg ${m.role === "user" ? "user" : "bot"}">
             <div>${String(m.content || "").replace(/\n/g, "<br>")}</div>
-            ${m.role !== "user" ? `<button type="button" class="office-osha-insert-btn" onclick="insertOshaTextToOffice(${idx})">✏️ Tahrirlaş</button>` : ""}
+            ${m.role !== "user" ? `<button type="button" class="office-osha-insert-btn" onclick="insertOshaTextToOffice(${idx})"><svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/></svg> Tahrirlaş</button>` : ""}
         </div>`).join("");
     box.scrollTop = box.scrollHeight;
 }
