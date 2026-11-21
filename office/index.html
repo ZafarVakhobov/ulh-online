@@ -39,15 +39,30 @@
             </div>
 
             <div class="office-top-actions">
-                <button type="button" class="office-btn accent" onclick="transliterateWholeDocument()" title="Butun hujjatni yangi özbek alifbosiga ögiriş">ÖĞŞÇ</button>
-                <button type="button" class="office-btn" onclick="openOfficeHistoryModal()" title="Matn tarixi">🕒 Tarix</button>
-                <button type="button" id="officePlaySlideBtn" class="office-btn danger" style="display:none" onclick="startSlideshow()">▶ Taqdimot</button>
-                <button type="button" class="office-icon-btn" onclick="toggleDarkMode()" title="Kun / Tun rejimi">🌓</button>
-                <button type="button" class="office-btn minimize" onclick="minimizeOfficeToMain()" title="Asosiy sahifaga qaytiş">⬇ Yiğib qöyiş</button>
+                <button type="button" class="office-btn accent" onclick="transliterateWholeDocument()" title="Butun hujjatni yangi özbek alifbosiga ögiriş">
+                    <svg class="ti" viewBox="0 0 24 24"><path d="M4 5h7"/><path d="M9 3v2c0 4.418 -2.239 8 -5 8"/><path d="M5 9c0 2.144 2.952 3.908 6.7 4"/><path d="M12 20l4 -9l4 9"/><path d="M19.1 18h-6.2"/></svg>
+                    <span>ÖĞŞÇ</span>
+                </button>
+                <button type="button" class="office-btn" onclick="openOfficeHistoryModal()" title="Matn tarixi">
+                    <svg class="ti" viewBox="0 0 24 24"><path d="M12 8l0 4l2 2"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/></svg>
+                    <span>Tarix</span>
+                </button>
+                <button type="button" id="officePlaySlideBtn" class="office-btn danger" style="display:none" onclick="startSlideshow()">
+                    <svg class="ti" viewBox="0 0 24 24"><path d="M7 4v16l13 -8z"/></svg>
+                    <span>Taqdimot</span>
+                </button>
+                <button type="button" class="office-icon-btn office-theme-btn" onclick="toggleDarkMode()" title="Kun / Tun rejimi">
+                    <svg class="ti ti-moon" viewBox="0 0 24 24"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/></svg>
+                    <svg class="ti ti-sun" viewBox="0 0 24 24"><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/></svg>
+                </button>
+                <button type="button" class="office-btn minimize" onclick="minimizeOfficeToMain()" title="Asosiy sahifaga qaytiş">
+                    <svg class="ti" viewBox="0 0 24 24"><path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/></svg>
+                    <span>Yiğib qöyiş</span>
+                </button>
             </div>
         </div>
 
-        <!-- Лента с группами (как в МойОфис / Word) -->
+        <!-- Лента с группами (Tabler SVG Icons) -->
         <div class="office-ribbon" id="officeRibbon">
             <!-- Группа: Fayl -->
             <div class="ribbon-group">
@@ -55,15 +70,24 @@
                 <div class="ribbon-group-body col">
                     <input type="file" id="officeFileInput" style="display:none" onchange="handleOfficeFileOpen(event)">
                     <div class="ribbon-row">
-                        <button type="button" class="rb-btn" onclick="triggerOfficeFileOpen()" title="Oçiş">📂</button>
+                        <button type="button" class="rb-btn" onclick="triggerOfficeFileOpen()" title="Oçiş">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
                         <div class="office-dropdown-wrap" id="officeSaveWrap">
-                            <button type="button" class="rb-btn" onclick="toggleOfficeSaveMenu(event)" title="Saqlaş">💾▾</button>
+                            <button type="button" class="rb-btn save-trigger" onclick="toggleOfficeSaveMenu(event)" title="Saqlaş">
+                                <svg class="ti" viewBox="0 0 24 24"><path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/><path d="M12 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M14 4l0 4l-6 0l0 -4"/></svg>
+                                <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M6 9l6 6l6 -6"/></svg>
+                            </button>
                             <div class="office-dropdown-menu" id="officeSaveMenu"></div>
                         </div>
                     </div>
                     <div class="ribbon-row">
-                        <button type="button" class="rb-btn" onclick="printOfficeDocument()" title="Çop etiş">🖨️</button>
-                        <button type="button" class="rb-btn" id="rbNewPageBtn" onclick="addNewA4Page()" title="Yangi A4 sahifa">+📄</button>
+                        <button type="button" class="rb-btn" onclick="printOfficeDocument()" title="Çop etiş">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2"/><path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4"/><path d="M7 13m0 2a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2z"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" id="rbNewPageBtn" onclick="addNewA4Page()" title="Yangi A4 sahifa">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M12 11l0 6"/><path d="M9 14l6 0"/></svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -73,14 +97,26 @@
                 <div class="ribbon-group-title">Tahrir</div>
                 <div class="ribbon-group-body col">
                     <div class="ribbon-row">
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('cut')" title="Qirqiş">✂️</button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('copy')" title="Nusxalaş">📋</button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="ctxPaste()" title="Joylaş">📥</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('cut')" title="Qirqiş">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M6 7m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M6 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M8.6 8.6l10.4 10.4"/><path d="M8.6 15.4l10.4 -10.4"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('copy')" title="Nusxalaş">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"/><path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="ctxPaste()" title="Joylaş">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/></svg>
+                        </button>
                     </div>
                     <div class="ribbon-row">
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('undo')" title="Bekor qiliş">↶</button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('redo')" title="Qaytarış">↷</button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('removeFormat')" title="Formatni tozalaş">🧹</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('undo')" title="Bekor qiliş">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M9 14l-4 -4l4 -4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('redo')" title="Qaytariş">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M15 14l4 -4l-4 -4"/><path d="M19 10h-11a4 4 0 1 0 0 8h1"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('removeFormat')" title="Formatni tozalaş">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M17 15l4 4m0 -4l-4 4"/><path d="M7 6v-1h11v1"/><path d="M7 19l4 0"/><path d="M13 5l-4 14"/></svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -112,36 +148,60 @@
                         </select>
                     </div>
                     <div class="ribbon-row">
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('bold')" title="Qalin"><b>B</b></button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('italic')" title="Kursiv"><i>I</i></button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('underline')" title="Tagiga çiziş"><u>U</u></button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('strikeThrough')" title="Ustidan çiziş"><s>S</s></button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('bold')" title="Qalin">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M7 5h6a3.5 3.5 0 0 1 0 7h-6z"/><path d="M13 12h1a3.5 3.5 0 0 1 0 7h-7v-7"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('italic')" title="Kursiv">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M11 5l6 0"/><path d="M7 19l6 0"/><path d="M14 5l-4 14"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('underline')" title="Tagiga çiziş">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M7 5v5a5 5 0 0 0 10 0v-5"/><path d="M5 19h14"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('strikeThrough')" title="Ustidan çiziş">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M5 12l14 0"/><path d="M16 6.5a4 2 0 0 0 -4 -1.5h-1a3.5 3.5 0 0 0 0 7h2a3.5 3.5 0 0 1 0 7h-1.5a4 2 0 0 1 -4 -1.5"/></svg>
+                        </button>
                         <input type="color" id="officeForeColor" class="office-color-inp" value="#0F172A" onchange="applyOfficeColor('foreColor', this.value)" title="Matn rangi">
                         <input type="color" id="officeBackColor" class="office-color-inp" value="#FEF08A" onchange="applyOfficeColor('hiliteColor', this.value)" title="Fon rangi">
                     </div>
                 </div>
             </div>
 
-            <!-- Группа: Abzats (для Word и Slides) -->
+            <!-- Группа: Abzats -->
             <div class="ribbon-group" id="rbGroupParagraph">
                 <div class="ribbon-group-title">Abzats</div>
                 <div class="ribbon-group-body col">
                     <div class="ribbon-row">
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('insertUnorderedList')" title="Röyxat">•≡</button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyLeft')" title="Çapga">≡</button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyCenter')" title="Markazga">≣</button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyRight')" title="Öngga">≡</button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyFull')" title="Eniga">▤</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('insertUnorderedList')" title="Röyxat">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M9 6l11 0"/><path d="M9 12l11 0"/><path d="M9 18l11 0"/><path d="M5 6l0 .01"/><path d="M5 12l0 .01"/><path d="M5 18l0 .01"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyLeft')" title="Çapga">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M4 12l10 0"/><path d="M4 18l14 0"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyCenter')" title="Markazga">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M8 12l8 0"/><path d="M6 18l12 0"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyRight')" title="Öngga">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M10 12l10 0"/><path d="M6 18l14 0"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyFull')" title="Eniga">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M4 12l16 0"/><path d="M4 18l12 0"/></svg>
+                        </button>
                     </div>
                     <div class="ribbon-row">
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('insertOrderedList')" title="Raqamli röyxat">1.</button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('outdent')" title="Çapga suriş">⇤</button>
-                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('indent')" title="Öngga suriş">⇥</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('insertOrderedList')" title="Raqamli röyxat">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M11 6h9"/><path d="M11 12h9"/><path d="M12 18h8"/><path d="M4 16a2 2 0 1 1 4 0c0 .591 -.5 1 -1 1.5l-3 2.5h4"/><path d="M6 10v-6l-2 2"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('outdent')" title="Çapga suriş">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M20 6l-7 0"/><path d="M20 12l-9 0"/><path d="M20 18l-7 0"/><path d="M8 8l-4 4l4 4"/></svg>
+                        </button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('indent')" title="Öngga suriş">
+                            <svg class="ti" viewBox="0 0 24 24"><path d="M20 6l-11 0"/><path d="M20 12l-7 0"/><path d="M20 18l-11 0"/><path d="M4 8l4 4l-4 4"/></svg>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Группа: Uslub (для Word и Slides) -->
+            <!-- Группа: Uslub -->
             <div class="ribbon-group" id="rbGroupStyles">
                 <div class="ribbon-group-title">Uslub</div>
                 <div class="ribbon-group-body">
@@ -161,29 +221,68 @@
                 <div class="ribbon-group-title">Ma'lumotlar va Formulalar</div>
                 <div class="ribbon-group-body col">
                     <div class="ribbon-row">
-                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('SUM')" title="Avtosumma">Σ Summa</button>
-                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('AVG')" title="Örtaça qiymat">x̄ Örtaça</button>
-                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('COUNT')" title="Soni"># Soni</button>
-                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('MAX')" title="Maksimum">↑ Max</button>
-                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('MIN')" title="Minimum">↓ Min</button>
+                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('SUM')">
+                            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M18 16v2a1 1 0 0 1 -1 1h-11l6 -7l-6 -7h11a1 1 0 0 1 1 1v2"/></svg>
+                            <span>Summa</span>
+                        </button>
+                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('AVG')">
+                            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M3 21l18 -18"/><path d="M12 12m-8 0a8 8 0 1 0 16 0a8 8 0 1 0 -16 0"/></svg>
+                            <span>Örtaça</span>
+                        </button>
+                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('COUNT')">
+                            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M5 9l14 0"/><path d="M5 15l14 0"/><path d="M11 4l-4 16"/><path d="M17 4l-4 16"/></svg>
+                            <span>Soni</span>
+                        </button>
+                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('MAX')">
+                            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M12 5l0 14"/><path d="M18 11l-6 -6"/><path d="M6 11l6 -6"/></svg>
+                            <span>Max</span>
+                        </button>
+                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('MIN')">
+                            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/></svg>
+                            <span>Min</span>
+                        </button>
                     </div>
                     <div class="ribbon-row">
-                        <button type="button" class="rb-btn wide" onclick="sortTableByActiveCol(true)">A→Z Saralaş</button>
-                        <button type="button" class="rb-btn wide" onclick="sortTableByActiveCol(false)">Z→A Saralaş</button>
-                        <button type="button" class="rb-btn wide" onclick="addTableRow()">+ Qator</button>
-                        <button type="button" class="rb-btn wide" onclick="addTableCol()">+ Ustun</button>
-                        <button type="button" class="rb-btn wide" onclick="clearActiveTableCell()">🧹 Tozalaş</button>
+                        <button type="button" class="rb-btn wide" onclick="sortTableByActiveCol(true)">
+                            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 6l7 0"/><path d="M4 12l7 0"/><path d="M4 18l9 0"/><path d="M15 9l3 -3l3 3"/><path d="M18 6l0 12"/></svg>
+                            <span>A→Z</span>
+                        </button>
+                        <button type="button" class="rb-btn wide" onclick="sortTableByActiveCol(false)">
+                            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 6l9 0"/><path d="M4 12l7 0"/><path d="M4 18l7 0"/><path d="M15 15l3 3l3 -3"/><path d="M18 6l0 12"/></svg>
+                            <span>Z→A</span>
+                        </button>
+                        <button type="button" class="rb-btn wide" onclick="addTableRow()">
+                            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M12 5l0 14"/><path d="M5 12l14 0"/></svg>
+                            <span>Qator</span>
+                        </button>
+                        <button type="button" class="rb-btn wide" onclick="addTableCol()">
+                            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M12 5l0 14"/><path d="M5 12l14 0"/></svg>
+                            <span>Ustun</span>
+                        </button>
+                        <button type="button" class="rb-btn wide" onclick="clearActiveTableCell()">
+                            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3"/><path d="M18 13.3l-6.3 -6.3"/></svg>
+                            <span>Tozalaş</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Группа: Qöşiş (Вставка: Таблица, Картинка, График, Ссылка) -->
+            <!-- Группа: Qöşiş -->
             <div class="ribbon-group">
                 <div class="ribbon-group-title">Qöşiş</div>
                 <div class="ribbon-group-body">
-                    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="insertOfficeImage()" title="Rasm qöşiş"><span>🖼️</span><small>Rasm</small></button>
-                    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="openOfficeChartModal()" title="Grafik yaratiş va qöşiş"><span>📊</span><small>Grafik</small></button>
-                    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="insertOfficeLink()" title="Havola qöşiş"><span>🔗</span><small>Havola</small></button>
+                    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="insertOfficeImage()" title="Rasm qöşiş">
+                        <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/></svg>
+                        <small>Rasm</small>
+                    </button>
+                    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="openOfficeChartModal()" title="Grafik yaratiş va qöşiş">
+                        <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M4 20h14"/></svg>
+                        <small>Grafik</small>
+                    </button>
+                    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="insertOfficeLink()" title="Havola qöşiş">
+                        <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/></svg>
+                        <small>Havola</small>
+                    </button>
                 </div>
             </div>
         </div>
@@ -192,13 +291,22 @@
     <!-- === ЛЕВОЕ ПЛАВАЮЩЕЕ МЕНЮ ПЕРЕКЛЮЧЕНИЯ РЕЖИМОВ === -->
     <aside class="office-mode-dock">
         <button type="button" class="mode-dock-btn active" data-mode="word" onclick="switchOfficeMode('word')" title="ULH Word">
-            <span class="mode-dot word">W</span><span>Word</span>
+            <span class="mode-dot word">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/></svg>
+            </span>
+            <span>Word</span>
         </button>
         <button type="button" class="mode-dock-btn" data-mode="slides" onclick="switchOfficeMode('slides')" title="ULH Slides">
-            <span class="mode-dot slides">S</span><span>Slides</span>
+            <span class="mode-dot slides">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M3 4l18 0"/><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10"/><path d="M12 16l0 4"/><path d="M9 20l6 0"/><path d="M8 12l3 -3l2 2l3 -3"/></svg>
+            </span>
+            <span>Slides</span>
         </button>
         <button type="button" class="mode-dock-btn" data-mode="tables" onclick="switchOfficeMode('tables')" title="ULH Tables">
-            <span class="mode-dot tables">T</span><span>Tables</span>
+            <span class="mode-dot tables">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z"/><path d="M3 10h18"/><path d="M10 3v18"/></svg>
+            </span>
+            <span>Tables</span>
         </button>
     </aside>
 
@@ -206,16 +314,14 @@
     <main class="office-stage" id="officeStage">
         <div class="office-zoom-wrapper" id="officeZoomWrapper">
 
-            <!-- 1. ULH WORD (ЛИНЕЙКА + МНОГОСТРАНИЧНЫЙ А4) -->
+            <!-- 1. ULH WORD -->
             <section id="paneWord" class="office-pane active">
                 <div class="word-doc-column">
-                    <!-- Горизонтальная линейка (только в Word) -->
                     <div class="word-ruler-wrap" id="wordRulerWrap" title="Çap va öng çegaralarni suriş">
                         <div class="word-ruler-ticks" id="wordRulerTicks"></div>
                         <div class="ruler-handle left" id="rulerLeftHandle" title="Çap çegara (mm)"></div>
                         <div class="ruler-handle right" id="rulerRightHandle" title="Öng çegara (mm)"></div>
                     </div>
-                    <!-- Контейнер страниц А4 -->
                     <div id="wordPagesContainer" class="word-pages-container"></div>
                 </div>
             </section>
@@ -261,17 +367,21 @@
         </div>
     </main>
 
-    <!-- === НИЖНЯЯ СТРОКА СОСТОЯНИЯ (СЧЁТЧИК СТРАНИЦ + ЗУМ) === -->
+    <!-- === НИЖНЯЯ СТРОКА СОСТОЯНИЯ === -->
     <footer class="office-statusbar">
         <span id="officePageCounter">Sahifa 1 / 1</span>
         <div class="office-zoom-pill">
-            <button type="button" onclick="adjustOfficeZoom(-0.1)">−</button>
+            <button type="button" onclick="adjustOfficeZoom(-0.1)" title="Kiçraytiriş">
+                <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M5 12l14 0"/></svg>
+            </button>
             <span id="officeZoomLabel">100%</span>
-            <button type="button" onclick="adjustOfficeZoom(0.1)">+</button>
+            <button type="button" onclick="adjustOfficeZoom(0.1)" title="Kattalaştiriş">
+                <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M12 5l0 14"/><path d="M5 12l14 0"/></svg>
+            </button>
         </div>
     </footer>
 
-    <!-- === УМНАЯ ВСТАВКА (ТОЛЬКО УЗБЕКСКИЙ) === -->
+    <!-- === УМНАЯ ВСТАВКА === -->
     <div id="smartPasteToast" class="smart-paste-toast">
         <span>Matnni yangi özbek alifbosiga (Ö, Ğ, Ş, Ç) ögiraylikmi?</span>
         <div class="smart-paste-actions">
@@ -280,29 +390,57 @@
         </div>
     </div>
 
-    <!-- === ГОРИЗОНТАЛЬНОЕ КОНТЕКСТНОЕ МЕНЮ ПКМ (КАК НА СКРИНШОТЕ №3) === -->
+    <!-- === ГОРИЗОНТАЛЬНОЕ КОНТЕКСТНОЕ МЕНЮ ПКМ (TABLER ICONS) === -->
     <div id="officeContextMenu" class="office-pill-ctx">
-        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('bold')" title="Qalin"><b>B</b></button>
-        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('italic')" title="Kursiv"><i>I</i></button>
-        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('underline')" title="Tagiga çiziş"><u>U</u></button>
-        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('strikeThrough')" title="Ustidan çiziş"><s>S</s></button>
-        <button type="button" onmousedown="event.preventDefault()" onclick="insertOfficeLink()" title="Havola">🔗</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('bold')" title="Qalin">
+            <svg class="ti" viewBox="0 0 24 24"><path d="M7 5h6a3.5 3.5 0 0 1 0 7h-6z"/><path d="M13 12h1a3.5 3.5 0 0 1 0 7h-7v-7"/></svg>
+        </button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('italic')" title="Kursiv">
+            <svg class="ti" viewBox="0 0 24 24"><path d="M11 5l6 0"/><path d="M7 19l6 0"/><path d="M14 5l-4 14"/></svg>
+        </button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('underline')" title="Tagiga çiziş">
+            <svg class="ti" viewBox="0 0 24 24"><path d="M7 5v5a5 5 0 0 0 10 0v-5"/><path d="M5 19h14"/></svg>
+        </button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('strikeThrough')" title="Ustidan çiziş">
+            <svg class="ti" viewBox="0 0 24 24"><path d="M5 12l14 0"/><path d="M16 6.5a4 2 0 0 0 -4 -1.5h-1a3.5 3.5 0 0 0 0 7h2a3.5 3.5 0 0 1 0 7h-1.5a4 2 0 0 1 -4 -1.5"/></svg>
+        </button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="insertOfficeLink()" title="Havola">
+            <svg class="ti" viewBox="0 0 24 24"><path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/></svg>
+        </button>
         <span class="ctx-sep"></span>
-        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('copy')" title="Nusxalaş">📋</button>
-        <button type="button" onmousedown="event.preventDefault()" onclick="ctxPaste()" title="Joylaş">📥</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('copy')" title="Nusxalaş">
+            <svg class="ti" viewBox="0 0 24 24"><path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"/><path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"/></svg>
+        </button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="ctxPaste()" title="Joylaş">
+            <svg class="ti" viewBox="0 0 24 24"><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/></svg>
+        </button>
         <span id="ctxSelSep" class="ctx-sep" style="display:none;"></span>
-        <button type="button" id="ctxTranslateBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxAiAction('translate')" title="Tarjima">🌐 Tarjima</button>
-        <button type="button" id="ctxSynonymBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxAiAction('synonym')" title="Sinonim">✨ Sinonim</button>
-        <button type="button" id="ctxIzohBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxIzohAction()" title="Izohli luğat">📖 Izoh</button>
+        <button type="button" id="ctxTranslateBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxAiAction('translate')" title="Tarjima">
+            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 5h7"/><path d="M9 3v2c0 4.418 -2.239 8 -5 8"/><path d="M5 9c0 2.144 2.952 3.908 6.7 4"/><path d="M12 20l4 -9l4 9"/><path d="M19.1 18h-6.2"/></svg>
+            <span>Tarjima</span>
+        </button>
+        <button type="button" id="ctxSynonymBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxAiAction('synonym')" title="Sinonim">
+            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z"/></svg>
+            <span>Sinonim</span>
+        </button>
+        <button type="button" id="ctxIzohBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxIzohAction()" title="Izohli luğat">
+            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12z"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/></svg>
+            <span>Izoh</span>
+        </button>
         <span class="ctx-sep"></span>
-        <button type="button" onclick="closeOfficeContextMenu()" title="Yopiş">✕</button>
+        <button type="button" onclick="closeOfficeContextMenu()" title="Yopiş">
+            <svg class="ti" viewBox="0 0 24 24"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></svg>
+        </button>
     </div>
 
-    <!-- === МОДАЛКА: КОНСТРУКТОР ГРАФИКОВ (ВСТАВКА ВО ВСЕ 3 ОФИСА) === -->
+    <!-- === МОДАЛКА: КОНСТРУКТОР ГРАФИКОВ === -->
     <div id="officeChartModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
         <div class="weather-modal-card" style="max-width:560px; padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <b style="font-size:16px;">📊 Grafik yaratish va hujjatga qöşiş</b>
+                <b style="font-size:16px; display:inline-flex; align-items:center; gap:8px;">
+                    <svg class="ti" viewBox="0 0 24 24"><path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M4 20h14"/></svg>
+                    Grafik yaratiş va qöşiş
+                </b>
                 <button type="button" class="pdf-studio-close" onclick="document.getElementById('officeChartModal').classList.remove('open')">×</button>
             </div>
             <div style="display:flex; gap:8px; margin-bottom:10px;">
@@ -337,7 +475,10 @@
     <div id="officeHistoryModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
         <div class="weather-modal-card" style="max-width:560px; padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <b style="font-size:16px;">🕒 Hujjat tarixi</b>
+                <b style="font-size:16px; display:inline-flex; align-items:center; gap:8px;">
+                    <svg class="ti" viewBox="0 0 24 24"><path d="M12 8l0 4l2 2"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/></svg>
+                    Hujjat tarixi
+                </b>
                 <button type="button" class="pdf-studio-close" onclick="document.getElementById('officeHistoryModal').classList.remove('open')">×</button>
             </div>
             <input type="range" id="officeHistSlider" min="0" max="0" value="0" style="width:100%;" oninput="previewOfficeHistory()">
@@ -354,16 +495,17 @@
     <div id="slideshowOverlay" class="slideshow-overlay">
         <div id="slideshowStage" class="slideshow-stage"></div>
         <div class="slideshow-controls">
-            <button type="button" onclick="navSlideshow(-1)">←</button>
+            <button type="button" onclick="navSlideshow(-1)"><svg class="ti" viewBox="0 0 24 24"><path d="M5 12l14 0"/><path d="M5 12l6 6"/><path d="M5 12l6 -6"/></svg></button>
             <span id="slideshowCounter">1 / 1</span>
-            <button type="button" onclick="navSlideshow(1)">→</button>
-            <button type="button" onclick="exitSlideshow()">✕ Çiqiş</button>
+            <button type="button" onclick="navSlideshow(1)"><svg class="ti" viewBox="0 0 24 24"><path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></svg></button>
+            <button type="button" onclick="exitSlideshow()"><svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></svg> Çiqiş</button>
         </div>
     </div>
 
     <!-- Справа: Öşa AI -->
     <button type="button" id="officeOshaBtn" class="office-osha-fab" onclick="toggleOfficeOsha()" title="Öşa AI yordamçi">
-        <span>✨</span><span>Öşa AI</span>
+        <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z"/></svg>
+        <span>Öşa AI</span>
     </button>
 
     <div id="officeOshaChat" class="office-osha-chat hidden">
@@ -377,7 +519,9 @@
         <div id="officeOshaMessages" class="office-osha-messages"></div>
         <div class="office-osha-foot">
             <input type="text" id="officeOshaInput" placeholder="Savol yoki matn yozing..." onkeydown="if(event.key==='Enter') sendOfficeOsha()">
-            <button type="button" class="office-btn primary small" onclick="sendOfficeOsha()">➤</button>
+            <button type="button" class="office-btn primary small" onclick="sendOfficeOsha()" title="Yuboriş">
+                <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M10 14l11 -11"/><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"/></svg>
+            </button>
         </div>
     </div>
 
