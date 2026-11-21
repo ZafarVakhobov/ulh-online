@@ -670,3 +670,97 @@ body.dark-mode .office-pill-ctx button.is-active { background: rgba(56, 189, 248
     position: absolute; right: -6px; bottom: -6px; width: 12px; height: 12px;
     background: #0284C7; border: 2px solid #FFFFFF; border-radius: 50%; cursor: nwse-resize; pointer-events: auto;
 }
+
+/* === 1. ФИКС ТЁМНОЙ ТЕМЫ: ВЫПАДАЮЩИЕ МЕНЮ И АКТИВНЫЙ РЕЖИМ === */
+body.dark-mode .office-dropdown-menu,
+body.dark-mode .sub-drop-panel,
+body.dark-mode .img-wrap-menu {
+    background: #0F172A !important;
+    border-color: #334155 !important;
+}
+body.dark-mode .office-dropdown-menu button,
+body.dark-mode .sub-drop-group,
+body.dark-mode .sub-drop-panel button,
+body.dark-mode .img-wrap-menu button {
+    color: #F8FAFC !important;
+}
+body.dark-mode .office-dropdown-menu button:hover,
+body.dark-mode .sub-drop-group:hover,
+body.dark-mode .sub-drop-panel button:hover,
+body.dark-mode .img-wrap-menu button:hover {
+    background: #1E293B !important;
+    color: #38BDF8 !important;
+}
+body.dark-mode .mode-dock-btn.active {
+    background: #1E293B !important;
+    color: #F8FAFC !important;
+    box-shadow: inset 0 0 0 1px #334155;
+}
+
+/* === 2. ССЫЛКИ В ДОКУМЕНТЕ === */
+.a4-sheet a, #slideCanvas a {
+    color: rgb(2, 132, 199) !important;
+    text-decoration: underline;
+    text-decoration-style: solid;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+.a4-sheet a:hover, #slideCanvas a:hover {
+    text-decoration-style: dotted !important;
+}
+
+/* === 3. ТАБЛИЦЫ В ПРЕДЕЛАХ ЛИНЕЙКИ + КРУГЛЫЕ КНОПКИ + === */
+.word-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+.tbl-float-plus {
+    position: fixed; z-index: 8800; width: 24px; height: 24px;
+    border-radius: 50%; border: 1.5px solid #FFFFFF;
+    background: #0284C7; color: #FFFFFF; font-size: 16px; font-weight: 800;
+    display: none; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+    line-height: 1; padding: 0; transition: transform 0.15s;
+}
+.tbl-float-plus:hover { transform: scale(1.12); background: #0369A1; }
+.tbl-float-plus.show { display: inline-flex; }
+
+/* === 4. ДРОБНАЯ ФОРМУЛА (ЧИСЛИТЕЛЬ / ЗНАМЕНАТЕЛЬ) === */
+.math-frac {
+    display: inline-flex; flex-direction: column; align-items: center;
+    vertical-align: middle; margin: 0 4px; font-style: italic;
+}
+.math-num {
+    border-bottom: 1.5px solid currentColor; padding: 0 5px 1px; line-height: 1.15;
+}
+.math-den {
+    padding: 1px 5px 0; line-height: 1.15;
+}
+
+/* === 5. ФИКС СКРОЛЛБАРА В МОДАЛКЕ ГРАФИКОВ === */
+#ocRows { overflow-x: hidden !important; padding-right: 4px; }
+#ocRows input { min-width: 0; width: 100%; box-sizing: border-box; }
+
+/* === 6. ЧИСТАЯ ПЕЧАТЬ (ТОЛЬКО ЛИСТ А4, БЕЗ ШАПКИ, URL И ИИ-АГЕНТА) === */
+@page { margin: 0; }
+@media print {
+    body.office-body { background: #FFFFFF !important; padding: 0 !important; margin: 0 !important; }
+    .office-topbar, .office-mode-dock, .office-statusbar, .office-loader,
+    .word-ruler-top-row, .word-vruler-wrap, .ruler-corner-box,
+    #office-osha-root, #imgFloatControls, .tbl-float-plus,
+    #officeContextMenu, #smartPasteToast, .weather-modal-backdrop,
+    .slides-sidebar, .slide-canvas-tools, .tables-formula-bar {
+        display: none !important;
+    }
+    .office-stage, .office-zoom-wrapper, .word-doc-column, .word-body-with-vruler, .word-pages-container {
+        padding: 0 !important; margin: 0 !important; gap: 0 !important;
+        transform: none !important; display: block !important;
+    }
+    .a4-sheet {
+        box-shadow: none !important; border: none !important; border-radius: 0 !important;
+        margin: 0 !important; page-break-after: always; break-after: page;
+    }
+    .a4-sheet:last-child { page-break-after: auto; break-after: auto; }
+}
