@@ -1081,3 +1081,13 @@ body.dark-mode .sheet-tab-btn.active {
     border: 1px solid #CBD5E1;
     padding: 6px 8px;
 }
+
+/* === ВЫДЕЛЕНИЕ ВСЕГО ДОКУМЕНТА (CTRL + A ПО ВСЕМ СТРАНИЦАМ) === */
+#wordPagesContainer {
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.a4-sheet.all-doc-selected {
+    box-shadow: 0 0 0 2px #0284C7, 0 10px 30px rgba(2, 132, 199, 0.16);
+}
