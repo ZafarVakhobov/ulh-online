@@ -275,6 +275,10 @@
                         <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/></svg>
                         <small>Rasm</small>
                     </button>
+                    <button type="button" class="rb-big-btn" id="rbInsertTableBtn" onmousedown="event.preventDefault()" onclick="insertWordTable()" title="Jadval qöşiş">
+    <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z"/><path d="M3 10h18"/><path d="M10 3v18"/></svg>
+    <small>Jadval</small>
+</button>
                     <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="openOfficeChartModal()" title="Grafik yaratiş va qöşiş">
                         <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M4 20h14"/></svg>
                         <small>Grafik</small>
@@ -315,16 +319,37 @@
         <div class="office-zoom-wrapper" id="officeZoomWrapper">
 
             <!-- 1. ULH WORD -->
-            <section id="paneWord" class="office-pane active">
-                <div class="word-doc-column">
-                    <div class="word-ruler-wrap" id="wordRulerWrap" title="Çap va öng çegaralarni suriş">
-                        <div class="word-ruler-ticks" id="wordRulerTicks"></div>
-                        <div class="ruler-handle left" id="rulerLeftHandle" title="Çap çegara (mm)"></div>
-                        <div class="ruler-handle right" id="rulerRightHandle" title="Öng çegara (mm)"></div>
-                    </div>
-                    <div id="wordPagesContainer" class="word-pages-container"></div>
-                </div>
-            </section>
+            <!-- 1. ULH WORD -->
+<section id="paneWord" class="office-pane active">
+    <div class="word-doc-column">
+        <!-- Горизонтальная линейка (MS Word стиль: 2 бегунка слева + 1 справа) -->
+        <div class="word-ruler-top-row">
+            <div class="ruler-corner-box" title="Abzats">L</div>
+            <div class="word-ruler-wrap" id="wordRulerWrap">
+                <div class="ruler-margin-shade left" id="rulerShadeLeft"></div>
+                <div class="ruler-margin-shade right" id="rulerShadeRight"></div>
+                <div class="word-ruler-ticks" id="wordRulerTicks"></div>
+                <!-- Верхний бегунок слева: красная строка (abzats boshi) -->
+                <div class="ruler-handle first-line" id="rulerFirstLineHandle" title="Birinçi qator çegara (Qizil satr)"></div>
+                <!-- Нижний бегунок слева: левое поле -->
+                <div class="ruler-handle left-margin" id="rulerLeftHandle" title="Çap çegara (mm)"></div>
+                <!-- Бегунок справа: правое поле -->
+                <div class="ruler-handle right-margin" id="rulerRightHandle" title="Öng çegara (mm)"></div>
+            </div>
+        </div>
+
+        <div class="word-body-with-vruler">
+            <!-- Вертикальная линейка -->
+            <div class="word-vruler-wrap" id="wordVRulerWrap">
+                <div class="vruler-margin-shade top" id="vrulerShadeTop"></div>
+                <div class="word-vruler-ticks" id="wordVRulerTicks"></div>
+                <div class="vruler-handle top" id="vrulerTopHandle" title="Yuqori çegara (mm)"></div>
+            </div>
+            <!-- Страницы А4 -->
+            <div id="wordPagesContainer" class="word-pages-container"></div>
+        </div>
+    </div>
+</section>
 
             <!-- 2. ULH SLIDES -->
             <section id="paneSlides" class="office-pane">
@@ -502,28 +527,45 @@
         </div>
     </div>
 
-    <!-- Справа: Öşa AI -->
-    <button type="button" id="officeOshaBtn" class="office-osha-fab" onclick="toggleOfficeOsha()" title="Öşa AI yordamçi">
-        <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z"/></svg>
-        <span>Öşa AI</span>
+<!-- Справа внизу: Öşa AI (дизайн 1-в-1 как на главной странице) -->
+<div id="office-osha-root">
+    <button type="button" id="officeOshaBtn" class="office-osha-circle-btn" onclick="toggleOfficeOsha()" title="Öşa AI">
+        <div class="office-osha-btn-inner">
+            <img src="/osha.png" alt="Öşa AI" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span style="display:none; font-size:22px; font-weight:900; color:#3B82F6;">Ö</span>
+        </div>
+        <span class="office-osha-online"></span>
     </button>
 
-    <div id="officeOshaChat" class="office-osha-chat hidden">
-        <div class="office-osha-head">
-            <div>
-                <b>Öşa AI</b>
-                <div style="font-size:11px; color:#10B981; font-weight:700;">ULH Office yordamçisi</div>
+    <div id="officeOshaChat" class="office-osha-window hidden">
+        <div class="office-osha-header">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="office-osha-avatar-sm">
+                    <img src="/osha.png" alt="Öşa" onerror="this.style.display='none'">
+                </div>
+                <div>
+                    <h3>Öşa AI</h3>
+                    <p>ULH Yordamçisi</p>
+                </div>
             </div>
-            <button type="button" class="pdf-studio-close" onclick="toggleOfficeOsha()">×</button>
+            <div style="display:flex; align-items:center; gap:4px;">
+                <button type="button" class="office-osha-head-btn" onclick="clearOfficeOshaChat()" title="Tarixni tozalaş">
+                    <svg class="ti" viewBox="0 0 24 24"><path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg>
+                </button>
+                <button type="button" class="office-osha-head-btn" onclick="toggleOfficeOsha()" title="Yopiş">
+                    <svg class="ti" viewBox="0 0 24 24"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></svg>
+                </button>
+            </div>
         </div>
         <div id="officeOshaMessages" class="office-osha-messages"></div>
-        <div class="office-osha-foot">
-            <input type="text" id="officeOshaInput" placeholder="Savol yoki matn yozing..." onkeydown="if(event.key==='Enter') sendOfficeOsha()">
-            <button type="button" class="office-btn primary small" onclick="sendOfficeOsha()" title="Yuboriş">
-                <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M10 14l11 -11"/><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"/></svg>
+        <div class="office-osha-footer">
+            <input type="text" id="officeOshaInput" placeholder="Savolingizni yozing..." onkeydown="if(event.key==='Enter') sendOfficeOsha()">
+            <button type="button" class="office-osha-send-btn" onclick="sendOfficeOsha()" title="Yuboriş">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M10 14l11 -11"/><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"/></svg>
             </button>
         </div>
     </div>
+</div>
 
     <script src="../scripts.js"></script>
     <script src="./scripts.js"></script>
