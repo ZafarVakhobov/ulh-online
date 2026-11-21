@@ -764,3 +764,82 @@ body.dark-mode .mode-dock-btn.active {
     }
     .a4-sheet:last-child { page-break-after: auto; break-after: auto; }
 }
+
+/* === 1. ВЕРТИКАЛЬНАЯ ЛИНЕЙКА СЛЕДУЕТ ЗА АКТИВНОЙ СТРАНИЦЕЙ === */
+.word-vruler-wrap {
+    transition: transform 0.2s ease, height 0.2s ease;
+}
+
+/* === 2. ВСЕ ТИПЫ БУЛЛЕТОВ (ВКЛЮЧАЯ ПУСТОЙ КРУГ И ТИРЕ) === */
+.a4-sheet ul, #slideCanvas ul {
+    padding-left: 22px;
+    margin: 6px 0;
+}
+.a4-sheet ul.ul-disc, #slideCanvas ul.ul-disc { list-style-type: disc !important; }
+.a4-sheet ul.ul-circle, #slideCanvas ul.ul-circle { list-style-type: circle !important; }
+.a4-sheet ul.ul-square, #slideCanvas ul.ul-square { list-style-type: square !important; }
+.a4-sheet ul.ul-dash, #slideCanvas ul.ul-dash { list-style-type: none !important; }
+.a4-sheet ul.ul-dash li::before, #slideCanvas ul.ul-dash li::before {
+    content: "— ";
+    margin-left: -18px;
+    font-weight: 700;
+    color: inherit;
+}
+
+/* === 3. УНИКАЛЬНЫЙ СТИЛЬ ЦИТАТЫ (IQTIBOS) === */
+.office-quote-block {
+    margin: 14px 0;
+    padding: 14px 18px 14px 20px;
+    border-left: 4px solid #0284C7;
+    background: #F8FAFC;
+    border-radius: 0 10px 10px 0;
+    color: #1E293B;
+}
+.office-quote-text {
+    font-style: italic;
+    font-size: 14.5px;
+    line-height: 1.65;
+    margin: 0;
+}
+.office-quote-author {
+    display: block;
+    margin-top: 8px;
+    text-align: right;
+    font-style: normal;
+    font-size: 13px;
+    font-weight: 800;
+    color: #0284C7;
+}
+
+/* === 4. КНОПКА СТАТИСТИКИ В НИЖНЕЙ ПАНЕЛИ === */
+.statusbar-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+.statusbar-sep {
+    width: 1px;
+    height: 16px;
+    background: #CBD5E1;
+}
+.statusbar-stats-btn {
+    border: none;
+    background: transparent;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s;
+}
+.statusbar-stats-btn:hover {
+    background: #E0F2FE;
+    color: #0284C7;
+}
+body.dark-mode .statusbar-sep { background: #334155; }
+body.dark-mode .statusbar-stats-btn { color: #CBD5E1; }
+body.dark-mode .statusbar-stats-btn:hover { background: rgba(56, 189, 248, 0.16); color: #38BDF8; }
