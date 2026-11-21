@@ -1,24 +1,31 @@
-/* === ULH OFFICE — ЕДИНАЯ СТИЛИСТИКА С ULH-ONLINE.UZ === */
+/* === ULH OFFICE — RIBBON, A4 PAGES, RULER, PILL CONTEXT MENU === */
 body.office-body {
-    padding: 0 !important;
+    padding: 0 0 38px 0 !important;
     margin: 0;
     display: block !important;
     min-height: 100vh;
-    background-color: #F1F5F9;
+    background-color: #E2E8F0;
     overflow-x: hidden;
 }
-body.office-body.dark-mode {
-    background-color: #0B1120;
+body.office-body.dark-mode { background-color: #0B1120; }
+
+/* Скрываем дублирующую кнопку словаря из ../scripts.js */
+body.office-body #selIzohBtn,
+body.office-body #aiFloatingMenu { display: none !important; }
+
+/* Исправляем наследование шрифтов внутри редактора (чтобы работала смена шрифта!) */
+.a4-sheet *, .slide-canvas-16-9 *, .ulh-sheet-table * {
+    font-family: inherit;
+    user-select: text !important;
+    -webkit-user-select: text !important;
 }
 
 /* 4-секундный экран загрузки */
 .office-loader {
     position: fixed; inset: 0; z-index: 999999;
-    background: rgba(248, 250, 252, 0.96);
-    backdrop-filter: blur(12px);
+    background: rgba(248, 250, 252, 0.96); backdrop-filter: blur(12px);
     display: flex; align-items: center; justify-content: center;
-    opacity: 0; visibility: hidden; pointer-events: none;
-    transition: opacity 0.35s ease, visibility 0.35s ease;
+    opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.35s ease;
 }
 .office-loader.active { opacity: 1; visibility: visible; pointer-events: auto; }
 .office-loader-card {
@@ -34,66 +41,98 @@ body.office-body.dark-mode {
 }
 .office-loader-title { font-size: 16px; font-weight: 800; color: #0F172A; }
 .office-loader-bar { width: 100%; height: 6px; border-radius: 99px; background: #E2E8F0; overflow: hidden; }
-.office-loader-fill { height: 100%; width: 0%; background: #0284C7; transition: width 3.8s linear; }
+.office-loader-fill { height: 100%; width: 0%; background: #0284C7; }
 .office-loader-sub { font-size: 12px; color: #64748B; font-weight: 600; }
 
-/* Фиксированная шапка и тулбар */
+/* Фиксированная шапка */
 .office-topbar {
     position: sticky; top: 0; z-index: 1000;
-    background: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid #E2E8F0;
-    padding: 10px 20px;
-    display: flex; flex-direction: column; gap: 8px;
+    background: #FFFFFF; border-bottom: 1px solid #CBD5E1;
+    padding: 8px 18px 0; display: flex; flex-direction: column; gap: 6px;
 }
-.office-top-row, .office-toolbar {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 10px; flex-wrap: wrap;
-}
+.office-top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .office-brand-group, .office-top-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .office-logo-link .logo-dark { display: none; }
 body.dark-mode .office-logo-link .logo-light { display: none; }
 body.dark-mode .office-logo-link .logo-dark { display: block; }
 
-.office-mode-badge {
-    font-size: 11.5px; font-weight: 800; padding: 4px 10px; border-radius: 999px; color: #FFFFFF;
-}
+.office-mode-badge { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 999px; color: #FFFFFF; }
 .office-mode-badge.mode-word { background: #0284C7; }
 .office-mode-badge.mode-slides { background: #EF4444; }
 .office-mode-badge.mode-tables { background: #10B981; }
-
 .office-doc-title {
-    border: 1px solid transparent; background: transparent;
-    font-size: 14px; font-weight: 800; color: #0F172A;
-    padding: 5px 10px; border-radius: 8px; width: 180px; outline: none;
+    border: 1px solid transparent; background: transparent; font-size: 14px; font-weight: 800;
+    color: #0F172A; padding: 4px 8px; border-radius: 8px; width: 175px; outline: none;
 }
-.office-doc-title:focus { border-color: #0284C7; background: #FFFFFF; }
+.office-doc-title:focus { border-color: #0284C7; background: #F8FAFC; }
 .office-autosave { font-size: 11.5px; font-weight: 700; color: #10B981; }
 
 .office-btn {
-    height: 34px; padding: 0 12px; border-radius: 10px;
-    border: 1px solid #E2E8F0; background: #F8FAFC; color: #0F172A;
-    font-size: 12.5px; font-weight: 700; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 5px; transition: all 0.15s;
+    height: 32px; padding: 0 11px; border-radius: 9px; border: 1px solid #E2E8F0;
+    background: #F8FAFC; color: #0F172A; font-size: 12px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
 }
 .office-btn:hover { background: #E2E8F0; }
 .office-btn.primary { background: #0284C7; border-color: #0284C7; color: #FFFFFF; }
-.office-btn.primary:hover { background: #0369A1; }
 .office-btn.accent { background: #EDE9FE; border-color: #DDD6FE; color: #7C3AED; }
-.office-btn.accent:hover { background: #7C3AED; color: #FFFFFF; }
 .office-btn.danger { background: #FEE2E2; border-color: #FECACA; color: #EF4444; }
-.office-btn.danger:hover { background: #EF4444; color: #FFFFFF; }
 .office-btn.minimize { background: #FEF3C7; border-color: #FDE68A; color: #B45309; }
 .office-btn.small { height: 28px; padding: 0 10px; font-size: 11.5px; }
-.office-icon-btn {
-    width: 34px; height: 34px; border-radius: 10px; border: 1px solid #E2E8F0;
-    background: #F8FAFC; cursor: pointer; font-size: 15px;
+.office-icon-btn { width: 32px; height: 32px; border-radius: 9px; border: 1px solid #E2E8F0; background: #F8FAFC; cursor: pointer; }
+
+/* === ЛЕНТА ИНСТРУМЕНТОВ (RIBBON) === */
+.office-ribbon {
+    display: flex; align-items: stretch; gap: 0; overflow-x: auto;
+    border-top: 1px solid #E2E8F0; padding: 6px 0 8px;
 }
+.ribbon-group {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 0 12px; border-right: 1px solid #E2E8F0; flex-shrink: 0;
+}
+.ribbon-group:first-child { padding-left: 0; }
+.ribbon-group:last-child { border-right: none; }
+.ribbon-group-title { font-size: 10.5px; font-weight: 700; color: #64748B; }
+.ribbon-group-body { display: flex; align-items: center; gap: 6px; }
+.ribbon-group-body.col { flex-direction: column; align-items: flex-start; gap: 4px; }
+.ribbon-row { display: flex; align-items: center; gap: 4px; }
+
+.rb-btn {
+    min-width: 28px; height: 28px; border-radius: 7px; border: 1px solid transparent;
+    background: transparent; color: #1E293B; font-size: 12.5px; font-weight: 700;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px;
+}
+.rb-btn.wide { padding: 0 9px; font-size: 11.5px; background: #F8FAFC; border-color: #E2E8F0; }
+.rb-btn:hover { background: #E0F2FE; color: #0284C7; }
+.rb-select {
+    height: 28px; border-radius: 7px; border: 1px solid #CBD5E1; background: #FFFFFF;
+    padding: 0 6px; font-size: 12px; font-weight: 700; color: #0F172A; width: 128px;
+}
+.rb-select.small { width: 58px; }
+.office-color-inp { width: 26px; height: 26px; border: 1px solid #CBD5E1; border-radius: 6px; padding: 1px; cursor: pointer; }
+
+.rb-style-card {
+    border: 1px solid #CBD5E1; background: #FFFFFF; border-radius: 8px;
+    padding: 4px 10px; display: flex; flex-direction: column; align-items: center;
+    cursor: pointer; min-width: 68px;
+}
+.rb-style-card:hover { border-color: #0284C7; background: #F0F9FF; }
+.rb-st-preview { font-size: 14px; font-weight: 600; color: #0F172A; }
+.rb-st-preview.h1 { font-weight: 900; font-size: 15px; }
+.rb-st-lbl { font-size: 10px; color: #64748B; font-weight: 600; }
+
+.rb-big-btn {
+    border: 1px solid transparent; background: transparent; border-radius: 8px;
+    padding: 4px 9px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    cursor: pointer; color: #1E293B; font-weight: 700;
+}
+.rb-big-btn span { font-size: 18px; line-height: 1.1; }
+.rb-big-btn small { font-size: 10px; color: #64748B; }
+.rb-big-btn:hover { background: #E0F2FE; color: #0284C7; }
 
 /* Выпадающее меню сохранения */
 .office-dropdown-wrap { position: relative; }
 .office-dropdown-menu {
-    position: absolute; top: calc(100% + 6px); right: 0; min-width: 170px;
+    position: absolute; top: calc(100% + 6px); left: 0; min-width: 170px;
     background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px;
     padding: 5px; box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14);
     display: none; flex-direction: column; gap: 3px; z-index: 1200;
@@ -105,41 +144,18 @@ body.dark-mode .office-logo-link .logo-dark { display: block; }
 }
 .office-dropdown-menu button:hover { background: #F1F5F9; color: #0284C7; }
 
-/* Панель форматирования */
-.office-toolbar {
-    justify-content: flex-start; padding-top: 6px; border-top: 1px dashed #E2E8F0;
-}
-.office-select {
-    height: 30px; border-radius: 8px; border: 1px solid #CBD5E1; background: #FFFFFF;
-    padding: 0 8px; font-size: 12.5px; font-weight: 700; color: #0F172A;
-}
-.office-select.small { width: 76px; }
-.office-tool-btn {
-    min-width: 30px; height: 30px; border-radius: 7px; border: 1px solid transparent;
-    background: transparent; color: #334155; font-size: 13px; cursor: pointer;
-}
-.office-tool-btn.wide { padding: 0 10px; font-weight: 700; font-size: 12px; }
-.office-tool-btn:hover { background: #E2E8F0; }
-.office-color-inp { width: 28px; height: 28px; border: 1px solid #CBD5E1; border-radius: 6px; padding: 1px; cursor: pointer; }
-.office-sep { width: 1px; height: 20px; background: #E2E8F0; margin: 0 4px; }
-.office-zoom-pill {
-    margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
-    background: #F1F5F9; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 800;
-}
-.office-zoom-pill button { border: none; background: transparent; font-weight: 800; cursor: pointer; font-size: 14px; }
-
 /* Левое плавающее меню режимов */
 .office-mode-dock {
-    position: fixed; left: 18px; top: 50%; transform: translateY(-50%); z-index: 900;
-    background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(14px);
-    border: 1px solid #E2E8F0; border-radius: 18px; padding: 8px;
+    position: fixed; left: 16px; top: 54%; transform: translateY(-50%); z-index: 900;
+    background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(14px);
+    border: 1px solid #CBD5E1; border-radius: 18px; padding: 8px;
     display: flex; flex-direction: column; gap: 8px;
     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
 }
 .mode-dock-btn {
     border: none; background: transparent; border-radius: 12px; padding: 8px 10px;
     display: flex; flex-direction: column; align-items: center; gap: 4px;
-    font-size: 11px; font-weight: 800; color: #64748B; cursor: pointer; transition: all 0.15s;
+    font-size: 11px; font-weight: 800; color: #64748B; cursor: pointer;
 }
 .mode-dock-btn.active { background: #F1F5F9; color: #0F172A; }
 .mode-dot {
@@ -150,214 +166,162 @@ body.dark-mode .office-logo-link .logo-dark { display: block; }
 .mode-dot.slides { background: #EF4444; }
 .mode-dot.tables { background: #10B981; }
 
-/* Рабочая область и масштабирование */
+/* Рабочая область */
 .office-stage {
-    padding: 28px 96px 60px;
-    min-height: calc(100vh - 110px);
+    padding: 18px 96px 60px; min-height: calc(100vh - 150px);
     display: flex; justify-content: center; align-items: flex-start;
 }
-.office-zoom-wrapper {
-    transform-origin: top center;
-    transition: transform 0.12s ease-out;
-    width: 100%; display: flex; justify-content: center;
-}
+.office-zoom-wrapper { transform-origin: top center; transition: transform 0.12s ease-out; width: 100%; display: flex; justify-content: center; }
 .office-pane { display: none; width: 100%; justify-content: center; }
 .office-pane.active { display: flex; }
 
-/* 1. Лист А4 (ULH Word) */
-.a4-sheet {
-    width: 210mm; min-height: 297mm;
-    background: #FFFFFF; color: #0F172A;
-    padding: 22mm 20mm;
-    border-radius: 6px;
-    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.1);
-    outline: none; font-family: 'Manrope', sans-serif;
-    font-size: 14px; line-height: 1.65;
-    user-select: text !important; -webkit-user-select: text !important;
+/* === WORD: ЛИНЕЙКА + МНОГОСТРАНИЧНЫЙ А4 === */
+.word-doc-column { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.word-ruler-wrap {
+    position: relative; width: 210mm; height: 26px;
+    background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 6px;
+    overflow: hidden; user-select: none;
 }
-.a4-sheet * { user-select: text !important; }
+.word-ruler-ticks {
+    display: flex; width: 100%; height: 100%; align-items: flex-end;
+    font-size: 9px; font-weight: 700; color: #64748B;
+}
+.ruler-cm {
+    flex: 1; border-right: 1px solid #CBD5E1; height: 100%;
+    display: flex; align-items: center; justify-content: flex-end; padding-right: 3px;
+}
+.ruler-handle {
+    position: absolute; top: 0; width: 12px; height: 26px;
+    background: #0284C7; cursor: ew-resize; opacity: 0.85;
+    clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
+}
+.ruler-handle:hover { opacity: 1; }
+
+.word-pages-container { display: flex; flex-direction: column; gap: 22px; align-items: center; }
+.a4-sheet {
+    width: 210mm; height: 297mm;
+    background: #FFFFFF; color: #0F172A;
+    padding: 20mm 20mm;
+    border-radius: 4px; box-sizing: border-box;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+    outline: none; font-family: 'Manrope', sans-serif;
+    font-size: 14px; line-height: 1.65; overflow: hidden;
+}
 .a4-sheet img { max-width: 100%; border-radius: 8px; }
 
-/* 2. ULH Slides */
+/* Slides & Tables */
 .slides-workspace { display: grid; grid-template-columns: 200px 1fr; gap: 18px; width: 100%; max-width: 1060px; }
-.slides-sidebar {
-    background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; padding: 12px;
-    display: flex; flex-direction: column; gap: 10px; max-height: 540px;
-}
+.slides-sidebar { background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 540px; }
 .slides-sidebar-head { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 13px; }
 .slides-thumb-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
-.slide-thumb {
-    border: 2px solid #E2E8F0; border-radius: 10px; padding: 10px; cursor: pointer;
-    font-size: 11.5px; font-weight: 700; background: #F8FAFC; min-height: 62px;
-}
+.slide-thumb { border: 2px solid #E2E8F0; border-radius: 10px; padding: 10px; cursor: pointer; font-size: 11.5px; font-weight: 700; background: #F8FAFC; min-height: 62px; }
 .slide-thumb.active { border-color: #EF4444; background: #FEF2F2; }
 .slides-canvas-col { display: flex; flex-direction: column; gap: 12px; align-items: center; }
-.slide-canvas-16-9 {
-    width: 100%; aspect-ratio: 16 / 9; background: #FFFFFF; border-radius: 12px;
-    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12); padding: 40px 48px;
-    display: flex; flex-direction: column; gap: 16px;
-}
-.slide-title-box { font-size: 32px; font-weight: 800; outline: none; user-select: text !important; }
-.slide-body-box { font-size: 18px; line-height: 1.6; outline: none; flex: 1; user-select: text !important; }
+.slide-canvas-16-9 { width: 100%; aspect-ratio: 16 / 9; background: #FFFFFF; border-radius: 12px; box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12); padding: 36px 44px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.slide-title-box { font-size: 32px; font-weight: 800; outline: none; }
+.slide-body-box { font-size: 18px; line-height: 1.6; outline: none; flex: 1; }
 .slide-canvas-tools { display: flex; align-items: center; gap: 12px; font-size: 12.5px; font-weight: 700; }
 
-/* 3. ULH Tables */
-.tables-workspace {
-    width: 100%; max-width: 1100px; background: #FFFFFF;
-    border: 1px solid #E2E8F0; border-radius: 16px; overflow: hidden;
-    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
-}
-.tables-formula-bar {
-    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
-    border-bottom: 1px solid #E2E8F0; background: #F8FAFC;
-}
-.cell-ref-badge {
-    min-width: 44px; text-align: center; font-size: 12px; font-weight: 800;
-    background: #ECFDF5; color: #059669; padding: 5px 8px; border-radius: 7px;
-}
-.formula-input {
-    flex: 1; border: 1px solid #CBD5E1; border-radius: 8px; padding: 6px 10px;
-    font-size: 13px; font-weight: 600; outline: none; user-select: text !important;
-}
-.tables-grid-wrap { max-height: 540px; overflow: auto; }
+.tables-workspace { width: 100%; max-width: 1100px; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 16px; overflow: hidden; box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08); }
+.tables-formula-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #E2E8F0; background: #F8FAFC; }
+.cell-ref-badge { min-width: 44px; text-align: center; font-size: 12px; font-weight: 800; background: #ECFDF5; color: #059669; padding: 5px 8px; border-radius: 7px; }
+.formula-input { flex: 1; border: 1px solid #CBD5E1; border-radius: 8px; padding: 6px 10px; font-size: 13px; font-weight: 600; outline: none; }
+.tables-grid-wrap { max-height: 480px; overflow: auto; }
 .ulh-sheet-table { border-collapse: collapse; width: 100%; font-size: 13px; }
-.ulh-sheet-table th {
-    background: #F1F5F9; color: #475569; font-weight: 800; font-size: 11.5px;
-    border: 1px solid #CBD5E1; padding: 6px 8px; position: sticky; top: 0;
-}
-.ulh-sheet-table td {
-    border: 1px solid #E2E8F0; padding: 6px 8px; min-width: 90px;
-    outline: none; user-select: text !important;
-}
+.ulh-sheet-table th { background: #F1F5F9; color: #475569; font-weight: 800; font-size: 11.5px; border: 1px solid #CBD5E1; padding: 6px 8px; position: sticky; top: 0; }
+.ulh-sheet-table td { border: 1px solid #E2E8F0; padding: 6px 8px; min-width: 90px; outline: none; }
 .ulh-sheet-table td.active-cell { box-shadow: inset 0 0 0 2px #10B981; background: #F0FDF4; }
+.tables-charts-shelf { display: flex; flex-wrap: wrap; gap: 12px; padding: 12px; }
+.tables-charts-shelf:empty { display: none; }
 
-/* Умная вставка */
+/* Нижняя строка состояния */
+.office-statusbar {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 34px; z-index: 950;
+    background: #FFFFFF; border-top: 1px solid #CBD5E1;
+    padding: 0 20px; display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; font-weight: 700; color: #475569;
+}
+.office-zoom-pill { display: inline-flex; align-items: center; gap: 8px; background: #F1F5F9; padding: 2px 10px; border-radius: 999px; }
+.office-zoom-pill button { border: none; background: transparent; font-weight: 800; cursor: pointer; font-size: 14px; }
+
+/* === ГОРИЗОНТАЛЬНОЕ КОНТЕКСТНОЕ МЕНЮ ПКМ (КАК НА СКРИНШОТЕ №3) === */
+.office-pill-ctx {
+    position: fixed; z-index: 99999;
+    background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 999px;
+    padding: 5px 10px; box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+    display: none; align-items: center; gap: 4px;
+}
+.office-pill-ctx.open { display: inline-flex; }
+.office-pill-ctx button {
+    border: none; background: transparent; color: #1E293B;
+    height: 30px; min-width: 30px; padding: 0 6px; border-radius: 8px;
+    font-size: 13.5px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+}
+.office-pill-ctx button:hover { background: #F1F5F9; color: #0284C7; }
+.office-pill-ctx .ctx-pill-tag { font-size: 12px; padding: 0 9px; border-radius: 999px; background: #F8FAFC; }
+.office-pill-ctx .ctx-sep { width: 1px; height: 18px; background: #E2E8F0; margin: 0 2px; }
+
+/* Умная вставка, История, Презентация, Öşa AI */
 .smart-paste-toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+    position: fixed; bottom: 48px; left: 50%; transform: translateX(-50%) translateY(120px);
     z-index: 9999; background: #0F172A; color: #F8FAFC; padding: 12px 18px;
     border-radius: 14px; display: flex; align-items: center; gap: 14px;
-    font-size: 13px; font-weight: 700; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
-    transition: transform 0.25s ease;
+    font-size: 13px; font-weight: 700; transition: transform 0.25s ease;
 }
 .smart-paste-toast.show { transform: translateX(-50%) translateY(0); }
-.smart-paste-actions { display: flex; gap: 6px; }
-
-/* Контекстное меню ПКМ */
-.office-context-menu {
-    position: fixed; z-index: 99999; min-width: 190px;
-    background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px;
-    padding: 6px; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
-    display: none; flex-direction: column; gap: 2px;
-}
-.office-context-menu.open { display: flex; }
-.office-context-menu button {
-    border: none; background: transparent; text-align: left; padding: 8px 10px;
-    border-radius: 8px; font-size: 12.5px; font-weight: 700; color: #0F172A; cursor: pointer;
-}
-.office-context-menu button:hover { background: #F1F5F9; color: #0284C7; }
-.office-context-menu hr { border: 0; border-top: 1px solid #E2E8F0; margin: 4px 0; }
-
-/* История */
-.office-hist-preview {
-    max-height: 220px; overflow-y: auto; padding: 12px;
-    border: 1px solid #E2E8F0; border-radius: 12px; background: #F8FAFC; font-size: 13px;
-}
-
-/* Полноэкранная презентация */
-.slideshow-overlay {
-    position: fixed; inset: 0; z-index: 999999; background: #000000;
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-}
+.office-hist-preview { max-height: 220px; overflow-y: auto; padding: 12px; border: 1px solid #E2E8F0; border-radius: 12px; background: #F8FAFC; font-size: 13px; }
+.slideshow-overlay { position: fixed; inset: 0; z-index: 999999; background: #000000; display: none; flex-direction: column; align-items: center; justify-content: center; }
 .slideshow-overlay.active { display: flex; }
-.slideshow-stage {
-    width: 92vw; max-width: 1280px; aspect-ratio: 16 / 9;
-    background: #FFFFFF; border-radius: 12px; padding: 56px 64px;
-    display: flex; flex-direction: column; gap: 20px; color: #0F172A;
-}
-.slideshow-controls {
-    position: fixed; bottom: 20px; display: flex; align-items: center; gap: 12px;
-    background: rgba(15, 23, 42, 0.85); color: #FFFFFF; padding: 8px 16px; border-radius: 999px;
-}
-.slideshow-controls button {
-    border: none; background: rgba(255,255,255,0.15); color: #FFFFFF;
-    padding: 6px 12px; border-radius: 8px; font-weight: 800; cursor: pointer;
-}
+.slideshow-stage { width: 92vw; max-width: 1280px; aspect-ratio: 16 / 9; background: #FFFFFF; border-radius: 12px; padding: 56px 64px; display: flex; flex-direction: column; gap: 20px; color: #0F172A; }
+.slideshow-controls { position: fixed; bottom: 20px; display: flex; align-items: center; gap: 12px; background: rgba(15, 23, 42, 0.85); color: #FFFFFF; padding: 8px 16px; border-radius: 999px; }
+.slideshow-controls button { border: none; background: rgba(255,255,255,0.15); color: #FFFFFF; padding: 6px 12px; border-radius: 8px; font-weight: 800; cursor: pointer; }
 
-/* Справа: Öşa AI */
 .office-osha-fab {
-    position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 900;
-    background: linear-gradient(135deg, #0284C7, #6366F1); color: #FFFFFF;
-    border: none; border-radius: 16px; padding: 12px 14px;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    font-size: 11.5px; font-weight: 800; cursor: pointer;
-    box-shadow: 0 12px 28px rgba(99, 102, 241, 0.35);
+    position: fixed; right: 18px; top: 54%; transform: translateY(-50%); z-index: 900;
+    background: linear-gradient(135deg, #0284C7, #6366F1); color: #FFFFFF; border: none;
+    border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-size: 11.5px; font-weight: 800; cursor: pointer; box-shadow: 0 12px 28px rgba(99, 102, 241, 0.35);
 }
 .office-osha-chat {
-    position: fixed; right: 20px; bottom: 20px; width: 350px; height: 480px; z-index: 9500;
+    position: fixed; right: 20px; bottom: 44px; width: 350px; height: 470px; z-index: 9500;
     background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 20px;
-    box-shadow: 0 24px 54px rgba(15, 23, 42, 0.22);
-    display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 24px 54px rgba(15, 23, 42, 0.22); display: flex; flex-direction: column; overflow: hidden;
 }
 .office-osha-chat.hidden { display: none; }
-.office-osha-head {
-    padding: 14px 16px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0;
-    display: flex; justify-content: space-between; align-items: center;
-}
-.office-osha-messages {
-    flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;
-}
-.office-osha-msg {
-    padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height: 1.45; max-width: 88%;
-}
+.office-osha-head { padding: 14px 16px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; }
+.office-osha-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.office-osha-msg { padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height: 1.45; max-width: 88%; }
 .office-osha-msg.user { align-self: flex-end; background: #0284C7; color: #FFFFFF; }
 .office-osha-msg.bot { align-self: flex-start; background: #F1F5F9; color: #0F172A; }
-.office-osha-insert-btn {
-    margin-top: 6px; border: none; background: #E0F2FE; color: #0284C7;
-    padding: 4px 9px; border-radius: 7px; font-size: 11px; font-weight: 800; cursor: pointer;
-}
-.office-osha-foot {
-    padding: 10px; border-top: 1px solid #E2E8F0; display: flex; gap: 6px;
-}
-.office-osha-foot input {
-    flex: 1; border: 1px solid #CBD5E1; border-radius: 10px; padding: 8px 10px;
-    font-size: 13px; outline: none; user-select: text !important;
-}
+.office-osha-insert-btn { margin-top: 6px; border: none; background: #E0F2FE; color: #0284C7; padding: 4px 9px; border-radius: 7px; font-size: 11px; font-weight: 800; cursor: pointer; }
+.office-osha-foot { padding: 10px; border-top: 1px solid #E2E8F0; display: flex; gap: 6px; }
+.office-osha-foot input { flex: 1; border: 1px solid #CBD5E1; border-radius: 10px; padding: 8px 10px; font-size: 13px; outline: none; }
 
 /* Тёмная тема */
 body.dark-mode .office-loader { background: rgba(11, 17, 32, 0.96); }
-body.dark-mode .office-loader-card,
-body.dark-mode .office-topbar,
-body.dark-mode .office-mode-dock,
-body.dark-mode .slides-sidebar,
-body.dark-mode .tables-workspace,
-body.dark-mode .office-dropdown-menu,
-body.dark-mode .office-context-menu,
-body.dark-mode .office-osha-chat {
+body.dark-mode .office-loader-card, body.dark-mode .office-topbar, body.dark-mode .office-statusbar,
+body.dark-mode .office-mode-dock, body.dark-mode .slides-sidebar, body.dark-mode .tables-workspace,
+body.dark-mode .office-dropdown-menu, body.dark-mode .office-pill-ctx, body.dark-mode .office-osha-chat {
     background: #0F172A; border-color: #1E293B; color: #F8FAFC;
 }
-body.dark-mode .office-loader-title,
-body.dark-mode .office-doc-title,
-body.dark-mode .office-btn,
-body.dark-mode .office-dropdown-menu button,
-body.dark-mode .office-context-menu button { color: #F8FAFC; }
-body.dark-mode .office-btn,
-body.dark-mode .office-icon-btn,
-body.dark-mode .office-select,
-body.dark-mode .tables-formula-bar,
-body.dark-mode .office-osha-head,
-body.dark-mode .office-osha-msg.bot { background: #1E293B; border-color: #334155; color: #F8FAFC; }
-body.dark-mode .office-tool-btn { color: #CBD5E1; }
-body.dark-mode .office-tool-btn:hover,
-body.dark-mode .mode-dock-btn.active { background: #1E293B; color: #38BDF8; }
+body.dark-mode .office-ribbon, body.dark-mode .ribbon-group { border-color: #1E293B; }
+body.dark-mode .office-doc-title, body.dark-mode .rb-btn, body.dark-mode .rb-big-btn,
+body.dark-mode .office-pill-ctx button, body.dark-mode .office-btn { color: #F8FAFC; }
+body.dark-mode .rb-select, body.dark-mode .rb-style-card, body.dark-mode .rb-btn.wide,
+body.dark-mode .office-btn, body.dark-mode .office-icon-btn, body.dark-mode .word-ruler-wrap,
+body.dark-mode .office-pill-ctx .ctx-pill-tag, body.dark-mode .tables-formula-bar,
+body.dark-mode .office-osha-head, body.dark-mode .office-osha-msg.bot {
+    background: #1E293B; border-color: #334155; color: #F8FAFC;
+}
+body.dark-mode .rb-st-preview { color: #F8FAFC; }
 body.dark-mode .ulh-sheet-table th { background: #1E293B; color: #CBD5E1; border-color: #334155; }
 body.dark-mode .ulh-sheet-table td { border-color: #334155; color: #F8FAFC; }
-body.dark-mode .ulh-sheet-table td.active-cell { background: rgba(16, 185, 129, 0.16); }
 
-/* Печать */
 @media print {
-    .office-topbar, .office-mode-dock, .office-osha-fab, .office-osha-chat,
-    .slides-sidebar, .slide-canvas-tools, .tables-formula-bar { display: none !important; }
+    .office-topbar, .office-mode-dock, .office-osha-fab, .office-osha-chat, .office-statusbar,
+    .word-ruler-wrap, .slides-sidebar, .slide-canvas-tools, .tables-formula-bar { display: none !important; }
     .office-stage { padding: 0 !important; }
     .office-zoom-wrapper { transform: none !important; }
-    .a4-sheet { box-shadow: none !important; margin: 0 !important; width: 100% !important; }
+    .a4-sheet { box-shadow: none !important; page-break-after: always; }
 }
