@@ -3343,7 +3343,7 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         </div>
 
         <div class="weather-modal-footer" style="margin-top: 14px;">
-            <span style="font-size:11.5px; color:#64748B; font-weight:600;">Yuqori sifatli PNG (1200 px)</span>
+            <span style="font-size:11.5px; color:#64748B; font-weight:600;">Grafikni yuklab oling</span>
             <div style="display:flex; align-items:center; gap:8px;">
                 <button type="button" class="curr-export-btn" id="chartDownloadBtn" onclick="downloadChartInformer()">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -3355,6 +3355,62 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
     </div>
 </div>
 
+    <!-- === МОДАЛЬНОЕ ОКНО: AQL XARITASI (MIND MAP -> PNG / SVG) === -->
+<div class="weather-modal-backdrop" id="mindmapModalBackdrop" onclick="closeMindmapModal(event)">
+    <div class="weather-modal-card mindmap-modal-card" onclick="event.stopPropagation()">
+        <div class="pdf-studio-header" style="margin-bottom: 12px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="mindmap-icon-badge">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="19" r="2"/><line x1="14.2" y1="9.8" x2="17.5" y2="6.5"/><line x1="9.8" y1="9.8" x2="6.5" y2="6.5"/><line x1="14.2" y1="14.2" x2="17.5" y2="17.5"/><line x1="9.8" y1="14.2" x2="6.5" y2="17.5"/></svg>
+                </div>
+                <div>
+                    <div class="pdf-studio-title">Aql xaritasi (Mind Map)</div>
+                    <div class="pdf-studio-sub">Ğoyalarni tuziş, suriş va PNG / SVG eksport</div>
+                </div>
+            </div>
+            <button type="button" class="pdf-studio-close" onclick="closeMindmapModal()">×</button>
+        </div>
+
+        <!-- Панель управления выбранным узлом и темой -->
+        <div class="mindmap-toolbar">
+            <div class="mindmap-node-controls">
+                <input type="text" id="mmNodeTextInput" class="bib-custom-input mindmap-text-input" placeholder="Tugun matni..." oninput="updateSelectedMindmapText(this.value)">
+                <div class="mindmap-colors" id="mmColorPicker"></div>
+                <button type="button" class="mindmap-tool-btn add" onclick="addMindmapChild()" title="Yangi şoxça qöşiş">+ Şoxça</button>
+                <button type="button" class="mindmap-tool-btn del" id="mmDeleteBtn" onclick="deleteSelectedMindmapNode()" title="Öçiriş">Öçiriş</button>
+            </div>
+            <div class="mindmap-right-tools">
+                <button type="button" class="mindmap-tool-btn neutral" onclick="autoLayoutMindmap()" title="Tugunlarni tartiblaş">✨ Avto-joylaş</button>
+                <div class="chart-seg-group" id="mmThemeGroup">
+                    <button type="button" class="chart-seg-btn active" data-theme="light" onclick="setMindmapTheme('light')">⚪</button>
+                    <button type="button" class="chart-seg-btn" data-theme="dark" onclick="setMindmapTheme('dark')">⚫</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Интерактивный SVG-холст -->
+        <div class="mindmap-canvas-wrap light" id="mindmapCanvasWrap">
+            <svg id="mindmapSvg" viewBox="0 0 960 540" xmlns="http://www.w3.org/2000/svg"></svg>
+            <div class="mindmap-hint">Tugunni bosing — tahrirlaş • Surib joyini özgartiriş mumkin</div>
+        </div>
+
+        <!-- Футер с экспортом в SVG и PNG -->
+        <div class="weather-modal-footer" style="margin-top: 12px; flex-wrap: wrap; gap: 8px;">
+            <button type="button" class="mindmap-tool-btn neutral" onclick="resetMindmapDemo()">↺ Namuna</button>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap: wrap;">
+                <button type="button" class="curr-export-btn" onclick="downloadMindmapSVG()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    <span>SVG yuklab oliş</span>
+                </button>
+                <button type="button" class="curr-export-btn" id="mmPngBtn" onclick="downloadMindmapPNG()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>PNG yuklab oliş</span>
+                </button>
+                <button type="button" class="weather-modal-close" onclick="closeMindmapModal()">Yopiş</button>
+            </div>
+        </div>
+    </div>
+</div>
     
 <!-- === 20-20-20 QOIDASI (SOG'LOM KO'ZLAR) === -->
 <div id="eyeCareOverlay" class="eye-care-overlay">
