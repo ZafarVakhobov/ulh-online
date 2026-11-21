@@ -11350,6 +11350,7 @@ const ULH_TOOL_CATALOG = [
     { id: "weather", name: "Ob-havo", description: "Özbekiston hududlari böyiça prognoz", category: "Foydali vositalar", keywords: "weather forecast shahar hudud погода прогноз город", action: "openWeatherModal" },
     { id: "currency", name: "Valyuta kalkulyatori", description: "Valyuta kurslari va miqdor hisoblaş", category: "Foydali vositalar", keywords: "currency money kurs dollar euro rubl валюта курс конвертер", action: "openCurrencyModal" },
     { id: "pdf-studio", name: "PDF Studiya", description: "PDF fayllarni birlaştiriş, sahifa ajratiş va watermark örnatiş", category: "Foydali vositalar", keywords: "pdf studio merge split watermark page numbers birlashtirish ajratish suv belgisi raqamlash пдф склеить объединить вырезать разделить водяной знак нумерация страницы", action: "openPdfStudioModal" },
+    { id: "mindmap", name: "Aql xaritasi (Mind Map)", description: "Ğoyalar xaritasini tuziş", category: "Foydali vositalar", keywords: "mindmap mind map aql xaritasi sxema goya png svg майндмап карта мыслей схема", action: "openMindmapModal" },
     { id: "chart", name: "Grafik konstruktori", description: "Ustunli va doiraviy PNG infografika yaratiş", category: "Foydali vositalar", keywords: "grafik diagramma chart infografika statistika png ustunli doiraviy график диаграмма инфографика статистика", action: "openChartModal" },
     { id: "qr", name: "QR-kod generatori", description: "Matn yoki havoladan QR-kod yaratiş", category: "Foydali vositalar", keywords: "qr code kod link havola png svg qr код ссылка", action: "openQrModal" },
     { id: "bibliography", name: "Iqtibos va adabiyotlar", description: "Manba va bibliografik yozuv yaratiş", category: "Foydali vositalar", keywords: "citation bibliography reference vak iqtibos adabiyot", action: "openBiblioModal" },
@@ -11956,6 +11957,393 @@ window.downloadChartInformer = async function() {
     } catch (err) {
         console.error("Chart Informer Error:", err);
         alert("Grafikni yaratişda xatolik yuz berdi.");
+    } finally {
+        if (btnSpan) btnSpan.textContent = origText;
+        if (btn) btn.disabled = false;
+    }
+};
+
+
+// ==========================================
+// === AQL XARITASI (MIND MAP -> PNG / SVG) ===
+// ==========================================
+const MM_STORAGE_KEY = "ulh_mindmap_v1";
+const MM_COLORS = ["#0284C7", "#10B981", "#F59E0B", "#8B5CF6", "#EF4444", "#EC4899", "#14B8A6"];
+
+let mmState = {
+    theme: "light",
+    selectedId: "root",
+    nodes: []
+};
+
+let mmDrag = { active: false, id: null, offsetX: 0, offsetY: 0 };
+
+function getDefaultMindmapNodes() {
+    return [
+        { id: "root", parentId: null, text: "Asosiy mavzu", x: 480, y: 270, color: "#0284C7" },
+        { id: "n1", parentId: "root", text: "1-yönaliş", x: 240, y: 150, color: "#10B981" },
+        { id: "n2", parentId: "root", text: "2-yönaliş", x: 720, y: 150, color: "#8B5CF6" },
+        { id: "n3", parentId: "root", text: "3-yönaliş", x: 240, y: 390, color: "#F59E0B" },
+        { id: "n4", parentId: "root", text: "4-yönaliş", x: 720, y: 390, color: "#EC4899" },
+        { id: "n1a", parentId: "n1", text: "Tafsilot", x: 110, y: 90, color: "#10B981" }
+    ];
+}
+
+function loadMindmapData() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(MM_STORAGE_KEY) || "null");
+        if (saved && Array.isArray(saved.nodes) && saved.nodes.length) {
+            mmState.nodes = saved.nodes;
+            mmState.theme = saved.theme || "light";
+            return;
+        }
+    } catch (_) {}
+    mmState.nodes = getDefaultMindmapNodes();
+}
+
+function saveMindmapData() {
+    try {
+        localStorage.setItem(MM_STORAGE_KEY, JSON.stringify({
+            theme: mmState.theme,
+            nodes: mmState.nodes
+        }));
+    } catch (_) {}
+}
+
+window.openMindmapModal = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    loadMindmapData();
+    const modal = document.getElementById("mindmapModalBackdrop");
+    if (modal) {
+        modal.classList.add("open");
+        setMindmapTheme(mmState.theme);
+        selectMindmapNode("root");
+        renderMindmap();
+    }
+};
+
+window.closeMindmapModal = function(event) {
+    const modal = document.getElementById("mindmapModalBackdrop");
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove("open");
+};
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeMindmapModal();
+});
+
+window.setMindmapTheme = function(theme) {
+    mmState.theme = theme;
+    const wrap = document.getElementById("mindmapCanvasWrap");
+    if (wrap) {
+        wrap.classList.toggle("light", theme === "light");
+        wrap.classList.toggle("dark", theme === "dark");
+    }
+    document.querySelectorAll("#mmThemeGroup .chart-seg-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.theme === theme);
+    });
+    saveMindmapData();
+    renderMindmap();
+};
+
+function selectMindmapNode(id) {
+    const node = mmState.nodes.find(n => n.id === id) || mmState.nodes[0];
+    if (!node) return;
+    mmState.selectedId = node.id;
+
+    const input = document.getElementById("mmNodeTextInput");
+    if (input) input.value = node.text;
+
+    const delBtn = document.getElementById("mmDeleteBtn");
+    if (delBtn) delBtn.disabled = (node.id === "root");
+
+    const colorBox = document.getElementById("mmColorPicker");
+    if (colorBox) {
+        colorBox.innerHTML = MM_COLORS.map(c => `
+            <button type="button" class="mm-color-dot ${node.color === c ? "active" : ""}"
+                style="background:${c};" onclick="setMindmapNodeColor('${c}')"></button>
+        `).join("");
+    }
+    renderMindmap();
+}
+
+window.updateSelectedMindmapText = function(val) {
+    const node = mmState.nodes.find(n => n.id === mmState.selectedId);
+    if (!node) return;
+    node.text = val;
+    saveMindmapData();
+    renderMindmap();
+};
+
+window.setMindmapNodeColor = function(color) {
+    const node = mmState.nodes.find(n => n.id === mmState.selectedId);
+    if (!node) return;
+    node.color = color;
+    saveMindmapData();
+    selectMindmapNode(node.id);
+};
+
+window.addMindmapChild = function() {
+    const parent = mmState.nodes.find(n => n.id === mmState.selectedId) || mmState.nodes[0];
+    if (!parent) return;
+
+    const siblings = mmState.nodes.filter(n => n.parentId === parent.id);
+    const angle = (siblings.length * 1.15) - 0.6;
+    const dist = parent.id === "root" ? 210 : 145;
+    const nx = Math.max(85, Math.min(875, Math.round(parent.x + Math.cos(angle) * dist)));
+    const ny = Math.max(50, Math.min(490, Math.round(parent.y + Math.sin(angle) * dist)));
+
+    const newColor = parent.id === "root"
+        ? MM_COLORS[(siblings.length + 1) % MM_COLORS.length]
+        : parent.color;
+
+    const newNode = {
+        id: "n_" + Date.now().toString(36),
+        parentId: parent.id,
+        text: "Yangi ğoya",
+        x: nx,
+        y: ny,
+        color: newColor
+    };
+    mmState.nodes.push(newNode);
+    saveMindmapData();
+    selectMindmapNode(newNode.id);
+
+    const input = document.getElementById("mmNodeTextInput");
+    if (input) { input.focus(); input.select(); }
+};
+
+window.deleteSelectedMindmapNode = function() {
+    if (mmState.selectedId === "root") return;
+    const toRemove = new Set([mmState.selectedId]);
+    let added = true;
+    while (added) {
+        added = false;
+        mmState.nodes.forEach(n => {
+            if (n.parentId && toRemove.has(n.parentId) && !toRemove.has(n.id)) {
+                toRemove.add(n.id);
+                added = true;
+            }
+        });
+    }
+    mmState.nodes = mmState.nodes.filter(n => !toRemove.has(n.id));
+    saveMindmapData();
+    selectMindmapNode("root");
+};
+
+window.autoLayoutMindmap = function() {
+    const root = mmState.nodes.find(n => n.id === "root");
+    if (!root) return;
+    root.x = 480;
+    root.y = 270;
+
+    const level1 = mmState.nodes.filter(n => n.parentId === "root");
+    level1.forEach((node, idx) => {
+        const angle = (idx / Math.max(1, level1.length)) * Math.PI * 2 - Math.PI / 2;
+        node.x = Math.round(480 + Math.cos(angle) * 235);
+        node.y = Math.round(270 + Math.sin(angle) * 150);
+
+        const level2 = mmState.nodes.filter(n => n.parentId === node.id);
+        level2.forEach((child, cIdx) => {
+            const spread = (cIdx - (level2.length - 1) / 2) * 0.45;
+            const cAngle = angle + spread;
+            child.x = Math.max(85, Math.min(875, Math.round(node.x + Math.cos(cAngle) * 145)));
+            child.y = Math.max(45, Math.min(495, Math.round(node.y + Math.sin(cAngle) * 100)));
+        });
+    });
+
+    saveMindmapData();
+    renderMindmap();
+};
+
+window.resetMindmapDemo = function() {
+    mmState.nodes = getDefaultMindmapNodes();
+    saveMindmapData();
+    selectMindmapNode("root");
+};
+
+function getNodeDims(node) {
+    const isRoot = node.id === "root";
+    const text = node.text || " ";
+    const charW = isRoot ? 10 : 8.4;
+    const w = Math.max(isRoot ? 140 : 96, Math.min(270, text.length * charW + (isRoot ? 40 : 30)));
+    const h = isRoot ? 48 : 38;
+    return { w, h, isRoot };
+}
+
+function buildMindmapSvgInner(isExport) {
+    const isDark = mmState.theme === "dark";
+    const nodeBg = isDark ? "#1E293B" : "#FFFFFF";
+    const textCol = isDark ? "#F8FAFC" : "#0F172A";
+    const footerCol = isDark ? "rgba(248,250,252,0.5)" : "rgba(15,23,42,0.45)";
+
+    let bgHtml = "";
+    if (isExport) {
+        const bgFill = isDark ? "#0F172A" : "#F8FAFC";
+        bgHtml = `
+            <rect width="960" height="540" fill="${bgFill}" rx="0"/>
+            <text x="936" y="518" text-anchor="end" font-family="Manrope, Arial, sans-serif" font-size="13" font-weight="700" fill="${footerCol}">ulh-online.uz • Aql xaritasi</text>
+        `;
+    }
+
+    // 1. Кривые Безье между узлами
+    const edgesHtml = mmState.nodes.map(node => {
+        if (!node.parentId) return "";
+        const parent = mmState.nodes.find(p => p.id === node.parentId);
+        if (!parent) return "";
+        const mx = (parent.x + node.x) / 2;
+        const d = `M ${parent.x} ${parent.y} C ${mx} ${parent.y}, ${mx} ${node.y}, ${node.x} ${node.y}`;
+        return `<path d="${d}" fill="none" stroke="${node.color}" stroke-width="${parent.id === "root" ? 3 : 2.2}" stroke-opacity="0.72" stroke-linecap="round"/>`;
+    }).join("");
+
+    // 2. Сами узлы
+    const nodesHtml = mmState.nodes.map(node => {
+        const { w, h, isRoot } = getNodeDims(node);
+        const rx = isRoot ? 16 : 12;
+        const isSel = !isExport && node.id === mmState.selectedId;
+        const fill = isRoot ? node.color : nodeBg;
+        const labelColor = isRoot ? "#FFFFFF" : textCol;
+        const stroke = isSel ? "#38BDF8" : node.color;
+        const strokeW = isSel ? 3 : (isRoot ? 0 : 2);
+        const safeText = escapeHTML(node.text || "...");
+
+        return `
+            <g class="mm-node-group" data-id="${node.id}" transform="translate(${node.x}, ${node.y})">
+                <rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="${rx}"
+                    fill="${fill}" stroke="${stroke}" stroke-width="${strokeW}"/>
+                <text x="0" y="1" text-anchor="middle" dominant-baseline="middle"
+                    font-family="Manrope, Arial, sans-serif" font-size="${isRoot ? 16 : 13.5}"
+                    font-weight="${isRoot ? 800 : 700}" fill="${labelColor}" style="pointer-events:none;">${safeText}</text>
+            </g>
+        `;
+    }).join("");
+
+    return bgHtml + edgesHtml + nodesHtml;
+}
+
+function renderMindmap() {
+    const svg = document.getElementById("mindmapSvg");
+    if (!svg) return;
+    svg.innerHTML = buildMindmapSvgInner(false);
+}
+
+// Перетаскивание узлов (мышь + тач)
+(function initMindmapDrag() {
+    const svg = document.getElementById("mindmapSvg");
+    if (!svg) return;
+
+    function getSvgPoint(e) {
+        const rect = svg.getBoundingClientRect();
+        return {
+            x: ((e.clientX - rect.left) / rect.width) * 960,
+            y: ((e.clientY - rect.top) / rect.height) * 540
+        };
+    }
+
+    svg.addEventListener("pointerdown", (e) => {
+        const group = e.target.closest(".mm-node-group");
+        if (!group) return;
+        const id = group.getAttribute("data-id");
+        const node = mmState.nodes.find(n => n.id === id);
+        if (!node) return;
+
+        selectMindmapNode(id);
+        const pt = getSvgPoint(e);
+        mmDrag = { active: true, id, offsetX: node.x - pt.x, offsetY: node.y - pt.y };
+        svg.setPointerCapture(e.pointerId);
+    });
+
+    svg.addEventListener("pointermove", (e) => {
+        if (!mmDrag.active) return;
+        const node = mmState.nodes.find(n => n.id === mmDrag.id);
+        if (!node) return;
+        const pt = getSvgPoint(e);
+        node.x = Math.max(70, Math.min(890, Math.round(pt.x + mmDrag.offsetX)));
+        node.y = Math.max(36, Math.min(504, Math.round(pt.y + mmDrag.offsetY)));
+        renderMindmap();
+    });
+
+    svg.addEventListener("pointerup", () => {
+        if (mmDrag.active) {
+            mmDrag.active = false;
+            saveMindmapData();
+        }
+    });
+})();
+
+function getExportMindmapSvgString() {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">${buildMindmapSvgInner(true)}</svg>`;
+}
+
+// Экспорт в чистый векторный SVG
+window.downloadMindmapSVG = function() {
+    const svgStr = getExportMindmapSvgString();
+    const blob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = `ulh_mindmap_${mmState.theme}.svg`;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+// Экспорт в PNG высокого разрешения (1920x1120) с логотипом
+window.downloadMindmapPNG = async function() {
+    const btn = document.getElementById("mmPngBtn");
+    const btnSpan = btn ? btn.querySelector("span") : null;
+    const origText = btnSpan ? btnSpan.textContent : "PNG yuklab oliş";
+    if (btnSpan) btnSpan.textContent = "Tayyorlanmoqda...";
+    if (btn) btn.disabled = true;
+
+    try {
+        const svgStr = getExportMindmapSvgString();
+        const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+        const svgUrl = URL.createObjectURL(svgBlob);
+
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = svgUrl;
+        });
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 1920;
+        canvas.height = 1080;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, 1920, 1080);
+        URL.revokeObjectURL(svgUrl);
+
+        // Дорисовываем логотип сайта в левый нижний угол
+        const logoImg = new Image();
+        logoImg.crossOrigin = "anonymous";
+        logoImg.src = mmState.theme === "dark" ? "/logo-dark.svg" : "/logo.svg";
+        await new Promise(resolve => {
+            logoImg.onload = () => {
+                const lw = 240;
+                const lh = (logoImg.naturalHeight / (logoImg.naturalWidth || 1)) * lw;
+                ctx.drawImage(logoImg, 44, 1080 - lh - 36, lw, lh);
+                resolve();
+            };
+            logoImg.onerror = resolve;
+        });
+
+        const link = document.createElement("a");
+        link.download = `ulh_mindmap_${mmState.theme}.png`;
+        link.href = canvas.toDataURL("image/png");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (err) {
+        console.error("Mindmap PNG Error:", err);
+        alert("PNG yaratişda xatolik yuz berdi.");
     } finally {
         if (btnSpan) btnSpan.textContent = origText;
         if (btn) btn.disabled = false;
