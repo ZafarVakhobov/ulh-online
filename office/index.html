@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULH Office — Word, Slides, Tables</title>
+    <link rel="icon" href="/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Подключаем стили основного сайта + стили Office -->
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="./style.css">
+    <!-- Библиотеки для экспорта/импорта файлов -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="office-body">
+
+    <!-- === 4-СЕКУНДНЫЙ ЭКРАН ЗАГРУЗКИ === -->
+    <div id="officeLoader" class="office-loader active">
+        <div class="office-loader-card">
+            <div class="office-loader-spinner" id="officeLoaderSpinner"></div>
+            <div class="office-loader-title" id="officeLoaderTitle">ULH Word yuklanmoqda...</div>
+            <div class="office-loader-bar"><div class="office-loader-fill" id="officeLoaderFill"></div></div>
+            <div class="office-loader-sub">Hujjat va vositalar tayyorlanmoqda</div>
+        </div>
+    </div>
+
+    <!-- === ФИКСИРОВАННАЯ ШАПКА И ПАНЕЛЬ ИНСТРУМЕНТОВ === -->
+    <header class="office-topbar">
+        <div class="office-top-row">
+            <div class="office-brand-group">
+                <a href="/" class="office-logo-link" title="Asosiy sahifa">
+                    <img src="/logo.svg" alt="ULH" class="logo-light" height="28">
+                    <img src="/logo-dark.svg" alt="ULH" class="logo-dark" height="28">
+                </a>
+                <span id="officeModeBadge" class="office-mode-badge mode-word">ULH Word</span>
+                <input type="text" id="officeDocTitle" class="office-doc-title" value="Yangi hujjat" oninput="saveCurrentOfficeDoc()">
+                <span id="officeAutosaveText" class="office-autosave">Avtosaqlandi ✓</span>
+            </div>
+
+            <div class="office-top-actions">
+                <!-- Открыть файл -->
+                <input type="file" id="officeFileInput" style="display:none" onchange="handleOfficeFileOpen(event)">
+                <button type="button" class="office-btn" onclick="triggerOfficeFileOpen()" title="Kompyuterdan fayl oçiş">📂 Oçiş</button>
+
+                <!-- Сохранить как (выпадающее меню форматов) -->
+                <div class="office-dropdown-wrap" id="officeSaveWrap">
+                    <button type="button" class="office-btn primary" onclick="toggleOfficeSaveMenu(event)">💾 Saqlaş ▾</button>
+                    <div class="office-dropdown-menu" id="officeSaveMenu"></div>
+                </div>
+
+                <!-- Транслитерация всего документа -->
+                <button type="button" class="office-btn accent" onclick="transliterateWholeDocument()" title="Butun hujjatni yangi özbek alifbosiga ögiriş (stillarni saqlagan holda)">ÖĞŞÇ</button>
+
+                <!-- История (Time Machine) -->
+                <button type="button" class="office-btn" onclick="openOfficeHistoryModal()" title="Matn tarixi">🕒 Tarix</button>
+
+                <!-- Печать -->
+                <button type="button" class="office-btn" onclick="printOfficeDocument()" title="Çop etiş">🖨️ Çop</button>
+
+                <!-- Запуск презентации (видна только в Slides) -->
+                <button type="button" id="officePlaySlideBtn" class="office-btn danger" style="display:none" onclick="startSlideshow()">▶ Taqdimot</button>
+
+                <!-- Смена темы -->
+                <button type="button" class="office-icon-btn" onclick="toggleDarkMode()" title="Kun / Tun rejimi">🌓</button>
+
+                <!-- Свернуть на главную -->
+                <button type="button" class="office-btn minimize" onclick="minimizeOfficeToMain()" title="Asosiy sahifaga qaytiş">⬇ Yiğib qöyiş</button>
+            </div>
+        </div>
+
+        <!-- Панель форматирования -->
+        <div class="office-toolbar" id="officeToolbar">
+            <select id="officeFontFamily" class="office-select" onchange="execOfficeFormat('fontName', this.value)" title="Şrift">
+                <option value="Manrope" selected>Manrope</option>
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Calibri">Calibri</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Tahoma">Tahoma</option>
+                <option value="Courier New">Courier New</option>
+            </select>
+
+            <select id="officeFontSize" class="office-select small" onchange="execOfficeFormat('fontSize', this.value)" title="Ölçam">
+                <option value="2">10 pt</option>
+                <option value="3" selected>12 pt</option>
+                <option value="4">14 pt</option>
+                <option value="5">18 pt</option>
+                <option value="6">24 pt</option>
+                <option value="7">32 pt</option>
+            </select>
+
+            <span class="office-sep"></span>
+            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('bold')" title="Qalin"><b>B</b></button>
+            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('italic')" title="Kursiv"><i>I</i></button>
+            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('underline')" title="Tagiga çiziş"><u>U</u></button>
+            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('strikeThrough')" title="Ustidan çiziş"><s>S</s></button>
+
+            <span class="office-sep"></span>
+            <input type="color" id="officeForeColor" class="office-color-inp" value="#0F172A" onchange="execOfficeFormat('foreColor', this.value)" title="Matn rangi">
+            <input type="color" id="officeBackColor" class="office-color-inp" value="#FEF08A" onchange="execOfficeFormat('hiliteColor', this.value)" title="Fon rangi">
+
+            <span class="office-sep"></span>
+            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('justifyLeft')" title="Çapga">≡</button>
+            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('justifyCenter')" title="Markazga">≣</button>
+            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('justifyRight')" title="Öngga">≡</button>
+            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('insertUnorderedList')" title="Röyxat">•</button>
+            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('insertOrderedList')" title="Raqamli röyxat">1.</button>
+
+            <span class="office-sep"></span>
+            <button type="button" class="office-tool-btn wide" onclick="insertOfficeImage()" title="Rasm qöşiş">🖼️ Rasm</button>
+            <button type="button" class="office-tool-btn wide" id="officeAddRowBtn" style="display:none" onclick="addTableRow()">+ Qator</button>
+            <button type="button" class="office-tool-btn wide" id="officeAddColBtn" style="display:none" onclick="addTableCol()">+ Ustun</button>
+
+            <div class="office-zoom-pill" title="Ctrl + siçqonça ğildiragi bilan massştablaş">
+                <button type="button" onclick="adjustOfficeZoom(-0.1)">−</button>
+                <span id="officeZoomLabel">100%</span>
+                <button type="button" onclick="adjustOfficeZoom(0.1)">+</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- === ЛЕВОЕ ПЛАВАЮЩЕЕ МЕНЮ ПЕРЕКЛЮЧЕНИЯ РЕЖИМОВ === -->
+    <aside class="office-mode-dock">
+        <button type="button" class="mode-dock-btn active" data-mode="word" onclick="switchOfficeMode('word')" title="ULH Word">
+            <span class="mode-dot word">W</span>
+            <span>Word</span>
+        </button>
+        <button type="button" class="mode-dock-btn" data-mode="slides" onclick="switchOfficeMode('slides')" title="ULH Slides">
+            <span class="mode-dot slides">S</span>
+            <span>Slides</span>
+        </button>
+        <button type="button" class="mode-dock-btn" data-mode="tables" onclick="switchOfficeMode('tables')" title="ULH Tables">
+            <span class="mode-dot tables">T</span>
+            <span>Tables</span>
+        </button>
+    </aside>
+
+    <!-- === РАБОЧАЯ ОБЛАСТЬ (ZOOMABLE) === -->
+    <main class="office-stage" id="officeStage">
+        <div class="office-zoom-wrapper" id="officeZoomWrapper">
+
+            <!-- 1. ULH WORD (А4) -->
+            <section id="paneWord" class="office-pane active">
+                <div id="wordEditor" class="a4-sheet" contenteditable="true" spellcheck="false">
+                    <h2>ULH Word</h2>
+                    <p>Bu yerda hujjatingizni yozişingiz mumkin. Matn avtomatik saqlanadi, <b>Ctrl + siçqonça ğildiragi</b> bilan varaqni kattalaştirişingiz mumkin.</p>
+                </div>
+            </section>
+
+            <!-- 2. ULH SLIDES -->
+            <section id="paneSlides" class="office-pane">
+                <div class="slides-workspace">
+                    <div class="slides-sidebar">
+                        <div class="slides-sidebar-head">
+                            <span>Slaydlar</span>
+                            <button type="button" class="office-btn primary small" onclick="addNewSlide()">+ Slayd</button>
+                        </div>
+                        <div id="slidesThumbList" class="slides-thumb-list"></div>
+                    </div>
+                    <div class="slides-canvas-col">
+                        <div id="slideCanvas" class="slide-canvas-16-9">
+                            <div id="slideTitleBox" class="slide-title-box" contenteditable="true">Taqdimot sarlavhasi</div>
+                            <div id="slideBodyBox" class="slide-body-box" contenteditable="true">Slayd matnini şu yerga kiriting...</div>
+                        </div>
+                        <div class="slide-canvas-tools">
+                            <label>Slayd foni: <input type="color" id="slideBgColor" value="#FFFFFF" onchange="updateSlideBg(this.value)"></label>
+                            <button type="button" class="office-btn small" onclick="duplicateCurrentSlide()">Nusxalaş</button>
+                            <button type="button" class="office-btn small danger" onclick="deleteCurrentSlide()">Öçiriş</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. ULH TABLES -->
+            <section id="paneTables" class="office-pane">
+                <div class="tables-workspace">
+                    <div class="tables-formula-bar">
+                        <span id="activeCellRef" class="cell-ref-badge">A1</span>
+                        <input type="text" id="formulaInput" class="formula-input" placeholder="Qiymat yoki formula (=SUM(A1:A5), =A1+B1)..." onkeydown="handleFormulaKey(event)">
+                    </div>
+                    <div class="tables-grid-wrap">
+                        <table id="ulhSpreadsheet" class="ulh-sheet-table"></table>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- === ВСПЛЫВАЮЩЕЕ ОКНО УМНОЙ ВСТАВКИ (УЗБЕКСКИЙ АЛФАВИТ) === -->
+    <div id="smartPasteToast" class="smart-paste-toast">
+        <span>Matnni yangi özbek alifbosiga (Ö, Ğ, Ş, Ç) ögiraylikmi?</span>
+        <div class="smart-paste-actions">
+            <button type="button" class="office-btn primary small" onclick="confirmSmartPaste(true)">Ha</button>
+            <button type="button" class="office-btn small" onclick="confirmSmartPaste(false)">Yöq</button>
+        </div>
+    </div>
+
+    <!-- === КОНТЕКСТНОЕ МЕНЮ (ПКМ ТОЛЬКО В ПРЕДЕЛАХ ЛИСТА) === -->
+    <div id="officeContextMenu" class="office-context-menu">
+        <button type="button" onclick="ctxExec('cut')">✂️ Qirqiş</button>
+        <button type="button" onclick="ctxExec('copy')">📋 Nusxalaş</button>
+        <button type="button" onclick="ctxPaste()">📥 Joylaş</button>
+        <button type="button" onclick="ctxExec('removeFormat')">🧹 Formatni tozalaş</button>
+        <div id="ctxSelectionSection" class="ctx-selection-section" style="display:none;">
+            <hr>
+            <button type="button" onclick="ctxAiAction('synonym')">✨ Sinonim</button>
+            <button type="button" onclick="ctxAiAction('translate')">🌐 Tarjima</button>
+            <button type="button" id="ctxIzohBtn" onclick="ctxIzohAction()">📖 Izohli luğat</button>
+        </div>
+    </div>
+
+    <!-- Быстрый попап для Синонима / Перевода / Словаря -->
+    <div id="officeQuickResultModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+        <div class="weather-modal-card" style="max-width:480px; padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <b id="officeQuickTitle" style="font-size:16px;">Natija</b>
+                <button type="button" class="pdf-studio-close" onclick="document.getElementById('officeQuickResultModal').classList.remove('open')">×</button>
+            </div>
+            <div id="officeQuickBody" style="font-size:14px; line-height:1.6; max-height:320px; overflow-y:auto;"></div>
+        </div>
+    </div>
+
+    <!-- === МОДАЛЬНОЕ ОКНО ИСТОРИИ (TIME MACHINE) === -->
+    <div id="officeHistoryModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+        <div class="weather-modal-card" style="max-width:560px; padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <b style="font-size:16px;">🕒 Hujjat tarixi</b>
+                <button type="button" class="pdf-studio-close" onclick="document.getElementById('officeHistoryModal').classList.remove('open')">×</button>
+            </div>
+            <input type="range" id="officeHistSlider" min="0" max="0" value="0" style="width:100%;" oninput="previewOfficeHistory()">
+            <div id="officeHistTime" style="font-size:12px; color:#64748B; margin:6px 0 10px; font-weight:700;"></div>
+            <div id="officeHistPreview" class="office-hist-preview"></div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+                <button type="button" class="office-btn primary" onclick="restoreOfficeHistory()">Tiklaş</button>
+                <button type="button" class="office-btn" onclick="document.getElementById('officeHistoryModal').classList.remove('open')">Yopiş</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- === ПОЛНОЭКРАННЫЙ РЕЖИМ ПРЕЗЕНТАЦИИ === -->
+    <div id="slideshowOverlay" class="slideshow-overlay">
+        <div id="slideshowStage" class="slideshow-stage"></div>
+        <div class="slideshow-controls">
+            <button type="button" onclick="navSlideshow(-1)">←</button>
+            <span id="slideshowCounter">1 / 1</span>
+            <button type="button" onclick="navSlideshow(1)">→</button>
+            <button type="button" onclick="exitSlideshow()">✕ Çiqiş</button>
+        </div>
+    </div>
+
+    <!-- === СПРАВА ОТ ЛИСТА: ÖŞA AI WIDGET === -->
+    <button type="button" id="officeOshaBtn" class="office-osha-fab" onclick="toggleOfficeOsha()" title="Öşa AI yordamçi">
+        <span>✨</span>
+        <span>Öşa AI</span>
+    </button>
+
+    <div id="officeOshaChat" class="office-osha-chat hidden">
+        <div class="office-osha-head">
+            <div>
+                <b>Öşa AI</b>
+                <div style="font-size:11px; color:#10B981; font-weight:700;">ULH Office yordamçisi</div>
+            </div>
+            <button type="button" class="pdf-studio-close" onclick="toggleOfficeOsha()">×</button>
+        </div>
+        <div id="officeOshaMessages" class="office-osha-messages"></div>
+        <div class="office-osha-foot">
+            <input type="text" id="officeOshaInput" placeholder="Savol yoki matn yozing..." onkeydown="if(event.key==='Enter') sendOfficeOsha()">
+            <button type="button" class="office-btn primary small" onclick="sendOfficeOsha()">➤</button>
+        </div>
+    </div>
+
+    <!-- Подключаем основной scripts.js (для applyReplacements, enforceNewUzbekAlphabet, toggleDarkMode) + office/scripts.js -->
+    <script src="../scripts.js"></script>
+    <script src="./scripts.js"></script>
+</body>
+</html>
