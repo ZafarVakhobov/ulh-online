@@ -6,10 +6,8 @@
     <title>ULH Office — Word, Slides, Tables</title>
     <link rel="icon" href="/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Подключаем стили основного сайта + стили Office -->
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="./style.css">
-    <!-- Библиотеки для экспорта/импорта файлов -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -17,7 +15,7 @@
 </head>
 <body class="office-body">
 
-    <!-- === 4-СЕКУНДНЫЙ ЭКРАН ЗАГРУЗКИ === -->
+    <!-- 4-секундный экран загрузки -->
     <div id="officeLoader" class="office-loader active">
         <div class="office-loader-card">
             <div class="office-loader-spinner" id="officeLoaderSpinner"></div>
@@ -27,13 +25,13 @@
         </div>
     </div>
 
-    <!-- === ФИКСИРОВАННАЯ ШАПКА И ПАНЕЛЬ ИНСТРУМЕНТОВ === -->
+    <!-- === ФИКСИРОВАННАЯ ШАПКА И ЛЕНТА ИНСТРУМЕНТОВ === -->
     <header class="office-topbar">
         <div class="office-top-row">
             <div class="office-brand-group">
                 <a href="/" class="office-logo-link" title="Asosiy sahifa">
-                    <img src="/logo.svg" alt="ULH" class="logo-light" height="28">
-                    <img src="/logo-dark.svg" alt="ULH" class="logo-dark" height="28">
+                    <img src="/logo.svg" alt="ULH" class="logo-light" height="26">
+                    <img src="/logo-dark.svg" alt="ULH" class="logo-dark" height="26">
                 </a>
                 <span id="officeModeBadge" class="office-mode-badge mode-word">ULH Word</span>
                 <input type="text" id="officeDocTitle" class="office-doc-title" value="Yangi hujjat" oninput="saveCurrentOfficeDoc()">
@@ -41,84 +39,152 @@
             </div>
 
             <div class="office-top-actions">
-                <!-- Открыть файл -->
-                <input type="file" id="officeFileInput" style="display:none" onchange="handleOfficeFileOpen(event)">
-                <button type="button" class="office-btn" onclick="triggerOfficeFileOpen()" title="Kompyuterdan fayl oçiş">📂 Oçiş</button>
-
-                <!-- Сохранить как (выпадающее меню форматов) -->
-                <div class="office-dropdown-wrap" id="officeSaveWrap">
-                    <button type="button" class="office-btn primary" onclick="toggleOfficeSaveMenu(event)">💾 Saqlaş ▾</button>
-                    <div class="office-dropdown-menu" id="officeSaveMenu"></div>
-                </div>
-
-                <!-- Транслитерация всего документа -->
-                <button type="button" class="office-btn accent" onclick="transliterateWholeDocument()" title="Butun hujjatni yangi özbek alifbosiga ögiriş (stillarni saqlagan holda)">ÖĞŞÇ</button>
-
-                <!-- История (Time Machine) -->
+                <button type="button" class="office-btn accent" onclick="transliterateWholeDocument()" title="Butun hujjatni yangi özbek alifbosiga ögiriş">ÖĞŞÇ</button>
                 <button type="button" class="office-btn" onclick="openOfficeHistoryModal()" title="Matn tarixi">🕒 Tarix</button>
-
-                <!-- Печать -->
-                <button type="button" class="office-btn" onclick="printOfficeDocument()" title="Çop etiş">🖨️ Çop</button>
-
-                <!-- Запуск презентации (видна только в Slides) -->
                 <button type="button" id="officePlaySlideBtn" class="office-btn danger" style="display:none" onclick="startSlideshow()">▶ Taqdimot</button>
-
-                <!-- Смена темы -->
                 <button type="button" class="office-icon-btn" onclick="toggleDarkMode()" title="Kun / Tun rejimi">🌓</button>
-
-                <!-- Свернуть на главную -->
                 <button type="button" class="office-btn minimize" onclick="minimizeOfficeToMain()" title="Asosiy sahifaga qaytiş">⬇ Yiğib qöyiş</button>
             </div>
         </div>
 
-        <!-- Панель форматирования -->
-        <div class="office-toolbar" id="officeToolbar">
-            <select id="officeFontFamily" class="office-select" onchange="execOfficeFormat('fontName', this.value)" title="Şrift">
-                <option value="Manrope" selected>Manrope</option>
-                <option value="Arial">Arial</option>
-                <option value="Times New Roman">Times New Roman</option>
-                <option value="Calibri">Calibri</option>
-                <option value="Georgia">Georgia</option>
-                <option value="Verdana">Verdana</option>
-                <option value="Tahoma">Tahoma</option>
-                <option value="Courier New">Courier New</option>
-            </select>
+        <!-- Лента с группами (как в МойОфис / Word) -->
+        <div class="office-ribbon" id="officeRibbon">
+            <!-- Группа: Fayl -->
+            <div class="ribbon-group">
+                <div class="ribbon-group-title">Fayl</div>
+                <div class="ribbon-group-body col">
+                    <input type="file" id="officeFileInput" style="display:none" onchange="handleOfficeFileOpen(event)">
+                    <div class="ribbon-row">
+                        <button type="button" class="rb-btn" onclick="triggerOfficeFileOpen()" title="Oçiş">📂</button>
+                        <div class="office-dropdown-wrap" id="officeSaveWrap">
+                            <button type="button" class="rb-btn" onclick="toggleOfficeSaveMenu(event)" title="Saqlaş">💾▾</button>
+                            <div class="office-dropdown-menu" id="officeSaveMenu"></div>
+                        </div>
+                    </div>
+                    <div class="ribbon-row">
+                        <button type="button" class="rb-btn" onclick="printOfficeDocument()" title="Çop etiş">🖨️</button>
+                        <button type="button" class="rb-btn" id="rbNewPageBtn" onclick="addNewA4Page()" title="Yangi A4 sahifa">+📄</button>
+                    </div>
+                </div>
+            </div>
 
-            <select id="officeFontSize" class="office-select small" onchange="execOfficeFormat('fontSize', this.value)" title="Ölçam">
-                <option value="2">10 pt</option>
-                <option value="3" selected>12 pt</option>
-                <option value="4">14 pt</option>
-                <option value="5">18 pt</option>
-                <option value="6">24 pt</option>
-                <option value="7">32 pt</option>
-            </select>
+            <!-- Группа: Tahrir -->
+            <div class="ribbon-group">
+                <div class="ribbon-group-title">Tahrir</div>
+                <div class="ribbon-group-body col">
+                    <div class="ribbon-row">
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('cut')" title="Qirqiş">✂️</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('copy')" title="Nusxalaş">📋</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="ctxPaste()" title="Joylaş">📥</button>
+                    </div>
+                    <div class="ribbon-row">
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('undo')" title="Bekor qiliş">↶</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('redo')" title="Qaytarış">↷</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('removeFormat')" title="Formatni tozalaş">🧹</button>
+                    </div>
+                </div>
+            </div>
 
-            <span class="office-sep"></span>
-            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('bold')" title="Qalin"><b>B</b></button>
-            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('italic')" title="Kursiv"><i>I</i></button>
-            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('underline')" title="Tagiga çiziş"><u>U</u></button>
-            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('strikeThrough')" title="Ustidan çiziş"><s>S</s></button>
+            <!-- Группа: Şrift -->
+            <div class="ribbon-group">
+                <div class="ribbon-group-title">Şrift</div>
+                <div class="ribbon-group-body col">
+                    <div class="ribbon-row">
+                        <select id="officeFontFamily" class="rb-select" onchange="applyOfficeFont(this.value)" title="Şrift">
+                            <option value="Manrope" selected>Manrope</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Calibri">Calibri</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Tahoma">Tahoma</option>
+                            <option value="Courier New">Courier New</option>
+                        </select>
+                        <select id="officeFontSize" class="rb-select small" onchange="applyOfficeFontSize(this.value)" title="Ölçam">
+                            <option value="10">10</option>
+                            <option value="12">12</option>
+                            <option value="14" selected>14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="22">22</option>
+                            <option value="28">28</option>
+                            <option value="36">36</option>
+                        </select>
+                    </div>
+                    <div class="ribbon-row">
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('bold')" title="Qalin"><b>B</b></button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('italic')" title="Kursiv"><i>I</i></button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('underline')" title="Tagiga çiziş"><u>U</u></button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('strikeThrough')" title="Ustidan çiziş"><s>S</s></button>
+                        <input type="color" id="officeForeColor" class="office-color-inp" value="#0F172A" onchange="applyOfficeColor('foreColor', this.value)" title="Matn rangi">
+                        <input type="color" id="officeBackColor" class="office-color-inp" value="#FEF08A" onchange="applyOfficeColor('hiliteColor', this.value)" title="Fon rangi">
+                    </div>
+                </div>
+            </div>
 
-            <span class="office-sep"></span>
-            <input type="color" id="officeForeColor" class="office-color-inp" value="#0F172A" onchange="execOfficeFormat('foreColor', this.value)" title="Matn rangi">
-            <input type="color" id="officeBackColor" class="office-color-inp" value="#FEF08A" onchange="execOfficeFormat('hiliteColor', this.value)" title="Fon rangi">
+            <!-- Группа: Abzats (для Word и Slides) -->
+            <div class="ribbon-group" id="rbGroupParagraph">
+                <div class="ribbon-group-title">Abzats</div>
+                <div class="ribbon-group-body col">
+                    <div class="ribbon-row">
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('insertUnorderedList')" title="Röyxat">•≡</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyLeft')" title="Çapga">≡</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyCenter')" title="Markazga">≣</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyRight')" title="Öngga">≡</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('justifyFull')" title="Eniga">▤</button>
+                    </div>
+                    <div class="ribbon-row">
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('insertOrderedList')" title="Raqamli röyxat">1.</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('outdent')" title="Çapga suriş">⇤</button>
+                        <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('indent')" title="Öngga suriş">⇥</button>
+                    </div>
+                </div>
+            </div>
 
-            <span class="office-sep"></span>
-            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('justifyLeft')" title="Çapga">≡</button>
-            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('justifyCenter')" title="Markazga">≣</button>
-            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('justifyRight')" title="Öngga">≡</button>
-            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('insertUnorderedList')" title="Röyxat">•</button>
-            <button type="button" class="office-tool-btn" onclick="execOfficeFormat('insertOrderedList')" title="Raqamli röyxat">1.</button>
+            <!-- Группа: Uslub (для Word и Slides) -->
+            <div class="ribbon-group" id="rbGroupStyles">
+                <div class="ribbon-group-title">Uslub</div>
+                <div class="ribbon-group-body">
+                    <button type="button" class="rb-style-card" onmousedown="event.preventDefault()" onclick="execOfficeFormat('formatBlock', 'P')">
+                        <span class="rb-st-preview">AaBb</span>
+                        <span class="rb-st-lbl">Oddiy</span>
+                    </button>
+                    <button type="button" class="rb-style-card" onmousedown="event.preventDefault()" onclick="execOfficeFormat('formatBlock', 'H1')">
+                        <span class="rb-st-preview h1">AaBb</span>
+                        <span class="rb-st-lbl">Sarlavha 1</span>
+                    </button>
+                </div>
+            </div>
 
-            <span class="office-sep"></span>
-            <button type="button" class="office-tool-btn wide" onclick="insertOfficeImage()" title="Rasm qöşiş">🖼️ Rasm</button>
-            <button type="button" class="office-tool-btn wide" id="officeAddRowBtn" style="display:none" onclick="addTableRow()">+ Qator</button>
-            <button type="button" class="office-tool-btn wide" id="officeAddColBtn" style="display:none" onclick="addTableCol()">+ Ustun</button>
+            <!-- Группа: Ma'lumotlar (только для Tables) -->
+            <div class="ribbon-group" id="rbGroupTablesData" style="display:none;">
+                <div class="ribbon-group-title">Ma'lumotlar va Formulalar</div>
+                <div class="ribbon-group-body col">
+                    <div class="ribbon-row">
+                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('SUM')" title="Avtosumma">Σ Summa</button>
+                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('AVG')" title="Örtaça qiymat">x̄ Örtaça</button>
+                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('COUNT')" title="Soni"># Soni</button>
+                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('MAX')" title="Maksimum">↑ Max</button>
+                        <button type="button" class="rb-btn wide" onclick="applyTableQuickFunc('MIN')" title="Minimum">↓ Min</button>
+                    </div>
+                    <div class="ribbon-row">
+                        <button type="button" class="rb-btn wide" onclick="sortTableByActiveCol(true)">A→Z Saralaş</button>
+                        <button type="button" class="rb-btn wide" onclick="sortTableByActiveCol(false)">Z→A Saralaş</button>
+                        <button type="button" class="rb-btn wide" onclick="addTableRow()">+ Qator</button>
+                        <button type="button" class="rb-btn wide" onclick="addTableCol()">+ Ustun</button>
+                        <button type="button" class="rb-btn wide" onclick="clearActiveTableCell()">🧹 Tozalaş</button>
+                    </div>
+                </div>
+            </div>
 
-            <div class="office-zoom-pill" title="Ctrl + siçqonça ğildiragi bilan massştablaş">
-                <button type="button" onclick="adjustOfficeZoom(-0.1)">−</button>
-                <span id="officeZoomLabel">100%</span>
-                <button type="button" onclick="adjustOfficeZoom(0.1)">+</button>
+            <!-- Группа: Qöşiş (Вставка: Таблица, Картинка, График, Ссылка) -->
+            <div class="ribbon-group">
+                <div class="ribbon-group-title">Qöşiş</div>
+                <div class="ribbon-group-body">
+                    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="insertOfficeImage()" title="Rasm qöşiş"><span>🖼️</span><small>Rasm</small></button>
+                    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="openOfficeChartModal()" title="Grafik yaratiş va qöşiş"><span>📊</span><small>Grafik</small></button>
+                    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="insertOfficeLink()" title="Havola qöşiş"><span>🔗</span><small>Havola</small></button>
+                </div>
             </div>
         </div>
     </header>
@@ -126,28 +192,31 @@
     <!-- === ЛЕВОЕ ПЛАВАЮЩЕЕ МЕНЮ ПЕРЕКЛЮЧЕНИЯ РЕЖИМОВ === -->
     <aside class="office-mode-dock">
         <button type="button" class="mode-dock-btn active" data-mode="word" onclick="switchOfficeMode('word')" title="ULH Word">
-            <span class="mode-dot word">W</span>
-            <span>Word</span>
+            <span class="mode-dot word">W</span><span>Word</span>
         </button>
         <button type="button" class="mode-dock-btn" data-mode="slides" onclick="switchOfficeMode('slides')" title="ULH Slides">
-            <span class="mode-dot slides">S</span>
-            <span>Slides</span>
+            <span class="mode-dot slides">S</span><span>Slides</span>
         </button>
         <button type="button" class="mode-dock-btn" data-mode="tables" onclick="switchOfficeMode('tables')" title="ULH Tables">
-            <span class="mode-dot tables">T</span>
-            <span>Tables</span>
+            <span class="mode-dot tables">T</span><span>Tables</span>
         </button>
     </aside>
 
-    <!-- === РАБОЧАЯ ОБЛАСТЬ (ZOOMABLE) === -->
+    <!-- === РАБОЧАЯ ОБЛАСТЬ === -->
     <main class="office-stage" id="officeStage">
         <div class="office-zoom-wrapper" id="officeZoomWrapper">
 
-            <!-- 1. ULH WORD (А4) -->
+            <!-- 1. ULH WORD (ЛИНЕЙКА + МНОГОСТРАНИЧНЫЙ А4) -->
             <section id="paneWord" class="office-pane active">
-                <div id="wordEditor" class="a4-sheet" contenteditable="true" spellcheck="false">
-                    <h2>ULH Word</h2>
-                    <p>Bu yerda hujjatingizni yozişingiz mumkin. Matn avtomatik saqlanadi, <b>Ctrl + siçqonça ğildiragi</b> bilan varaqni kattalaştirişingiz mumkin.</p>
+                <div class="word-doc-column">
+                    <!-- Горизонтальная линейка (только в Word) -->
+                    <div class="word-ruler-wrap" id="wordRulerWrap" title="Çap va öng çegaralarni suriş">
+                        <div class="word-ruler-ticks" id="wordRulerTicks"></div>
+                        <div class="ruler-handle left" id="rulerLeftHandle" title="Çap çegara (mm)"></div>
+                        <div class="ruler-handle right" id="rulerRightHandle" title="Öng çegara (mm)"></div>
+                    </div>
+                    <!-- Контейнер страниц А4 -->
+                    <div id="wordPagesContainer" class="word-pages-container"></div>
                 </div>
             </section>
 
@@ -180,18 +249,29 @@
                 <div class="tables-workspace">
                     <div class="tables-formula-bar">
                         <span id="activeCellRef" class="cell-ref-badge">A1</span>
-                        <input type="text" id="formulaInput" class="formula-input" placeholder="Qiymat yoki formula (=SUM(A1:A5), =A1+B1)..." onkeydown="handleFormulaKey(event)">
+                        <input type="text" id="formulaInput" class="formula-input" placeholder="Qiymat yoki formula (=SUM(A1:A5), =AVG(B1:B5), =A1+B1)..." onkeydown="handleFormulaKey(event)">
                     </div>
                     <div class="tables-grid-wrap">
                         <table id="ulhSpreadsheet" class="ulh-sheet-table"></table>
                     </div>
+                    <div id="tablesChartsShelf" class="tables-charts-shelf"></div>
                 </div>
             </section>
 
         </div>
     </main>
 
-    <!-- === ВСПЛЫВАЮЩЕЕ ОКНО УМНОЙ ВСТАВКИ (УЗБЕКСКИЙ АЛФАВИТ) === -->
+    <!-- === НИЖНЯЯ СТРОКА СОСТОЯНИЯ (СЧЁТЧИК СТРАНИЦ + ЗУМ) === -->
+    <footer class="office-statusbar">
+        <span id="officePageCounter">Sahifa 1 / 1</span>
+        <div class="office-zoom-pill">
+            <button type="button" onclick="adjustOfficeZoom(-0.1)">−</button>
+            <span id="officeZoomLabel">100%</span>
+            <button type="button" onclick="adjustOfficeZoom(0.1)">+</button>
+        </div>
+    </footer>
+
+    <!-- === УМНАЯ ВСТАВКА (ТОЛЬКО УЗБЕКСКИЙ) === -->
     <div id="smartPasteToast" class="smart-paste-toast">
         <span>Matnni yangi özbek alifbosiga (Ö, Ğ, Ş, Ç) ögiraylikmi?</span>
         <div class="smart-paste-actions">
@@ -200,21 +280,49 @@
         </div>
     </div>
 
-    <!-- === КОНТЕКСТНОЕ МЕНЮ (ПКМ ТОЛЬКО В ПРЕДЕЛАХ ЛИСТА) === -->
-    <div id="officeContextMenu" class="office-context-menu">
-        <button type="button" onclick="ctxExec('cut')">✂️ Qirqiş</button>
-        <button type="button" onclick="ctxExec('copy')">📋 Nusxalaş</button>
-        <button type="button" onclick="ctxPaste()">📥 Joylaş</button>
-        <button type="button" onclick="ctxExec('removeFormat')">🧹 Formatni tozalaş</button>
-        <div id="ctxSelectionSection" class="ctx-selection-section" style="display:none;">
-            <hr>
-            <button type="button" onclick="ctxAiAction('synonym')">✨ Sinonim</button>
-            <button type="button" onclick="ctxAiAction('translate')">🌐 Tarjima</button>
-            <button type="button" id="ctxIzohBtn" onclick="ctxIzohAction()">📖 Izohli luğat</button>
+    <!-- === ГОРИЗОНТАЛЬНОЕ КОНТЕКСТНОЕ МЕНЮ ПКМ (КАК НА СКРИНШОТЕ №3) === -->
+    <div id="officeContextMenu" class="office-pill-ctx">
+        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('bold')" title="Qalin"><b>B</b></button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('italic')" title="Kursiv"><i>I</i></button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('underline')" title="Tagiga çiziş"><u>U</u></button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('strikeThrough')" title="Ustidan çiziş"><s>S</s></button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="insertOfficeLink()" title="Havola">🔗</button>
+        <span class="ctx-sep"></span>
+        <button type="button" onmousedown="event.preventDefault()" onclick="ctxExec('copy')" title="Nusxalaş">📋</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="ctxPaste()" title="Joylaş">📥</button>
+        <span id="ctxSelSep" class="ctx-sep" style="display:none;"></span>
+        <button type="button" id="ctxTranslateBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxAiAction('translate')" title="Tarjima">🌐 Tarjima</button>
+        <button type="button" id="ctxSynonymBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxAiAction('synonym')" title="Sinonim">✨ Sinonim</button>
+        <button type="button" id="ctxIzohBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxIzohAction()" title="Izohli luğat">📖 Izoh</button>
+        <span class="ctx-sep"></span>
+        <button type="button" onclick="closeOfficeContextMenu()" title="Yopiş">✕</button>
+    </div>
+
+    <!-- === МОДАЛКА: КОНСТРУКТОР ГРАФИКОВ (ВСТАВКА ВО ВСЕ 3 ОФИСА) === -->
+    <div id="officeChartModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+        <div class="weather-modal-card" style="max-width:560px; padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <b style="font-size:16px;">📊 Grafik yaratish va hujjatga qöşiş</b>
+                <button type="button" class="pdf-studio-close" onclick="document.getElementById('officeChartModal').classList.remove('open')">×</button>
+            </div>
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                <input type="text" id="ocTitle" class="bib-custom-input" value="Statistika" placeholder="Grafik sarlavhasi" oninput="renderOfficeChartPreview()">
+                <select id="ocType" class="bib-custom-input" style="width:140px;" onchange="renderOfficeChartPreview()">
+                    <option value="bar">Ustunli (Bar)</option>
+                    <option value="donut">Doiraviy (Donut)</option>
+                </select>
+            </div>
+            <div id="ocRows" style="display:flex; flex-direction:column; gap:6px; max-height:160px; overflow-y:auto; margin-bottom:10px;"></div>
+            <button type="button" class="office-btn small" onclick="addOfficeChartRow()" style="margin-bottom:10px;">+ Qator qöşiş</button>
+            <div id="ocPreview" style="background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:12px; padding:12px; margin-bottom:12px; text-align:center;"></div>
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="office-btn primary" onclick="insertChartIntoOffice()">Hujjatga joylaş</button>
+                <button type="button" class="office-btn" onclick="document.getElementById('officeChartModal').classList.remove('open')">Yopiş</button>
+            </div>
         </div>
     </div>
 
-    <!-- Быстрый попап для Синонима / Перевода / Словаря -->
+    <!-- Попап результатов Синонима / Перевода / Словаря -->
     <div id="officeQuickResultModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
         <div class="weather-modal-card" style="max-width:480px; padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -225,7 +333,7 @@
         </div>
     </div>
 
-    <!-- === МОДАЛЬНОЕ ОКНО ИСТОРИИ (TIME MACHINE) === -->
+    <!-- Модалка Истории -->
     <div id="officeHistoryModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
         <div class="weather-modal-card" style="max-width:560px; padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -242,7 +350,7 @@
         </div>
     </div>
 
-    <!-- === ПОЛНОЭКРАННЫЙ РЕЖИМ ПРЕЗЕНТАЦИИ === -->
+    <!-- Полноэкранный режим презентации -->
     <div id="slideshowOverlay" class="slideshow-overlay">
         <div id="slideshowStage" class="slideshow-stage"></div>
         <div class="slideshow-controls">
@@ -253,10 +361,9 @@
         </div>
     </div>
 
-    <!-- === СПРАВА ОТ ЛИСТА: ÖŞA AI WIDGET === -->
+    <!-- Справа: Öşa AI -->
     <button type="button" id="officeOshaBtn" class="office-osha-fab" onclick="toggleOfficeOsha()" title="Öşa AI yordamçi">
-        <span>✨</span>
-        <span>Öşa AI</span>
+        <span>✨</span><span>Öşa AI</span>
     </button>
 
     <div id="officeOshaChat" class="office-osha-chat hidden">
@@ -274,7 +381,6 @@
         </div>
     </div>
 
-    <!-- Подключаем основной scripts.js (для applyReplacements, enforceNewUzbekAlphabet, toggleDarkMode) + office/scripts.js -->
     <script src="../scripts.js"></script>
     <script src="./scripts.js"></script>
 </body>
