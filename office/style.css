@@ -843,3 +843,40 @@ body.dark-mode .mode-dock-btn.active {
 body.dark-mode .statusbar-sep { background: #334155; }
 body.dark-mode .statusbar-stats-btn { color: #CBD5E1; }
 body.dark-mode .statusbar-stats-btn:hover { background: rgba(56, 189, 248, 0.16); color: #38BDF8; }
+
+/* === ФИКС ГОРИЗОНТАЛЬНОЙ И ВЕРТИКАЛЬНОЙ ЛИНЕЕК === */
+body.office-body {
+    overflow-x: clip !important;
+}
+
+.word-doc-column {
+    padding-top: 36px; /* место под фиксированную горизонтальную линейку */
+}
+
+.word-ruler-top-row.sticky-ruler {
+    position: fixed !important;
+    top: 112px; /* точное значение подставит JS под высоту шапки */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 950 !important;
+    background: #E2E8F0;
+    padding: 5px 8px;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    transform-origin: top center;
+}
+
+body.dark-mode .word-ruler-top-row.sticky-ruler {
+    background: #0B1120;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+.word-pages-container {
+    position: relative;
+}
+
+/* Приоритетное отображение кнопок + у таблиц */
+.tbl-float-plus.tbl-plus-visible {
+    display: inline-flex !important;
+    pointer-events: auto !important;
+}
