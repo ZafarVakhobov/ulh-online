@@ -1438,3 +1438,271 @@ document.addEventListener("DOMContentLoaded", () => {
         bindFixedRulerEvents();
     }, 100);
 });
+
+// ==========================================
+// === ULH OFFICE v5 — CARET INSERT, ACTIVE RULER, TABLE +, QUOTES, STATS ===
+// ==========================================
+
+// 1. Вертикальная линейка следует за активной страницей (где курсор)
+function syncActivePageAndVRuler(pageEl) {
+    if (!pageEl) return;
+    const idx = parseInt(pageEl.dataset.pageIndex, 10);
+    if (isNaN(idx)) return;
+    activeWordPageIdx = idx;
+
+    const vwrap = document.getElementById("wordVRulerWrap");
+    if (vwrap) {
+        vwrap.style.transform = `translateY(${pageEl.offsetTop}px)`;
+    }
+    const isLand = pageEl.classList.contains("landscape");
+    if ((isLand && currentDocWidthMm !== 297) || (!isLand && currentDocWidthMm !== 210)) {
+        rebuildRulersForOrientation(isLand);
+    }
+    const el = document.getElementById("officePageCounter");
+    if (el && officeMode === "word") el.textContent = `Sahifa ${activeWordPageIdx + 1} / ${wordPages.length}`;
+}
+
+document.addEventListener("focusin", (e) => {
+    const page = e.target.closest?.(".a4-sheet");
+    if (page) syncActivePageAndVRuler(page);
+});
+document.addEventListener("click", (e) => {
+    const page = e.target.closest?.(".a4-sheet");
+    if (page) syncActivePageAndVRuler(page);
+});
+document.addEventListener("keyup", (e) => {
+    const page = e.target.closest?.(".a4-sheet");
+    if (page) syncActivePageAndVRuler(page);
+});
+
+// 2. Устойчивые кнопки + у таблиц (не исчезают при переходе курсора к ним)
+let tblHideTimer = null;
+document.addEventListener("mousemove", (e) => {
+    const rowBtn = document.getElementById("tblAddRowBtn");
+    const colBtn = document.getElementById("tblAddColBtn");
+    if (!rowBtn || !colBtn) return;
+
+    const tbl = e.target.closest(".a4-sheet .word-table");
+    const onPlus = e.target.closest(".tbl-float-plus");
+
+    if (tbl) {
+        clearTimeout(tblHideTimer);
+        hoveredWordTable = tbl;
+        const r = tbl.getBoundingClientRect();
+        rowBtn.style.left = (r.left + r.width / 2 - 12) + "px";
+        rowBtn.style.top = (r.bottom + 4) + "px";
+        colBtn.style.left = (r.right + 4) + "px";
+        colBtn.style.top = (r.top + r.height / 2 - 12) + "px";
+        rowBtn.classList.add("show");
+        colBtn.classList.add("show");
+        return;
+    }
+
+    if (onPlus) {
+        clearTimeout(tblHideTimer);
+        return;
+    }
+
+    if (hoveredWordTable) {
+        const r = hoveredWordTable.getBoundingClientRect();
+        const inBuffer = e.clientX >= r.left - 12 && e.clientX <= r.right + 44 &&
+                         e.clientY >= r.top - 12 && e.clientY <= r.bottom + 44;
+        if (inBuffer) {
+            clearTimeout(tblHideTimer);
+            return;
+        }
+        clearTimeout(tblHideTimer);
+        tblHideTimer = setTimeout(() => {
+            rowBtn.classList.remove("show");
+            colBtn.classList.remove("show");
+        }, 280);
+    }
+});
+
+// 3. Строгая вставка любого HTML ровно в позицию мигающего курсора
+function insertHtmlAtCursor(html) {
+    let targetContainer = null;
+    if (officeMode === "word") {
+        targetContainer = document.querySelector(`.a4-sheet[data-page-index="${activeWordPageIdx}"]`) || document.querySelector(".a4-sheet");
+    } else if (officeMode === "slides") {
+        targetContainer = document.getElementById("slideBodyBox");
+    }
+    if (!targetContainer) return;
+
+    targetContainer.focus();
+    const sel = window.getSelection();
+    let range = null;
+
+    if (savedRange && targetContainer.contains(savedRange.commonAncestorContainer)) {
+        range = savedRange.cloneRange();
+    } else if (sel && sel.rangeCount > 0 && targetContainer.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+        range = sel.getRangeAt(0).cloneRange();
+    } else {
+        range = document.createRange();
+        range.selectNodeContents(targetContainer);
+        range.collapse(false);
+    }
+
+    sel.removeAllRanges();
+    sel.addRange(range);
+    range.deleteContents();
+
+    const frag = range.createContextualFragment(html);
+    const lastNode = frag.lastChild;
+    range.insertNode(frag);
+
+    if (lastNode) {
+        const after = document.createRange();
+        after.setStartAfter(lastNode);
+        after.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(after);
+        savedRange = after.cloneRange();
+    }
+
+    if (officeMode === "word") syncWordPagesFromDom();
+    else if (officeMode === "slides") slidesData[activeSlideIdx].body = document.getElementById("slideBodyBox").innerHTML;
+    saveCurrentOfficeDoc();
+    updateOfficeLiveStats();
+}
+
+// Переводим все вставки на insertHtmlAtCursor
+window.confirmInsertWordTable = () => {
+    const r = Math.min(30, Math.max(1, +document.getElementById("tbRows").value || 3));
+    const c = Math.min(12, Math.max(1, +document.getElementById("tbCols").value || 3));
+    const hBg = document.getElementById("tbHeadBg").value;
+    const hCol = document.getElementById("tbHeadColor").value;
+    const zebra = document.getElementById("tbZebra").checked ? "zebra" : "";
+    let html = `<table class="word-table ${zebra}"><thead><tr style="background:${hBg};color:${hCol};">${Array.from({length:c}, (_,i)=>`<th>Sarlavha ${i+1}</th>`).join("")}</tr></thead><tbody>`;
+    for (let i = 1; i < r; i++) html += `<tr>${Array.from({length:c}, ()=>`<td>&nbsp;</td>`).join("")}</tr>`;
+    html += `</tbody></table><p><br></p>`;
+    insertHtmlAtCursor(html);
+    document.getElementById("tableBuilderModal").classList.remove("open");
+};
+
+window.insertChartIntoOffice = function() {
+    const svg = buildOfficeChartSvg();
+    const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    const imgHtml = `<img src="${dataUrl}" class="office-resizable-img" alt="Grafik" style="max-width:100%; border-radius:10px; display:inline-block;">`;
+    if (officeMode === "tables") {
+        document.getElementById("tablesChartsShelf").innerHTML += `<p>${imgHtml}</p>`;
+        saveCurrentOfficeDoc();
+    } else {
+        insertHtmlAtCursor(imgHtml);
+    }
+    document.getElementById("officeChartModal").classList.remove("open");
+};
+
+window.confirmInsertImageUrl = () => {
+    const url = (document.getElementById("imgUrlInput").value || "").trim();
+    if (url) insertHtmlAtCursor(`<img src="${url}" class="office-resizable-img" style="max-width:100%; height:auto; border-radius:6px;">`);
+    document.getElementById("imageInsertModal").classList.remove("open");
+};
+
+window.handleLocalImageUpload = (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+        insertHtmlAtCursor(`<img src="${reader.result}" class="office-resizable-img" style="max-width:100%; height:auto; border-radius:6px;">`);
+        document.getElementById("imageInsertModal").classList.remove("open");
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+};
+
+window.insertEquationTemplate = function(type) {
+    const map = {
+        quad: `x = (−b ± √(b² − 4ac)) / 2a`,
+        binom: `(x + a)ⁿ = Σ C(n, k) xᵏ aⁿ⁻ᵏ`,
+        circle: `A = πr²`,
+        taylor: `eˣ = 1 + x/1! + x²/2! + x³/3! + …`,
+        fourier: `f(x) = a₀ + Σ (aₙ cos(nπx/L) + bₙ sin(nπx/L))`,
+        frac: `<span class="math-frac"><span class="math-num">a</span><span class="math-den">b</span></span>`
+    };
+    insertHtmlAtCursor(`<span class="office-eq-box" contenteditable="true">${map[type] || "y = f(x)"}</span>&nbsp;`);
+    document.getElementById("equationModal").classList.remove("open");
+};
+
+// 4. Починенные буллеты (disc, circle, square, dash)
+window.applyBulletStyle = (styleType) => {
+    restoreSavedSelection();
+    const sel = window.getSelection();
+    let ul = sel?.anchorNode?.parentElement?.closest("ul");
+    if (!ul) {
+        document.execCommand("insertUnorderedList");
+        ul = window.getSelection()?.anchorNode?.parentElement?.closest("ul");
+    }
+    if (ul) {
+        ul.classList.remove("ul-disc", "ul-circle", "ul-square", "ul-dash");
+        ul.classList.add("ul-" + styleType);
+        ul.style.listStyleType = styleType === "dash" ? "none" : styleType;
+    }
+    document.getElementById("bulletMenuWrap")?.classList.remove("open");
+    if (officeMode === "word") syncWordPagesFromDom();
+    saveCurrentOfficeDoc();
+};
+
+// 5. Вставка цитаты (Iqtibos)
+window.openQuoteInsertModal = () => {
+    document.getElementById("quoteTextInp").value = "";
+    document.getElementById("quoteAuthorInp").value = "";
+    document.getElementById("quoteInsertModal").classList.add("open");
+    setTimeout(() => document.getElementById("quoteTextInp")?.focus(), 80);
+};
+
+window.confirmInsertQuote = () => {
+    const text = (document.getElementById("quoteTextInp").value || "").trim();
+    const author = (document.getElementById("quoteAuthorInp").value || "").trim();
+    if (!text) return;
+    const esc = (s) => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+    const authorHtml = author ? `<cite class="office-quote-author">— ${esc(author)}</cite>` : "";
+    const html = `<blockquote class="office-quote-block"><p class="office-quote-text">«${esc(text)}»</p>${authorHtml}</blockquote><p><br></p>`;
+    insertHtmlAtCursor(html);
+    document.getElementById("quoteInsertModal").classList.remove("open");
+};
+
+// 6. Статистика текста в статусбаре и модалке
+function getOfficePlainText() {
+    if (officeMode === "word") {
+        return [...document.querySelectorAll(".a4-sheet")].map(p => p.innerText || "").join("\n").trim();
+    }
+    if (officeMode === "slides") {
+        return slidesData.map(s => `${s.title} ${s.body}`.replace(/<[^>]+>/g, " ")).join("\n").trim();
+    }
+    return Object.values(tableData.cells || {}).join(" ").trim();
+}
+
+function updateOfficeLiveStats() {
+    const text = getOfficePlainText();
+    const charsWith = text.length;
+    const charsNo = text.replace(/\s/g, "").length;
+    const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+    const lines = text ? text.split(/\r\n|\r|\n/).length : 0;
+    const paras = text ? text.split(/(?:\r\n|\r|\n)+/).filter(l => l.trim()).length : 0;
+
+    let readTime = "0 soniya";
+    if (words > 0) {
+        const sec = Math.max(1, Math.ceil((words / 180) * 60));
+        readTime = sec < 60 ? `~${sec} soniya` : `~${Math.floor(sec / 60)} daq ${sec % 60} son.`;
+    }
+
+    const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    const liveBtn = document.getElementById("officeLiveChars");
+    if (liveBtn) liveBtn.textContent = `${fmt(charsWith)} belgi`;
+
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set("offStatCharsWith", fmt(charsWith));
+    set("offStatCharsNo", fmt(charsNo));
+    set("offStatCardChars", `${fmt(charsWith)} / ${fmt(charsNo)}`);
+    set("offStatWords", fmt(words));
+    set("offStatLinesParas", `${fmt(lines)} / ${fmt(paras)}`);
+    set("offStatReadTime", readTime);
+}
+
+window.openOfficeStatsModal = () => {
+    updateOfficeLiveStats();
+    document.getElementById("officeStatsModal").classList.add("open");
+};
+
+document.addEventListener("input", updateOfficeLiveStats);
+document.addEventListener("DOMContentLoaded", () => setTimeout(updateOfficeLiveStats, 250));
