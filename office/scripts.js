@@ -2385,3 +2385,515 @@ window.handleOfficeFileOpen = async function(e) {
 
     e.target.value = "";
 };
+
+// ==========================================
+// === ПОЛНОЦЕННЫЙ ИМПОРТ PPTX (SLIDES) И XLSX (TABLES) 1-К-1 ===
+// ==========================================
+
+// --- 1. ПАРСЕР POWERPOINT (.PPTX) ---
+function parsePptxParagraph(pNode) {
+    const pPr = pNode.getElementsByTagName("a:pPr")[0];
+    const algn = pPr?.getAttribute("algn");
+    const alignCss = algn === "ctr" ? "text-align:center;" : algn === "r" ? "text-align:right;" : algn === "just" ? "text-align:justify;" : "";
+
+    let inner = "";
+    for (const child of pNode.childNodes) {
+        if (child.nodeName === "a:r") {
+            const rPr = child.getElementsByTagName("a:rPr")[0];
+            const tNode = child.getElementsByTagName("a:t")[0];
+            if (!tNode) continue;
+
+            const safeTxt = (tNode.textContent || "")
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const styles = [];
+
+            if (rPr) {
+                if (rPr.getAttribute("b") === "1") styles.push("font-weight:700");
+                if (rPr.getAttribute("i") === "1") styles.push("font-style:italic");
+                if (rPr.getAttribute("u") && rPr.getAttribute("u") !== "none") styles.push("text-decoration:underline");
+                if (rPr.getAttribute("strike") && rPr.getAttribute("strike") !== "noStrike") styles.push("text-decoration:line-through");
+
+                const sz = parseInt(rPr.getAttribute("sz") || "0", 10);
+                if (sz > 0) styles.push(`font-size:${Math.max(11, Math.min(48, Math.round(sz / 100)))}px`);
+
+                const clr = rPr.getElementsByTagName("a:srgbClr")[0]?.getAttribute("val");
+                if (clr && /^[0-9A-Fa-f]{6}$/.test(clr)) styles.push(`color:#${clr}`);
+
+                const latin = rPr.getElementsByTagName("a:latin")[0]?.getAttribute("typeface");
+                if (latin && !latin.startsWith("+")) styles.push(`font-family:'${latin}', sans-serif`);
+            }
+            inner += styles.length ? `<span style="${styles.join(";")}">${safeTxt}</span>` : safeTxt;
+        } else if (child.nodeName === "a:br") {
+            inner += "<br>";
+        }
+    }
+
+    if (!inner.trim()) return "";
+    return `<p style="margin:4px 0;${alignCss}">${inner}</p>`;
+}
+
+async function importPptxFile(file) {
+    const zip = await JSZip.loadAsync(await file.arrayBuffer());
+    const slidePaths = Object.keys(zip.files)
+        .filter(p => /^ppt\/slides\/slide\d+\.xml$/i.test(p))
+        .sort((a, b) => parseInt(a.match(/\d+/)[0], 10) - parseInt(b.match(/\d+/)[0], 10));
+
+    if (!slidePaths.length) {
+        alert("PPTX faylida slaydlar topilmadi.");
+        return;
+    }
+
+    const parsedSlides = [];
+
+    for (const sPath of slidePaths) {
+        const xmlStr = await zip.file(sPath).async("string");
+        const doc = new DOMParser().parseFromString(xmlStr, "application/xml");
+
+        // Карта связей (rId -> путь к картинке)
+        const relsPath = sPath.replace("ppt/slides/", "ppt/slides/_rels/") + ".rels";
+        const relsMap = {};
+        if (zip.file(relsPath)) {
+            const relsStr = await zip.file(relsPath).async("string");
+            const relsDoc = new DOMParser().parseFromString(relsStr, "application/xml");
+            for (const rel of relsDoc.getElementsByTagName("Relationship")) {
+                relsMap[rel.getAttribute("Id")] = rel.getAttribute("Target") || "";
+            }
+        }
+
+        // Цвет фона слайда
+        let bg = "#FFFFFF";
+        const bgNode = doc.getElementsByTagName("p:bg")[0];
+        const bgClr = bgNode?.getElementsByTagName("a:srgbClr")[0]?.getAttribute("val");
+        if (bgClr && /^[0-9A-Fa-f]{6}$/.test(bgClr)) bg = "#" + bgClr;
+
+        let titleHtml = "";
+        let bodyParts = [];
+
+        // Текстовые блоки (p:sp)
+        for (const sp of doc.getElementsByTagName("p:sp")) {
+            const phType = sp.getElementsByTagName("p:ph")[0]?.getAttribute("type") || "";
+            const isTitle = phType === "title" || phType === "ctrTitle";
+            const paras = [...sp.getElementsByTagName("a:p")].map(parsePptxParagraph).filter(Boolean).join("");
+            if (!paras) continue;
+
+            if (isTitle && !titleHtml) titleHtml = paras.replace(/^<p[^>]*>|<\/p>$/g, "");
+            else bodyParts.push(paras);
+        }
+
+        // Таблицы внутри слайда (a:tbl)
+        for (const tbl of doc.getElementsByTagName("a:tbl")) {
+            let tHtml = `<table><tbody>`;
+            for (const tr of tbl.getElementsByTagName("a:tr")) {
+                tHtml += "<tr>";
+                for (const tc of tr.getElementsByTagName("a:tc")) {
+                    const cellHtml = [...tc.getElementsByTagName("a:p")].map(parsePptxParagraph).filter(Boolean).join("");
+                    tHtml += `<td>${cellHtml || "&nbsp;"}</td>`;
+                }
+                tHtml += "</tr>";
+            }
+            tHtml += `</tbody></table>`;
+            bodyParts.push(tHtml);
+        }
+
+        // Картинки внутри слайда (p:pic)
+        for (const pic of doc.getElementsByTagName("p:pic")) {
+            const blip = pic.getElementsByTagName("a:blip")[0];
+            const rId = blip?.getAttribute("r:embed");
+            if (rId && relsMap[rId]) {
+                const target = relsMap[rId].replace(/^\.\.\//, "ppt/");
+                const imgEntry = zip.file(target);
+                if (imgEntry) {
+                    const ext = target.split(".").pop().toLowerCase();
+                    const mime = ext === "png" ? "image/png" : ext === "svg" ? "image/svg+xml" : ext === "gif" ? "image/gif" : "image/jpeg";
+                    const b64 = await imgEntry.async("base64");
+                    bodyParts.push(`<img src="data:${mime};base64,${b64}" alt="Slide image">`);
+                }
+            }
+        }
+
+        parsedSlides.push({
+            title: titleHtml || `Slayd ${parsedSlides.length + 1}`,
+            body: bodyParts.join("") || "<p><br></p>",
+            bg
+        });
+    }
+
+    slidesData = parsedSlides;
+    activeSlideIdx = 0;
+    loadActiveSlideToCanvas();
+    renderSlidesSidebar();
+    saveCurrentOfficeDoc();
+    if (typeof updateOfficeLiveStats === "function") updateOfficeLiveStats();
+}
+
+// --- 2. ПАРСЕР EXCEL (.XLSX / .XLS / .CSV) СО СТИЛЯМИ, ФОРМУЛАМИ, MERGES И ЛИСТАМИ ---
+let excelWorkbookSheets = []; // [{ name, rows, cols, cells, styles, merges, colWidths }]
+let activeExcelSheetIdx = 0;
+
+async function parseXlsxStylesMap(zip) {
+    const styleMap = {}; // xfIndex -> css string
+    const stylesFile = zip.file("xl/styles.xml");
+    if (!stylesFile) return styleMap;
+
+    const doc = new DOMParser().parseFromString(await stylesFile.async("string"), "application/xml");
+
+    const fonts = [...(doc.getElementsByTagName("fonts")[0]?.getElementsByTagName("font") || [])].map(f => {
+        const css = [];
+        if (f.getElementsByTagName("b").length) css.push("font-weight:700");
+        if (f.getElementsByTagName("i").length) css.push("font-style:italic");
+        if (f.getElementsByTagName("u").length) css.push("text-decoration:underline");
+        const sz = f.getElementsByTagName("sz")[0]?.getAttribute("val");
+        if (sz) css.push(`font-size:${Math.round(parseFloat(sz))}pt`);
+        const rgb = f.getElementsByTagName("color")[0]?.getAttribute("rgb");
+        if (rgb && rgb.length >= 6) css.push(`color:#${rgb.slice(-6)}`);
+        return css;
+    });
+
+    const fills = [...(doc.getElementsByTagName("fills")[0]?.getElementsByTagName("fill") || [])].map(fl => {
+        const fg = fl.getElementsByTagName("fgColor")[0]?.getAttribute("rgb");
+        if (fg && fg.length >= 6 && fg !== "00000000") return `background-color:#${fg.slice(-6)}`;
+        return "";
+    });
+
+    const xfs = [...(doc.getElementsByTagName("cellXfs")[0]?.getElementsByTagName("xf") || [])];
+    xfs.forEach((xf, idx) => {
+        const parts = [];
+        const fId = parseInt(xf.getAttribute("fontId") || "-1", 10);
+        const fillId = parseInt(xf.getAttribute("fillId") || "-1", 10);
+        if (fonts[fId]) parts.push(...fonts[fId]);
+        if (fills[fillId]) parts.push(fills[fillId]);
+
+        const align = xf.getElementsByTagName("alignment")[0];
+        if (align) {
+            const h = align.getAttribute("horizontal");
+            if (h === "center" || h === "right" || h === "left") parts.push(`text-align:${h}`);
+        }
+        if (parts.length) styleMap[idx] = parts.join(";");
+    });
+
+    return styleMap;
+}
+
+async function importExcelFile(file) {
+    const ab = await file.arrayBuffer();
+    const wb = XLSX.read(ab, { type: "array", cellFormula: true, cellStyles: true });
+    const ext = file.name.split(".").pop().toLowerCase();
+
+    let zip = null;
+    let xfStyles = {};
+    if (ext === "xlsx" && window.JSZip) {
+        try {
+            zip = await JSZip.loadAsync(ab);
+            xfStyles = await parseXlsxStylesMap(zip);
+        } catch (_) {}
+    }
+
+    excelWorkbookSheets = [];
+
+    for (let sIdx = 0; sIdx < wb.SheetNames.length; sIdx++) {
+        const sName = wb.SheetNames[sIdx];
+        const ws = wb.Sheets[sName];
+        const ref = ws["!ref"] ? XLSX.utils.decode_range(ws["!ref"]) : { s: { r: 0, c: 0 }, e: { r: 19, c: 9 } };
+
+        const rows = Math.max(20, ref.e.r + 5);
+        const cols = Math.min(26, Math.max(10, ref.e.c + 2));
+        const cells = {};
+        const styles = {};
+
+        // Извлекаем значения И формулы
+        Object.keys(ws).forEach(addr => {
+            if (addr.startsWith("!")) return;
+            const cell = ws[addr];
+            if (!cell) return;
+            if (cell.f) cells[addr] = "=" + cell.f;
+            else if (cell.w !== undefined) cells[addr] = String(cell.w);
+            else if (cell.v !== undefined) cells[addr] = String(cell.v);
+        });
+
+        // Извлекаем точные стили ячеек из sheetN.xml
+        if (zip) {
+            const sheetXmlFile = zip.file(`xl/worksheets/sheet${sIdx + 1}.xml`);
+            if (sheetXmlFile) {
+                const sDoc = new DOMParser().parseFromString(await sheetXmlFile.async("string"), "application/xml");
+                for (const cNode of sDoc.getElementsByTagName("c")) {
+                    const rAddr = cNode.getAttribute("r");
+                    const sId = cNode.getAttribute("s");
+                    if (rAddr && sId && xfStyles[sId]) styles[rAddr] = xfStyles[sId];
+                }
+            }
+        }
+
+        // Ширины столбцов
+        const colWidths = {};
+        if (ws["!cols"]) {
+            ws["!cols"].forEach((colInfo, cIdx) => {
+                if (colInfo && (colInfo.wpx || colInfo.wch)) {
+                    colWidths[cIdx] = Math.max(55, Math.min(360, Math.round(colInfo.wpx || colInfo.wch * 8.5)));
+                }
+            });
+        }
+
+        // Объединённые ячейки
+        const merges = (ws["!merges"] || []).map(m => ({
+            s: { r: m.s.r + 1, c: m.s.c },
+            e: { r: m.e.r + 1, c: m.e.c }
+        }));
+
+        excelWorkbookSheets.push({ name: sName, rows, cols, cells, styles, merges, colWidths });
+    }
+
+    activeExcelSheetIdx = 0;
+    loadActiveExcelSheet();
+}
+
+function loadActiveExcelSheet() {
+    const sh = excelWorkbookSheets[activeExcelSheetIdx];
+    if (!sh) return;
+    tableData = {
+        rows: sh.rows,
+        cols: sh.cols,
+        cells: sh.cells,
+        styles: sh.styles || {},
+        merges: sh.merges || [],
+        colWidths: sh.colWidths || {}
+    };
+    renderSpreadsheetRich();
+    renderExcelSheetTabs();
+    saveCurrentOfficeDoc();
+    if (typeof updateOfficeLiveStats === "function") updateOfficeLiveStats();
+}
+
+function renderExcelSheetTabs() {
+    const wsBox = document.querySelector(".tables-workspace");
+    if (!wsBox) return;
+    let bar = document.getElementById("tablesSheetsBar");
+    if (!bar) {
+        bar = document.createElement("div");
+        bar.id = "tablesSheetsBar";
+        bar.className = "tables-sheets-bar";
+        wsBox.appendChild(bar);
+    }
+    if (excelWorkbookSheets.length <= 1) {
+        bar.style.display = "none";
+        return;
+    }
+    bar.style.display = "flex";
+    bar.innerHTML = excelWorkbookSheets.map((sh, i) => `
+        <button type="button" class="sheet-tab-btn ${i === activeExcelSheetIdx ? "active" : ""}" onclick="switchExcelSheet(${i})">${sh.name}</button>
+    `).join("");
+}
+
+window.switchExcelSheet = function(idx) {
+    if (excelWorkbookSheets[activeExcelSheetIdx]) {
+        excelWorkbookSheets[activeExcelSheetIdx] = { ...excelWorkbookSheets[activeExcelSheetIdx], ...tableData };
+    }
+    activeExcelSheetIdx = idx;
+    loadActiveExcelSheet();
+};
+
+// Улучшенный рендер таблицы с поддержкой стилей, merges и ширин столбцов
+function renderSpreadsheetRich() {
+    const tbl = document.getElementById("ulhSpreadsheet");
+    if (!tbl) return;
+
+    const merges = tableData.merges || [];
+    const styles = tableData.styles || {};
+    const skipCells = new Set();
+    const mergeStart = {};
+
+    merges.forEach(m => {
+        const key = colLetter(m.s.c) + m.s.r;
+        mergeStart[key] = {
+            rowspan: m.e.r - m.s.r + 1,
+            colspan: m.e.c - m.s.c + 1
+        };
+        for (let r = m.s.r; r <= m.e.r; r++) {
+            for (let c = m.s.c; c <= m.e.c; c++) {
+                const k = colLetter(c) + r;
+                if (k !== key) skipCells.add(k);
+            }
+        }
+    });
+
+    let html = `<thead><tr><th>#</th>`;
+    for (let c = 0; c < tableData.cols; c++) {
+        const w = tableData.colWidths && tableData.colWidths[c] ? ` style="width:${tableData.colWidths[c]}px;min-width:${tableData.colWidths[c]}px;"` : "";
+        html += `<th${w}>${colLetter(c)}</th>`;
+    }
+    html += `</tr></thead><tbody>`;
+
+    for (let r = 1; r <= tableData.rows; r++) {
+        html += `<tr><th>${r}</th>`;
+        for (let c = 0; c < tableData.cols; c++) {
+            const key = colLetter(c) + r;
+            if (skipCells.has(key)) continue;
+
+            const raw = tableData.cells[key] || "";
+            const display = raw.startsWith("=") ? evalFormula(raw) : raw;
+            const span = mergeStart[key];
+            const spanAttrs = span ? ` rowspan="${span.rowspan}" colspan="${span.colspan}"` : "";
+            const stAttr = styles[key] ? ` style="${styles[key]}"` : "";
+
+            html += `<td data-cell="${key}"${spanAttrs}${stAttr} class="${key === activeCellKey ? "active-cell" : ""}" contenteditable="true"
+                onfocus="selectTableCell('${key}')" onblur="commitTableCell('${key}', this.innerText)">${display}</td>`;
+        }
+        html += `</tr>`;
+    }
+    tbl.innerHTML = html + `</tbody>`;
+}
+
+// Подменяем стандартный renderSpreadsheet на версию со стилями и merges
+renderSpreadsheet = renderSpreadsheetRich;
+
+// --- 3. ОБЪЕДИНЯЕМ В ЕДИНЫЙ handleOfficeFileOpen ---
+const _prevHandleOfficeFileOpen = window.handleOfficeFileOpen;
+window.handleOfficeFileOpen = async function(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    const ext = f.name.split(".").pop().toLowerCase();
+    document.getElementById("officeDocTitle").value = f.name.replace(/\.[^.]+$/, "");
+
+    if (officeMode === "slides" && (ext === "pptx" || ext === "ppt")) {
+        if (ext === "pptx") {
+            await importPptxFile(f);
+        } else {
+            alert("Eski .ppt formati brauzerda töliq öqilmaydi. Iltimos, faylni .pptx formatida yuklang.");
+        }
+        e.target.value = "";
+        return;
+    }
+
+    if (officeMode === "tables" && ["xlsx", "xls", "csv", "xml"].includes(ext) && window.XLSX) {
+        await importExcelFile(f);
+        e.target.value = "";
+        return;
+    }
+
+    return _prevHandleOfficeFileOpen(e);
+};
+
+// === ПОЛНОЦЕННЫЙ CTRL+A ПО ВСЕМ СТРАНИЦАМ ULH WORD (ЛЮБАЯ РАСКЛАДКА) ===
+(function initGlobalWordSelectAll() {
+    let isAllWordSelected = false;
+
+    function clearAllWordSelectionFlag() {
+        if (!isAllWordSelected) return;
+        isAllWordSelected = false;
+        document.querySelectorAll(".a4-sheet.all-doc-selected").forEach(p => p.classList.remove("all-doc-selected"));
+    }
+
+    function selectAllWordPages() {
+        const container = document.getElementById("wordPagesContainer");
+        if (!container) return;
+
+        // Снимаем фокус с отдельной страницы, чтобы браузер не ограничивал выделение одной страницей
+        if (document.activeElement && document.activeElement.classList.contains("a4-sheet")) {
+            document.activeElement.blur();
+        }
+
+        const range = document.createRange();
+        range.selectNodeContents(container);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+
+        isAllWordSelected = true;
+        document.querySelectorAll(".a4-sheet").forEach(p => p.classList.add("all-doc-selected"));
+    }
+
+    // Перехватываем в фазе capture (true), чтобы сработало раньше браузера и на любой раскладке
+    document.addEventListener("keydown", (e) => {
+        if (officeMode !== "word") return;
+        const inInput = e.target.closest("input, textarea, #officeOshaChat");
+        if (inInput) return;
+
+        // Ctrl + A (работает и на EN, и на RU, и на UZ раскладке)
+        if ((e.ctrlKey || e.metaKey) && e.code === "KeyA") {
+            e.preventDefault();
+            e.stopPropagation();
+            selectAllWordPages();
+            return;
+        }
+
+        if (!isAllWordSelected) return;
+
+        // Удаление всего документа по Backspace или Delete
+        if (e.key === "Backspace" || e.key === "Delete") {
+            e.preventDefault();
+            wordPages = ["<p><br></p>"];
+            clearAllWordSelectionFlag();
+            renderWordPages();
+            saveCurrentOfficeDoc();
+            if (typeof updateOfficeLiveStats === "function") updateOfficeLiveStats();
+            const first = document.querySelector(".a4-sheet");
+            if (first) first.focus();
+            return;
+        }
+
+        // Вырезание всего документа по Ctrl + X
+        if ((e.ctrlKey || e.metaKey) && e.code === "KeyX") {
+            e.preventDefault();
+            const allText = [...document.querySelectorAll(".a4-sheet")].map(p => p.innerText).join("\n\n");
+            navigator.clipboard?.writeText(allText).catch(() => {});
+            wordPages = ["<p><br></p>"];
+            clearAllWordSelectionFlag();
+            renderWordPages();
+            saveCurrentOfficeDoc();
+            if (typeof updateOfficeLiveStats === "function") updateOfficeLiveStats();
+            const first = document.querySelector(".a4-sheet");
+            if (first) first.focus();
+            return;
+        }
+
+        // При нажатии Escape или стрелок снимаем флаг
+        if (e.key === "Escape" || e.key.startsWith("Arrow")) {
+            clearAllWordSelectionFlag();
+        }
+    }, true);
+
+    // Снимаем флаг при клике мышкой по документу
+    document.addEventListener("mousedown", (e) => {
+        if (!e.target.closest(".office-topbar, .office-pill-ctx")) {
+            clearAllWordSelectionFlag();
+        }
+    });
+
+    // Применение шрифта, размера и цвета ко ВСЕМ страницам, если выделен весь документ
+    const _origFont = window.applyOfficeFont;
+    window.applyOfficeFont = function(fontName) {
+        if (isAllWordSelected && officeMode === "word") {
+            document.querySelectorAll(".a4-sheet").forEach(p => {
+                p.style.fontFamily = `'${fontName}', sans-serif`;
+                p.querySelectorAll("*").forEach(el => { if (el.style.fontFamily) el.style.fontFamily = `'${fontName}', sans-serif`; });
+            });
+            syncWordPagesFromDom(); saveCurrentOfficeDoc();
+            return;
+        }
+        _origFont(fontName);
+    };
+
+    const _origSize = window.applyOfficeFontSize;
+    window.applyOfficeFontSize = function(px) {
+        if (isAllWordSelected && officeMode === "word") {
+            document.querySelectorAll(".a4-sheet").forEach(p => {
+                p.style.fontSize = px + "px";
+                p.querySelectorAll("*").forEach(el => { if (el.style.fontSize) el.style.fontSize = px + "px"; });
+            });
+            syncWordPagesFromDom(); saveCurrentOfficeDoc();
+            return;
+        }
+        _origSize(px);
+    };
+
+    const _origColor = window.applyOfficeColor;
+    window.applyOfficeColor = function(cmd, color) {
+        if (isAllWordSelected && officeMode === "word") {
+            document.querySelectorAll(".a4-sheet").forEach(p => {
+                if (cmd === "foreColor") p.style.color = color;
+            });
+            syncWordPagesFromDom(); saveCurrentOfficeDoc();
+            return;
+        }
+        _origColor(cmd, color);
+    };
+})();
