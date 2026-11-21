@@ -11125,3 +11125,66 @@ body.dark-mode .izoh-result-head { border-color: #1E293B; }
 body.dark-mode .izoh-word-title { color: #F8FAFC; }
 body.dark-mode .izoh-badge.dict { background: rgba(16, 185, 129, 0.18); color: #34D399; }
 body.dark-mode .izoh-badge.ai { background: rgba(139, 92, 246, 0.2); color: #C4B5FD; }
+
+
+/* Типографика словарной статьи (izoh.uz в стиле Manrope) */
+.izoh-rich-html {
+    font-family: 'Manrope', sans-serif;
+    white-space: normal;
+}
+
+.izoh-pos {
+    font-size: 13px;
+    font-style: italic;
+    font-weight: 600;
+    color: #64748B;
+    margin-bottom: 10px;
+}
+
+.izoh-sense {
+    margin: 12px 0 6px;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: #0F172A;
+}
+
+.izoh-sense:first-child {
+    margin-top: 0;
+}
+
+.izoh-sense b {
+    font-weight: 800;
+}
+
+.izoh-sense i {
+    font-style: italic;
+    font-weight: 600;
+    color: #64748B;
+}
+
+.izoh-example {
+    padding-left: 12px;
+    margin: 4px 0;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #334155;
+}
+
+.izoh-example i {
+    font-style: italic;
+    font-size: 12.5px;
+    color: #64748B;
+}
+
+/* Тёмная тема для словарной статьи */
+body.dark-mode .izoh-pos,
+body.dark-mode .izoh-sense i,
+body.dark-mode .izoh-example i {
+    color: #94A3B8;
+}
+body.dark-mode .izoh-sense {
+    color: #F8FAFC;
+}
+body.dark-mode .izoh-example {
+    color: #CBD5E1;
+}
