@@ -10931,3 +10931,158 @@ body.dark-mode .chart-del-row-btn { background: rgba(239, 68, 68, 0.18); color: 
 #themeStudioPanel {
     z-index: 1000002 !important;
 }
+
+/* ========================================== */
+/* === AQL XARITASI (MIND MAP -> PNG/SVG) === */
+/* ========================================== */
+.mindmap-modal-card {
+    max-width: 1000px !important;
+    padding: 20px !important;
+}
+
+.mindmap-icon-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    background: #EDE9FE;
+    color: #7C3AED;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.mindmap-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+}
+
+.mindmap-node-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
+}
+
+.mindmap-text-input {
+    width: 190px !important;
+    padding: 7px 11px !important;
+    font-size: 13px !important;
+    border-radius: 9px !important;
+}
+
+.mindmap-colors {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.mm-color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.15);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    padding: 0;
+}
+.mm-color-dot:hover { transform: scale(1.15); }
+.mm-color-dot.active { box-shadow: 0 0 0 2px #0284C7; transform: scale(1.15); }
+
+.mindmap-right-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mindmap-tool-btn {
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 9px;
+    border: none;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12.5px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.mindmap-tool-btn.add { background: #E0F2FE; color: #0284C7; }
+.mindmap-tool-btn.add:hover { background: #0284C7; color: #FFFFFF; }
+.mindmap-tool-btn.del { background: #FEE2E2; color: #EF4444; }
+.mindmap-tool-btn.del:hover:not(:disabled) { background: #EF4444; color: #FFFFFF; }
+.mindmap-tool-btn.del:disabled { opacity: 0.4; cursor: not-allowed; }
+.mindmap-tool-btn.neutral { background: #F1F5F9; color: #475569; }
+.mindmap-tool-btn.neutral:hover { background: #E2E8F0; color: #0F172A; }
+
+.mindmap-canvas-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 540px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #E2E8F0;
+    touch-action: none;
+    user-select: none;
+}
+
+.mindmap-canvas-wrap.light {
+    background: radial-gradient(#CBD5E1 1px, transparent 1px), linear-gradient(155deg, #FFFFFF 0%, #F8FAFC 100%);
+    background-size: 22px 22px, 100% 100%;
+}
+
+.mindmap-canvas-wrap.dark {
+    background: radial-gradient(rgba(148, 163, 184, 0.2) 1px, transparent 1px), linear-gradient(155deg, #0F172A 0%, #0B1120 100%);
+    background-size: 22px 22px, 100% 100%;
+    border-color: #334155;
+}
+
+#mindmapSvg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.mm-node-group {
+    cursor: grab;
+}
+.mm-node-group:active {
+    cursor: grabbing;
+}
+
+.mindmap-hint {
+    position: absolute;
+    bottom: 10px;
+    left: 14px;
+    font-size: 11px;
+    font-weight: 700;
+    opacity: 0.55;
+    pointer-events: none;
+}
+.mindmap-canvas-wrap.light .mindmap-hint { color: #334155; }
+.mindmap-canvas-wrap.dark .mindmap-hint { color: #CBD5E1; }
+
+/* Тёмная тема для интерфейса модалки */
+body.dark-mode .mindmap-icon-badge { background: rgba(139, 92, 246, 0.2); color: #C4B5FD; }
+body.dark-mode .mindmap-toolbar { background: #1E293B; border-color: #334155; }
+body.dark-mode .mindmap-tool-btn.add { background: rgba(56, 189, 248, 0.18); color: #38BDF8; }
+body.dark-mode .mindmap-tool-btn.del { background: rgba(239, 68, 68, 0.18); color: #FB7185; }
+body.dark-mode .mindmap-tool-btn.neutral { background: #0F172A; color: #CBD5E1; }
+body.dark-mode .mindmap-tool-btn.neutral:hover { background: #334155; color: #F8FAFC; }
+
+@media (max-width: 768px) {
+    .mindmap-text-input { width: 100% !important; }
+    .mindmap-canvas-wrap { aspect-ratio: 4 / 3; }
+}
