@@ -13315,3 +13315,36 @@ document.addEventListener("selectionchange", scheduleIzohButtonSync);
 document.addEventListener("mouseup", scheduleIzohButtonSync);
 document.addEventListener("keyup", scheduleIzohButtonSync);
 document.addEventListener("DOMContentLoaded", scheduleIzohButtonSync);
+
+
+// === ЗАПУСК ULH OFFICE И ИНДИКАТОР НЕЗАВЕРШЁННОГО ДОКУМЕНТА ===
+window.launchUlhOffice = function(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    const overlay = document.getElementById("ulhOfficeTransitionOverlay");
+    if (overlay) {
+        overlay.classList.add("active");
+        setTimeout(() => {
+            window.location.href = "/office/";
+        }, 520);
+    } else {
+        window.location.href = "/office/";
+    }
+};
+
+function updateUlhOfficeIndicator() {
+    const dot = document.getElementById("ulhOfficeDot");
+    if (!dot) return;
+    try {
+        const hasDraft = localStorage.getItem("ulh_office_has_draft") === "1";
+        const activeMode = localStorage.getItem("ulh_office_active_mode") || "word";
+        if (hasDraft) {
+            dot.style.display = "block";
+            dot.className = "ulh-office-dot mode-" + activeMode;
+        } else {
+            dot.style.display = "none";
+        }
+    } catch (_) {}
+}
+
+document.addEventListener("DOMContentLoaded", updateUlhOfficeIndicator);
+window.addEventListener("focus", updateUlhOfficeIndicator);
