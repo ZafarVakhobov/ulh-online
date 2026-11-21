@@ -1091,3 +1091,20 @@ body.dark-mode .sheet-tab-btn.active {
 .a4-sheet.all-doc-selected {
     box-shadow: 0 0 0 2px #0284C7, 0 10px 30px rgba(2, 132, 199, 0.16);
 }
+
+/* === ÖŞA AI: КНОПКА TAHRIRLAŞ И АВАТАР В ТЁМНОЙ ТЕМЕ === */
+body.dark-mode .office-osha-insert-btn {
+    background: rgba(56, 189, 248, 0.16);
+    color: #38BDF8;
+    border: 1px solid rgba(56, 189, 248, 0.28);
+}
+
+body.dark-mode .office-osha-insert-btn:hover {
+    background: rgba(56, 189, 248, 0.26);
+    color: #E0F2FE;
+}
+
+body.dark-mode .office-osha-avatar-sm {
+    background: #0F172A;
+    border: 1px solid #334155;
+}
