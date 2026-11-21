@@ -3323,7 +3323,7 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                 </div>
                 <div>
                     <div class="pdf-studio-title">Grafik konstruktori</div>
-                    <div class="pdf-studio-sub">Taqdimotlar uçun PNG infografika</div>
+                    <div class="pdf-studio-sub">Taqdimotlar uçun infografika</div>
                 </div>
             </div>
             <button type="button" class="pdf-studio-close" onclick="closeChartModal()">×</button>
@@ -3335,7 +3335,7 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
                 <div class="chart-toggle-row">
                     <div class="chart-seg-group" id="chartTypeGroup">
                         <button type="button" class="chart-seg-btn active" data-type="bar" onclick="setChartType('bar')">📊 Ustunli</button>
-                        <button type="button" class="chart-seg-btn" data-type="donut" onclick="setChartType('donut')">🍩 Doiraviy</button>
+                        <button type="button" class="chart-seg-btn" data-type="donut" onclick="setChartType('donut')">⭕ Doiraviy</button>
                     </div>
                     <div class="chart-seg-group" id="chartThemeGroup">
                         <button type="button" class="chart-seg-btn active" data-theme="light" onclick="setChartTheme('light')">⚪</button>
@@ -3365,10 +3365,22 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
         <div class="weather-modal-footer" style="margin-top: 14px;">
             <span style="font-size:11.5px; color:#64748B; font-weight:600;">Grafikni yuklab oling</span>
             <div style="display:flex; align-items:center; gap:8px;">
-                <button type="button" class="curr-export-btn" id="chartDownloadBtn" onclick="downloadChartInformer()">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    <span>PNG yuklab oliş</span>
-                </button>
+                
+<div class="curr-export-wrap" id="chartExportWrap" style="margin-right: 0;">
+    <button type="button" class="curr-export-btn" id="chartDownloadBtn" onclick="toggleChartExportMenu(event)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Yuklab oliş</span>
+    </button>
+    <div class="curr-export-menu" id="chartExportMenu">
+        <button type="button" class="curr-export-opt" onclick="closeChartExportMenu(); downloadChartInformer();">
+            <span>🖼️</span> PNG formatda
+        </button>
+        <button type="button" class="curr-export-opt" onclick="closeChartExportMenu(); downloadChartInformerSVG();">
+            <span>📐</span> SVG formatda (vektor)
+        </button>
+    </div>
+</div>
+                
                 <button type="button" class="weather-modal-close" onclick="closeChartModal()">Yopiş</button>
             </div>
         </div>
