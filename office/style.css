@@ -325,3 +325,72 @@ body.dark-mode .ulh-sheet-table td { border-color: #334155; color: #F8FAFC; }
     .office-zoom-wrapper { transform: none !important; }
     .a4-sheet { box-shadow: none !important; page-break-after: always; }
 }
+
+/* === TABLER SVG ICONS (АВТО-АДАПТАЦИЯ ПОД ДЕНЬ / НОЧЬ) === */
+.ti {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+}
+.ti.ti-xs { width: 13px; height: 13px; }
+.ti.ti-sm { width: 15px; height: 15px; }
+.ti.ti-lg { width: 21px; height: 21px; stroke-width: 1.75; }
+
+.office-theme-btn .ti-sun { display: none; }
+body.dark-mode .office-theme-btn .ti-moon { display: none; }
+body.dark-mode .office-theme-btn .ti-sun { display: inline-block; color: #FBBF24; }
+
+.rb-btn.save-trigger { gap: 2px; padding: 0 6px; }
+.rb-btn.wide { gap: 5px; }
+.office-dropdown-menu button { display: flex; align-items: center; gap: 8px; }
+.office-icon-btn { display: inline-flex; align-items: center; justify-content: center; color: #334155; }
+body.dark-mode .office-icon-btn { color: #E2E8F0; }
+
+/* Фикс обрезания выпадающих списков (шрифт, размер, сохранение) в ленте */
+.office-ribbon {
+    overflow: visible !important;
+    flex-wrap: wrap;
+    row-gap: 6px;
+}
+
+/* === ФИКС ОБРЕЗАНИЯ ВЫПАДАЮЩИХ МЕНЮ В ПАНЕЛИ ИНСТРУМЕНТОВ === */
+.office-topbar {
+    overflow: visible !important;
+    z-index: 2000 !important;
+}
+
+.office-ribbon,
+.ribbon-group,
+.ribbon-group-body,
+.ribbon-row {
+    overflow: visible !important;
+}
+
+.office-ribbon {
+    flex-wrap: wrap;
+    row-gap: 6px;
+}
+
+/* Выравниваем кастомные списки шрифта/размера ровно под кнопкой и поверх листа */
+.office-ribbon .custom-select-wrapper {
+    position: relative;
+    z-index: 2100;
+}
+
+.office-ribbon .custom-select-options {
+    top: calc(100% + 4px) !important;
+    left: 0 !important;
+    z-index: 99999 !important;
+    max-height: 240px;
+}
+
+.office-ribbon .office-dropdown-menu {
+    z-index: 99999 !important;
+}
