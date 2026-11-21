@@ -394,3 +394,165 @@ body.dark-mode .office-icon-btn { color: #E2E8F0; }
 .office-ribbon .office-dropdown-menu {
     z-index: 99999 !important;
 }
+
+/* === 1. ФИКС HOVER-ЭФФЕКТОВ В ТЁМНОЙ ТЕМЕ === */
+body.dark-mode .rb-btn:hover,
+body.dark-mode .rb-big-btn:hover,
+body.dark-mode .office-pill-ctx button:hover {
+    background: rgba(56, 189, 248, 0.16) !important;
+    color: #38BDF8 !important;
+}
+body.dark-mode .rb-btn.wide:hover,
+body.dark-mode .office-btn:hover,
+body.dark-mode .office-icon-btn:hover {
+    background: #334155 !important;
+    border-color: #475569 !important;
+    color: #F8FAFC !important;
+}
+body.dark-mode .rb-style-card:hover {
+    background: rgba(56, 189, 248, 0.14) !important;
+    border-color: #38BDF8 !important;
+}
+body.dark-mode .office-dropdown-menu button:hover {
+    background: #1E293B !important;
+    color: #38BDF8 !important;
+}
+body.dark-mode .office-btn.accent { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: #C4B5FD; }
+body.dark-mode .office-btn.minimize { background: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.35); color: #FCD34D; }
+body.dark-mode .office-btn.danger { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.35); color: #FCA5A5; }
+body.dark-mode .office-zoom-pill { background: #1E293B; color: #E2E8F0; }
+body.dark-mode .office-zoom-pill button { color: #E2E8F0; }
+
+/* === 2. ТАБЛИЦЫ ВНУТРИ ULH WORD === */
+.word-table {
+    width: 100%; border-collapse: collapse; margin: 12px 0;
+}
+.word-table td, .word-table th {
+    border: 1px solid #94A3B8; padding: 7px 10px; min-width: 50px; vertical-align: top;
+}
+
+/* === 3. КЛИКАБЕЛЬНЫЕ СИНОНИМЫ И ПЕРЕВОД (ЗАМЕНА В ДОКУМЕНТЕ) === */
+.ctx-res-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.ctx-res-row { display: flex; gap: 6px; align-items: stretch; }
+.ctx-replace-btn {
+    flex: 1; text-align: left; padding: 9px 12px; border-radius: 10px;
+    border: 1px solid #E2E8F0; background: #F8FAFC; color: #0F172A;
+    font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+}
+.ctx-replace-btn:hover { background: #E0F2FE; border-color: #7DD3FC; color: #0284C7; }
+.ctx-copy-mini {
+    width: 36px; border-radius: 10px; border: 1px solid #E2E8F0; background: #F8FAFC;
+    color: #64748B; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+}
+.ctx-copy-mini:hover { background: #E0F2FE; color: #0284C7; }
+body.dark-mode .ctx-replace-btn,
+body.dark-mode .ctx-copy-mini { background: #1E293B; border-color: #334155; color: #F8FAFC; }
+body.dark-mode .ctx-replace-btn:hover,
+body.dark-mode .ctx-copy-mini:hover { background: rgba(56, 189, 248, 0.18); border-color: #38BDF8; color: #38BDF8; }
+
+/* === 4. ЛИНЕЙКИ В СТИЛЕ MS WORD (ГОРИЗОНТАЛЬНАЯ С 2 БЕГУНКАМИ + ВЕРТИКАЛЬНАЯ) === */
+.word-ruler-top-row { display: flex; align-items: center; gap: 6px; }
+.ruler-corner-box {
+    width: 24px; height: 24px; border-radius: 5px; background: #F1F5F9; border: 1px solid #CBD5E1;
+    display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #475569;
+}
+.word-ruler-wrap {
+    position: relative; width: 210mm; height: 24px;
+    background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 4px;
+    overflow: hidden; user-select: none;
+}
+.ruler-margin-shade {
+    position: absolute; top: 0; bottom: 0; background: #CBD5E1; opacity: 0.55; pointer-events: none;
+}
+.ruler-margin-shade.left { left: 0; }
+.ruler-margin-shade.right { right: 0; }
+.word-ruler-ticks { position: relative; z-index: 2; display: flex; width: 100%; height: 100%; font-size: 9px; font-weight: 700; color: #475569; }
+.ruler-cm { flex: 1; border-right: 1px solid rgba(100,116,139,0.35); height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 2px; }
+
+/* Бегунки горизонтальной линейки */
+.ruler-handle {
+    position: absolute; z-index: 5; width: 11px; height: 11px;
+    background: #0284C7; cursor: ew-resize; transform: translateX(-50%);
+}
+.ruler-handle.first-line { top: 0; clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 50%); background: #38BDF8; }
+.ruler-handle.left-margin { bottom: 0; clip-path: polygon(50% 0, 100% 50%, 100% 100%, 0 100%, 0 50%); }
+.ruler-handle.right-margin { bottom: 0; clip-path: polygon(50% 0, 100% 50%, 100% 100%, 0 100%, 0 50%); }
+
+/* Вертикальная линейка */
+.word-body-with-vruler { display: flex; align-items: flex-start; gap: 6px; }
+.word-vruler-wrap {
+    position: relative; width: 24px; height: 297mm;
+    background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 4px;
+    overflow: hidden; user-select: none; flex-shrink: 0;
+}
+.vruler-margin-shade.top { position: absolute; top: 0; left: 0; right: 0; background: #CBD5E1; opacity: 0.55; pointer-events: none; }
+.word-vruler-ticks { position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; font-size: 8.5px; font-weight: 700; color: #475569; }
+.vruler-cm { flex: 1; border-bottom: 1px solid rgba(100,116,139,0.35); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 1px; }
+.vruler-handle.top {
+    position: absolute; z-index: 5; left: 0; right: 0; height: 6px;
+    background: #0284C7; cursor: ns-resize; transform: translateY(-50%);
+}
+
+body.dark-mode .ruler-corner-box,
+body.dark-mode .word-ruler-wrap,
+body.dark-mode .word-vruler-wrap { background: #1E293B; border-color: #334155; color: #94A3B8; }
+body.dark-mode .ruler-margin-shade,
+body.dark-mode .vruler-margin-shade { background: #0F172A; opacity: 0.8; }
+
+/* === 5. ÖŞA AI ВИДЖЕТ (ТОЧНО КАК НА ГЛАВНОЙ СТРАНИЦЕ) === */
+.office-osha-circle-btn {
+    position: fixed; bottom: 48px; right: 24px; width: 62px; height: 62px; border-radius: 50%;
+    background: linear-gradient(135deg, #3B82F6, #10B981); padding: 3px; border: none;
+    cursor: pointer; z-index: 9500; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.45);
+    transition: transform 0.2s; display: flex; align-items: center; justify-content: center;
+}
+.office-osha-circle-btn:hover { transform: scale(1.07); }
+.office-osha-btn-inner {
+    width: 100%; height: 100%; background: #FFFFFF; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.office-osha-btn-inner img { width: 44px; height: 44px; object-fit: contain; }
+.office-osha-online {
+    position: absolute; bottom: 2px; right: 2px; width: 13px; height: 13px;
+    background: #22C55E; border: 2px solid #FFFFFF; border-radius: 50%;
+}
+.office-osha-window {
+    position: fixed; bottom: 122px; right: 24px; width: 355px; height: 500px; z-index: 9501;
+    background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 20px;
+    box-shadow: 0 20px 44px rgba(15, 23, 42, 0.2); display: flex; flex-direction: column; overflow: hidden;
+}
+.office-osha-window.hidden { display: none; }
+.office-osha-header {
+    padding: 14px 16px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.office-osha-header h3 { margin: 0; font-size: 15px; font-weight: 800; color: #0F172A; }
+.office-osha-header p { margin: 2px 0 0; font-size: 11px; font-weight: 700; color: #10B981; }
+.office-osha-avatar-sm {
+    width: 38px; height: 38px; border-radius: 50%; background: #EFF6FF;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.office-osha-avatar-sm img { width: 32px; height: 32px; object-fit: contain; }
+.office-osha-head-btn {
+    border: none; background: transparent; color: #94A3B8; cursor: pointer;
+    width: 30px; height: 30px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;
+}
+.office-osha-head-btn:hover { background: #E2E8F0; color: #0F172A; }
+.office-osha-footer {
+    padding: 12px; border-top: 1px solid #E2E8F0; display: flex; gap: 8px; background: #FFFFFF;
+}
+.office-osha-footer input {
+    flex: 1; background: #F1F5F9; border: none; border-radius: 12px; padding: 10px 14px; font-size: 13.5px; outline: none;
+}
+.office-osha-send-btn {
+    width: 40px; height: 40px; border-radius: 12px; border: none; background: #3B82F6; color: #FFFFFF;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+}
+body.dark-mode .office-osha-btn-inner,
+body.dark-mode .office-osha-window,
+body.dark-mode .office-osha-footer { background: #0F172A; border-color: #1E293B; }
+body.dark-mode .office-osha-online { border-color: #0F172A; }
+body.dark-mode .office-osha-header { background: #1E293B; border-color: #334155; }
+body.dark-mode .office-osha-header h3 { color: #F8FAFC; }
+body.dark-mode .office-osha-footer input { background: #1E293B; color: #F8FAFC; }
+body.dark-mode .office-osha-head-btn:hover { background: #334155; color: #F8FAFC; }
