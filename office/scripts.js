@@ -10,6 +10,8 @@ let savedRange = null;
 let pendingPasteNode = null;
 let rulerMarginLeft = 20;  // mm
 let rulerMarginRight = 20; // mm
+let rulerFirstLine = 0;    // mm
+let rulerMarginTop = 20;   // mm
 
 let wordPages = JSON.parse(localStorage.getItem("ulh_office_word_pages_v2") || "null") || [
     "<h2>ULH Word</h2><p>Bu yerda hujjatingizni yozişingiz mumkin. Sahifa tölganda avtomatik yangi A4 sahifa oçiladi.</p>"
@@ -47,6 +49,13 @@ function restoreSavedSelection() {
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(savedRange);
+}
+
+function syncWordPagesFromDom() {
+    const sheets = document.querySelectorAll(".a4-sheet");
+    if (sheets.length) {
+        wordPages = [...sheets].map(p => p.innerHTML);
+    }
 }
 
 // === 1. ЗАГРУЗКА (4 СЕКУНДЫ) И ИНИЦИАЛИЗАЦИЯ ===
@@ -113,6 +122,8 @@ function applyOfficeModeUI(mode) {
 
     document.getElementById("officePlaySlideBtn").style.display = mode === "slides" ? "inline-flex" : "none";
     document.getElementById("rbNewPageBtn").style.display = mode === "word" ? "inline-flex" : "none";
+    const rbTableBtn = document.getElementById("rbInsertTableBtn");
+    if (rbTableBtn) rbTableBtn.style.display = mode === "word" ? "flex" : "none";
     document.getElementById("rbGroupParagraph").style.display = mode === "tables" ? "none" : "flex";
     document.getElementById("rbGroupStyles").style.display = mode === "tables" ? "none" : "flex";
     document.getElementById("rbGroupTablesData").style.display = mode === "tables" ? "flex" : "none";
@@ -139,7 +150,7 @@ function applyOfficeModeUI(mode) {
     }
 }
 
-// === 2. МНОГОСТРАНИЧНЫЙ А4 (АВТО-ПЕРЕНОС НА НОВУЮ СТРАНИЦУ) ===
+// === 2. МНОГОСТРАНИЧНЫЙ А4 (АВТО-ПЕРЕНОС И УДАЛЕНИЕ ПУСТЫХ СТРАНИЦ) ===
 function renderWordPages() {
     const container = document.getElementById("wordPagesContainer");
     if (!container) return;
@@ -152,6 +163,8 @@ function renderWordPages() {
         page.dataset.pageIndex = idx;
         page.style.paddingLeft = rulerMarginLeft + "mm";
         page.style.paddingRight = rulerMarginRight + "mm";
+        page.style.paddingTop = rulerMarginTop + "mm";
+        page.style.textIndent = rulerFirstLine + "mm";
         page.innerHTML = html;
 
         page.addEventListener("input", () => {
@@ -161,6 +174,39 @@ function renderWordPages() {
             pushOfficeHistorySnapshot();
         });
         page.addEventListener("paste", handleSmartUzbekPaste);
+        page.addEventListener("keydown", (e) => {
+            const plain = page.innerText.trim();
+            // Backspace на пустой странице (кроме 1-й) удаляет её
+            if (e.key === "Backspace" && plain === "" && wordPages.length > 1 && idx > 0) {
+                e.preventDefault();
+                wordPages.splice(idx, 1);
+                renderWordPages();
+                saveCurrentOfficeDoc();
+                const prev = document.querySelector(`.a4-sheet[data-page-index="${idx - 1}"]`);
+                if (prev) prev.focus();
+                return;
+            }
+            // Delete в конце активной страницы: если следующая страница пустая — удаляет её
+            if (e.key === "Delete" && idx + 1 < wordPages.length) {
+                const sel = window.getSelection();
+                if (sel && sel.isCollapsed) {
+                    const range = sel.getRangeAt(0);
+                    const afterRange = document.createRange();
+                    afterRange.selectNodeContents(page);
+                    afterRange.setStart(range.endContainer, range.endOffset);
+                    if (afterRange.toString().trim() === "") {
+                        const nextTmp = document.createElement("div");
+                        nextTmp.innerHTML = wordPages[idx + 1] || "";
+                        if (nextTmp.innerText.trim() === "" && !nextTmp.querySelector("img, table")) {
+                            e.preventDefault();
+                            wordPages.splice(idx + 1, 1);
+                            renderWordPages();
+                            saveCurrentOfficeDoc();
+                        }
+                    }
+                }
+            }
+        });
         container.appendChild(page);
     });
     updatePageCounter();
@@ -202,36 +248,62 @@ function updatePageCounter() {
     else el.textContent = `Katak: ${activeCellKey}`;
 }
 
-// === 3. ГОРИЗОНТАЛЬНАЯ ЛИНЕЙКА (ТОЛЬКО WORD) ===
+// === 3. ГОРИЗОНТАЛЬНАЯ (2 БЕГУНКА СЛЕВА + 1 СПРАВА) И ВЕРТИКАЛЬНАЯ ЛИНЕЙКИ (WORD) ===
 function initWordRuler() {
     const ticks = document.getElementById("wordRulerTicks");
-    if (ticks) {
-        ticks.innerHTML = Array.from({ length: 21 }, (_, i) => `<div class="ruler-cm">${i + 1}</div>`).join("");
-    }
-    const leftH = document.getElementById("rulerLeftHandle");
-    const rightH = document.getElementById("rulerRightHandle");
-    const wrap = document.getElementById("wordRulerWrap");
-    if (!leftH || !rightH || !wrap) return;
+    if (ticks) ticks.innerHTML = Array.from({ length: 21 }, (_, i) => `<div class="ruler-cm">${i + 1}</div>`).join("");
+    const vticks = document.getElementById("wordVRulerTicks");
+    if (vticks) vticks.innerHTML = Array.from({ length: 29 }, (_, i) => `<div class="vruler-cm">${i + 1}</div>`).join("");
 
-    function syncHandles() {
-        leftH.style.left = (rulerMarginLeft / 210 * 100) + "%";
-        rightH.style.left = ((210 - rulerMarginRight) / 210 * 100) + "%";
+    const wrap = document.getElementById("wordRulerWrap");
+    const vwrap = document.getElementById("wordVRulerWrap");
+    const hFirst = document.getElementById("rulerFirstLineHandle");
+    const hLeft = document.getElementById("rulerLeftHandle");
+    const hRight = document.getElementById("rulerRightHandle");
+    const hTop = document.getElementById("vrulerTopHandle");
+    if (!wrap || !hLeft || !hRight) return;
+
+    function syncRulers() {
+        const lPct = (rulerMarginLeft / 210) * 100;
+        const rPct = (rulerMarginRight / 210) * 100;
+        const fPct = ((rulerMarginLeft + rulerFirstLine) / 210) * 100;
+        const tPct = (rulerMarginTop / 297) * 100;
+
+        const shadeL = document.getElementById("rulerShadeLeft");
+        const shadeR = document.getElementById("rulerShadeRight");
+        const shadeT = document.getElementById("vrulerShadeTop");
+
+        if (shadeL) shadeL.style.width = lPct + "%";
+        if (shadeR) shadeR.style.width = rPct + "%";
+        hLeft.style.left = lPct + "%";
+        if (hFirst) hFirst.style.left = fPct + "%";
+        hRight.style.left = (100 - rPct) + "%";
+
+        if (hTop) {
+            if (shadeT) shadeT.style.height = tPct + "%";
+            hTop.style.top = tPct + "%";
+        }
+
         document.querySelectorAll(".a4-sheet").forEach(p => {
             p.style.paddingLeft = rulerMarginLeft + "mm";
             p.style.paddingRight = rulerMarginRight + "mm";
+            p.style.paddingTop = rulerMarginTop + "mm";
+            p.style.textIndent = rulerFirstLine + "mm";
         });
     }
-    syncHandles();
+    syncRulers();
 
-    function makeDrag(handle, isLeft) {
-        handle.addEventListener("mousedown", (e) => {
+    function bindHDrag(el, mode) {
+        if (!el) return;
+        el.addEventListener("mousedown", (e) => {
             e.preventDefault();
             const onMove = (ev) => {
                 const rect = wrap.getBoundingClientRect();
                 const mm = Math.round(((ev.clientX - rect.left) / rect.width) * 210);
-                if (isLeft) rulerMarginLeft = Math.max(8, Math.min(70, mm));
+                if (mode === "left") rulerMarginLeft = Math.max(8, Math.min(70, mm));
+                else if (mode === "first") rulerFirstLine = Math.max(-10, Math.min(40, mm - rulerMarginLeft));
                 else rulerMarginRight = Math.max(8, Math.min(70, 210 - mm));
-                syncHandles();
+                syncRulers();
             };
             const onUp = () => {
                 document.removeEventListener("mousemove", onMove);
@@ -241,14 +313,34 @@ function initWordRuler() {
             document.addEventListener("mouseup", onUp);
         });
     }
-    makeDrag(leftH, true);
-    makeDrag(rightH, false);
+    bindHDrag(hLeft, "left");
+    bindHDrag(hFirst, "first");
+    bindHDrag(hRight, "right");
+
+    if (hTop && vwrap) {
+        hTop.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            const onMove = (ev) => {
+                const rect = vwrap.getBoundingClientRect();
+                const mm = Math.round(((ev.clientY - rect.top) / rect.height) * 297);
+                rulerMarginTop = Math.max(8, Math.min(70, mm));
+                syncRulers();
+            };
+            const onUp = () => {
+                document.removeEventListener("mousemove", onMove);
+                document.removeEventListener("mouseup", onUp);
+            };
+            document.addEventListener("mousemove", onMove);
+            document.addEventListener("mouseup", onUp);
+        });
+    }
 }
 
-// === 4. РАБОЧАЯ СМЕНА ШРИФТОВ, РАЗМЕРА И ЦВЕТА ===
+// === 4. РАБОЧАЯ СМЕНА ШРИФТОВ, РАЗМЕРА, ЦВЕТА И ВСТАВКА ТАБЛИЦЫ ===
 window.execOfficeFormat = function(cmd, val = null) {
     restoreSavedSelection();
     document.execCommand(cmd, false, val);
+    if (officeMode === "word") syncWordPagesFromDom();
     saveCurrentOfficeDoc();
 };
 
@@ -265,6 +357,7 @@ window.applyOfficeFont = function(fontName) {
     } else {
         document.getElementById("ulhSpreadsheet").style.fontFamily = `'${fontName}', sans-serif`;
     }
+    if (officeMode === "word") syncWordPagesFromDom();
     saveCurrentOfficeDoc();
 };
 
@@ -278,6 +371,7 @@ window.applyOfficeFontSize = function(px) {
         span.appendChild(range.extractContents());
         range.insertNode(span);
     }
+    if (officeMode === "word") syncWordPagesFromDom();
     saveCurrentOfficeDoc();
 };
 
@@ -285,6 +379,22 @@ window.applyOfficeColor = function(cmd, color) {
     restoreSavedSelection();
     document.execCommand("styleWithCSS", false, true);
     document.execCommand(cmd, false, color);
+    if (officeMode === "word") syncWordPagesFromDom();
+    saveCurrentOfficeDoc();
+};
+
+window.insertWordTable = function() {
+    const r = parseInt(prompt("Qatorlar soni:", "3"), 10);
+    const c = parseInt(prompt("Ustunlar soni:", "3"), 10);
+    if (!r || !c || r < 1 || c < 1) return;
+    let html = `<table class="word-table"><tbody>`;
+    for (let i = 0; i < Math.min(r, 20); i++) {
+        html += `<tr>${Array.from({ length: Math.min(c, 12) }, () => `<td>&nbsp;</td>`).join("")}</tr>`;
+    }
+    html += `</tbody></table><p><br></p>`;
+    restoreSavedSelection();
+    document.execCommand("insertHTML", false, html);
+    if (officeMode === "word") syncWordPagesFromDom();
     saveCurrentOfficeDoc();
 };
 
@@ -293,6 +403,7 @@ window.insertOfficeImage = function() {
     if (url && url.startsWith("http")) {
         restoreSavedSelection();
         document.execCommand("insertImage", false, url);
+        if (officeMode === "word") syncWordPagesFromDom();
         saveCurrentOfficeDoc();
     }
 };
@@ -302,6 +413,7 @@ window.insertOfficeLink = function() {
     if (url && url.startsWith("http")) {
         restoreSavedSelection();
         document.execCommand("createLink", false, url);
+        if (officeMode === "word") syncWordPagesFromDom();
         saveCurrentOfficeDoc();
     }
 };
@@ -493,7 +605,7 @@ window.clearActiveTableCell = function() { delete tableData.cells[activeCellKey]
 window.addTableRow = function() { tableData.rows++; renderSpreadsheet(); saveCurrentOfficeDoc(); };
 window.addTableCol = function() { if (tableData.cols < 26) { tableData.cols++; renderSpreadsheet(); saveCurrentOfficeDoc(); } };
 
-// === 7. КОНТЕКСТНОЕ МЕНЮ ПКМ (ОДНА КНОПКА СЛОВАРЯ, ПОКАЗ ПО ПРАВИЛУ) ===
+// === 7. КОНТЕКСТНОЕ МЕНЮ ПКМ + КЛИКАБЕЛЬНАЯ ЗАМЕНА СИНОНИМОВ / ПЕРЕВОДА ===
 let lastCtxSelectedText = "";
 document.addEventListener("contextmenu", (e) => {
     const insideSheet = e.target.closest(".a4-sheet, #slideCanvas, #ulhSpreadsheet");
@@ -520,26 +632,66 @@ document.addEventListener("click", (e) => {
     if (!e.target.closest("#officeSaveWrap")) document.getElementById("officeSaveWrap")?.classList.remove("open");
     if (!e.target.closest("#officeContextMenu")) closeOfficeContextMenu();
 });
-window.ctxExec = function(cmd) { restoreSavedSelection(); document.execCommand(cmd); closeOfficeContextMenu(); saveCurrentOfficeDoc(); };
-window.ctxPaste = async function() { try { const t = await navigator.clipboard.readText(); restoreSavedSelection(); document.execCommand("insertText", false, t); } catch (_) {} closeOfficeContextMenu(); };
+window.ctxExec = function(cmd) {
+    restoreSavedSelection();
+    document.execCommand(cmd);
+    if (officeMode === "word") syncWordPagesFromDom();
+    closeOfficeContextMenu();
+    saveCurrentOfficeDoc();
+};
+window.ctxPaste = async function() {
+    try {
+        const t = await navigator.clipboard.readText();
+        restoreSavedSelection();
+        document.execCommand("insertText", false, t);
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    } catch (_) {}
+    closeOfficeContextMenu();
+};
+
+window.replaceSelectedOfficeText = function(newText) {
+    restoreSavedSelection();
+    document.execCommand("insertText", false, newText);
+    if (officeMode === "word") syncWordPagesFromDom();
+    saveCurrentOfficeDoc();
+    document.getElementById("officeQuickResultModal").classList.remove("open");
+};
 
 window.ctxAiAction = async function(type) {
     closeOfficeContextMenu();
     if (!lastCtxSelectedText) return;
     const modal = document.getElementById("officeQuickResultModal");
+    const body = document.getElementById("officeQuickBody");
     document.getElementById("officeQuickTitle").textContent = type === "synonym" ? `Sinonim: ${lastCtxSelectedText}` : `Tarjima`;
-    document.getElementById("officeQuickBody").textContent = "Yuklanmoqda...";
+    body.innerHTML = "Yuklanmoqda...";
     modal.classList.add("open");
 
     const prompt = type === "synonym"
-        ? `"${lastCtxSelectedText}" sözi uçun 5 ta eng yaxşi sinonim ber.`
-        : `"${lastCtxSelectedText}" matnini özbek tiliga aniq tarjima qil.`;
+        ? `"${lastCtxSelectedText}" sözi uçun 5 ta eng yaxşi sinonimni vergul bilan ajratib yoz. Ortiqça izoh yozma.`
+        : `"${lastCtxSelectedText}" matnini özbek tiliga aniq tarjima qil. Faqat tarjimani yoz.`;
+
     const res = await fetch(OFFICE_AI_URL, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mode: "custom", customPrompt: prompt, text: lastCtxSelectedText })
     });
     const data = await res.json();
-    document.getElementById("officeQuickBody").textContent = data.result || "Natija topilmadi.";
+    const raw = (data.result || "").trim();
+    if (!raw) { body.textContent = "Natija topilmadi."; return; }
+
+    const items = type === "synonym"
+        ? raw.split(/[\n,;]+/).map(s => s.replace(/^\d+[\.\)]\s*/, "").trim()).filter(Boolean).slice(0, 6)
+        : [raw];
+
+    const copyIco = `<svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"/><path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"/></svg>`;
+    body.innerHTML = `<div style="font-size:11.5px; color:#64748B; font-weight:700; margin-bottom:6px;">Almaştiriş uçun ustiga bosing:</div><div class="ctx-res-list">` +
+        items.map(val => {
+            const safe = val.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            return `<div class="ctx-res-row">
+                <button type="button" class="ctx-replace-btn" onclick="replaceSelectedOfficeText('${safe}')">${val}</button>
+                <button type="button" class="ctx-copy-mini" onclick="navigator.clipboard.writeText('${safe}')" title="Nusxalaş">${copyIco}</button>
+            </div>`;
+        }).join("") + `</div>`;
 };
 
 window.ctxIzohAction = async function() {
@@ -586,7 +738,11 @@ function handleSmartUzbekPaste(e) {
 }
 window.confirmSmartPaste = function(ok) {
     document.getElementById("smartPasteToast")?.classList.remove("show");
-    if (ok && pendingPasteNode) { transliterateElementNodes(pendingPasteNode); saveCurrentOfficeDoc(); }
+    if (ok && pendingPasteNode) {
+        transliterateElementNodes(pendingPasteNode);
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    }
     pendingPasteNode = null;
 };
 function transliterateElementNodes(root) {
@@ -727,6 +883,11 @@ window.restoreOfficeHistory = () => {
 
 let officeOshaChatHist = JSON.parse(localStorage.getItem("oshaChatHistory") || "[]");
 window.toggleOfficeOsha = () => document.getElementById("officeOshaChat").classList.toggle("hidden");
+window.clearOfficeOshaChat = () => {
+    officeOshaChatHist = [];
+    localStorage.removeItem("oshaChatHistory");
+    renderOfficeOshaHistory();
+};
 function renderOfficeOshaHistory() {
     const box = document.getElementById("officeOshaMessages"); if (!box) return;
     box.innerHTML = officeOshaChatHist.slice(-15).map((m, idx) => `
