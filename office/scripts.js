@@ -1195,3 +1195,246 @@ document.addEventListener("DOMContentLoaded", () => {
     initColorPopovers();
     setTimeout(applyPageNumbersToSheets, 150);
 });
+
+
+// ==========================================
+// === ULH OFFICE v4 — 11 PRECISION FIXES ===
+// ==========================================
+
+// 1. Взаимоисключающее открытие всех выпадающих меню
+function closeAllOfficeMenus(exceptId = null) {
+    ["officeSaveWrap", "foreColorWrap", "backColorWrap", "bulletMenuWrap", "lineHeightWrap", "pageNumMenuWrap"]
+        .forEach(id => { if (id !== exceptId) document.getElementById(id)?.classList.remove("open"); });
+    document.getElementById("officeContextMenu")?.classList.remove("open");
+}
+window.toggleOfficeSaveMenu = (e) => { e.stopPropagation(); closeAllOfficeMenus("officeSaveWrap"); document.getElementById("officeSaveWrap")?.classList.toggle("open"); };
+window.toggleColorPop = (id, e) => { e.stopPropagation(); closeAllOfficeMenus(id); document.getElementById(id)?.classList.toggle("open"); };
+window.toggleSimpleDrop = (id, e) => { e.stopPropagation(); closeAllOfficeMenus(id); document.getElementById(id)?.classList.toggle("open"); };
+
+// 2. Починенная линейка (3 бегунка слева + 1 справа + вертикальная) + адаптация под ориентацию
+let currentDocWidthMm = 210;
+let currentDocHeightMm = 297;
+
+function rebuildRulersForOrientation(isLandscape) {
+    currentDocWidthMm = isLandscape ? 297 : 210;
+    currentDocHeightMm = isLandscape ? 210 : 297;
+
+    const wrap = document.getElementById("wordRulerWrap");
+    const vwrap = document.getElementById("wordVRulerWrap");
+    const ticks = document.getElementById("wordRulerTicks");
+    const vticks = document.getElementById("wordVRulerTicks");
+    if (!wrap || !vwrap) return;
+
+    wrap.style.width = currentDocWidthMm + "mm";
+    vwrap.style.height = currentDocHeightMm + "mm";
+    if (ticks) ticks.innerHTML = Array.from({ length: Math.floor(currentDocWidthMm / 10) }, (_, i) => `<div class="ruler-cm">${i + 1}</div>`).join("");
+    if (vticks) vticks.innerHTML = Array.from({ length: Math.floor(currentDocHeightMm / 10) }, (_, i) => `<div class="vruler-cm">${i + 1}</div>`).join("");
+    syncAllRulerHandles();
+}
+
+function syncAllRulerHandles() {
+    const hFirst = document.getElementById("rulerFirstLineHandle");
+    const hHang = document.getElementById("rulerHangingHandle");
+    const hBoth = document.getElementById("rulerBothHandle");
+    const hRight = document.getElementById("rulerRightHandle");
+    const hTop = document.getElementById("vrulerTopHandle");
+
+    const lPct = (rulerMarginLeft / currentDocWidthMm) * 100;
+    const rPct = (rulerMarginRight / currentDocWidthMm) * 100;
+    const fPct = ((rulerMarginLeft + rulerFirstLine) / currentDocWidthMm) * 100;
+    const tPct = (rulerMarginTop / currentDocHeightMm) * 100;
+
+    const sL = document.getElementById("rulerShadeLeft");
+    const sR = document.getElementById("rulerShadeRight");
+    const sT = document.getElementById("vrulerShadeTop");
+    if (sL) sL.style.width = lPct + "%";
+    if (sR) sR.style.width = rPct + "%";
+    if (sT) sT.style.height = tPct + "%";
+
+    if (hFirst) hFirst.style.left = fPct + "%";
+    if (hHang) hHang.style.left = lPct + "%";
+    if (hBoth) hBoth.style.left = lPct + "%";
+    if (hRight) hRight.style.left = (100 - rPct) + "%";
+    if (hTop) hTop.style.top = tPct + "%";
+
+    document.querySelectorAll(".a4-sheet").forEach(p => {
+        p.style.paddingLeft = rulerMarginLeft + "mm";
+        p.style.paddingRight = rulerMarginRight + "mm";
+        p.style.paddingTop = rulerMarginTop + "mm";
+        p.style.textIndent = rulerFirstLine + "mm";
+    });
+}
+
+function bindFixedRulerEvents() {
+    const wrap = document.getElementById("wordRulerWrap");
+    const vwrap = document.getElementById("wordVRulerWrap");
+    if (!wrap) return;
+
+    const dragH = (el, mode) => {
+        if (!el) return;
+        el.onmousedown = (e) => {
+            e.preventDefault();
+            const onMove = (ev) => {
+                const rect = wrap.getBoundingClientRect();
+                const mm = Math.round(((ev.clientX - rect.left) / rect.width) * currentDocWidthMm);
+                if (mode === "first") rulerFirstLine = Math.max(-15, Math.min(45, mm - rulerMarginLeft));
+                else if (mode === "hang" || mode === "both") rulerMarginLeft = Math.max(8, Math.min(80, mm));
+                else if (mode === "right") rulerMarginRight = Math.max(8, Math.min(80, currentDocWidthMm - mm));
+                syncAllRulerHandles();
+            };
+            const onUp = () => { document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+            document.addEventListener("mousemove", onMove);
+            document.addEventListener("mouseup", onUp);
+        };
+    };
+    dragH(document.getElementById("rulerFirstLineHandle"), "first");
+    dragH(document.getElementById("rulerHangingHandle"), "hang");
+    dragH(document.getElementById("rulerBothHandle"), "both");
+    dragH(document.getElementById("rulerRightHandle"), "right");
+
+    const hTop = document.getElementById("vrulerTopHandle");
+    if (hTop && vwrap) {
+        hTop.onmousedown = (e) => {
+            e.preventDefault();
+            const onMove = (ev) => {
+                const rect = vwrap.getBoundingClientRect();
+                const mm = Math.round(((ev.clientY - rect.top) / rect.height) * currentDocHeightMm);
+                rulerMarginTop = Math.max(8, Math.min(70, mm));
+                syncAllRulerHandles();
+            };
+            const onUp = () => { document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+            document.addEventListener("mousemove", onMove);
+            document.addEventListener("mouseup", onUp);
+        };
+    }
+}
+
+// Перехватываем applyPageSetup, чтобы линейки перестраивались под ориентацию
+const _origApplyPageSetup = window.applyPageSetup;
+window.applyPageSetup = function() {
+    _origApplyPageSetup();
+    rebuildRulersForOrientation(psSelectedOrient === "landscape");
+};
+
+// 3. Кнопки + (строка и столбец) при наведении на таблицу в Word
+let hoveredWordTable = null;
+document.addEventListener("mousemove", (e) => {
+    const tbl = e.target.closest(".a4-sheet .word-table");
+    const rowBtn = document.getElementById("tblAddRowBtn");
+    const colBtn = document.getElementById("tblAddColBtn");
+    if (!rowBtn || !colBtn) return;
+
+    if (tbl) {
+        hoveredWordTable = tbl;
+        const r = tbl.getBoundingClientRect();
+        rowBtn.style.left = (r.left + r.width / 2 - 12) + "px";
+        rowBtn.style.top = (r.bottom + 6) + "px";
+        colBtn.style.left = (r.right + 6) + "px";
+        colBtn.style.top = (r.top + r.height / 2 - 12) + "px";
+        rowBtn.classList.add("show");
+        colBtn.classList.add("show");
+    } else if (!e.target.closest(".tbl-float-plus")) {
+        rowBtn.classList.remove("show");
+        colBtn.classList.remove("show");
+    }
+});
+
+window.addWordTableRow = () => {
+    if (!hoveredWordTable) return;
+    const tbody = hoveredWordTable.querySelector("tbody") || hoveredWordTable;
+    const cols = hoveredWordTable.rows[0]?.cells.length || 3;
+    const tr = document.createElement("tr");
+    tr.innerHTML = Array.from({ length: cols }, () => `<td>&nbsp;</td>`).join("");
+    tbody.appendChild(tr);
+    syncWordPagesFromDom(); saveCurrentOfficeDoc();
+};
+
+window.addWordTableCol = () => {
+    if (!hoveredWordTable) return;
+    [...hoveredWordTable.rows].forEach((row, idx) => {
+        const cell = document.createElement(idx === 0 && row.parentElement.tagName === "THEAD" ? "th" : "td");
+        cell.innerHTML = idx === 0 && row.parentElement.tagName === "THEAD" ? `Sarlavha ${row.cells.length + 1}` : "&nbsp;";
+        row.appendChild(cell);
+    });
+    syncWordPagesFromDom(); saveCurrentOfficeDoc();
+};
+
+// 4. Дробь с числителем и знаменателем в формулах
+const _origInsertEq = window.insertEquationTemplate;
+window.insertEquationTemplate = function(type) {
+    if (type === "frac") {
+        restoreSavedSelection();
+        document.execCommand("insertHTML", false,
+            `<span class="office-eq-box" contenteditable="true"><span class="math-frac"><span class="math-num">a</span><span class="math-den">b</span></span></span>&nbsp;`
+        );
+        document.getElementById("equationModal").classList.remove("open");
+        syncWordPagesFromDom(); saveCurrentOfficeDoc();
+        return;
+    }
+    _origInsertEq(type);
+};
+
+// 5. Кликабельные ссылки в новом окне (внутри contenteditable)
+document.addEventListener("click", (e) => {
+    const link = e.target.closest(".a4-sheet a, #slideCanvas a");
+    if (link && link.href) {
+        e.preventDefault();
+        window.open(link.href, "_blank", "noopener,noreferrer");
+    }
+});
+
+// 6. Фикс полей графика и удаление обводки SVG
+window.renderOfficeChartRows = function() {
+    document.getElementById("ocRows").innerHTML = officeChartItems.map((it, i) => `
+        <div style="display:grid; grid-template-columns:minmax(0,1fr) 72px 34px 28px; gap:6px; align-items:center;">
+            <input class="bib-custom-input" value="${it.label}" oninput="officeChartItems[${i}].label=this.value; renderOfficeChartPreview()">
+            <input type="number" class="bib-custom-input" value="${it.val}" oninput="officeChartItems[${i}].val=+this.value||0; renderOfficeChartPreview()">
+            <input type="color" value="${it.color}" style="width:34px;height:36px;border:none;padding:0;cursor:pointer;" oninput="officeChartItems[${i}].color=this.value; renderOfficeChartPreview()">
+            <button type="button" class="cw-del-btn" onclick="officeChartItems.splice(${i},1); renderOfficeChartRows(); renderOfficeChartPreview()">×</button>
+        </div>
+    `).join("");
+};
+const _origBuildChart = buildOfficeChartSvg;
+buildOfficeChartSvg = function() {
+    return _origBuildChart().replace(/border:1px solid #E2E8F0;/g, "border:none;");
+};
+
+// 7. Произвольная обрезка изображений (Crop)
+window.openImgCropModal = () => {
+    if (!selectedImgEl) return;
+    ["cropTop","cropBottom","cropLeft","cropRight"].forEach(id => document.getElementById(id).value = 0);
+    document.getElementById("imgWrapMenu")?.classList.remove("open");
+    document.getElementById("imgCropModal").classList.add("open");
+    updateCropPreview();
+};
+window.updateCropPreview = () => {
+    if (!selectedImgEl) return;
+    const canvas = document.getElementById("imgCropPreview");
+    const ctx = canvas.getContext("2d");
+    const nw = selectedImgEl.naturalWidth || selectedImgEl.width;
+    const nh = selectedImgEl.naturalHeight || selectedImgEl.height;
+    const t = (+document.getElementById("cropTop").value / 100) * nh;
+    const b = (+document.getElementById("cropBottom").value / 100) * nh;
+    const l = (+document.getElementById("cropLeft").value / 100) * nw;
+    const r = (+document.getElementById("cropRight").value / 100) * nw;
+    const cw = Math.max(10, nw - l - r), ch = Math.max(10, nh - t - b);
+    canvas.width = cw; canvas.height = ch;
+    ctx.drawImage(selectedImgEl, l, t, cw, ch, 0, 0, cw, ch);
+};
+window.applyImgCrop = () => {
+    if (!selectedImgEl) return;
+    const canvas = document.getElementById("imgCropPreview");
+    selectedImgEl.src = canvas.toDataURL("image/png");
+    document.getElementById("imgCropModal").classList.remove("open");
+    document.getElementById("imgFloatControls")?.classList.remove("active");
+    syncWordPagesFromDom(); saveCurrentOfficeDoc();
+};
+
+// Запуск починенной линейки при загрузке
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => {
+        const isLand = pageOrientations[0] === "landscape";
+        rebuildRulersForOrientation(isLand);
+        bindFixedRulerEvents();
+    }, 100);
+});
