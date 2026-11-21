@@ -11207,3 +11207,68 @@ body.dark-mode .izoh-list li {
 body.dark-mode .izoh-list li::marker {
     color: #94A3B8;
 }
+
+/* === KROSSVORD KONSTRUKTORI === */
+.cw-modal-card { max-width: 1060px !important; width: 96vw !important; padding: 20px !important; }
+.cw-icon-badge {
+    width: 38px; height: 38px; border-radius: 11px;
+    background: #E0F2FE; color: #0284C7;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.cw-layout {
+    display: grid; grid-template-columns: 390px 1fr; gap: 16px; align-items: start;
+}
+.cw-controls { display: flex; flex-direction: column; gap: 10px; }
+.cw-ai-box { display: flex; gap: 6px; }
+.cw-ai-box input { flex: 1; min-width: 0; }
+.cw-count-select { width: 76px !important; padding: 0 8px !important; flex-shrink: 0; }
+.cw-ai-btn {
+    background: linear-gradient(135deg, #6366F1, #8B5CF6) !important;
+    color: #fff !important; border: none !important; padding: 0 14px !important;
+}
+.cw-meta-row { display: flex; gap: 6px; align-items: center; }
+.cw-meta-row input { flex: 1; min-width: 0; }
+.cw-list-head {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11.5px; font-weight: 800; color: #64748B; margin-top: 2px;
+}
+.cw-add-btn {
+    background: #E0F2FE; color: #0284C7; border: none; border-radius: 8px;
+    padding: 5px 10px; font-size: 12px; font-weight: 800; cursor: pointer;
+}
+.cw-add-btn:hover { background: #BAE6FD; }
+.cw-rows-list {
+    display: flex; flex-direction: column; gap: 6px;
+    max-height: 330px; overflow-y: auto; padding-right: 4px;
+}
+.cw-row-item { display: grid; grid-template-columns: 115px 1fr 30px; gap: 6px; align-items: center; }
+.cw-row-item input {
+    padding: 7px 9px !important; font-size: 12.5px !important;
+}
+.cw-row-word { font-weight: 700; text-transform: uppercase; }
+.cw-del-btn {
+    width: 30px; height: 32px; border-radius: 8px; border: none;
+    background: #FEE2E2; color: #EF4444; font-weight: 800; cursor: pointer;
+}
+.cw-del-btn:hover { background: #FECACA; }
+.cw-status-msg { font-size: 11.5px; font-weight: 600; color: #64748B; min-height: 16px; }
+.cw-preview-wrap {
+    background: #F1F5F9; border: 1.5px dashed #CBD5E1; border-radius: 16px;
+    padding: 14px; max-height: 495px; overflow-y: auto;
+    display: flex; justify-content: center; align-items: flex-start;
+}
+.cw-svg-container { width: 100%; max-width: 620px; }
+.cw-svg-container svg {
+    width: 100%; height: auto; display: block; border-radius: 14px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+body.dark-mode .cw-icon-badge { background: rgba(2, 132, 199, 0.2); color: #38BDF8; }
+body.dark-mode .cw-add-btn { background: rgba(2, 132, 199, 0.22); color: #38BDF8; }
+body.dark-mode .cw-del-btn { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; }
+body.dark-mode .cw-preview-wrap { background: #0B1120; border-color: #334155; }
+
+@media (max-width: 860px) {
+    .cw-layout { grid-template-columns: 1fr; }
+    .cw-rows-list { max-height: 210px; }
+}
