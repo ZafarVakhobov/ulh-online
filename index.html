@@ -3620,6 +3620,23 @@ top_rat="&col=340F6E&t=ffffff&p=BD6F6F";top_r+="&js="+top_js+"";document.write('
     </div>
 </div>
 
+<!-- === КНОПКА ULH OFFICE (ТОЛЬКО ПК, ЛЕВЫЙ НИЖНИЙ УГОЛ) === -->
+<button type="button" id="ulhOfficeLaunchBtn" class="ulh-office-fab" onclick="launchUlhOffice(event)" title="ULH Office — Word, Slides, Tables">
+    <span class="ulh-office-fab-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    </span>
+    <span class="ulh-office-fab-text">ULH Office</span>
+    <span id="ulhOfficeDot" class="ulh-office-dot" style="display:none;"></span>
+</button>
+
+<!-- Оверлей плавного перехода снизу вверх -->
+<div id="ulhOfficeTransitionOverlay" class="ulh-office-transition">
+    <div class="ulh-office-trans-inner">
+        <div class="ulh-office-spinner"></div>
+        <div class="ulh-office-trans-title">ULH Office yuklanmoqda...</div>
+    </div>
+</div>
+    
 <!-- Библиотека для работы с PDF прямо в браузере -->
 <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <!-- Наш модуль PDF-комбайна -->
