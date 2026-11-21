@@ -11299,3 +11299,28 @@ body.dark-mode .cw-preview-wrap { background: #0B1120; border-color: #334155; }
     .cw-layout { grid-template-columns: 1fr; }
     .cw-rows-list { max-height: 210px; }
 }
+
+/* Кнопка Izohlar luğati в плавающем меню выделения */
+.sel-izoh-btn,
+#selIzohBtn {
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 13px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(217, 119, 6, 0.28);
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.sel-izoh-btn:hover,
+#selIzohBtn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+}
