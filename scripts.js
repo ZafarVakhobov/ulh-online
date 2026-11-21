@@ -11356,6 +11356,7 @@ const ULH_TOOL_CATALOG = [
     { id: "qr", name: "QR-kod generatori", description: "Matn yoki havoladan QR-kod yaratiş", category: "Foydali vositalar", keywords: "qr code kod link havola png svg qr код ссылка", action: "openQrModal" },
     { id: "bibliography", name: "Iqtibos va adabiyotlar", description: "Manba va bibliografik yozuv yaratiş", category: "Foydali vositalar", keywords: "citation bibliography reference vak iqtibos adabiyot", action: "openBiblioModal" },
     { id: "templates", name: "Aqlli andozalar", description: "Rasmiy hujjat andozalarini töldiriş", category: "Foydali vositalar", keywords: "template document letter ariza hujjat", action: "openAndozaModal" },
+    { id: "crossword", name: "Krossvord konstruktori", description: "AI yordamida krossvord yaratiş", category: "Dizayn", keywords: "krossvord crossword oyin savol кроссворд", action: "openCrosswordModal" },
     { id: "news", name: "Yangiliklar", description: "Yangiliklar lentasi va manbalar", category: "Foydali vositalar", keywords: "news rss yangiliklar feed новости лента", action: "openNewsModal" },
     { id: "word-cloud", name: "Söz buluti", description: "Matndagi asosiy, kalit sözlarni vizuallaştiriş", category: "Foydali vositalar", keywords: "word cloud visualization bulut", action: "openWordCloudModal" },
     { id: "quote", name: "Iqtibos dizayneri", description: "Matndan bezatilgan iqtibos rasmi yaratiş", category: "Foydali vositalar", keywords: "quote design image rasm", action: "openQuoteModal" },
@@ -12654,3 +12655,492 @@ async function fetchAiWordDefinition(word) {
         ? enforceNewUzbekAlphabet(reply.trim())
         : reply.trim();
 }
+
+// ==========================================
+// === KROSSVORD KONSTRUKTORI (PNG / SVG + AI) ===
+// ==========================================
+let cwState = {
+    theme: "light",
+    mode: "empty", // "empty" | "solved"
+    rows: [
+        { word: "SAMARQAND", clue: "Özbekistonning qadimiy va marvarid şahri" },
+        { word: "REGISTON", clue: "Uçta madrasa joylaşgan maşhur maydon" },
+        { word: "KITOB", clue: "Bilim manbai" },
+        { word: "ALIFBO", clue: "Harflarning tartibli röyxati" },
+        { word: "MADANIYAT", clue: "Xalqning ma'naviy merosi" },
+        { word: "TARIX", clue: "Ötmişni örganuvçi fan" },
+        { word: "ILM", clue: "Bilim va marifat" },
+        { word: "QALAM", clue: "Yoziş quroli" }
+    ]
+};
+
+window.openCrosswordModal = function(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    document.querySelectorAll('.nav-item.has-dropdown').forEach(el => el.classList.remove('open'));
+    const modal = document.getElementById("crosswordModalBackdrop");
+    if (modal) {
+        modal.classList.add("open");
+        renderCrosswordRows();
+        renderCrossword();
+    }
+};
+
+window.closeCrosswordModal = function(event) {
+    const modal = document.getElementById("crosswordModalBackdrop");
+    if (!modal) return;
+    if (event && event.target && event.target !== modal) return;
+    modal.classList.remove("open");
+};
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeCrosswordModal();
+});
+
+window.setCrosswordMode = function(mode) {
+    cwState.mode = mode;
+    document.querySelectorAll("#cwModeGroup .chart-seg-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.mode === mode);
+    });
+    renderCrossword();
+};
+
+window.setCrosswordTheme = function(theme) {
+    cwState.theme = theme;
+    document.querySelectorAll("#cwThemeGroup .chart-seg-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.theme === theme);
+    });
+    renderCrossword();
+};
+
+function renderCrosswordRows() {
+    const box = document.getElementById("cwRowsContainer");
+    const countEl = document.getElementById("cwWordCount");
+    if (countEl) countEl.textContent = cwState.rows.length;
+    if (!box) return;
+
+    box.innerHTML = cwState.rows.map((row, idx) => `
+        <div class="cw-row-item">
+            <input type="text" class="bib-custom-input cw-row-word" value="${escapeHTML(row.word)}"
+                placeholder="Söz" oninput="updateCrosswordRow(${idx}, 'word', this.value)">
+            <input type="text" class="bib-custom-input" value="${escapeHTML(row.clue)}"
+                placeholder="Savol / ta'rif" oninput="updateCrosswordRow(${idx}, 'clue', this.value)">
+            <button type="button" class="cw-del-btn" onclick="removeCrosswordRow(${idx})" title="Öçiriş">×</button>
+        </div>
+    `).join("");
+}
+
+window.updateCrosswordRow = function(idx, field, val) {
+    if (!cwState.rows[idx]) return;
+    cwState.rows[idx][field] = val;
+    renderCrossword();
+};
+
+window.addCrosswordRow = function() {
+    cwState.rows.push({ word: "", clue: "" });
+    renderCrosswordRows();
+    const box = document.getElementById("cwRowsContainer");
+    if (box) {
+        box.scrollTop = box.scrollHeight;
+        const inputs = box.querySelectorAll(".cw-row-word");
+        if (inputs.length) inputs[inputs.length - 1].focus();
+    }
+};
+
+window.removeCrosswordRow = function(idx) {
+    if (cwState.rows.length <= 2) return;
+    cwState.rows.splice(idx, 1);
+    renderCrosswordRows();
+    renderCrossword();
+};
+
+// Очистка слова для сетки (оставляем буквы, включая Ö, Ğ, Ş, Ç)
+function normalizeCwWord(str) {
+    return String(str || "")
+        .toUpperCase()
+        .replace(/[^A-ZÖĞŞÇА-ЯЁЎҚҒҲ]/g, "");
+}
+
+// Алгоритм построения сетки пересечений (без лимита на количество слов)
+function buildCrosswordLayout(rows) {
+    const items = rows
+        .map(r => ({ word: normalizeCwWord(r.word), clue: (r.clue || "").trim() }))
+        .filter(r => r.word.length >= 2);
+
+    if (!items.length) return null;
+
+    // Сортируем от длинных слов к коротким — так сетка получается плотнее
+    const sorted = [...items].sort((a, b) => b.word.length - a.word.length);
+    const grid = new Map(); // "x,y" -> char
+    const placed = [];
+    const getCell = (x, y) => grid.get(`${x},${y}`);
+    const setCell = (x, y, ch) => grid.set(`${x},${y}`, ch);
+
+    function canPlace(word, startX, startY, dir) {
+        const dx = dir === "H" ? 1 : 0;
+        const dy = dir === "V" ? 1 : 0;
+
+        // Перед началом и после конца слова должно быть пусто
+        if (getCell(startX - dx, startY - dy)) return -1;
+        if (getCell(startX + dx * word.length, startY + dy * word.length)) return -1;
+
+        let intersections = 0;
+        for (let i = 0; i < word.length; i++) {
+            const x = startX + dx * i;
+            const y = startY + dy * i;
+            const existing = getCell(x, y);
+
+            if (existing) {
+                if (existing !== word[i]) return -1;
+                intersections++;
+            } else {
+                // Проверяем боковых соседей, чтобы слова не слипались
+                if (dir === "H") {
+                    if (getCell(x, y - 1) || getCell(x, y + 1)) return -1;
+                } else {
+                    if (getCell(x - 1, y) || getCell(x + 1, y)) return -1;
+                }
+            }
+        }
+        return intersections;
+    }
+
+    function placeWord(item, x, y, dir) {
+        const dx = dir === "H" ? 1 : 0;
+        const dy = dir === "V" ? 1 : 0;
+        for (let i = 0; i < item.word.length; i++) {
+            setCell(x + dx * i, y + dy * i, item.word[i]);
+        }
+        placed.push({ ...item, x, y, dir });
+    }
+
+    // Ставим первое (самое длинное) слово горизонтально в центр
+    placeWord(sorted[0], 0, 0, "H");
+    let unplaced = sorted.slice(1);
+
+    // Делаем до 4 проходов, чтобы новые слова могли цепляться за недавно добавленные
+    for (let pass = 0; pass < 4 && unplaced.length; pass++) {
+        const nextUnplaced = [];
+        for (const item of unplaced) {
+            let best = null;
+            for (const p of placed) {
+                const newDir = p.dir === "H" ? "V" : "H";
+                for (let i = 0; i < p.word.length; i++) {
+                    for (let j = 0; j < item.word.length; j++) {
+                        if (p.word[i] !== item.word[j]) continue;
+                        const px = p.x + (p.dir === "H" ? i : 0);
+                        const py = p.y + (p.dir === "V" ? i : 0);
+                        const sx = newDir === "H" ? px - j : px;
+                        const sy = newDir === "V" ? py - j : py;
+
+                        const hits = canPlace(item.word, sx, sy, newDir);
+                        if (hits > 0 && (!best || hits > best.hits)) {
+                            best = { x: sx, y: sy, dir: newDir, hits };
+                        }
+                    }
+                }
+            }
+            if (best) {
+                placeWord(item, best.x, best.y, best.dir);
+            } else {
+                nextUnplaced.push(item);
+            }
+        }
+        if (nextUnplaced.length === unplaced.length) break;
+        unplaced = nextUnplaced;
+    }
+
+    // Вычисляем границы сетки
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const key of grid.keys()) {
+        const [x, y] = key.split(",").map(Number);
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+    }
+
+    const cols = maxX - minX + 1;
+    const rowsCount = maxY - minY + 1;
+    const normPlaced = placed.map(p => ({ ...p, x: p.x - minX, y: p.y - minY }));
+
+    // Нумеруем стартовые клетки сверху вниз, слева направо
+    const startMap = new Map();
+    const starts = [...normPlaced].sort((a, b) => (a.y - b.y) || (a.x - b.x));
+    let numCounter = 1;
+    starts.forEach(p => {
+        const key = `${p.x},${p.y}`;
+        if (!startMap.has(key)) startMap.set(key, numCounter++);
+        p.num = startMap.get(key);
+    });
+
+    const cells = [];
+    for (const [key, ch] of grid.entries()) {
+        const [gx, gy] = key.split(",").map(Number);
+        const x = gx - minX;
+        const y = gy - minY;
+        cells.push({ x, y, ch, num: startMap.get(`${x},${y}`) || null });
+    }
+
+    return {
+        cols,
+        rowsCount,
+        cells,
+        across: normPlaced.filter(p => p.dir === "H").sort((a, b) => a.num - b.num),
+        down: normPlaced.filter(p => p.dir === "V").sort((a, b) => a.num - b.num),
+        unplacedCount: unplaced.length
+    };
+}
+
+function wrapCwSvgText(text, maxChars) {
+    const words = String(text || "").split(/\s+/);
+    const lines = [];
+    let curr = "";
+    for (const w of words) {
+        if ((curr + " " + w).trim().length <= maxChars) {
+            curr = (curr + " " + w).trim();
+        } else {
+            if (curr) lines.push(curr);
+            curr = w;
+        }
+    }
+    if (curr) lines.push(curr);
+    return lines.length ? lines : [""];
+}
+
+function buildCrosswordSvgString() {
+    const layout = buildCrosswordLayout(cwState.rows);
+    const statusEl = document.getElementById("cwStatusMsg");
+    if (!layout) {
+        if (statusEl) statusEl.textContent = "Kamida 2 ta söz kiriting.";
+        return "";
+    }
+    if (statusEl) {
+        statusEl.textContent = layout.unplacedCount > 0
+            ? `Setkaga ${layout.across.length + layout.down.length} ta söz joylaşdi (${layout.unplacedCount} ta sözda kesişma topilmadi).`
+            : `Barcha ${layout.across.length + layout.down.length} ta söz setkaga muvaffaqiyatli joylaşdi ✓`;
+    }
+
+    const isDark = cwState.theme === "dark";
+    const showAns = cwState.mode === "solved";
+    const title = (document.getElementById("cwTitleInput")?.value || "KROSSVORD").trim();
+
+    const W = 680;
+    const padX = 34;
+    const cellSize = Math.max(20, Math.min(36, Math.floor((W - padX * 2) / Math.max(layout.cols, 1))));
+    const gridW = layout.cols * cellSize;
+    const gridH = layout.rowsCount * cellSize;
+    const gridStartX = Math.round((W - gridW) / 2);
+    const gridStartY = 104;
+
+    const textCol = isDark ? "#F8FAFC" : "#0F172A";
+    const subCol = isDark ? "#94A3B8" : "#64748B";
+    const cellFill = isDark ? "#1E293B" : "#FFFFFF";
+    const cellStroke = isDark ? "#475569" : "#94A3B8";
+    const numCol = isDark ? "#38BDF8" : "#0284C7";
+
+    const esc = (s) => String(s ?? "")
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+    // Рисуем клетки
+    const cellsSvg = layout.cells.map(c => {
+        const cx = gridStartX + c.x * cellSize;
+        const cy = gridStartY + c.y * cellSize;
+        const numSize = Math.max(8, Math.round(cellSize * 0.27));
+        const letterSize = Math.max(11, Math.round(cellSize * 0.54));
+        return `
+            <rect x="${cx}" y="${cy}" width="${cellSize}" height="${cellSize}" rx="4"
+                fill="${cellFill}" stroke="${cellStroke}" stroke-width="1.4"/>
+            ${c.num ? `<text x="${cx + 3}" y="${cy + numSize + 1}" font-size="${numSize}" font-weight="800" fill="${numCol}">${c.num}</text>` : ""}
+            ${showAns ? `<text x="${cx + cellSize / 2}" y="${cy + cellSize * 0.72}" text-anchor="middle" font-size="${letterSize}" font-weight="800" fill="${textCol}">${esc(c.ch)}</text>` : ""}
+        `;
+    }).join("");
+
+    // Формируем 2 колонки подсказок: Eniga и Böyiga
+    const cluesTopY = gridStartY + gridH + 34;
+    const colW = (W - padX * 2 - 24) / 2;
+
+    function buildClueColumn(list, startX, heading) {
+        let y = cluesTopY;
+        let out = `<text x="${startX}" y="${y}" font-size="13" font-weight="800" fill="${numCol}">${heading}</text>`;
+        y += 20;
+        list.forEach(item => {
+            const lines = wrapCwSvgText(`${item.num}. ${item.clue || item.word}`, 36);
+            lines.forEach((line, i) => {
+                out += `<text x="${startX}" y="${y}" font-size="12" font-weight="${i === 0 ? "600" : "500"}" fill="${textCol}" opacity="0.9">${esc(line)}</text>`;
+                y += 16;
+            });
+            y += 4;
+        });
+        return { svg: out, endY: y };
+    }
+
+    const leftCol = buildClueColumn(layout.across, padX, "ENIGA (→)");
+    const rightCol = buildClueColumn(layout.down, padX + colW + 24, "BÖYIGA (↓)");
+    const H = Math.max(leftCol.endY, rightCol.endY) + 46;
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="font-family: Manrope, Arial, sans-serif;">
+        <defs>
+            <linearGradient id="cwBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="${isDark ? "#0F172A" : "#FFFFFF"}"/>
+                <stop offset="100%" stop-color="${isDark ? "#111827" : "#F8FAFC"}"/>
+            </linearGradient>
+        </defs>
+        <rect width="${W}" height="${H}" fill="url(#cwBgGrad)"/>
+        <text x="${padX}" y="52" font-size="25" font-weight="800" fill="${textCol}">${esc(title)}</text>
+        <text x="${padX}" y="74" font-size="13" font-weight="600" fill="${subCol}">${showAns ? "Javoblar bilan variant" : "Topişmoqlar setkasi"} • ${layout.across.length + layout.down.length} ta söz</text>
+        <rect x="${padX}" y="86" width="120" height="3" rx="1.5" fill="${numCol}"/>
+        ${cellsSvg}
+        ${leftCol.svg}
+        ${rightCol.svg}
+        <text x="${padX}" y="${H - 18}" font-size="12" font-weight="700" fill="${subCol}">ULH Krossvord</text>
+        <text x="${W - padX}" y="${H - 18}" text-anchor="end" font-size="12" font-weight="700" fill="${subCol}">ulh-online.uz</text>
+    </svg>`;
+}
+
+function renderCrossword() {
+    const container = document.getElementById("cwSvgContainer");
+    if (!container) return;
+    container.innerHTML = buildCrosswordSvgString();
+}
+
+// Генерация слов и подсказок через Öşa AI (ulh-ai-helper)
+window.generateCrosswordWithAI = async function() {
+    const topicInput = document.getElementById("cwAiTopicInput");
+    const countSel = document.getElementById("cwAiCountSelect");
+    const btn = document.getElementById("cwAiGenBtn");
+    const statusEl = document.getElementById("cwStatusMsg");
+
+    const topic = (topicInput?.value || "").trim() || "Özbekiston madaniyati";
+    const count = parseInt(countSel?.value || "12", 10);
+
+    if (btn) btn.disabled = true;
+    if (statusEl) statusEl.textContent = `✨ Öşa AI «${topic}» mavzusida ${count} ta söz tayyorlamoqda...`;
+
+    const sysPrompt = "Sen krossvord tuzuvchisan. Faqat toza JSON massiv qaytar: [{\"word\":\"SOZ\",\"clue\":\"qisqa savol\"}]. So'zlar faqat bitta so'zdan iborat bo'lsin (bo'shliqsiz, defissiz, 4-11 harf). Hech qanday qo'shimcha matn yoki markdown yozma.";
+    const userPrompt = `"${topic}" mavzusida o'zbek tilida ${count} ta qiziqarli krossvord so'zi va qisqa savolini tuz.`;
+
+    try {
+        const res = await fetch("https://ulh-ai-helper.lanigirodesigner.workers.dev/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "qwen/qwen3.8-27b",
+                messages: [
+                    { role: "system", content: sysPrompt },
+                    { role: "user", content: userPrompt }
+                ],
+                temperature: 0.6,
+                max_tokens: 2048,
+                mode: "chat",
+                text: userPrompt,
+                customPrompt: sysPrompt
+            })
+        });
+
+        const data = await res.json();
+        let raw = data?.choices?.[0]?.message?.content || data?.result || "";
+        const match = raw.match(/\[[\s\S]*\]/);
+        if (!match) throw new Error("JSON topilmadi");
+
+        const parsed = JSON.parse(match[0]);
+        const valid = parsed
+            .filter(x => x && x.word && x.clue)
+            .map(x => ({
+                word: typeof enforceNewUzbekAlphabet === "function"
+                    ? normalizeCwWord(enforceNewUzbekAlphabet(x.word))
+                    : normalizeCwWord(x.word),
+                clue: typeof enforceNewUzbekAlphabet === "function"
+                    ? enforceNewUzbekAlphabet(String(x.clue).trim())
+                    : String(x.clue).trim()
+            }))
+            .filter(x => x.word.length >= 3);
+
+        if (valid.length >= 2) {
+            cwState.rows = valid;
+            const titleEl = document.getElementById("cwTitleInput");
+            if (titleEl) titleEl.value = topic.toUpperCase();
+            renderCrosswordRows();
+            renderCrossword();
+        } else {
+            throw new Error("Yetarli söz topilmadi");
+        }
+    } catch (err) {
+        console.error("Crossword AI Error:", err);
+        if (statusEl) statusEl.textContent = "AI javobini öqişda xatolik. Qayta urinib köring.";
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+};
+
+// Экспорт в векторный SVG
+window.downloadCrosswordSVG = function() {
+    const svgStr = buildCrosswordSvgString();
+    if (!svgStr) return;
+    const blob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = `ulh_krossvord_${cwState.mode}_${cwState.theme}.svg`;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+// Экспорт в PNG высокого разрешения (2x) с логотипом
+window.downloadCrosswordPNG = async function() {
+    const svgStr = buildCrosswordSvgString();
+    if (!svgStr) return;
+    const btn = document.getElementById("cwPngBtn");
+    if (btn) btn.disabled = true;
+
+    try {
+        const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+        const svgUrl = URL.createObjectURL(svgBlob);
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = svgUrl;
+        });
+
+        const scale = 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext("2d");
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(svgUrl);
+
+        // Дорисовываем логотип в правый верхний угол
+        const logoImg = new Image();
+        logoImg.crossOrigin = "anonymous";
+        logoImg.src = cwState.theme === "dark" ? "/logo-dark.svg" : "/logo.svg";
+        await new Promise(resolve => {
+            logoImg.onload = () => {
+                const lw = 165;
+                const lh = (logoImg.naturalHeight / (logoImg.naturalWidth || 1)) * lw;
+                ctx.drawImage(logoImg, img.width - lw - 34, 28, lw, lh);
+                resolve();
+            };
+            logoImg.onerror = resolve;
+        });
+
+        const link = document.createElement("a");
+        link.download = `ulh_krossvord_${cwState.mode}_${cwState.theme}.png`;
+        link.href = canvas.toDataURL("image/png");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (err) {
+        console.error("Crossword PNG Error:", err);
+        alert("PNG yaratişda xatolik yuz berdi.");
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+};
