@@ -2476,7 +2476,7 @@ window.applyTextCase = function(mode) {
     const transformString = (str, type) => {
         if (type === "lower") return str.toLocaleLowerCase();
         if (type === "upper") return str.toLocaleUpperCase();
-        if (type === "title") return str.toLocaleLowerCase().replace(/(^|[\s\-\(\[\«\"\'—])([\p{L}])/gu, (_, sep, ch) => sep + ch.toLocaleUpperCase());
+        if (type === "title") return str.toLocaleLowerCase().replace(/(^|[\s(\["«'—-])([\p{L}])/gu, (_, sep, ch) => sep + ch.toLocaleUpperCase());
         if (type === "toggle") return [...str].map(ch => ch === ch.toLocaleUpperCase() ? ch.toLocaleLowerCase() : ch.toLocaleUpperCase()).join("");
         if (type === "sentence") return str.toLocaleLowerCase().replace(/(^|[.!?…]\s+)([\p{L}])/gu, (_, sep, ch) => sep + ch.toLocaleUpperCase());
         return str;
