@@ -4477,7 +4477,7 @@ window.applyTextCase = function(mode) {
             formData.append("name", (document.getElementById("adFullName")?.value || "").trim());
             formData.append("phone", (document.getElementById("adPhone")?.value || "").trim());
             formData.append("org", (document.getElementById("adOrgName")?.value || "").trim());
-            formData.append("url", (document.getElementById("adLink")?.value || "").trim());
+            formData.append("url", (document.getElementById("orderSiteUrl")?.value || "").trim());
             formData.append("tariff", document.getElementById("adTariff")?.value || "");
             formData.append("file", file);
 
