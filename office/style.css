@@ -1431,3 +1431,45 @@ body.dark-mode .office-topbar [onclick*="formatBlock"].rb-active {
     color: #38BDF8 !important;
     box-shadow: 0 0 0 1.5px #38BDF8;
 }
+
+/* === КНОПКА ИЗМЕНЕНИЯ РЕГИСТРА (Aa) В ГРУППЕ ŞRIFT === */
+.rb-case-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 30px;
+    padding: 0 8px;
+    border-radius: 8px;
+    border: 1px solid #CBD5E1;
+    background: #FFFFFF;
+    color: #0F172A;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.rb-case-btn:hover {
+    border-color: #0284C7;
+    background: #F0F9FF;
+    color: #0284C7;
+}
+.rb-case-btn .ti-xs {
+    width: 13px;
+    height: 13px;
+}
+
+.text-case-menu {
+    min-width: 185px !important;
+}
+
+body.dark-mode .rb-case-btn {
+    background: #1E293B;
+    border-color: #334155;
+    color: #F8FAFC;
+}
+body.dark-mode .rb-case-btn:hover {
+    border-color: #38BDF8;
+    background: rgba(56, 189, 248, 0.14);
+    color: #38BDF8;
+}
