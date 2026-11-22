@@ -4532,3 +4532,523 @@ window.applyTextCase = function(mode) {
         updateAuthorYearLabel();
     }
 })();
+
+// ==========================================
+// === ФУТЕР-ВИДЖЕТЫ: ПОГОДА + ВАЛЮТЫ + ИНФОРМЕРЫ (TABLER SVG) ===
+// ==========================================
+window.toggleInfThemeMenu = function(id, e) {
+    if (e) e.stopPropagation();
+    document.querySelectorAll(".ow-inf-menu").forEach(m => {
+        if (m.id !== id) m.classList.remove("open");
+    });
+    document.getElementById(id)?.classList.toggle("open");
+};
+document.addEventListener("click", () => {
+    document.querySelectorAll(".ow-inf-menu.open").forEach(m => m.classList.remove("open"));
+});
+
+// --- 1. ВИДЖЕТ ПОГОДЫ (14 РЕГИОНОВ + TABLER SVG + ИНФОРМЕР НА 4 ДНЯ) ---
+(function initOfficeWeatherWidget() {
+    const REGIONS = [
+        { id: "samarqand", name: "Samarqand", lat: 39.6542, lon: 66.9597 },
+        { id: "toshkent_sh", name: "Toşkent ş.", lat: 41.2995, lon: 69.2401 },
+        { id: "qoraqalpoq", name: "Qoraqalpoğiston", lat: 42.4619, lon: 59.6166 },
+        { id: "andijon", name: "Andijon", lat: 40.7821, lon: 72.3442 },
+        { id: "fargona", name: "Farğona", lat: 40.3842, lon: 71.7843 },
+        { id: "namangan", name: "Namangan", lat: 40.9983, lon: 71.6726 },
+        { id: "buxoro", name: "Buxoro", lat: 39.7747, lon: 64.4286 },
+        { id: "xorazm", name: "Xorazm", lat: 41.5500, lon: 60.6333 },
+        { id: "surxondaryo", name: "Surxondaryo", lat: 37.2242, lon: 67.2783 },
+        { id: "qashqadaryo", name: "Qaşqadaryo", lat: 38.8606, lon: 65.7891 },
+        { id: "jizzax", name: "Jizzax", lat: 40.1158, lon: 67.8422 },
+        { id: "sirdaryo", name: "Sirdaryo", lat: 40.4897, lon: 68.7842 },
+        { id: "toshkent_vil", name: "Toşkent viloyati", lat: 41.0333, lon: 69.3667 },
+        { id: "navoiy", name: "Navoiy", lat: 40.0844, lon: 65.3792 }
+    ];
+
+    const TABLER_WEATHER = {
+        sun: {
+            color: "#F59E0B",
+            paths: `<path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/>`
+        },
+        partly: {
+            color: "#F59E0B",
+            paths: `<path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-12"/><path d="M12 3v1"/><path d="M18.4 5.6l-.7 .7"/><path d="M5.6 5.6l.7 .7"/>`
+        },
+        cloud: {
+            color: "#64748B",
+            paths: `<path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878"/>`
+        },
+        fog: {
+            color: "#64748B",
+            paths: `<path d="M7 16a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-12"/><path d="M5 20l14 0"/>`
+        },
+        rain: {
+            color: "#0284C7",
+            paths: `<path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7"/><path d="M11 13v2m0 3v2m4 -5v2m0 3v2"/>`
+        },
+        snow: {
+            color: "#38BDF8",
+            paths: `<path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7"/><path d="M11 15v.01m0 3v.01m0 3v.01m4 -4v.01m0 3v.01"/>`
+        },
+        storm: {
+            color: "#6366F1",
+            paths: `<path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1"/><path d="M13 14l-2 4l3 0l-2 4"/>`
+        }
+    };
+
+    function decodeWmo(code) {
+        if (code === 0) return { key: "sun", text: "Oçiq" };
+        if (code <= 2) return { key: "partly", text: "Qisman bulutli" };
+        if (code === 3) return { key: "cloud", text: "Bulutli" };
+        if (code <= 48) return { key: "fog", text: "Tuman" };
+        if (code <= 67) return { key: "rain", text: "Yomğir" };
+        if (code <= 77) return { key: "snow", text: "Qor" };
+        if (code <= 82) return { key: "rain", text: "Jala" };
+        return { key: "storm", text: "Momaqaldiroq" };
+    }
+
+    function getTablerSvg(key, size = 18) {
+        const ic = TABLER_WEATHER[key] || TABLER_WEATHER.sun;
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${ic.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic.paths}</svg>`;
+    }
+
+    function loadSvgAsImage(key, size = 64) {
+        return new Promise((resolve) => {
+            const svg = getTablerSvg(key, size);
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => resolve(null);
+            img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+        });
+    }
+
+    let selectedId = localStorage.getItem("ulh_weather_region") || "samarqand";
+    let weatherCache = {};
+
+    async function fetchAllRegionsWeather() {
+        const lats = REGIONS.map(r => r.lat).join(",");
+        const lons = REGIONS.map(r => r.lon).join(",");
+        try {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=4`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const arr = Array.isArray(data) ? data : [data];
+            arr.forEach((item, idx) => {
+                const reg = REGIONS[idx];
+                if (!reg || !item.current) return;
+                const daily = (item.daily?.time || []).map((dt, i) => ({
+                    date: dt,
+                    max: Math.round(item.daily.temperature_2m_max[i]),
+                    min: Math.round(item.daily.temperature_2m_min[i]),
+                    code: item.daily.weather_code[i]
+                }));
+                weatherCache[reg.id] = {
+                    temp: Math.round(item.current.temperature_2m),
+                    code: item.current.weather_code,
+                    daily
+                };
+            });
+            renderFooterWeather();
+            if (document.getElementById("officeWeatherModal")?.classList.contains("open")) {
+                renderWeatherModal();
+            }
+        } catch (_) {}
+    }
+
+    function renderFooterWeather() {
+        const reg = REGIONS.find(r => r.id === selectedId) || REGIONS[0];
+        const info = weatherCache[reg.id];
+        const w = decodeWmo(info?.code ?? 0);
+        const cityEl = document.getElementById("sbWeatherCity");
+        const icoEl = document.getElementById("sbWeatherIco");
+        const tempEl = document.getElementById("sbWeatherTemp");
+        if (cityEl) cityEl.textContent = reg.name;
+        if (icoEl) icoEl.innerHTML = getTablerSvg(w.key, 15);
+        if (tempEl) tempEl.textContent = info ? `${info.temp}°` : "--°";
+    }
+
+    function renderWeatherModal() {
+        const reg = REGIONS.find(r => r.id === selectedId) || REGIONS[0];
+        const info = weatherCache[reg.id];
+        const w = decodeWmo(info?.code ?? 0);
+
+        const selCity = document.getElementById("owSelCity");
+        const selDesc = document.getElementById("owSelDesc");
+        const selBg = document.getElementById("owSelBgIco");
+        const selTemp = document.getElementById("owSelTemp");
+        if (selCity) selCity.textContent = reg.name;
+        if (selDesc) selDesc.innerHTML = `${getTablerSvg(w.key, 17)}<span>${w.text}</span>`;
+        if (selBg) selBg.innerHTML = getTablerSvg(w.key, 74);
+        if (selTemp) selTemp.textContent = info ? `${info.temp}°` : "--°";
+
+        const grid = document.getElementById("owRegionsGrid");
+        if (!grid) return;
+        grid.innerHTML = REGIONS.filter(r => r.id !== reg.id).map(r => {
+            const d = weatherCache[r.id];
+            const dw = decodeWmo(d?.code ?? 0);
+            return `
+                <button type="button" class="ow-reg-item" onclick="selectOfficeWeatherRegion('${r.id}')">
+                    <span class="ow-reg-left">${getTablerSvg(dw.key, 18)}<span>${r.name}</span></span>
+                    <b>${d ? d.temp + "°" : "--°"}</b>
+                </button>
+            `;
+        }).join("");
+    }
+
+    window.selectOfficeWeatherRegion = function(id) {
+        selectedId = id;
+        localStorage.setItem("ulh_weather_region", id);
+        renderFooterWeather();
+        renderWeatherModal();
+    };
+
+    window.openOfficeWeatherModal = function() {
+        renderWeatherModal();
+        document.getElementById("officeWeatherModal")?.classList.add("open");
+        if (!Object.keys(weatherCache).length) fetchAllRegionsWeather();
+    };
+
+    window.downloadOfficeWeatherInformer = async function(theme) {
+        document.getElementById("owInfMenu")?.classList.remove("open");
+        const reg = REGIONS.find(r => r.id === selectedId) || REGIONS[0];
+        const info = weatherCache[reg.id];
+        if (!info) return alert("Ob-havo ma'lumotlari yuklanmoqda...");
+
+        const isDark = theme === "dark";
+        const c = document.createElement("canvas");
+        c.width = 1080;
+        c.height = 1080;
+        const ctx = c.getContext("2d");
+
+        const grad = ctx.createLinearGradient(0, 0, 1080, 1080);
+        if (isDark) { grad.addColorStop(0, "#0F172A"); grad.addColorStop(1, "#1E293B"); }
+        else { grad.addColorStop(0, "#F0F9FF"); grad.addColorStop(1, "#E0F2FE"); }
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 1080, 1080);
+
+        const fg = isDark ? "#F8FAFC" : "#0F172A";
+        const sub = isDark ? "#94A3B8" : "#475569";
+        const cardBg = isDark ? "rgba(30,41,59,0.9)" : "rgba(255,255,255,0.92)";
+
+        ctx.fillStyle = "#0284C7";
+        ctx.font = "800 32px Inter, Arial, sans-serif";
+        ctx.fillText("ULH OB-HAVO INFORMERI", 72, 95);
+
+        ctx.fillStyle = fg;
+        ctx.font = "900 72px Inter, Arial, sans-serif";
+        ctx.fillText(reg.name, 72, 185);
+
+        const todayW = decodeWmo(info.code);
+        ctx.fillStyle = sub;
+        ctx.font = "700 34px Inter, Arial, sans-serif";
+        ctx.fillText(`Bugun • ${todayW.text}`, 72, 240);
+
+        const mainIcoImg = await loadSvgAsImage(todayW.key, 130);
+        if (mainIcoImg) ctx.drawImage(mainIcoImg, 72, 290, 128, 128);
+
+        ctx.fillStyle = fg;
+        ctx.font = "900 130px Inter, Arial, sans-serif";
+        ctx.fillText(`${info.temp}°`, 225, 402);
+
+        const days = info.daily.slice(0, 4);
+        for (let idx = 0; idx < days.length; idx++) {
+            const d = days[idx];
+            const y = 470 + idx * 125;
+            ctx.fillStyle = cardBg;
+            ctx.beginPath();
+            ctx.roundRect(72, y, 936, 102, 22);
+            ctx.fill();
+
+            const dw = decodeWmo(d.code);
+            const dayIcoImg = await loadSvgAsImage(dw.key, 48);
+            if (dayIcoImg) ctx.drawImage(dayIcoImg, 104, y + 27, 48, 48);
+
+            const label = idx === 0 ? "Bugun" : d.date.split("-").reverse().join(".");
+            ctx.fillStyle = fg;
+            ctx.font = "800 34px Inter, Arial, sans-serif";
+            ctx.fillText(label, 174, y + 63);
+
+            ctx.fillStyle = sub;
+            ctx.font = "700 28px Inter, Arial, sans-serif";
+            ctx.fillText(dw.text, 470, y + 62);
+
+            ctx.fillStyle = "#0284C7";
+            ctx.font = "900 36px Inter, Arial, sans-serif";
+            ctx.textAlign = "right";
+            ctx.fillText(`${d.max}° / ${d.min}°`, 970, y + 63);
+            ctx.textAlign = "left";
+        }
+
+        ctx.fillStyle = sub;
+        ctx.font = "700 26px Inter, Arial, sans-serif";
+        ctx.fillText("ulh-online.uz", 72, 1025);
+
+        const a = document.createElement("a");
+        a.download = `ob-havo-${reg.id}-${theme}.png`;
+        a.href = c.toDataURL("image/png");
+        a.click();
+    };
+
+    renderFooterWeather();
+    fetchAllRegionsWeather();
+})();
+
+// --- 2. ВИДЖЕТ КУРСА ВАЛЮТ + КАЛЬКУЛЯТОР + ЧИСЛА ПРОПИСЬЮ + ИНФОРМЕР ---
+(function initOfficeCurrencyWidget() {
+    const MAIN_CODES = ["USD", "EUR", "RUB", "CNY"];
+    const META = {
+        USD: { sym: "$", name: "AQŞ dollari" },
+        EUR: { sym: "€", name: "Yevro" },
+        RUB: { sym: "₽", name: "Rossiya rubli" },
+        CNY: { sym: "¥", name: "Xitoy yuani" },
+        UZS: { sym: "Söm", name: "Özbekiston sömi" }
+    };
+
+    let rates = {
+        USD: { rate: 12850, diff: 12.5 },
+        EUR: { rate: 13900, diff: -18.2 },
+        RUB: { rate: 132.4, diff: 0.8 },
+        CNY: { rate: 1780.5, diff: 2.1 }
+    };
+    let rateDate = new Date().toLocaleDateString("ru-RU");
+    let tickerIdx = 0;
+    let baseCurr = "USD";
+
+    async function fetchCbuRates() {
+        try {
+            const res = await fetch("https://cbu.uz/uz/arkhiv-kursov-valyut/json/");
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                data.forEach(item => {
+                    if (MAIN_CODES.includes(item.Ccy)) {
+                        rates[item.Ccy] = {
+                            rate: parseFloat(item.Rate) || rates[item.Ccy].rate,
+                            diff: parseFloat(item.Diff) || 0
+                        };
+                        if (item.Date) rateDate = item.Date;
+                    }
+                });
+                renderTickerStep();
+                if (document.getElementById("officeCurrencyModal")?.classList.contains("open")) {
+                    window.recalcOfficeCurrency();
+                }
+            }
+        } catch (_) {}
+    }
+
+    function fmtNum(n, dec = 2) {
+        return Number(n || 0).toLocaleString("ru-RU", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    }
+
+    function renderTickerStep() {
+        const el = document.getElementById("sbCurrTicker");
+        if (!el) return;
+        const code = MAIN_CODES[tickerIdx % MAIN_CODES.length];
+        const info = rates[code];
+        const m = META[code];
+        const diffCls = info.diff > 0 ? "up" : info.diff < 0 ? "down" : "flat";
+        const diffStr = info.diff > 0 ? `+${info.diff}` : `${info.diff}`;
+
+        el.classList.remove("slide-in");
+        void el.offsetWidth;
+        el.innerHTML = `
+            <span class="sb-curr-sym">${m.sym}</span>
+            <span class="sb-code-badge">${code}</span>
+            <span class="sb-curr-val">${fmtNum(info.rate, 0)}</span>
+            <span class="sb-diff ${diffCls}">${diffStr}</span>
+        `;
+        el.classList.add("slide-in");
+        tickerIdx++;
+    }
+
+    window.setOcBaseCurr = function(code) {
+        baseCurr = code;
+        document.querySelectorAll("#ocCurrPills .oc-pill").forEach(b => b.classList.toggle("active", b.dataset.code === code));
+        const badge = document.getElementById("ocActiveBadge");
+        if (badge) badge.textContent = `${code} (${META[code].sym})`;
+        window.recalcOfficeCurrency();
+    };
+
+    window.setOcQuickAmt = function(val) {
+        const inp = document.getElementById("ocAmountInput");
+        if (inp) inp.value = val;
+        window.recalcOfficeCurrency();
+    };
+
+    window.recalcOfficeCurrency = function() {
+        const amt = parseFloat(document.getElementById("ocAmountInput")?.value) || 0;
+        const uzsVal = baseCurr === "UZS" ? amt : amt * (rates[baseCurr]?.rate || 1);
+
+        const uzsBox = document.getElementById("ocResultUzs");
+        if (uzsBox) {
+            const sub = baseCurr === "UZS" ? "Özbekiston sömi" : `1 ${baseCurr} = ${fmtNum(rates[baseCurr].rate, 0)} söm`;
+            uzsBox.dataset.copy = Math.round(uzsVal).toString();
+            uzsBox.innerHTML = `
+                <div>
+                    <div class="oc-res-code">UZS</div>
+                    <div class="oc-res-sub">${sub}</div>
+                </div>
+                <div class="oc-res-uzs-val">${fmtNum(uzsVal, 0)} söm</div>
+            `;
+        }
+
+        const grid = document.getElementById("ocResultGrid");
+        if (grid) {
+            grid.innerHTML = MAIN_CODES.map(code => {
+                const v = uzsVal / (rates[code]?.rate || 1);
+                const m = META[code];
+                return `
+                    <div class="oc-res-card" data-copy="${v.toFixed(2)}" onclick="copyOcElement(this)" title="Nusxalaş uçun bosing">
+                        <div>
+                            <div class="oc-res-code">${m.sym} ${code}</div>
+                            <div class="oc-res-sub">${m.name}</div>
+                        </div>
+                        <div class="oc-res-num">${fmtNum(v, 2)} ${m.sym}</div>
+                    </div>
+                `;
+            }).join("");
+        }
+    };
+
+    window.copyOcElement = function(el) {
+        const txt = el?.dataset?.copy;
+        if (!txt) return;
+        navigator.clipboard?.writeText(txt).catch(() => {});
+        const origBorder = el.style.borderColor;
+        el.style.borderColor = "#10B981";
+        setTimeout(() => { el.style.borderColor = origBorder; }, 800);
+    };
+
+    function uzIntToWords(num) {
+        if (num === 0) return "nol";
+        const ones = ["", "bir", "ikki", "üç", "tört", "beş", "olti", "yetti", "sakkiz", "töqqiz"];
+        const tens = ["", "ön", "yigirma", "öttiz", "qirq", "ellik", "oltmiş", "yetmiş", "sakson", "töqson"];
+        const scales = ["", "ming", "million", "milliard", "trillion"];
+
+        function chunkToWords(n) {
+            const res = [];
+            if (n >= 100) { res.push(ones[Math.floor(n / 100)] + " yuz"); n %= 100; }
+            if (n >= 10) { res.push(tens[Math.floor(n / 10)]); n %= 10; }
+            if (n > 0) res.push(ones[n]);
+            return res.join(" ");
+        }
+
+        const parts = [];
+        let scaleIdx = 0;
+        while (num > 0 && scaleIdx < scales.length) {
+            const chunk = num % 1000;
+            if (chunk > 0) {
+                parts.unshift(chunkToWords(chunk) + (scales[scaleIdx] ? " " + scales[scaleIdx] : ""));
+            }
+            num = Math.floor(num / 1000);
+            scaleIdx++;
+        }
+        return parts.join(" ");
+    }
+
+    window.updateOcNumWords = function() {
+        const raw = (document.getElementById("ocNumWordsInput")?.value || "").replace(/\s+/g, "").replace(",", ".");
+        const out = document.getElementById("ocNumWordsOut");
+        if (!out) return;
+        const val = parseFloat(raw);
+        if (isNaN(val) || val < 0) {
+            out.textContent = "Natija bu yerda çiqadi...";
+            out.dataset.copy = "";
+            return;
+        }
+        const intPart = Math.floor(val);
+        const fracPart = Math.round((val - intPart) * 100);
+        let text = `${uzIntToWords(intPart)} söm`;
+        if (fracPart > 0) text += ` ${uzIntToWords(fracPart)} tiyin`;
+        out.textContent = text;
+        out.dataset.copy = text;
+    };
+
+    window.copyOcWords = function() {
+        const out = document.getElementById("ocNumWordsOut");
+        if (!out?.dataset?.copy) return;
+        navigator.clipboard?.writeText(out.dataset.copy).catch(() => {});
+        const orig = out.textContent;
+        out.textContent = "Nusxalandi";
+        out.style.color = "#10B981";
+        setTimeout(() => {
+            out.textContent = orig;
+            out.style.color = "";
+        }, 1000);
+    };
+
+    window.openOfficeCurrencyModal = function() {
+        window.recalcOfficeCurrency();
+        document.getElementById("officeCurrencyModal")?.classList.add("open");
+    };
+
+    window.downloadOfficeCurrInformer = function(theme) {
+        document.getElementById("ocInfMenu")?.classList.remove("open");
+        const isDark = theme === "dark";
+        const c = document.createElement("canvas");
+        c.width = 1080;
+        c.height = 1080;
+        const ctx = c.getContext("2d");
+
+        const grad = ctx.createLinearGradient(0, 0, 1080, 1080);
+        if (isDark) { grad.addColorStop(0, "#0F172A"); grad.addColorStop(1, "#1E293B"); }
+        else { grad.addColorStop(0, "#FEFCE8"); grad.addColorStop(1, "#E0F2FE"); }
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 1080, 1080);
+
+        const fg = isDark ? "#F8FAFC" : "#0F172A";
+        const sub = isDark ? "#94A3B8" : "#475569";
+        const cardBg = isDark ? "rgba(30,41,59,0.92)" : "rgba(255,255,255,0.95)";
+
+        ctx.fillStyle = "#0284C7";
+        ctx.font = "800 32px Inter, Arial, sans-serif";
+        ctx.fillText("ULH VALYUTA KURSLARI", 72, 100);
+
+        ctx.fillStyle = fg;
+        ctx.font = "900 58px Inter, Arial, sans-serif";
+        ctx.fillText(`Rasmiy kurslar (${rateDate})`, 72, 178);
+
+        MAIN_CODES.forEach((code, idx) => {
+            const y = 240 + idx * 175;
+            const info = rates[code];
+            const m = META[code];
+
+            ctx.fillStyle = cardBg;
+            ctx.beginPath();
+            ctx.roundRect(72, y, 936, 145, 26);
+            ctx.fill();
+
+            ctx.fillStyle = "#0284C7";
+            ctx.font = "900 46px Inter, Arial, sans-serif";
+            ctx.fillText(`${m.sym}  ${code}`, 110, y + 72);
+
+            ctx.fillStyle = sub;
+            ctx.font = "700 26px Inter, Arial, sans-serif";
+            ctx.fillText(m.name, 110, y + 114);
+
+            ctx.fillStyle = fg;
+            ctx.font = "900 48px Inter, Arial, sans-serif";
+            ctx.textAlign = "right";
+            ctx.fillText(`${fmtNum(info.rate, 2)} söm`, 968, y + 74);
+
+            ctx.fillStyle = info.diff > 0 ? "#16A34A" : info.diff < 0 ? "#DC2626" : sub;
+            ctx.font = "800 28px Inter, Arial, sans-serif";
+            ctx.fillText(info.diff > 0 ? `+${info.diff}` : info.diff < 0 ? `${info.diff}` : "0.00", 968, y + 115);
+            ctx.textAlign = "left";
+        });
+
+        ctx.fillStyle = sub;
+        ctx.font = "700 26px Inter, Arial, sans-serif";
+        ctx.fillText("Manba: NBU.uz • ulh-online.uz", 72, 1020);
+
+        const a = document.createElement("a");
+        a.download = `valyuta-kurslari-${theme}.png`;
+        a.href = c.toDataURL("image/png");
+        a.click();
+    };
+
+    renderTickerStep();
+    setInterval(renderTickerStep, 5000);
+    fetchCbuRates();
+})();
