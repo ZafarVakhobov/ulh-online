@@ -1903,3 +1903,85 @@ body.dark-mode .copy-hist-clear-btn {
 body.dark-mode .copy-hist-clear-btn:hover {
     background: rgba(239, 68, 68, 0.28);
 }
+
+
+/* === ОТРАЖЕНИЕ И ПОВОРОТ ФИГУР В ПЛАВАЮЩЕЙ ПАНЕЛИ === */
+.sf-btn.active {
+    background: #E0F2FE;
+    color: #0284C7;
+}
+
+.sf-rot-wrap {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 5px 0 3px;
+    border-radius: 7px;
+    border: 1px solid #CBD5E1;
+    background: #F8FAFC;
+    gap: 2px;
+}
+
+.sf-rot-ico {
+    border: none;
+    background: transparent;
+    color: #64748B;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.sf-rot-ico:hover {
+    background: #E0F2FE;
+    color: #0284C7;
+}
+
+.sf-rot-input {
+    width: 38px;
+    border: none;
+    background: transparent;
+    color: #0F172A;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-align: right;
+    outline: none;
+    padding: 0;
+    -moz-appearance: textfield;
+}
+.sf-rot-input::-webkit-outer-spin-button,
+.sf-rot-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.sf-deg {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #64748B;
+    user-select: none;
+}
+
+/* Тёмная тема */
+body.dark-mode .sf-btn.active {
+    background: rgba(56, 189, 248, 0.2);
+    color: #38BDF8;
+}
+body.dark-mode .sf-rot-wrap {
+    background: #1E293B;
+    border-color: #334155;
+}
+body.dark-mode .sf-rot-ico,
+body.dark-mode .sf-deg {
+    color: #94A3B8;
+}
+body.dark-mode .sf-rot-ico:hover {
+    background: rgba(56, 189, 248, 0.18);
+    color: #38BDF8;
+}
+body.dark-mode .sf-rot-input {
+    color: #F8FAFC;
+}
