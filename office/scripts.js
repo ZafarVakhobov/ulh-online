@@ -3329,3 +3329,198 @@ let rulerMarginBottom = 20; // mm
         }, 180);
     });
 })();
+
+// ==========================================
+// === КОНТЕКСТНЫЕ ИНСТРУМЕНТЫ ТАБЛИЦЫ (РИСОВАНИЕ, ЛАСТИК, ЗАЛИВКА, ГРАНИЦЫ) ===
+// ==========================================
+(function initTableProTools() {
+    let activeTableTool = null; // 'draw' | 'erase' | null
+    let lastTableCell = null;
+    let overflowTimer = null;
+
+    function getCursorTableCell() {
+        const sel = window.getSelection();
+        const node = sel?.anchorNode;
+        const el = node && node.nodeType === 3 ? node.parentElement : node;
+        return el?.closest?.(".a4-sheet table td, .a4-sheet table th") || null;
+    }
+
+    function setTableToolsVisible(show) {
+        const box = document.getElementById("tableContextTools");
+        if (!box) return;
+        if (show) {
+            if (!box.classList.contains("visible")) {
+                box.classList.add("visible");
+                clearTimeout(overflowTimer);
+                // Открываем overflow после завершения выезда, чтобы меню границ не обрезалось
+                overflowTimer = setTimeout(() => box.classList.add("allow-overflow"), 320);
+            }
+        } else {
+            clearTimeout(overflowTimer);
+            box.classList.remove("allow-overflow", "visible");
+            document.getElementById("tableBordersWrap")?.classList.remove("open");
+            if (activeTableTool) toggleTableLineTool(activeTableTool);
+        }
+    }
+
+    function syncTableToolsVisibility(targetEl) {
+        if (officeMode !== "word") {
+            setTableToolsVisible(false);
+            return;
+        }
+        // Не скрываем панель, если кликнули по самой панели инструментов таблицы
+        if (targetEl?.closest?.("#tableContextTools, #tableBordersWrap")) return;
+
+        const selectedCells = document.querySelectorAll(".word-table .ulh-cell-selected");
+        const cell = targetEl?.closest?.(".a4-sheet table td, .a4-sheet table th") || getCursorTableCell();
+
+        if (cell) {
+            lastTableCell = cell;
+            setTableToolsVisible(true);
+        } else if (selectedCells.length > 0) {
+            lastTableCell = selectedCells[0];
+            setTableToolsVisible(true);
+        } else {
+            lastTableCell = null;
+            setTableToolsVisible(false);
+        }
+    }
+
+    document.addEventListener("click", (e) => syncTableToolsVisibility(e.target));
+    document.addEventListener("keyup", () => syncTableToolsVisibility(null));
+    document.addEventListener("selectionchange", () => {
+        if (officeMode === "word") {
+            const cell = getCursorTableCell();
+            if (cell) {
+                lastTableCell = cell;
+                setTableToolsVisible(true);
+            }
+        }
+    });
+
+    function getTargetCells() {
+        const sel = [...document.querySelectorAll(".word-table .ulh-cell-selected")];
+        if (sel.length) return sel;
+        const cur = getCursorTableCell() || lastTableCell;
+        return cur ? [cur] : [];
+    }
+
+    // 1. Заливка фоном выделенных ячеек
+    window.applyTableCellFill = function(color) {
+        const dot = document.getElementById("tblFillDot");
+        if (dot) dot.style.background = color;
+        const cells = getTargetCells();
+        if (!cells.length) return;
+        cells.forEach(c => { c.style.backgroundColor = color; });
+        syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    };
+
+    // 2. Управление границами (все 8 режимов как в MS Word)
+    const SOLID_BORDER = "1.5px solid #334155";
+    const NO_BORDER = "none";
+
+    window.applyTableBorders = function(type) {
+        const cells = getTargetCells();
+        if (!cells.length) return;
+        const tbl = cells[0].closest("table");
+        const rows = tbl ? [...tbl.rows] : [];
+
+        // Вычисляем прямоугольник выделения для режимов outer / inner
+        let rMin = Infinity, rMax = -1, cMin = Infinity, cMax = -1;
+        cells.forEach(cell => {
+            const r = rows.indexOf(cell.parentElement);
+            const c = cell.cellIndex;
+            if (r < rMin) rMin = r;
+            if (r > rMax) rMax = r;
+            if (c < cMin) cMin = c;
+            if (c > cMax) cMax = c;
+        });
+
+        cells.forEach(cell => {
+            const r = rows.indexOf(cell.parentElement);
+            const c = cell.cellIndex;
+
+            if (type === "bottom") cell.style.borderBottom = SOLID_BORDER;
+            else if (type === "top") cell.style.borderTop = SOLID_BORDER;
+            else if (type === "left") cell.style.borderLeft = SOLID_BORDER;
+            else if (type === "right") cell.style.borderRight = SOLID_BORDER;
+            else if (type === "none") cell.style.border = NO_BORDER;
+            else if (type === "all") cell.style.border = SOLID_BORDER;
+            else if (type === "outer") {
+                if (r === rMin) cell.style.borderTop = SOLID_BORDER;
+                if (r === rMax) cell.style.borderBottom = SOLID_BORDER;
+                if (c === cMin) cell.style.borderLeft = SOLID_BORDER;
+                if (c === cMax) cell.style.borderRight = SOLID_BORDER;
+            } else if (type === "inner") {
+                if (r > rMin) cell.style.borderTop = SOLID_BORDER;
+                if (r < rMax) cell.style.borderBottom = SOLID_BORDER;
+                if (c > cMin) cell.style.borderLeft = SOLID_BORDER;
+                if (c < cMax) cell.style.borderRight = SOLID_BORDER;
+            }
+        });
+
+        document.getElementById("tableBordersWrap")?.classList.remove("open");
+        syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    };
+
+    // 3. Рисование линий и Ластик (клик по нужной стороне ячейки)
+    window.toggleTableLineTool = function(mode) {
+        activeTableTool = (activeTableTool === mode) ? null : mode;
+        document.getElementById("tblDrawBtn")?.classList.toggle("tool-active", activeTableTool === "draw");
+        document.getElementById("tblEraseBtn")?.classList.toggle("tool-active", activeTableTool === "erase");
+        document.body.classList.toggle("tbl-mode-draw", activeTableTool === "draw");
+        document.body.classList.toggle("tbl-mode-erase", activeTableTool === "erase");
+    };
+
+    document.addEventListener("mousedown", (e) => {
+        if (!activeTableTool) return;
+        const cell = e.target.closest?.(".a4-sheet .word-table td, .a4-sheet .word-table th");
+        if (!cell) return;
+
+        e.preventDefault();
+        const rect = cell.getBoundingClientRect();
+        const dTop = Math.abs(e.clientY - rect.top);
+        const dBottom = Math.abs(rect.bottom - e.clientY);
+        const dLeft = Math.abs(e.clientX - rect.left);
+        const dRight = Math.abs(rect.right - e.clientX);
+        const min = Math.min(dTop, dBottom, dLeft, dRight);
+
+        const tbl = cell.closest("table");
+        const rows = [...tbl.rows];
+        const r = rows.indexOf(cell.parentElement);
+        const c = cell.cellIndex;
+        const val = activeTableTool === "draw" ? SOLID_BORDER : NO_BORDER;
+
+        // Меняем границу и у текущей ячейки, и у смежной (чтобы при ластике линия исчезала полностью)
+        if (min === dTop) {
+            cell.style.borderTop = val;
+            if (rows[r - 1]?.cells[c]) rows[r - 1].cells[c].style.borderBottom = val;
+        } else if (min === dBottom) {
+            cell.style.borderBottom = val;
+            if (rows[r + 1]?.cells[c]) rows[r + 1].cells[c].style.borderTop = val;
+        } else if (min === dLeft) {
+            cell.style.borderLeft = val;
+            if (rows[r]?.cells[c - 1]) rows[r].cells[c - 1].style.borderRight = val;
+        } else {
+            cell.style.borderRight = val;
+            if (rows[r]?.cells[c + 1]) rows[r].cells[c + 1].style.borderLeft = val;
+        }
+
+        syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    }, true);
+
+    // Выход из режима рисования/ластика по Escape
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && activeTableTool) toggleTableLineTool(activeTableTool);
+    });
+
+    // Закрытие меню границ при клике вне него
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#tableBordersWrap")) {
+            document.getElementById("tableBordersWrap")?.classList.remove("open");
+        }
+    });
+})();
