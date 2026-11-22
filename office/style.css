@@ -1108,3 +1108,19 @@ body.dark-mode .office-osha-avatar-sm {
     background: #0F172A;
     border: 1px solid #334155;
 }
+
+/* === КНОПКИ УДАЛЕНИЯ СТРОКИ / СТОЛБЦА В ПКМ === */
+.office-pill-ctx .ctx-pill-tag.danger {
+    color: #EF4444;
+}
+.office-pill-ctx .ctx-pill-tag.danger:hover {
+    background: #FEE2E2 !important;
+    color: #DC2626 !important;
+}
+body.dark-mode .office-pill-ctx .ctx-pill-tag.danger {
+    color: #F87171;
+}
+body.dark-mode .office-pill-ctx .ctx-pill-tag.danger:hover {
+    background: rgba(239, 68, 68, 0.18) !important;
+    color: #FCA5A5 !important;
+}
