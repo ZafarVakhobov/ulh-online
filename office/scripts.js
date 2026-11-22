@@ -2497,3 +2497,227 @@ window.applyTextCase = function(mode) {
     if (officeMode === "word") syncWordPagesFromDom();
     saveCurrentOfficeDoc();
 };
+
+// ==========================================
+// === ПОИСК В РЕАЛЬНОМ ВРЕМЕНИ И ЗАМЕНА СЛОВ ===
+// ==========================================
+(function initFindAndReplace() {
+    let findMatches = [];
+    let currentMatchIdx = -1;
+
+    function escapeRegExp(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function getSearchRoots() {
+        if (officeMode === "word") return [...document.querySelectorAll(".a4-sheet")];
+        if (officeMode === "slides") return [document.getElementById("slideTitleBox"), document.getElementById("slideBodyBox")].filter(Boolean);
+        return [...document.querySelectorAll("#ulhSpreadsheet td")];
+    }
+
+    // Убираем временные теги <mark>, чтобы они не сохранялись в документ
+    function clearFindHighlights() {
+        document.querySelectorAll("mark.ulh-find-hl").forEach(mark => {
+            const parent = mark.parentNode;
+            if (!parent) return;
+            parent.replaceChild(document.createTextNode(mark.textContent), mark);
+            parent.normalize();
+        });
+        findMatches = [];
+        currentMatchIdx = -1;
+    }
+
+    function updateCounterLabel() {
+        const el = document.getElementById("frMatchCounter");
+        if (!el) return;
+        if (!findMatches.length) {
+            el.textContent = "Topildi: 0";
+        } else {
+            el.textContent = `Topildi: ${findMatches.length} (${currentMatchIdx + 1}/${findMatches.length})`;
+        }
+    }
+
+    function focusMatch(idx) {
+        if (!findMatches.length) return;
+        findMatches.forEach(m => m.classList.remove("active-match"));
+        currentMatchIdx = (idx + findMatches.length) % findMatches.length;
+        const active = findMatches[currentMatchIdx];
+        active.classList.add("active-match");
+        active.scrollIntoView({ behavior: "smooth", block: "center" });
+        updateCounterLabel();
+    }
+
+    window.toggleFindReplaceMenu = function(e) {
+        if (e) e.stopPropagation();
+        const wrap = document.getElementById("findReplaceWrap");
+        if (!wrap) return;
+        const willOpen = !wrap.classList.contains("open");
+        if (typeof closeAllOfficeMenus === "function") closeAllOfficeMenus("findReplaceWrap");
+        wrap.classList.toggle("open", willOpen);
+
+        if (willOpen) {
+            const status = document.getElementById("frReplaceStatus");
+            if (status) status.textContent = "";
+            const inp = document.getElementById("frSearchInput");
+            if (inp) {
+                inp.focus();
+                inp.select();
+                if (inp.value.trim()) window.runOfficeLiveSearch();
+            }
+        } else {
+            clearFindHighlights();
+        }
+    };
+
+    window.runOfficeLiveSearch = function() {
+        clearFindHighlights();
+        const query = (document.getElementById("frSearchInput")?.value || "").trim();
+        const srcInp = document.getElementById("frSourceInput");
+        if (srcInp && document.activeElement === document.getElementById("frSearchInput")) {
+            srcInp.value = query;
+        }
+
+        if (!query) {
+            updateCounterLabel();
+            return;
+        }
+
+        const rx = new RegExp(escapeRegExp(query), "gi");
+        const roots = getSearchRoots();
+
+        roots.forEach(root => {
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+            const nodes = [];
+            let n;
+            while ((n = walker.nextNode())) {
+                if (n.parentElement?.closest(".a4-page-num")) continue;
+                if (n.nodeValue && rx.test(n.nodeValue)) {
+                    rx.lastIndex = 0;
+                    nodes.push(n);
+                }
+            }
+
+            nodes.forEach(textNode => {
+                const text = textNode.nodeValue;
+                const frag = document.createDocumentFragment();
+                let lastIdx = 0;
+                let m;
+                rx.lastIndex = 0;
+                while ((m = rx.exec(text)) !== null) {
+                    if (m.index > lastIdx) {
+                        frag.appendChild(document.createTextNode(text.slice(lastIdx, m.index)));
+                    }
+                    const mark = document.createElement("mark");
+                    mark.className = "ulh-find-hl";
+                    mark.textContent = m[0];
+                    frag.appendChild(mark);
+                    findMatches.push(mark);
+                    lastIdx = m.index + m[0].length;
+                }
+                if (lastIdx < text.length) {
+                    frag.appendChild(document.createTextNode(text.slice(lastIdx)));
+                }
+                textNode.parentNode.replaceChild(frag, textNode);
+            });
+        });
+
+        if (findMatches.length) focusMatch(0);
+        else updateCounterLabel();
+    };
+
+    window.navFindMatch = function(dir) {
+        if (!findMatches.length) return;
+        focusMatch(currentMatchIdx + dir);
+    };
+
+    window.clearOfficeSearch = function() {
+        const inp = document.getElementById("frSearchInput");
+        if (inp) inp.value = "";
+        const status = document.getElementById("frReplaceStatus");
+        if (status) status.textContent = "";
+        clearFindHighlights();
+        updateCounterLabel();
+    };
+
+    window.executeOfficeReplace = function() {
+        clearFindHighlights();
+        const src = (document.getElementById("frSourceInput")?.value || "").trim();
+        const dst = document.getElementById("frTargetInput")?.value ?? "";
+        const status = document.getElementById("frReplaceStatus");
+        if (!src) {
+            if (status) status.textContent = "Asl sözni kiriting";
+            return;
+        }
+
+        const rx = new RegExp(escapeRegExp(src), "gi");
+        let replacedCount = 0;
+
+        if (officeMode === "tables") {
+            Object.keys(tableData.cells || {}).forEach(k => {
+                const val = String(tableData.cells[k] || "");
+                if (!val.startsWith("=") && rx.test(val)) {
+                    rx.lastIndex = 0;
+                    tableData.cells[k] = val.replace(rx, () => { replacedCount++; return dst; });
+                }
+            });
+            renderSpreadsheet();
+        } else {
+            const roots = getSearchRoots();
+            roots.forEach(root => {
+                const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+                let n;
+                while ((n = walker.nextNode())) {
+                    if (n.parentElement?.closest(".a4-page-num")) continue;
+                    if (n.nodeValue && rx.test(n.nodeValue)) {
+                        rx.lastIndex = 0;
+                        n.nodeValue = n.nodeValue.replace(rx, () => { replacedCount++; return dst; });
+                    }
+                }
+            });
+            if (officeMode === "word") syncWordPagesFromDom();
+            else if (officeMode === "slides") {
+                slidesData[activeSlideIdx].title = document.getElementById("slideTitleBox").innerHTML;
+                slidesData[activeSlideIdx].body = document.getElementById("slideBodyBox").innerHTML;
+                renderSlidesSidebar();
+            }
+        }
+
+        saveCurrentOfficeDoc();
+        if (typeof updateOfficeLiveStats === "function") updateOfficeLiveStats();
+        if (status) status.textContent = replacedCount ? `Almaştirildi: ${replacedCount}` : "Topilmadi";
+
+        // Перезапускаем подсветку, если поле поиска заполнено
+        if ((document.getElementById("frSearchInput")?.value || "").trim()) {
+            window.runOfficeLiveSearch();
+        }
+    };
+
+    // Закрытие при клике вне меню + снятие подсветки
+    document.addEventListener("click", (e) => {
+        const wrap = document.getElementById("findReplaceWrap");
+        if (wrap && wrap.classList.contains("open") && !e.target.closest("#findReplaceWrap")) {
+            wrap.classList.remove("open");
+            clearFindHighlights();
+        }
+    });
+
+    // Горячая клавиша Ctrl + F (работает на любой раскладке)
+    document.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.code === "KeyF") {
+            e.preventDefault();
+            const wrap = document.getElementById("findReplaceWrap");
+            if (wrap && !wrap.classList.contains("open")) {
+                window.toggleFindReplaceMenu();
+            } else {
+                document.getElementById("frSearchInput")?.focus();
+                document.getElementById("frSearchInput")?.select();
+            }
+        } else if (e.key === "Escape") {
+            const wrap = document.getElementById("findReplaceWrap");
+            if (wrap?.classList.contains("open")) {
+                wrap.classList.remove("open");
+                clearFindHighlights();
+            }
+        }
+    });
+})();
