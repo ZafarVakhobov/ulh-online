@@ -2917,3 +2917,75 @@ document.addEventListener("contextmenu", (e) => {
         if (el) el.classList.toggle("ctx-tbl-visible", show);
     });
 }, true);
+
+// === ФИКС УДАЛЕНИЯ СТРОКИ И СТОЛБЦА (ЗАЩИТА ОТ СБРОСА ЯЧЕЙКИ) ===
+window.__ulhCtxTableCell = null;
+
+function findCurrentWordTableCell(eventTarget) {
+    const targetEl = eventTarget && eventTarget.nodeType === 3 ? eventTarget.parentElement : eventTarget;
+    let cell = targetEl?.closest?.(".a4-sheet table td, .a4-sheet table th");
+    if (!cell) {
+        const selNode = window.getSelection()?.anchorNode;
+        const selEl = selNode && selNode.nodeType === 3 ? selNode.parentElement : selNode;
+        cell = selEl?.closest?.(".a4-sheet table td, .a4-sheet table th");
+    }
+    return cell || null;
+}
+
+document.addEventListener("contextmenu", (e) => {
+    window.__ulhCtxTableCell = findCurrentWordTableCell(e.target);
+}, true);
+
+window.ctxDeleteTableRow = function() {
+    const cell = window.__ulhCtxTableCell || findCurrentWordTableCell(null);
+    if (!cell) return;
+
+    const tr = cell.closest("tr");
+    const tbl = cell.closest("table");
+    if (!tr || !tbl) return;
+
+    if (tbl.rows.length <= 1) {
+        tbl.remove();
+    } else {
+        tr.remove();
+    }
+
+    window.__ulhCtxTableCell = null;
+    document.getElementById("tblAddRowBtn")?.classList.remove("tbl-plus-visible", "show");
+    document.getElementById("tblAddColBtn")?.classList.remove("tbl-plus-visible", "show");
+    closeOfficeContextMenu();
+    syncWordPagesFromDom();
+    saveCurrentOfficeDoc();
+    if (typeof updateOfficeLiveStats === "function") updateOfficeLiveStats();
+};
+
+window.ctxDeleteTableCol = function() {
+    const cell = window.__ulhCtxTableCell || findCurrentWordTableCell(null);
+    if (!cell) return;
+
+    const colIdx = cell.cellIndex;
+    const tbl = cell.closest("table");
+    if (!tbl || colIdx < 0) return;
+
+    const firstRowCols = tbl.rows[0]?.cells.length || 0;
+    if (firstRowCols <= 1) {
+        tbl.remove();
+    } else {
+        [...tbl.rows].forEach(row => {
+            if (row.cells[colIdx]) row.deleteCell(colIdx);
+        });
+        const remCells = [...(tbl.rows[0]?.cells || [])];
+        if (remCells.length) {
+            const pct = (100 / remCells.length).toFixed(2) + "%";
+            remCells.forEach(c => { c.style.width = pct; });
+        }
+    }
+
+    window.__ulhCtxTableCell = null;
+    document.getElementById("tblAddRowBtn")?.classList.remove("tbl-plus-visible", "show");
+    document.getElementById("tblAddColBtn")?.classList.remove("tbl-plus-visible", "show");
+    closeOfficeContextMenu();
+    syncWordPagesFromDom();
+    saveCurrentOfficeDoc();
+    if (typeof updateOfficeLiveStats === "function") updateOfficeLiveStats();
+};
