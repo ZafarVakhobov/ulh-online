@@ -3913,3 +3913,233 @@ window.applyTextCase = function(mode) {
     document.addEventListener("click", () => setTimeout(syncVideoButtonVisibility, 250));
     setInterval(syncVideoButtonVisibility, 1200);
 })();
+
+// ==========================================
+// === РАСШИРЕННЫЙ ФОН СЛАЙДОВ (ЦВЕТ / ГРАДИЕНТ / ИЗОБРАЖЕНИЕ 1920×1080) ===
+// ==========================================
+(function initAdvancedSlideBackground() {
+    const DEF_BG_KEY = "ulh_office_default_slide_bg_v1";
+    let defaultSlideBgCfg = safeJsonParse(DEF_BG_KEY, null);
+
+    let sbgState = {
+        type: "color",
+        color: "#FFFFFF",
+        grad1: "#0284C7",
+        grad2: "#6366F1",
+        gradAngle: 135,
+        imgUrl: "",
+        imgFit: "cover", // cover | stretch | contain | custom
+        imgScale: 100,
+        imgPosX: 50,
+        imgPosY: 50
+    };
+
+    function applyBgConfigToElement(el, cfg, fallbackBg) {
+        if (!el) return;
+        el.style.background = "";
+        el.style.backgroundImage = "none";
+        el.style.backgroundSize = "";
+        el.style.backgroundPosition = "";
+        el.style.backgroundRepeat = "no-repeat";
+
+        if (!cfg || typeof cfg !== "object") {
+            el.style.background = fallbackBg || "#FFFFFF";
+            return;
+        }
+        if (cfg.type === "color") {
+            el.style.backgroundColor = cfg.color || "#FFFFFF";
+        } else if (cfg.type === "gradient") {
+            el.style.background = `linear-gradient(${cfg.gradAngle || 135}deg, ${cfg.grad1 || "#0284C7"}, ${cfg.grad2 || "#6366F1"})`;
+        } else if (cfg.type === "image" && cfg.imgUrl) {
+            el.style.backgroundColor = "#0F172A";
+            el.style.backgroundImage = `url("${cfg.imgUrl}")`;
+            el.style.backgroundRepeat = "no-repeat";
+            el.style.backgroundPosition = `${cfg.imgPosX ?? 50}% ${cfg.imgPosY ?? 50}%`;
+            if (cfg.imgFit === "stretch") el.style.backgroundSize = "100% 100%";
+            else if (cfg.imgFit === "contain") el.style.backgroundSize = "contain";
+            else if (cfg.imgFit === "custom") el.style.backgroundSize = `${cfg.imgScale || 100}% auto`;
+            else el.style.backgroundSize = "cover";
+        } else {
+            el.style.backgroundColor = "#FFFFFF";
+        }
+    }
+
+    function syncModalInputsFromState() {
+        document.getElementById("sbgSolidColor").value = sbgState.color || "#FFFFFF";
+        document.getElementById("sbgSolidHex").textContent = (sbgState.color || "#FFFFFF").toUpperCase();
+        document.getElementById("sbgGrad1").value = sbgState.grad1 || "#0284C7";
+        document.getElementById("sbgGrad2").value = sbgState.grad2 || "#6366F1";
+        document.getElementById("sbgGradAngle").value = sbgState.gradAngle ?? 135;
+        document.getElementById("sbgGradAngleVal").textContent = (sbgState.gradAngle ?? 135) + "°";
+
+        const urlInp = document.getElementById("sbgImgUrl");
+        if (urlInp) urlInp.value = sbgState.imgUrl && !sbgState.imgUrl.startsWith("data:") ? sbgState.imgUrl : "";
+
+        const imgCtrls = document.getElementById("sbgImgControls");
+        if (imgCtrls) imgCtrls.style.display = sbgState.imgUrl ? "flex" : "none";
+
+        document.querySelectorAll(".sbg-fit-btn").forEach(b => b.classList.toggle("active", b.dataset.fit === sbgState.imgFit));
+        document.getElementById("sbgImgScale").value = sbgState.imgScale ?? 100;
+        document.getElementById("sbgScaleVal").textContent = (sbgState.imgScale ?? 100) + "%";
+        document.getElementById("sbgImgPosX").value = sbgState.imgPosX ?? 50;
+        document.getElementById("sbgPosXVal").textContent = (sbgState.imgPosX ?? 50) + "%";
+        document.getElementById("sbgImgPosY").value = sbgState.imgPosY ?? 50;
+        document.getElementById("sbgPosYVal").textContent = (sbgState.imgPosY ?? 50) + "%";
+    }
+
+    window.switchSlideBgTab = function(tab) {
+        sbgState.type = tab;
+        document.querySelectorAll(".sbg-tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+        document.getElementById("sbgPaneColor")?.classList.toggle("active", tab === "color");
+        document.getElementById("sbgPaneGradient")?.classList.toggle("active", tab === "gradient");
+        document.getElementById("sbgPaneImage")?.classList.toggle("active", tab === "image");
+        window.updateSlideBgPreview();
+    };
+
+    window.updateSlideBgPreview = function() {
+        sbgState.color = document.getElementById("sbgSolidColor")?.value || "#FFFFFF";
+        document.getElementById("sbgSolidHex").textContent = sbgState.color.toUpperCase();
+        sbgState.grad1 = document.getElementById("sbgGrad1")?.value || "#0284C7";
+        sbgState.grad2 = document.getElementById("sbgGrad2")?.value || "#6366F1";
+        sbgState.gradAngle = parseInt(document.getElementById("sbgGradAngle")?.value || "135", 10);
+        document.getElementById("sbgGradAngleVal").textContent = sbgState.gradAngle + "°";
+
+        applyBgConfigToElement(document.getElementById("sbgPreviewBox"), sbgState);
+    };
+
+    window.pickSbgSolid = function(hex) {
+        sbgState.color = hex;
+        document.getElementById("sbgSolidColor").value = hex;
+        window.updateSlideBgPreview();
+    };
+
+    window.pickSbgGrad = function(c1, c2, ang) {
+        sbgState.grad1 = c1;
+        sbgState.grad2 = c2;
+        sbgState.gradAngle = ang;
+        document.getElementById("sbgGrad1").value = c1;
+        document.getElementById("sbgGrad2").value = c2;
+        document.getElementById("sbgGradAngle").value = ang;
+        window.updateSlideBgPreview();
+    };
+
+    window.onSbgImgUrlInput = function(val) {
+        sbgState.imgUrl = (val || "").trim();
+        const imgCtrls = document.getElementById("sbgImgControls");
+        if (imgCtrls) imgCtrls.style.display = sbgState.imgUrl ? "flex" : "none";
+        window.updateSlideBgPreview();
+    };
+
+    window.handleSbgLocalFile = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            sbgState.imgUrl = reader.result;
+            const imgCtrls = document.getElementById("sbgImgControls");
+            if (imgCtrls) imgCtrls.style.display = "flex";
+            window.updateSlideBgPreview();
+        };
+        reader.readAsDataURL(file);
+        e.target.value = "";
+    };
+
+    window.setSbgImgFit = function(fit) {
+        sbgState.imgFit = fit;
+        document.querySelectorAll(".sbg-fit-btn").forEach(b => b.classList.toggle("active", b.dataset.fit === fit));
+        window.updateSlideBgPreview();
+    };
+
+    window.onSbgImgSlider = function() {
+        sbgState.imgScale = parseInt(document.getElementById("sbgImgScale")?.value || "100", 10);
+        sbgState.imgPosX = parseInt(document.getElementById("sbgImgPosX")?.value || "50", 10);
+        sbgState.imgPosY = parseInt(document.getElementById("sbgImgPosY")?.value || "50", 10);
+        document.getElementById("sbgScaleVal").textContent = sbgState.imgScale + "%";
+        document.getElementById("sbgPosXVal").textContent = sbgState.imgPosX + "%";
+        document.getElementById("sbgPosYVal").textContent = sbgState.imgPosY + "%";
+
+        if (sbgState.imgScale !== 100 && sbgState.imgFit !== "custom") {
+            sbgState.imgFit = "custom";
+            document.querySelectorAll(".sbg-fit-btn").forEach(b => b.classList.toggle("active", b.dataset.fit === "custom"));
+        }
+        window.updateSlideBgPreview();
+    };
+
+    window.openSlideBgModal = function() {
+        const cur = slidesData[activeSlideIdx] || slidesData[0];
+        if (cur && cur.bgConfig) {
+            sbgState = { ...sbgState, ...cur.bgConfig };
+        } else {
+            sbgState = {
+                ...sbgState,
+                type: "color",
+                color: (cur?.bg && cur.bg.startsWith("#")) ? cur.bg : "#FFFFFF",
+                imgUrl: ""
+            };
+        }
+        syncModalInputsFromState();
+        window.switchSlideBgTab(sbgState.type || "color");
+        document.getElementById("slideBgModal")?.classList.add("open");
+    };
+
+    window.applySlideBackground = function() {
+        const scope = document.querySelector('input[name="sbgScope"]:checked')?.value || "current";
+        const cfgCopy = { ...sbgState };
+
+        if (scope === "all") {
+            defaultSlideBgCfg = { ...cfgCopy };
+            try { localStorage.setItem(DEF_BG_KEY, JSON.stringify(defaultSlideBgCfg)); } catch (_) {}
+            slidesData.forEach(s => {
+                s.bgConfig = { ...cfgCopy };
+                if (cfgCopy.type === "color") s.bg = cfgCopy.color;
+            });
+        } else {
+            slidesData[activeSlideIdx].bgConfig = { ...cfgCopy };
+            if (cfgCopy.type === "color") slidesData[activeSlideIdx].bg = cfgCopy.color;
+        }
+
+        loadActiveSlideToCanvas();
+        renderSlidesSidebar();
+        saveCurrentOfficeDoc();
+        document.getElementById("slideBgModal")?.classList.remove("open");
+    };
+
+    // Переопределяем загрузку слайда, добавление нового слайда и показ презентации
+    loadActiveSlideToCanvas = function() {
+        const s = slidesData[activeSlideIdx] || slidesData[0];
+        if (!s) return;
+        const titleBox = document.getElementById("slideTitleBox");
+        const bodyBox = document.getElementById("slideBodyBox");
+        const canvas = document.getElementById("slideCanvas");
+        if (titleBox) titleBox.innerHTML = s.title;
+        if (bodyBox) bodyBox.innerHTML = s.body;
+        applyBgConfigToElement(canvas, s.bgConfig, s.bg);
+        updatePageCounter();
+    };
+
+    window.addNewSlide = function() {
+        const newSlide = {
+            title: `Slayd ${slidesData.length + 1}`,
+            body: "Matn...",
+            bg: defaultSlideBgCfg?.type === "color" ? defaultSlideBgCfg.color : "#FFFFFF"
+        };
+        if (defaultSlideBgCfg) newSlide.bgConfig = { ...defaultSlideBgCfg };
+        slidesData.push(newSlide);
+        activeSlideIdx = slidesData.length - 1;
+        loadActiveSlideToCanvas();
+        renderSlidesSidebar();
+        saveCurrentOfficeDoc();
+    };
+
+    renderSlideshowSlide = function() {
+        const s = slidesData[slideshowIdx];
+        const st = document.getElementById("slideshowStage");
+        if (!s || !st) return;
+        applyBgConfigToElement(st, s.bgConfig, s.bg);
+        st.innerHTML = `<div style="font-size:42px;font-weight:800;">${s.title}</div><div style="font-size:22px;line-height:1.6;">${s.body}</div>`;
+        document.getElementById("slideshowCounter").textContent = `${slideshowIdx + 1} / ${slidesData.length}`;
+    };
+
+    // Применяем сохранённый фон при старте
+    setTimeout(loadActiveSlideToCanvas, 120);
+})();
