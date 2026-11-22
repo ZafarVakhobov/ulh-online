@@ -3044,3 +3044,124 @@ window.applyTextCase = function(mode) {
 
     window.addEventListener("scroll", () => { if (selectedShape) positionFormatBar(selectedShape); }, true);
 })();
+
+// ==========================================
+// === NUSXALAR TARIXI (ИСТОРИЯ КОПИРОВАНИЙ) ===
+// ==========================================
+(function initOfficeCopyHistory() {
+    const STORAGE_KEY = "ulh_copy_history_v1";
+    const MAX_ITEMS = 40;
+
+    function loadCopyHistory() {
+        // Если на главном сайте уже есть сохранённая история, подхватываем её
+        const mainKey = ["copyHistory", "ulhCopyHistory", "ulh_copy_history"].find(k => localStorage.getItem(k));
+        const key = localStorage.getItem(STORAGE_KEY) ? STORAGE_KEY : (mainKey || STORAGE_KEY);
+        const arr = safeJsonParse(key, []);
+        return Array.isArray(arr) ? arr : [];
+    }
+
+    function saveCopyHistory(arr) {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+        } catch (_) {}
+    }
+
+    function addCopiedText(rawText) {
+        const text = String(rawText || "").trim();
+        if (!text) return;
+
+        const now = new Date();
+        const time = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+
+        let list = loadCopyHistory().filter(item => (item.text || item) !== text);
+        list.unshift({ text, time, chars: text.length });
+        if (list.length > MAX_ITEMS) list = list.slice(0, MAX_ITEMS);
+        saveCopyHistory(list);
+
+        if (document.getElementById("officeCopyHistDrawer")?.classList.contains("open")) {
+            renderOfficeCopyHistory();
+        }
+    }
+
+    function renderOfficeCopyHistory() {
+        const box = document.getElementById("officeCopyHistList");
+        if (!box) return;
+        const list = loadCopyHistory();
+
+        if (!list.length) {
+            box.innerHTML = `<div class="copy-hist-empty">Hali nusxalangan matnlar yöq</div>`;
+            return;
+        }
+
+        const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        box.innerHTML = list.map((item, idx) => {
+            const txt = typeof item === "string" ? item : (item.text || "");
+            const chars = item.chars || txt.length;
+            const time = item.time || "";
+            return `
+                <button type="button" class="copy-hist-card" onclick="insertFromCopyHistory(${idx})" title="Hujjatga joylaş">
+                    <div class="copy-hist-text">${esc(txt)}</div>
+                    <div class="copy-hist-meta">
+                        <span>${chars} ta belgi</span>
+                        <span>${esc(time)}</span>
+                    </div>
+                </button>
+            `;
+        }).join("");
+    }
+
+    window.toggleOfficeCopyHistory = function(forceState) {
+        const drawer = document.getElementById("officeCopyHistDrawer");
+        const backdrop = document.getElementById("officeCopyHistBackdrop");
+        if (!drawer || !backdrop) return;
+
+        const willOpen = typeof forceState === "boolean" ? forceState : !drawer.classList.contains("open");
+        if (willOpen) renderOfficeCopyHistory();
+        drawer.classList.toggle("open", willOpen);
+        backdrop.classList.toggle("open", willOpen);
+    };
+
+    window.insertFromCopyHistory = function(idx) {
+        const list = loadCopyHistory();
+        const item = list[idx];
+        const text = typeof item === "string" ? item : (item?.text || "");
+        if (!text) return;
+
+        navigator.clipboard?.writeText(text).catch(() => {});
+        window.toggleOfficeCopyHistory(false);
+
+        if (officeMode === "tables") {
+            tableData.cells[activeCellKey] = text;
+            renderSpreadsheet();
+            saveCurrentOfficeDoc();
+            updateOfficeLiveStats();
+        } else {
+            const safeHtml = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\r?\n/g, "<br>");
+            insertHtmlAtCursor(safeHtml);
+        }
+    };
+
+    window.clearOfficeCopyHistory = function() {
+        saveCopyHistory([]);
+        renderOfficeCopyHistory();
+    };
+
+    // Автоматически перехватываем любое копирование и вырезание (Ctrl+C / Ctrl+X / меню)
+    ["copy", "cut"].forEach(evt => {
+        document.addEventListener(evt, () => {
+            const selText = window.getSelection()?.toString() || "";
+            if (selText.trim()) addCopiedText(selText);
+        });
+    });
+
+    // Закрытие по Escape
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && document.getElementById("officeCopyHistDrawer")?.classList.contains("open")) {
+            window.toggleOfficeCopyHistory(false);
+        }
+    });
+})();
