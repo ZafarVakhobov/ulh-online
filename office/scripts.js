@@ -3218,3 +3218,114 @@ window.ctxDeleteTableCol = function() {
         setTimeout(pushUndoSnapshot, 300);
     });
 })();
+
+
+// === НИЖНИЙ БЕГУНОК ВЕРТИКАЛЬНОЙ ЛИНЕЙКИ (ГРАНИЦА ПОДВАЛА) ===
+let rulerMarginBottom = 20; // mm
+
+(function initVerticalRulerBottomMargin() {
+    function ensureBottomRulerNodes() {
+        const vwrap = document.getElementById("wordVRulerWrap");
+        if (!vwrap) return null;
+
+        let shadeB = document.getElementById("vrulerShadeBottom");
+        if (!shadeB) {
+            shadeB = document.createElement("div");
+            shadeB.id = "vrulerShadeBottom";
+            shadeB.className = "vruler-margin-shade bottom";
+            vwrap.appendChild(shadeB);
+        }
+
+        let handleB = document.getElementById("vrulerBottomHandle");
+        if (!handleB) {
+            handleB = document.createElement("div");
+            handleB.id = "vrulerBottomHandle";
+            handleB.className = "vruler-handle bottom-margin";
+            handleB.title = "Pastki çegara (Podval)";
+            vwrap.appendChild(handleB);
+        }
+        return { vwrap, shadeB, handleB };
+    }
+
+    function syncBottomMargin() {
+        const nodes = ensureBottomRulerNodes();
+        if (!nodes) return;
+
+        const docH = (typeof currentDocHeightMm === "number" && currentDocHeightMm > 0) ? currentDocHeightMm : 297;
+        const bPct = (rulerMarginBottom / docH) * 100;
+
+        nodes.shadeB.style.height = bPct + "%";
+        nodes.handleB.style.bottom = bPct + "%";
+
+        document.querySelectorAll(".a4-sheet").forEach(p => {
+            p.style.paddingBottom = rulerMarginBottom + "mm";
+        });
+    }
+
+    function bindBottomDrag() {
+        const nodes = ensureBottomRulerNodes();
+        if (!nodes) return;
+
+        nodes.handleB.onmousedown = (e) => {
+            e.preventDefault();
+            const onMove = (ev) => {
+                const rect = nodes.vwrap.getBoundingClientRect();
+                const docH = (typeof currentDocHeightMm === "number" && currentDocHeightMm > 0) ? currentDocHeightMm : 297;
+                const mmFromBottom = Math.round(((rect.bottom - ev.clientY) / rect.height) * docH);
+                rulerMarginBottom = Math.max(8, Math.min(70, mmFromBottom));
+                syncBottomMargin();
+            };
+            const onUp = () => {
+                document.removeEventListener("mousemove", onMove);
+                document.removeEventListener("mouseup", onUp);
+            };
+            document.addEventListener("mousemove", onMove);
+            document.addEventListener("mouseup", onUp);
+        };
+    }
+
+    // Синхронизация при перестройке линеек (смена ориентации)
+    if (typeof syncAllRulerHandles === "function") {
+        const _origSyncAll = syncAllRulerHandles;
+        syncAllRulerHandles = function() {
+            _origSyncAll();
+            syncBottomMargin();
+        };
+    }
+
+    // Синхронизация при перерисовке страниц А4
+    if (typeof renderWordPages === "function") {
+        const _origRenderPages = renderWordPages;
+        renderWordPages = function() {
+            _origRenderPages();
+            syncBottomMargin();
+        };
+    }
+
+    // Синхронизация с модалкой «Sahifa parametrlari» (Pastki mm)
+    if (typeof window.openPageSetupModal === "function") {
+        const _origOpenPS = window.openPageSetupModal;
+        window.openPageSetupModal = function() {
+            _origOpenPS();
+            const psB = document.getElementById("psBottom");
+            if (psB) psB.value = rulerMarginBottom;
+        };
+    }
+
+    if (typeof window.applyPageSetup === "function") {
+        const _origApplyPS = window.applyPageSetup;
+        window.applyPageSetup = function() {
+            const psB = document.getElementById("psBottom");
+            if (psB) rulerMarginBottom = Math.max(8, Math.min(70, +psB.value || 20));
+            _origApplyPS();
+            syncBottomMargin();
+        };
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(() => {
+            bindBottomDrag();
+            syncBottomMargin();
+        }, 180);
+    });
+})();
