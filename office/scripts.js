@@ -3411,3 +3411,411 @@ window.applyTextCase = function(mode) {
         }
     };
 })();
+
+// ==========================================
+// === АУДИОПЛЕЕР (AMBIENT + YOUTUBE + PLAYLIST) ===
+// ==========================================
+(function initOfficeAudioPlayer() {
+    const PL_KEY = "ulh_office_music_playlist_v1";
+    const AMBIENT_META = {
+        ambient:  { title: "Konsentratsiya musiqasi", sub: "AI Generated Ambient" },
+        rain:     { title: "Yomğir ovozi",            sub: "Tınçlantiruvçi tabiat" },
+        binaural: { title: "Fokus tölqinlari",        sub: "Alpha 10Hz Binaural" },
+        brown:    { title: "Tınç şovqin",             sub: "Deep Brown Noise" }
+    };
+
+    let isPlaying = false;
+    let sourceType = "ambient"; // 'ambient' | 'youtube'
+    let activeAmbient = "ambient";
+    let activeYtId = null;
+    let volumeVal = parseInt(localStorage.getItem("ulh_office_music_vol") || "70", 10);
+
+    // Web Audio API (эмбиент без внешних файлов)
+    let audioCtx = null;
+    let masterGain = null;
+    let activeNodes = [];
+
+    // YouTube IFrame API
+    let ytPlayer = null;
+    let ytReady = false;
+    let pendingYtId = null;
+
+    function loadPlaylist() {
+        // Подхватываем плейлист с главного сайта, если он уже сохранён в localStorage
+        const altKey = ["ulhMusicPlaylist", "musicPlaylist", "ytPlaylist", "ulh_yt_playlist"].find(k => localStorage.getItem(k));
+        const key = localStorage.getItem(PL_KEY) ? PL_KEY : (altKey || PL_KEY);
+        const arr = safeJsonParse(key, []);
+        return Array.isArray(arr) ? arr : [];
+    }
+
+    function savePlaylist(arr) {
+        try { localStorage.setItem(PL_KEY, JSON.stringify(arr)); } catch (_) {}
+    }
+
+    function extractYtId(url) {
+        const str = String(url || "").trim();
+        const m = str.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{11})/);
+        if (m) return m[1];
+        if (/^[A-Za-z0-9_-]{11}$/.test(str)) return str;
+        return null;
+    }
+
+    function ensureYouTubeApi() {
+        if (window.YT && window.YT.Player) {
+            if (!ytPlayer) createYtPlayer();
+            return;
+        }
+        if (!document.getElementById("ytIframeApiScript")) {
+            const tag = document.createElement("script");
+            tag.id = "ytIframeApiScript";
+            tag.src = "https://www.youtube.com/iframe_api";
+            document.head.appendChild(tag);
+        }
+        const prevReady = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = function() {
+            if (typeof prevReady === "function") prevReady();
+            createYtPlayer();
+        };
+    }
+
+    function createYtPlayer() {
+        const host = document.getElementById("officeYtPlayerHost");
+        if (!host || ytPlayer) return;
+        ytPlayer = new YT.Player("officeYtPlayerHost", {
+            height: "1",
+            width: "1",
+            videoId: pendingYtId || "",
+            playerVars: { autoplay: 0, controls: 0, rel: 0 },
+            events: {
+                onReady: () => {
+                    ytReady = true;
+                    ytPlayer.setVolume(volumeVal);
+                    if (pendingYtId) {
+                        const id = pendingYtId;
+                        pendingYtId = null;
+                        ytPlayer.loadVideoById(id);
+                        ytPlayer.playVideo();
+                    }
+                },
+                onStateChange: (ev) => {
+                    if (ev.data === YT.PlayerState.ENDED && sourceType === "youtube") {
+                        playNextPlaylistTrack();
+                    }
+                }
+            }
+        });
+    }
+
+    function stopAmbientEngine() {
+        activeNodes.forEach(n => {
+            try { if (typeof n.stop === "function") n.stop(); } catch (_) {}
+            try { n.disconnect(); } catch (_) {}
+        });
+        activeNodes = [];
+    }
+
+    function startAmbientEngine(mode) {
+        stopAmbientEngine();
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        if (!audioCtx) {
+            audioCtx = new Ctx();
+            masterGain = audioCtx.createGain();
+            masterGain.connect(audioCtx.destination);
+        }
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        masterGain.gain.setTargetAtTime((volumeVal / 100) * 0.28, audioCtx.currentTime, 0.08);
+
+        if (mode === "ambient") {
+            // Тёплый гармонический пэд (до-мажор септаккорд)
+            const freqs = [130.81, 196.0, 246.94, 329.63];
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = "lowpass";
+            filter.frequency.value = 520;
+            filter.connect(masterGain);
+            activeNodes.push(filter);
+
+            freqs.forEach((f, idx) => {
+                const osc = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                osc.type = idx % 2 === 0 ? "sine" : "triangle";
+                osc.frequency.value = f;
+                g.gain.value = 0.22 / freqs.length;
+                osc.connect(g);
+                g.connect(filter);
+                osc.start();
+                activeNodes.push(osc, g);
+            });
+        } else if (mode === "binaural") {
+            // Мягкие альфа-волны 200 Гц + 210 Гц
+            [200, 210].forEach((f, i) => {
+                const osc = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                osc.type = "sine";
+                osc.frequency.value = f;
+                g.gain.value = 0.22;
+                osc.connect(g);
+                g.connect(masterGain);
+                osc.start();
+                activeNodes.push(osc, g);
+            });
+        } else {
+            // Шум: дождь (rain) или мягкий коричневый шум (brown)
+            const bufSize = audioCtx.sampleRate * 3;
+            const buffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            let lastOut = 0;
+            for (let i = 0; i < bufSize; i++) {
+                const white = Math.random() * 2 - 1;
+                if (mode === "brown") {
+                    data[i] = (lastOut + 0.02 * white) / 1.02;
+                    lastOut = data[i];
+                    data[i] *= 3.2;
+                } else {
+                    data[i] = white * 0.45;
+                }
+            }
+            const src = audioCtx.createBufferSource();
+            src.buffer = buffer;
+            src.loop = true;
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = mode === "rain" ? "bandpass" : "lowpass";
+            filter.frequency.value = mode === "rain" ? 950 : 340;
+            filter.Q.value = mode === "rain" ? 0.6 : 1;
+
+            src.connect(filter);
+            filter.connect(masterGain);
+            src.start();
+            activeNodes.push(src, filter);
+        }
+    }
+
+    function updatePlayerUI() {
+        const playIco = document.getElementById("omPlayIco");
+        const pauseIco = document.getElementById("omPauseIco");
+        const topBtn = document.getElementById("officeMusicToggleBtn");
+        if (playIco) playIco.style.display = isPlaying ? "none" : "inline-block";
+        if (pauseIco) pauseIco.style.display = isPlaying ? "inline-block" : "none";
+        topBtn?.classList.toggle("is-playing", isPlaying);
+
+        document.querySelectorAll(".om-mode-btn").forEach(btn => {
+            btn.classList.toggle("active", sourceType === "ambient" && btn.dataset.amb === activeAmbient);
+        });
+
+        const slider = document.getElementById("omVolumeRange");
+        if (slider) {
+            slider.value = volumeVal;
+            const trackBg = document.body.classList.contains("dark-mode") ? "#1E293B" : "#ECFDF5";
+            slider.style.background = `linear-gradient(to right, #10B981 0%, #10B981 ${volumeVal}%, ${trackBg} ${volumeVal}%, ${trackBg} 100%)`;
+        }
+        renderPlaylist();
+    }
+
+    function setTrackHeader(title, sub) {
+        const t = document.getElementById("omTrackTitle");
+        const s = document.getElementById("omTrackSub");
+        if (t) t.textContent = title || "Konsentratsiya musiqasi";
+        if (s) s.textContent = sub || "AI Generated Ambient";
+    }
+
+    async function fetchYtMeta(id) {
+        try {
+            const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${id}`);
+            const data = await res.json();
+            return {
+                title: data.title || `YouTube (${id})`,
+                author: data.author_name || "YouTube Audio"
+            };
+        } catch (_) {
+            return { title: `YouTube (${id})`, author: "YouTube Audio" };
+        }
+    }
+
+    function playYouTubeById(id, title, author) {
+        stopAmbientEngine();
+        sourceType = "youtube";
+        activeYtId = id;
+        isPlaying = true;
+        setTrackHeader(title || "YouTube yuklanmoqda...", author || "YouTube");
+
+        ensureYouTubeApi();
+        if (ytReady && ytPlayer && typeof ytPlayer.loadVideoById === "function") {
+            ytPlayer.setVolume(volumeVal);
+            ytPlayer.loadVideoById(id);
+            ytPlayer.playVideo();
+        } else {
+            pendingYtId = id;
+        }
+        updatePlayerUI();
+    }
+
+    function playNextPlaylistTrack() {
+        const pl = loadPlaylist();
+        if (!pl.length) return;
+        const idx = pl.findIndex(t => t.id === activeYtId);
+        const next = pl[(idx + 1) % pl.length];
+        if (next) playYouTubeById(next.id, next.title, next.author);
+    }
+
+    function renderPlaylist() {
+        const box = document.getElementById("omPlaylistList");
+        if (!box) return;
+        const list = loadPlaylist();
+        if (!list.length) {
+            box.innerHTML = `<div class="om-pl-empty">Pleylist böş — YouTube havolasini qöşing</div>`;
+            return;
+        }
+        const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        box.innerHTML = list.map((tr, i) => {
+            const isCur = sourceType === "youtube" && activeYtId === tr.id;
+            return `
+                <div class="om-pl-item ${isCur ? "playing" : ""}" draggable="true" data-idx="${i}">
+                    <span class="om-pl-drag" title="Tartibni özgartiriş">≡</span>
+                    <button type="button" class="om-pl-play" onclick="playOfficePlaylistIndex(${i})" title="Oynatiş">
+                        <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M7 4v16l13 -8z" fill="currentColor" stroke="none"/></svg>
+                    </button>
+                    <div class="om-pl-meta" onclick="playOfficePlaylistIndex(${i})">
+                        <div class="om-pl-name">${esc(tr.title)}</div>
+                        <div class="om-pl-author">${esc(tr.author || "YouTube")}</div>
+                    </div>
+                    <button type="button" class="om-pl-del" onclick="removeOfficePlaylistTrack(${i})" title="Öçiriş">×</button>
+                </div>
+            `;
+        }).join("");
+
+        // Drag-and-drop сортировка треков в плейлисте
+        let dragIdx = null;
+        box.querySelectorAll(".om-pl-item").forEach(item => {
+            item.addEventListener("dragstart", () => { dragIdx = +item.dataset.idx; });
+            item.addEventListener("dragover", (e) => e.preventDefault());
+            item.addEventListener("drop", (e) => {
+                e.preventDefault();
+                const dropIdx = +item.dataset.idx;
+                if (dragIdx === null || dragIdx === dropIdx) return;
+                const pl = loadPlaylist();
+                const [moved] = pl.splice(dragIdx, 1);
+                pl.splice(dropIdx, 0, moved);
+                savePlaylist(pl);
+                renderPlaylist();
+            });
+        });
+    }
+
+    window.toggleOfficeMusicMenu = function(e) {
+        if (e) e.stopPropagation();
+        const wrap = document.getElementById("officeMusicWrap");
+        if (!wrap) return;
+        const willOpen = !wrap.classList.contains("open");
+        if (typeof closeAllOfficeMenus === "function") closeAllOfficeMenus("officeMusicWrap");
+        wrap.classList.toggle("open", willOpen);
+        if (willOpen) updatePlayerUI();
+    };
+
+    window.toggleOfficeMusicPlay = function() {
+        if (isPlaying) {
+            isPlaying = false;
+            stopAmbientEngine();
+            if (ytReady && ytPlayer && typeof ytPlayer.pauseVideo === "function") ytPlayer.pauseVideo();
+        } else {
+            isPlaying = true;
+            if (sourceType === "youtube" && activeYtId) {
+                if (ytReady && ytPlayer && typeof ytPlayer.playVideo === "function") ytPlayer.playVideo();
+                else playYouTubeById(activeYtId, document.getElementById("omTrackTitle")?.textContent, document.getElementById("omTrackSub")?.textContent);
+            } else {
+                const m = AMBIENT_META[activeAmbient] || AMBIENT_META.ambient;
+                setTrackHeader(m.title, m.sub);
+                startAmbientEngine(activeAmbient);
+            }
+        }
+        updatePlayerUI();
+    };
+
+    window.selectOfficeAmbient = function(mode) {
+        if (ytReady && ytPlayer && typeof ytPlayer.pauseVideo === "function") ytPlayer.pauseVideo();
+        sourceType = "ambient";
+        activeAmbient = mode;
+        activeYtId = null;
+        isPlaying = true;
+        const m = AMBIENT_META[mode] || AMBIENT_META.ambient;
+        setTrackHeader(m.title, m.sub);
+        startAmbientEngine(mode);
+        updatePlayerUI();
+    };
+
+    window.setOfficeMusicVolume = function(val) {
+        volumeVal = Math.max(0, Math.min(100, parseInt(val, 10) || 0));
+        localStorage.setItem("ulh_office_music_vol", String(volumeVal));
+        if (masterGain && audioCtx) {
+            masterGain.gain.setTargetAtTime((volumeVal / 100) * 0.28, audioCtx.currentTime, 0.05);
+        }
+        if (ytReady && ytPlayer && typeof ytPlayer.setVolume === "function") {
+            ytPlayer.setVolume(volumeVal);
+        }
+        updatePlayerUI();
+    };
+
+    async function addTrackToPlaylist(url, autoPlay) {
+        const id = extractYtId(url);
+        if (!id) return alert("Töğri YouTube havolasini kiriting.");
+        const meta = await fetchYtMeta(id);
+        const pl = loadPlaylist();
+        if (!pl.some(t => t.id === id)) {
+            pl.unshift({ id, title: meta.title, author: meta.author });
+            savePlaylist(pl);
+        }
+        if (autoPlay) playYouTubeById(id, meta.title, meta.author);
+        else renderPlaylist();
+    }
+
+    window.playOfficeYtFromInput = async function() {
+        const inp = document.getElementById("omYtInput");
+        const url = (inp?.value || "").trim();
+        if (!url) return;
+        await addTrackToPlaylist(url, true);
+        if (inp) inp.value = "";
+    };
+
+    window.addOfficeTrackPrompt = async function() {
+        const inp = document.getElementById("omYtInput");
+        const curVal = (inp?.value || "").trim();
+        const url = curVal || prompt("YouTube havolasini kiriting:");
+        if (!url) return;
+        await addTrackToPlaylist(url, false);
+        if (inp && curVal) inp.value = "";
+    };
+
+    window.playOfficePlaylistIndex = function(idx) {
+        const pl = loadPlaylist();
+        const tr = pl[idx];
+        if (!tr) return;
+        if (sourceType === "youtube" && activeYtId === tr.id && isPlaying) {
+            window.toggleOfficeMusicPlay();
+            return;
+        }
+        playYouTubeById(tr.id, tr.title, tr.author);
+    };
+
+    window.removeOfficePlaylistTrack = function(idx) {
+        const pl = loadPlaylist();
+        pl.splice(idx, 1);
+        savePlaylist(pl);
+        renderPlaylist();
+    };
+
+    window.clearOfficePlaylist = function() {
+        savePlaylist([]);
+        renderPlaylist();
+    };
+
+    // Закрытие окна плеера при клике вне него (музыка продолжает играть)
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#officeMusicWrap")) {
+            document.getElementById("officeMusicWrap")?.classList.remove("open");
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        updatePlayerUI();
+    });
+})();
