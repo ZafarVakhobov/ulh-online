@@ -3529,3 +3529,132 @@ window.setTableBorderColor = function(color) {
         }
     });
 })();
+
+// ==========================================
+// === СИНХРОНИЗАЦИЯ ПАНЕЛИ ИНСТРУМЕНТОВ СО СТИЛЕМ ВЫДЕЛЕННОГО ТЕКСТА ===
+// ==========================================
+(function initRibbonStyleSync() {
+    let syncRaf = null;
+
+    function getSelectionElement() {
+        const sel = window.getSelection();
+        if (!sel || !sel.rangeCount) return null;
+        let node = sel.focusNode || sel.anchorNode;
+        if (!node) return null;
+        if (node.nodeType === 3) node = node.parentElement;
+        if (!node || !node.closest?.(".a4-sheet, .slide-canvas")) return null;
+        return node;
+    }
+
+    function setBtnActiveByOnclick(pattern, isActive) {
+        document.querySelectorAll(`.office-topbar button[onclick*="${pattern}"]`).forEach(btn => {
+            btn.classList.toggle("rb-active", !!isActive);
+        });
+    }
+
+    function syncRibbonWithSelection() {
+        const el = getSelectionElement();
+        if (!el) return;
+
+        const cs = window.getComputedStyle(el);
+
+        // 1. Шрифт (Times New Roman, Manrope и т.д.)
+        const primaryFont = (cs.fontFamily || "")
+            .split(",")[0]
+            .replace(/['"]/g, "")
+            .trim();
+        const fontCtrl = document.querySelector(
+            '#officeFontSelect, #wordFontSelect, .office-topbar select[onchange*="applyOfficeFont"], .office-topbar input[oninput*="applyOfficeFont"]'
+        );
+        if (fontCtrl && primaryFont) {
+            if (fontCtrl.tagName === "SELECT") {
+                const match = [...fontCtrl.options].find(o => o.value.toLowerCase() === primaryFont.toLowerCase());
+                if (match) fontCtrl.value = match.value;
+            } else {
+                fontCtrl.value = primaryFont;
+            }
+        }
+
+        // 2. Размер шрифта
+        const pxSize = Math.round(parseFloat(cs.fontSize) || 14);
+        const sizeCtrl = document.querySelector(
+            '#officeFontSize, #wordFontSize, .office-topbar select[onchange*="applyOfficeFontSize"], .office-topbar input[onchange*="applyOfficeFontSize"], .office-topbar input[oninput*="applyOfficeFontSize"]'
+        );
+        if (sizeCtrl && document.activeElement !== sizeCtrl) {
+            sizeCtrl.value = String(pxSize);
+        }
+
+        // 3. Начертание: B, I, U, S, x₂, x²
+        const isBold = document.queryCommandState("bold") || parseInt(cs.fontWeight, 10) >= 600 || cs.fontWeight === "bold";
+        const isItalic = document.queryCommandState("italic") || cs.fontStyle === "italic";
+        const deco = cs.textDecorationLine || cs.textDecoration || "";
+        const isUnderline = document.queryCommandState("underline") || deco.includes("underline");
+        const isStrike = document.queryCommandState("strikeThrough") || deco.includes("line-through");
+        const isSub = document.queryCommandState("subscript") || !!el.closest("sub");
+        const isSup = document.queryCommandState("superscript") || !!el.closest("sup");
+
+        setBtnActiveByOnclick("'bold'", isBold);
+        setBtnActiveByOnclick("'italic'", isItalic);
+        setBtnActiveByOnclick("'underline'", isUnderline);
+        setBtnActiveByOnclick("'strikeThrough'", isStrike);
+        setBtnActiveByOnclick("'subscript'", isSub);
+        setBtnActiveByOnclick("'superscript'", isSup);
+
+        // 4. Выравнивание абзаца
+        const blockEl = el.closest("p, div, h1, h2, h3, h4, li, td, th") || el;
+        const align = window.getComputedStyle(blockEl).textAlign || "left";
+        const isCenter = align === "center";
+        const isRight = align === "right" || align === "end";
+        const isJustify = align === "justify";
+        const isLeft = !isCenter && !isRight && !isJustify;
+
+        setBtnActiveByOnclick("'justifyLeft'", isLeft);
+        setBtnActiveByOnclick("'justifyCenter'", isCenter);
+        setBtnActiveByOnclick("'justifyRight'", isRight);
+        setBtnActiveByOnclick("'justifyFull'", isJustify);
+
+        // 5. Списки (UL с типом маркера и OL)
+        const ulEl = el.closest("ul");
+        const olEl = el.closest("ol");
+
+        // Кнопка маркированного списка (обычно внутри dropdown)
+        document.querySelectorAll('.office-topbar [onclick*="insertUnorderedList"], .office-topbar [onclick*="Bullet"], .office-topbar #bulletListWrap > button').forEach(btn => {
+            btn.classList.toggle("rb-active", !!ulEl);
+        });
+        setBtnActiveByOnclick("'insertOrderedList'", !!olEl);
+
+        // Подсветка конкретного типа маркера внутри выпадающего меню (disc, circle, square, dash)
+        document.querySelectorAll('.office-dropdown-menu button[onclick*="Bullet"], .office-dropdown-menu button[onclick*="ListStyle"]').forEach(btn => {
+            btn.classList.remove("rb-active");
+        });
+        if (ulEl) {
+            const listType = ulEl.dataset.bulletType || window.getComputedStyle(ulEl).listStyleType || "disc";
+            document.querySelectorAll(`.office-dropdown-menu button[onclick*="'${listType}'"]`).forEach(btn => {
+                btn.classList.add("rb-active");
+            });
+        }
+
+        // 6. Стиль блока: Oddiy vs Sarlavha 1
+        const isHeading = !!el.closest("h1, h2, h3");
+        setBtnActiveByOnclick("'H1'", isHeading);
+        setBtnActiveByOnclick("'h1'", isHeading);
+        setBtnActiveByOnclick("'P'", !isHeading);
+        setBtnActiveByOnclick("'p'", !isHeading);
+    }
+
+    function scheduleSync() {
+        cancelAnimationFrame(syncRaf);
+        syncRaf = requestAnimationFrame(syncRibbonWithSelection);
+    }
+
+    document.addEventListener("selectionchange", scheduleSync);
+    document.addEventListener("mouseup", scheduleSync);
+    document.addEventListener("keyup", scheduleSync);
+
+    // Обновляем подсветку сразу после клика по любой кнопке форматирования
+    document.addEventListener("click", (e) => {
+        if (e.target.closest?.(".office-topbar")) {
+            setTimeout(scheduleSync, 30);
+        }
+    });
+})();
