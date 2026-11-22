@@ -2989,3 +2989,232 @@ window.ctxDeleteTableCol = function() {
     saveCurrentOfficeDoc();
     if (typeof updateOfficeLiveStats === "function") updateOfficeLiveStats();
 };
+
+// ==========================================
+// === 1. СТРОГОЕ ВЕРТИКАЛЬНОЕ / ПРЯМОУГОЛЬНОЕ ВЫДЕЛЕНИЕ ЯЧЕЕК ТАБЛИЦЫ ===
+// ==========================================
+(function initStrictTableColumnSelection() {
+    let isDraggingCells = false;
+    let activeTbl = null;
+    let startPos = null; // { r, c }
+
+    function clearCellSelection() {
+        document.querySelectorAll(".ulh-cell-selected").forEach(el => el.classList.remove("ulh-cell-selected"));
+        document.querySelectorAll(".ulh-selecting-cells").forEach(el => el.classList.remove("ulh-selecting-cells"));
+    }
+
+    function getCellPos(tbl, cell) {
+        const rows = [...tbl.rows];
+        const r = rows.indexOf(cell.parentElement);
+        return { r, c: cell.cellIndex };
+    }
+
+    function highlightCellRect(tbl, p1, p2) {
+        clearCellSelection();
+        tbl.classList.add("ulh-selecting-cells");
+        const rMin = Math.min(p1.r, p2.r), rMax = Math.max(p1.r, p2.r);
+        const cMin = Math.min(p1.c, p2.c), cMax = Math.max(p1.c, p2.c);
+
+        const rows = [...tbl.rows];
+        for (let r = rMin; r <= rMax; r++) {
+            const row = rows[r];
+            if (!row) continue;
+            for (let c = cMin; c <= cMax; c++) {
+                if (row.cells[c]) row.cells[c].classList.add("ulh-cell-selected");
+            }
+        }
+    }
+
+    document.addEventListener("mousedown", (e) => {
+        if (e.button !== 0 || document.body.classList.contains("col-resizing")) return;
+        const cell = e.target.closest?.(".a4-sheet .word-table td, .a4-sheet .word-table th");
+        if (!cell) {
+            if (!e.target.closest(".office-topbar, .office-pill-ctx")) clearCellSelection();
+            return;
+        }
+        clearCellSelection();
+        activeTbl = cell.closest(".word-table");
+        startPos = getCellPos(activeTbl, cell);
+        isDraggingCells = true;
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (!isDraggingCells || !activeTbl || !startPos || document.body.classList.contains("col-resizing")) return;
+        const cell = e.target.closest?.(".a4-sheet .word-table td, .a4-sheet .word-table th");
+        if (!cell || cell.closest(".word-table") !== activeTbl) return;
+
+        const curPos = getCellPos(activeTbl, cell);
+        // Включаем строгое выделение ячеек, как только курсор перешёл в другую ячейку
+        if (curPos.r !== startPos.r || curPos.c !== startPos.c) {
+            window.getSelection()?.removeAllRanges();
+            highlightCellRect(activeTbl, startPos, curPos);
+        }
+    });
+
+    document.addEventListener("mouseup", () => {
+        if (!isDraggingCells) return;
+        isDraggingCells = false;
+        if (activeTbl) activeTbl.classList.remove("ulh-selecting-cells");
+    });
+
+    // Действия с выделенными ячейками: Delete / Backspace / Ctrl+C
+    document.addEventListener("keydown", (e) => {
+        const selected = [...document.querySelectorAll(".word-table .ulh-cell-selected")];
+        if (!selected.length) return;
+
+        if (e.key === "Delete" || e.key === "Backspace") {
+            e.preventDefault();
+            selected.forEach(c => { c.innerHTML = "&nbsp;"; });
+            clearCellSelection();
+            syncWordPagesFromDom();
+            saveCurrentOfficeDoc();
+            return;
+        }
+
+        if ((e.ctrlKey || e.metaKey) && e.code === "KeyC") {
+            e.preventDefault();
+            const byRow = new Map();
+            selected.forEach(c => {
+                const tr = c.parentElement;
+                if (!byRow.has(tr)) byRow.set(tr, []);
+                byRow.get(tr).push(c.innerText.trim());
+            });
+            const tsv = [...byRow.values()].map(arr => arr.join("\t")).join("\n");
+            navigator.clipboard?.writeText(tsv).catch(() => {});
+        }
+    }, true);
+
+    // Применение форматирования (жирный, курсив, выравнивание, цвет, шрифт) ко всем выделенным ячейкам столбца
+    const _origExecFmt = window.execOfficeFormat;
+    window.execOfficeFormat = function(cmd, val = null) {
+        const selected = [...document.querySelectorAll(".word-table .ulh-cell-selected")];
+        if (selected.length) {
+            selected.forEach(cell => {
+                if (cmd === "bold") cell.style.fontWeight = cell.style.fontWeight === "700" ? "400" : "700";
+                else if (cmd === "italic") cell.style.fontStyle = cell.style.fontStyle === "italic" ? "normal" : "italic";
+                else if (cmd === "underline") cell.style.textDecoration = cell.style.textDecoration.includes("underline") ? "none" : "underline";
+                else if (cmd === "justifyLeft") cell.style.textAlign = "left";
+                else if (cmd === "justifyCenter") cell.style.textAlign = "center";
+                else if (cmd === "justifyRight") cell.style.textAlign = "right";
+                else if (cmd === "justifyFull") cell.style.textAlign = "justify";
+            });
+            syncWordPagesFromDom();
+            saveCurrentOfficeDoc();
+            return;
+        }
+        _origExecFmt(cmd, val);
+    };
+
+    const _origApplyColor = window.applyOfficeColor;
+    window.applyOfficeColor = function(cmd, color) {
+        const selected = [...document.querySelectorAll(".word-table .ulh-cell-selected")];
+        if (selected.length) {
+            selected.forEach(cell => {
+                if (cmd === "foreColor") cell.style.color = color;
+                else cell.style.backgroundColor = color;
+            });
+            syncWordPagesFromDom();
+            saveCurrentOfficeDoc();
+            return;
+        }
+        _origApplyColor(cmd, color);
+    };
+})();
+
+// ==========================================
+// === 2. НАДЁЖНЫЙ CTRL+Z (UNDO) И CTRL+Y (REDO) ===
+// ==========================================
+(function initReliableOfficeUndoRedo() {
+    const MAX_STACK = 60;
+    const undoStack = [];
+    const redoStack = [];
+    let isRestoring = false;
+    let inputTimer = null;
+
+    function getSnapshot() {
+        if (officeMode === "word") return JSON.stringify({ mode: "word", data: wordPages });
+        if (officeMode === "slides") return JSON.stringify({ mode: "slides", data: slidesData, idx: activeSlideIdx });
+        return JSON.stringify({ mode: "tables", data: tableData });
+    }
+
+    function pushUndoSnapshot() {
+        if (isRestoring) return;
+        const snap = getSnapshot();
+        if (undoStack.length && undoStack[undoStack.length - 1] === snap) return;
+        undoStack.push(snap);
+        if (undoStack.length > MAX_STACK) undoStack.shift();
+        redoStack.length = 0;
+    }
+
+    function applySnapshot(snapStr) {
+        if (!snapStr) return;
+        isRestoring = true;
+        try {
+            const parsed = JSON.parse(snapStr);
+            if (parsed.mode === "word") {
+                wordPages = parsed.data;
+                renderWordPages();
+                if (typeof applyPageNumbersToSheets === "function") applyPageNumbersToSheets();
+            } else if (parsed.mode === "slides") {
+                slidesData = parsed.data;
+                activeSlideIdx = Math.min(parsed.idx || 0, slidesData.length - 1);
+                loadActiveSlideToCanvas();
+                renderSlidesSidebar();
+            } else if (parsed.mode === "tables") {
+                tableData = parsed.data;
+                renderSpreadsheet();
+            }
+            if (typeof _baseSaveOfficeDoc === "function") _baseSaveOfficeDoc();
+            if (typeof updateOfficeLiveStats === "function") updateOfficeLiveStats();
+        } finally {
+            isRestoring = false;
+        }
+    }
+
+    // Оборачиваем saveCurrentOfficeDoc, чтобы каждое действие попадало в стек Undo
+    const _baseSaveOfficeDoc = window.saveCurrentOfficeDoc;
+    window.saveCurrentOfficeDoc = function() {
+        _baseSaveOfficeDoc();
+        if (!isRestoring) {
+            clearTimeout(inputTimer);
+            inputTimer = setTimeout(pushUndoSnapshot, 220);
+        }
+    };
+
+    window.performOfficeUndo = function() {
+        clearTimeout(inputTimer);
+        pushUndoSnapshot(); // фиксируем текущее состояние перед откатом
+        if (undoStack.length <= 1) return;
+        const current = undoStack.pop();
+        redoStack.push(current);
+        applySnapshot(undoStack[undoStack.length - 1]);
+    };
+
+    window.performOfficeRedo = function() {
+        if (!redoStack.length) return;
+        const next = redoStack.pop();
+        undoStack.push(next);
+        applySnapshot(next);
+    };
+
+    // Перехватываем Ctrl+Z и Ctrl+Y / Ctrl+Shift+Z на любой раскладке клавиатуры
+    document.addEventListener("keydown", (e) => {
+        if (e.target.closest("input, textarea, #officeOshaChat")) return;
+        if (!(e.ctrlKey || e.metaKey)) return;
+
+        if (e.code === "KeyZ" && !e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.performOfficeUndo();
+        } else if (e.code === "KeyY" || (e.code === "KeyZ" && e.shiftKey)) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.performOfficeRedo();
+        }
+    }, true);
+
+    // Сохраняем стартовое состояние после загрузки
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(pushUndoSnapshot, 300);
+    });
+})();
