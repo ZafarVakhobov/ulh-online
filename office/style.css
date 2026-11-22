@@ -3046,9 +3046,7 @@ body.dark-mode .sbg-sliders-grid { color: #CBD5E1; }
 
 
 /* === КНОПКА АВТОРА В НИЖНЕЙ ПАНЕЛИ === */
-.office-statusbar {
-    position: relative;
-}
+
 .office-author-btn {
     position: absolute;
     left: 50%;
