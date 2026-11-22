@@ -1207,3 +1207,14 @@ window.ctxDeleteTableCol = function() {
     width: auto !important;
     padding: 0 10px !important;
 }
+
+/* === СТРОГОЕ ВЫДЕЛЕНИЕ СТОЛБЦОВ И ЯЧЕЕК ТАБЛИЦЫ === */
+.word-table td.ulh-cell-selected,
+.word-table th.ulh-cell-selected {
+    background-color: rgba(2, 132, 199, 0.22) !important;
+    box-shadow: inset 0 0 0 1px #0284C7;
+}
+.word-table.ulh-selecting-cells {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
