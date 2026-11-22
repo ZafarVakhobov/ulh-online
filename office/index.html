@@ -108,6 +108,11 @@
                 <div id="omTrackTitle" class="om-track-title">ULH Musiqa</div>
 <div id="omTrackSub" class="om-track-sub">YouTube havolasini kiriting</div>
             </div>
+
+<button type="button" id="omWatchVideoBtn" class="om-video-btn" style="display:none;" onclick="openOfficeVideoModal()" title="Videoni köriş">
+    <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8z"/><path d="M10 9l5 3l-5 3z" fill="currentColor" stroke="none"/></svg>
+</button>
+            
         </div>
 
         <!-- Громкость -->
@@ -1178,6 +1183,23 @@
 </div>
 
 <div id="officeYtPlayerHost" style="position:fixed; right:0; bottom:0; width:200px; height:200px; pointer-events:none; opacity:0.001; z-index:-1;"></div>
+
+<!-- Модалка просмотра YouTube-видео с режимом «отключения света» -->
+<div id="officeVideoModal" class="office-video-modal" onclick="if(event.target===this) closeOfficeVideoModal()">
+    <div class="office-video-card" onclick="event.stopPropagation()">
+        <div class="office-video-head">
+            <span id="officeVideoTitle" class="office-video-title">YouTube Video</span>
+            <div class="office-video-head-actions">
+                <button type="button" id="officeLightsBtn" class="office-video-lights-btn" onclick="toggleOfficeVideoLights()" title="Çiroqni öçiriş / yoqiş">
+                    <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3"/><path d="M9.7 17l4.6 0"/></svg>
+                    <span id="officeLightsLabel">Çiroqni öçiriş</span>
+                </button>
+                <button type="button" class="office-video-close-btn" onclick="closeOfficeVideoModal()" title="Yopiş">×</button>
+            </div>
+        </div>
+        <div id="officeVideoStage" class="office-video-stage"></div>
+    </div>
+</div>
     
     <script src="../scripts.js"></script>
     <script src="./scripts.js"></script>
