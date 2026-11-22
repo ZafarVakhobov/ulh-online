@@ -271,12 +271,14 @@ function transliterateLiveSegment(beforeCursorText) {
     return prefixText + out;
 }
 
+const UZ_APOS_CLASS = "['`\u00B4\u02B9\u02BB\u02BC\u02BD\u2018\u2019\u2032]";
+
 function replaceOnlyOg(str) {
     return str
-        .replace(/G['`\u02BB\u2018\u2019\u02BC]/g, 'Ğ')
-        .replace(/g['`\u02BB\u2018\u2019\u02BC]/g, 'ğ')
-        .replace(/O['`\u02BB\u2018\u2019\u02BC]/g, 'Ö')
-        .replace(/o['`\u02BB\u2018\u2019\u02BC]/g, 'ö');
+        .replace(new RegExp("G" + UZ_APOS_CLASS, "g"), "Ğ")
+        .replace(new RegExp("g" + UZ_APOS_CLASS, "g"), "ğ")
+        .replace(new RegExp("O" + UZ_APOS_CLASS, "g"), "Ö")
+        .replace(new RegExp("o" + UZ_APOS_CLASS, "g"), "ö");
 }
 
 function applyReplacements(text) {
@@ -400,7 +402,7 @@ if (editor) {
 
         let rep = "";
         let isShCh = false;
-        let isApos = (c2 === "'" || c2 === "`" || c2 === "\u02BB" || c2 === "\u2018" || c2 === "\u2019" || c2 === "\u02BC");
+        let isApos = /['`\u00B4\u02B9\u02BB\u02BC\u02BD\u2018\u2019\u2032]/.test(c2);
 
         let inProtectedContext = isCursorInUrlOrQuotes(beforeCursor);
 
