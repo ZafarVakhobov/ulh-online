@@ -669,15 +669,34 @@
     © 2026 - Zafar Vakhobov Softwares
 </button>
         
-        <div class="office-zoom-pill">
-            <button type="button" onclick="adjustOfficeZoom(-0.1)" title="Kiçraytiriş">
-                <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M5 12l14 0"/></svg>
+    <div class="statusbar-right">
+            <!-- Виджет курса валют (смена каждые 5 сек) -->
+            <button type="button" id="officeCurrWidget" class="sb-widget-btn sb-curr-widget" onclick="openOfficeCurrencyModal()" title="Valyuta kurslari va kalkulyator">
+                <span id="sbCurrTicker" class="sb-curr-ticker">
+                    <span class="sb-curr-sym">$</span>
+                    <span class="sb-code-badge">USD</span>
+                    <span class="sb-curr-val">...</span>
+                </span>
             </button>
-            <span id="officeZoomLabel">100%</span>
-            <button type="button" onclick="adjustOfficeZoom(0.1)" title="Kattalaştiriş">
-                <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M12 5l0 14"/><path d="M5 12l14 0"/></svg>
-            </button>
+
+            <!-- Виджет погоды -->
+            <button type="button" id="officeWeatherWidget" class="sb-widget-btn sb-weather-widget" onclick="openOfficeWeatherModal()" title="Ob-havo ma'lumoti">
+    <span id="sbWeatherCity">Samarqand</span>
+    <span id="sbWeatherIco" class="sb-w-ico"></span>
+    <span id="sbWeatherTemp">--°</span>
+</button>
+
+            <div class="office-zoom-pill">
+                <button type="button" onclick="adjustOfficeZoom(-0.1)" title="Kiçraytiriş">
+                    <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M5 12l14 0"/></svg>
+                </button>
+                <span id="officeZoomLabel">100%</span>
+                <button type="button" onclick="adjustOfficeZoom(0.1)" title="Kattalaştiriş">
+                    <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M12 5l0 14"/><path d="M5 12l14 0"/></svg>
+                </button>
+            </div>
         </div>
+        
     </footer>
 
     <!-- === УМНАЯ ВСТАВКА === -->
@@ -1437,6 +1456,106 @@
 
         <div class="ad-modal-foot">
             <button type="button" class="ad-close-pill" onclick="document.getElementById('officeAdModal').classList.remove('open')">Yopiş</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: Погода (14 регионов + информер на 4 дня) -->
+<div id="officeWeatherModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="weather-modal-card ow-modal-card" onclick="event.stopPropagation()">
+        <div class="ow-selected-card">
+            <div class="ow-sel-left">
+                <div class="ow-sel-kicker">
+                    <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z"/></svg>
+                    <span>TANLANGAN HUDUD</span>
+                </div>
+                <div id="owSelCity" class="ow-sel-city">Samarqand</div>
+                <div id="owSelDesc" class="ow-sel-desc"></div>
+            </div>
+            <div class="ow-sel-right">
+                <span id="owSelBgIco" class="ow-sel-bg-ico"></span>
+                <span id="owSelTemp" class="ow-sel-temp">--°</span>
+            </div>
+        </div>
+
+        <div class="ow-section-lbl">BOŞQA HUDUDLAR</div>
+        <div id="owRegionsGrid" class="ow-regions-grid"></div>
+
+        <div class="ow-modal-foot">
+            <a href="https://www.accuweather.com/" target="_blank" rel="noopener" class="ow-foot-btn">
+                <span>AccuWeather</span>
+                <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/></svg>
+            </a>
+            <div class="ow-inf-wrap">
+                <button type="button" class="ow-foot-btn" onclick="toggleInfThemeMenu('owInfMenu', event)">
+                    <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 11l5 5l5 -5"/><path d="M12 4l0 12"/></svg>
+                    <span>Ob-havo informeri</span>
+                </button>
+                <div id="owInfMenu" class="ow-inf-menu">
+                    <button type="button" onclick="downloadOfficeWeatherInformer('light')"><span class="inf-dot light"></span> Yoruğ mavzuda</button>
+                    <button type="button" onclick="downloadOfficeWeatherInformer('dark')"><span class="inf-dot dark"></span> Qoronği mavzuda</button>
+                </div>
+            </div>
+            <button type="button" class="ow-foot-close" onclick="document.getElementById('officeWeatherModal').classList.remove('open')">Yopiş</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: Курс валют + Калькулятор + Число прописью + Информер -->
+<div id="officeCurrencyModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="weather-modal-card oc-modal-card" onclick="event.stopPropagation()">
+        <div class="oc-calc-box">
+           <div class="oc-kicker">
+                <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M4 3m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M8 7m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v1a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z"/><path d="M8 14l0 .01"/><path d="M12 14l0 .01"/><path d="M16 14l0 .01"/><path d="M8 17l0 .01"/><path d="M12 17l0 .01"/><path d="M16 17l0 .01"/></svg>
+                <span>VALYUTA KALKULYATORI (NBU / MB)</span>
+            </div>
+            <div class="oc-input-wrap">
+                <input type="number" id="ocAmountInput" class="oc-amount-input" value="100" min="0" step="any" oninput="recalcOfficeCurrency()">
+                <span id="ocActiveBadge" class="oc-active-badge">USD ($)</span>
+            </div>
+            <div class="oc-curr-pills" id="ocCurrPills">
+                <button type="button" class="oc-pill active" data-code="USD" onclick="setOcBaseCurr('USD')">$ USD</button>
+                <button type="button" class="oc-pill" data-code="UZS" onclick="setOcBaseCurr('UZS')">Söm UZS</button>
+                <button type="button" class="oc-pill" data-code="EUR" onclick="setOcBaseCurr('EUR')">€ EUR</button>
+                <button type="button" class="oc-pill" data-code="RUB" onclick="setOcBaseCurr('RUB')">₽ RUB</button>
+                <button type="button" class="oc-pill" data-code="CNY" onclick="setOcBaseCurr('CNY')">¥ CNY</button>
+            </div>
+            <div class="oc-quick-amts">
+                <button type="button" onclick="setOcQuickAmt(10)">10</button>
+                <button type="button" onclick="setOcQuickAmt(50)">50</button>
+                <button type="button" onclick="setOcQuickAmt(100)">100</button>
+                <button type="button" onclick="setOcQuickAmt(150)">150</button>
+                <button type="button" onclick="setOcQuickAmt(500)">500</button>
+                <button type="button" onclick="setOcQuickAmt(1000)">1 000</button>
+            </div>
+        </div>
+
+        <div class="ow-section-lbl">KONVERTATSIYA NATIJASI (NUSXA OLIŞ UÇUN BOSING)</div>
+        <div id="ocResultUzs" class="oc-res-uzs" onclick="copyOcElement(this)" title="Nusxalaş uçun bosing"></div>
+        <div id="ocResultGrid" class="oc-res-grid"></div>
+
+        <hr class="oc-sep">
+
+        <div class="ow-section-lbl">SONNI SÖZ BILAN YOZIŞ (NUSXA OLIŞ UÇUN BOSING)</div>
+        <input type="text" id="ocNumWordsInput" class="oc-words-input" placeholder="Masalan: 1 450 000.50" oninput="updateOcNumWords()">
+        <div id="ocNumWordsOut" class="oc-words-out" onclick="copyOcWords()" title="Nusxalaş uçun bosing">Natija bu yerda çiqadi...</div>
+
+        <div class="ow-modal-foot">
+            <a href="https://nbu.uz/uz/exchange-rates/" target="_blank" rel="noopener" class="ow-foot-btn">
+                <span>Manba: NBU</span>
+                <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/></svg>
+            </a>
+            <div class="ow-inf-wrap">
+                <button type="button" class="ow-foot-btn" onclick="toggleInfThemeMenu('ocInfMenu', event)">
+                    <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 11l5 5l5 -5"/><path d="M12 4l0 12"/></svg>
+                    <span>Valyuta kurslari informeri</span>
+                </button>
+                <div id="ocInfMenu" class="ow-inf-menu">
+                    <button type="button" onclick="downloadOfficeCurrInformer('light')"><span class="inf-dot light"></span> Yoruğ mavzuda</button>
+                    <button type="button" onclick="downloadOfficeCurrInformer('dark')"><span class="inf-dot dark"></span> Qoronği mavzuda</button>
+                </div>
+            </div>
+            <button type="button" class="ow-foot-close" onclick="document.getElementById('officeCurrencyModal').classList.remove('open')">Yopiş</button>
         </div>
     </div>
 </div>
