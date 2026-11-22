@@ -2721,3 +2721,62 @@ window.applyTextCase = function(mode) {
         }
     });
 })();
+
+
+// === ОТЗЫВЧИВОСТЬ МЕЖСТРОЧНОГО ИНТЕРВАЛА В ПАНЕЛИ ===
+(function initLineHeightRibbonSync() {
+    const PRESETS = [
+        { val: "1", num: 1.0 },
+        { val: "1.25", num: 1.25 },
+        { val: "1.5", num: 1.5 },
+        { val: "1.75", num: 1.75 },
+        { val: "2", num: 2.0 }
+    ];
+
+    function syncLineHeightMenu() {
+        const wrap = document.getElementById("lineHeightWrap");
+        if (!wrap) return;
+
+        const sel = window.getSelection();
+        let node = sel?.focusNode || sel?.anchorNode;
+        if (node && node.nodeType === 3) node = node.parentElement;
+        if (!node || !node.closest?.(".a4-sheet, #slideCanvas")) return;
+
+        const blockEl = node.closest("p, div, h1, h2, h3, h4, li, td, th") || node;
+        const sheetEl = node.closest(".a4-sheet, #slideCanvas");
+
+        // Берём явно заданный интервал абзаца/листа или вычисляем реальный из стилей
+        let ratio = parseFloat(blockEl.style.lineHeight) || parseFloat(sheetEl?.style.lineHeight);
+        if (!ratio || isNaN(ratio)) {
+            const cs = window.getComputedStyle(blockEl);
+            const lhPx = parseFloat(cs.lineHeight);
+            const fsPx = parseFloat(cs.fontSize) || 14;
+            if (!isNaN(lhPx) && fsPx > 0) ratio = lhPx / fsPx;
+        }
+
+        wrap.querySelectorAll(".office-dropdown-menu button").forEach(b => b.classList.remove("rb-active"));
+
+        if (ratio && !isNaN(ratio)) {
+            let best = PRESETS[0];
+            let minDiff = Math.abs(ratio - best.num);
+            for (const p of PRESETS) {
+                const diff = Math.abs(ratio - p.num);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    best = p;
+                }
+            }
+            const targetBtn = wrap.querySelector(`.office-dropdown-menu button[onclick*="'${best.val}'"]`);
+            if (targetBtn) targetBtn.classList.add("rb-active");
+        }
+    }
+
+    document.addEventListener("selectionchange", syncLineHeightMenu);
+    document.addEventListener("mouseup", syncLineHeightMenu);
+    document.addEventListener("keyup", syncLineHeightMenu);
+    document.addEventListener("click", (e) => {
+        if (e.target.closest?.("#lineHeightWrap")) {
+            setTimeout(syncLineHeightMenu, 20);
+        }
+    });
+})();
