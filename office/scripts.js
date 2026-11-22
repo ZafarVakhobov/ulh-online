@@ -3766,20 +3766,65 @@ window.applyTextCase = function(mode) {
 // ==========================================
 (function initOfficeVideoModalPlayer() {
     let lightsOff = false;
+    let videoModalOpen = false;
+
+    function getYtIframe() {
+        const el = document.getElementById("officeYtPlayerHost");
+        if (!el) return null;
+        return el.tagName === "IFRAME" ? el : el.querySelector("iframe");
+    }
 
     function syncVideoButtonVisibility() {
         const btn = document.getElementById("omWatchVideoBtn");
         if (!btn) return;
-        const hasVideo = Boolean(document.getElementById("officeYtPlayerHost")?.querySelector("iframe"));
-        btn.style.display = hasVideo ? "inline-flex" : "none";
+        const iframe = getYtIframe();
+        const title = (document.getElementById("omTrackTitle")?.textContent || "").trim();
+        const hasTrack = Boolean(iframe) && title !== "" && title !== "ULH Musiqa";
+        btn.style.display = hasTrack ? "inline-flex" : "none";
+    }
+
+    function syncIframeToStage() {
+        if (!videoModalOpen) return;
+        const iframe = getYtIframe();
+        const stage = document.getElementById("officeVideoStage");
+        if (!iframe || !stage) return;
+
+        const r = stage.getBoundingClientRect();
+        iframe.style.cssText = `
+            position: fixed !important;
+            left: ${r.left}px !important;
+            top: ${r.top}px !important;
+            width: ${r.width}px !important;
+            height: ${r.height}px !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            z-index: 10090 !important;
+            border: 0 !important;
+            border-radius: 0 0 18px 18px !important;
+        `;
+    }
+
+    function hideIframeBackToBg() {
+        const iframe = getYtIframe();
+        if (!iframe) return;
+        iframe.style.cssText = `
+            position: fixed !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            left: auto !important;
+            top: auto !important;
+            width: 200px !important;
+            height: 200px !important;
+            opacity: 0.001 !important;
+            pointer-events: none !important;
+            z-index: -1 !important;
+        `;
     }
 
     window.openOfficeVideoModal = function() {
         const modal = document.getElementById("officeVideoModal");
-        const stage = document.getElementById("officeVideoStage");
-        const host = document.getElementById("officeYtPlayerHost");
-        const iframe = host?.querySelector("iframe");
-        if (!modal || !stage || !iframe) return;
+        const iframe = getYtIframe();
+        if (!modal || !iframe) return;
 
         document.getElementById("officeMusicWrap")?.classList.remove("open");
 
@@ -3787,23 +3832,17 @@ window.applyTextCase = function(mode) {
         const titleEl = document.getElementById("officeVideoTitle");
         if (titleEl) titleEl.textContent = title;
 
-        stage.innerHTML = "";
-        stage.appendChild(iframe);
+        videoModalOpen = true;
         modal.classList.add("open");
+        requestAnimationFrame(syncIframeToStage);
     };
 
     window.closeOfficeVideoModal = function() {
-        const modal = document.getElementById("officeVideoModal");
-        const stage = document.getElementById("officeVideoStage");
-        const host = document.getElementById("officeYtPlayerHost");
-        const iframe = stage?.querySelector("iframe");
-
-        if (iframe && host) {
-            host.innerHTML = "";
-            host.appendChild(iframe);
-        }
-
+        videoModalOpen = false;
         lightsOff = false;
+        hideIframeBackToBg();
+
+        const modal = document.getElementById("officeVideoModal");
         modal?.classList.remove("open", "lights-off");
         document.getElementById("officeLightsBtn")?.classList.remove("active");
         const lbl = document.getElementById("officeLightsLabel");
@@ -3821,16 +3860,13 @@ window.applyTextCase = function(mode) {
         if (lbl) lbl.textContent = lightsOff ? "Çiroqni yoqiş" : "Çiroqni öçiriş";
     };
 
+    window.addEventListener("resize", syncIframeToStage);
     document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && document.getElementById("officeVideoModal")?.classList.contains("open")) {
+        if (e.key === "Escape" && videoModalOpen) {
             window.closeOfficeVideoModal();
         }
     });
 
-    const host = document.getElementById("officeYtPlayerHost");
-    if (host && window.MutationObserver) {
-        new MutationObserver(syncVideoButtonVisibility).observe(host, { childList: true, subtree: true });
-    }
     document.addEventListener("click", () => setTimeout(syncVideoButtonVisibility, 250));
-    setTimeout(syncVideoButtonVisibility, 500);
+    setInterval(syncVideoButtonVisibility, 1200);
 })();
