@@ -115,6 +115,12 @@
             
         </div>
 
+        <!-- Бегунок перемотки и время -->
+<div class="om-seek-row">
+    <input type="range" id="omSeekRange" class="om-seek-slider" min="0" max="100" value="0" oninput="seekOfficeMusic(this.value)">
+    <span id="omTimeLabel" class="om-time-label">0:00 / 0:00</span>
+</div>
+        
         <!-- Громкость -->
         <div class="om-vol-row">
             <svg class="ti ti-sm om-vol-ico" viewBox="0 0 24 24"><path d="M15 8a5 5 0 0 1 0 8"/><path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"/></svg>
