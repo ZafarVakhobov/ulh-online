@@ -1728,3 +1728,178 @@ body.dark-mode .sf-btn { color: #CBD5E1; }
 body.dark-mode .sf-btn:hover { background: #1E293B; color: #38BDF8; }
 body.dark-mode .sf-btn.danger:hover { background: rgba(239, 68, 68, 0.2); color: #F87171; }
 body.dark-mode .sf-sep { background: #334155; }
+
+/* === ВЫДВИЖНАЯ ПАНЕЛЬ: NUSXALAR TARIXI === */
+.copy-hist-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10040;
+    background: rgba(15, 23, 42, 0.25);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+.copy-hist-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.copy-hist-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 340px;
+    max-width: 92vw;
+    z-index: 10050;
+    background: #F8FAFC;
+    border-left: 1px solid #E2E8F0;
+    box-shadow: -12px 0 36px rgba(15, 23, 42, 0.14);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.copy-hist-drawer.open {
+    transform: translateX(0);
+}
+
+.copy-hist-head {
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #E2E8F0;
+    background: #FFFFFF;
+}
+.copy-hist-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15.5px;
+    font-weight: 800;
+    color: #0F172A;
+}
+.copy-hist-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: #F1F5F9;
+    color: #64748B;
+    font-size: 18px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+.copy-hist-close:hover {
+    background: #E2E8F0;
+    color: #0F172A;
+}
+
+.copy-hist-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.copy-hist-card {
+    width: 100%;
+    text-align: left;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+}
+.copy-hist-card:hover {
+    border-color: #7DD3FC;
+    box-shadow: 0 6px 16px rgba(2, 132, 199, 0.1);
+    transform: translateY(-1px);
+}
+.copy-hist-text {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+    color: #1E293B;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+}
+.copy-hist-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94A3B8;
+}
+.copy-hist-empty {
+    text-align: center;
+    padding: 40px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #94A3B8;
+}
+
+.copy-hist-foot {
+    padding: 12px 14px;
+    border-top: 1px solid #E2E8F0;
+    background: #FFFFFF;
+}
+.copy-hist-clear-btn {
+    width: 100%;
+    height: 38px;
+    border-radius: 12px;
+    border: none;
+    background: #FEE2E2;
+    color: #DC2626;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.copy-hist-clear-btn:hover {
+    background: #FECACA;
+}
+
+/* Тёмная тема */
+body.dark-mode .copy-hist-drawer {
+    background: #0B1120;
+    border-color: #1E293B;
+}
+body.dark-mode .copy-hist-head,
+body.dark-mode .copy-hist-foot {
+    background: #0F172A;
+    border-color: #1E293B;
+}
+body.dark-mode .copy-hist-title { color: #F8FAFC; }
+body.dark-mode .copy-hist-close { background: #1E293B; color: #94A3B8; }
+body.dark-mode .copy-hist-close:hover { background: #334155; color: #F8FAFC; }
+body.dark-mode .copy-hist-card {
+    background: #0F172A;
+    border-color: #1E293B;
+}
+body.dark-mode .copy-hist-card:hover {
+    border-color: #38BDF8;
+}
+body.dark-mode .copy-hist-text { color: #E2E8F0; }
+body.dark-mode .copy-hist-clear-btn {
+    background: rgba(239, 68, 68, 0.18);
+    color: #F87171;
+}
+body.dark-mode .copy-hist-clear-btn:hover {
+    background: rgba(239, 68, 68, 0.28);
+}
