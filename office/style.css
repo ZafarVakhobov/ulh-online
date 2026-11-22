@@ -3028,3 +3028,18 @@ body.dark-mode .sbg-fit-btn.active {
 body.dark-mode .sbg-radio,
 body.dark-mode .sbg-angle-wrap,
 body.dark-mode .sbg-sliders-grid { color: #CBD5E1; }
+
+
+/* === СВОБОДНОЕ ПЕРЕМЕЩЕНИЕ ИЗОБРАЖЕНИЙ === */
+.a4-sheet img.office-resizable-img,
+#slideCanvas img.office-resizable-img {
+    cursor: grab;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+.a4-sheet img.office-resizable-img.img-dragging,
+#slideCanvas img.office-resizable-img.img-dragging {
+    cursor: grabbing !important;
+    opacity: 0.88;
+    box-shadow: 0 10px 26px rgba(2, 132, 199, 0.25);
+}
