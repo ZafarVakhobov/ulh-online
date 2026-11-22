@@ -2780,3 +2780,267 @@ window.applyTextCase = function(mode) {
         }
     });
 })();
+
+// ==========================================
+// === ГРАФИЧЕСКИЕ ЭЛЕМЕНТЫ (ФИГУРЫ, ЛИНИИ, СТРЕЛКИ, НАДПИСЬ) ===
+// ==========================================
+(function initOfficeShapesEngine() {
+    let selectedShape = null;
+
+    function getShapeHost() {
+        if (officeMode === "slides") return document.getElementById("slideCanvas");
+        return document.querySelector(`.a4-sheet[data-page-index="${activeWordPageIdx}"]`) || document.querySelector(".a4-sheet");
+    }
+
+    function getDashArray(style, w) {
+        const sw = Math.max(1, parseInt(w, 10) || 2);
+        if (style === "dashed") return `${sw * 4} ${sw * 2.5}`;
+        if (style === "dotted") return `${sw} ${sw * 2}`;
+        return "none";
+    }
+
+    function buildSvgMarkup(type, fill, stroke, sw, style) {
+        const dash = getDashArray(style, sw);
+        const uid = "arr_" + Math.random().toString(36).slice(2, 8);
+        const markerEnd = `<marker id="${uid}_e" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="${stroke}" class="sh-arrow-head"/></marker>`;
+        const markerStart = `<marker id="${uid}_s" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 10 1 L 0 5 L 10 9 z" fill="${stroke}" class="sh-arrow-head"/></marker>`;
+
+        if (type === "line") {
+            return `<svg class="ulh-shape-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><line class="sh-geom" x1="4" y1="96" x2="96" y2="4" stroke="${stroke}" stroke-width="${sw}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke"/></svg>`;
+        }
+        if (type === "hline") {
+            return `<svg class="ulh-shape-svg" viewBox="0 0 100 20" preserveAspectRatio="none"><line class="sh-geom" x1="2" y1="10" x2="98" y2="10" stroke="${stroke}" stroke-width="${sw}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke"/></svg>`;
+        }
+        if (type === "arrow") {
+            return `<svg class="ulh-shape-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><defs>${markerEnd}</defs><line class="sh-geom" x1="6" y1="94" x2="94" y2="6" stroke="${stroke}" stroke-width="${sw}" stroke-dasharray="${dash}" marker-end="url(#${uid}_e)" vector-effect="non-scaling-stroke"/></svg>`;
+        }
+        if (type === "double-arrow") {
+            return `<svg class="ulh-shape-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><defs>${markerStart}${markerEnd}</defs><line class="sh-geom" x1="8" y1="92" x2="92" y2="8" stroke="${stroke}" stroke-width="${sw}" stroke-dasharray="${dash}" marker-start="url(#${uid}_s)" marker-end="url(#${uid}_e)" vector-effect="non-scaling-stroke"/></svg>`;
+        }
+        if (type === "harrow") {
+            return `<svg class="ulh-shape-svg" viewBox="0 0 100 24" preserveAspectRatio="none"><defs>${markerEnd}</defs><line class="sh-geom" x1="2" y1="12" x2="95" y2="12" stroke="${stroke}" stroke-width="${sw}" stroke-dasharray="${dash}" marker-end="url(#${uid}_e)" vector-effect="non-scaling-stroke"/></svg>`;
+        }
+        if (type === "triangle") {
+            return `<svg class="ulh-shape-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon class="sh-geom" points="50,5 95,95 5,95" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke"/></svg>`;
+        }
+        if (type === "diamond") {
+            return `<svg class="ulh-shape-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon class="sh-geom" points="50,4 96,50 50,96 4,50" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke"/></svg>`;
+        }
+        if (type === "star") {
+            return `<svg class="ulh-shape-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon class="sh-geom" points="50,5 63,36 96,39 71,61 79,94 50,76 21,94 29,61 4,39 37,36" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke"/></svg>`;
+        }
+        if (type === "block-arrow-right") {
+            return `<svg class="ulh-shape-svg" viewBox="0 0 120 60" preserveAspectRatio="none"><polygon class="sh-geom" points="4,18 76,18 76,4 116,30 76,56 76,42 4,42" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke"/></svg>`;
+        }
+        if (type === "block-arrow-down") {
+            return `<svg class="ulh-shape-svg" viewBox="0 0 60 120" preserveAspectRatio="none"><polygon class="sh-geom" points="18,4 42,4 42,76 56,76 30,116 4,76 18,76" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke"/></svg>`;
+        }
+        return "";
+    }
+
+    function positionFormatBar(shape) {
+        const bar = document.getElementById("shapeFormatBar");
+        if (!bar || !shape) return;
+        const r = shape.getBoundingClientRect();
+        bar.style.left = Math.max(12, Math.min(r.left, window.innerWidth - 360)) + "px";
+        bar.style.top = Math.max(12, r.top - 48) + "px";
+        bar.classList.add("active");
+
+        const fill = shape.dataset.fill || "#E0F2FE";
+        const stroke = shape.dataset.stroke || "#0284C7";
+        const sw = shape.dataset.sw || "2";
+        const st = shape.dataset.sstyle || "solid";
+
+        if (fill !== "transparent") document.getElementById("sfFillColor").value = fill;
+        document.getElementById("sfStrokeColor").value = stroke;
+        document.getElementById("sfStrokeWidth").value = sw;
+        document.getElementById("sfStrokeStyle").value = st;
+    }
+
+    function selectShape(shape) {
+        document.querySelectorAll(".ulh-shape.selected").forEach(s => s.classList.remove("selected"));
+        selectedShape = shape || null;
+        const bar = document.getElementById("shapeFormatBar");
+        if (selectedShape) {
+            selectedShape.classList.add("selected");
+            positionFormatBar(selectedShape);
+        } else {
+            bar?.classList.remove("active");
+        }
+    }
+
+    window.insertOfficeShape = function(type) {
+        document.getElementById("shapesMenuWrap")?.classList.remove("open");
+        const host = getShapeHost();
+        if (!host) return;
+        if (getComputedStyle(host).position === "static") host.style.position = "relative";
+
+        const el = document.createElement("div");
+        el.className = "ulh-shape";
+        el.contentEditable = "false";
+        el.dataset.shape = type;
+
+        const isLine = ["line", "hline", "arrow", "double-arrow", "harrow"].includes(type);
+        const isBox = ["textbox", "rect", "round-rect", "oval"].includes(type);
+        const defFill = type === "textbox" ? "#FFFFFF" : (isLine ? "transparent" : "#E0F2FE");
+        const defStroke = "#0284C7";
+        const defSw = "2";
+        const defStyle = "solid";
+
+        el.dataset.fill = defFill;
+        el.dataset.stroke = defStroke;
+        el.dataset.sw = defSw;
+        el.dataset.sstyle = defStyle;
+
+        el.style.left = "80px";
+        el.style.top = "90px";
+
+        if (type === "textbox") {
+            el.style.backgroundColor = defFill;
+            el.style.border = `${defSw}px ${defStyle} ${defStroke}`;
+            el.innerHTML = `<div class="ulh-shape-text" contenteditable="true">Matn kiriting...</div><div class="ulh-shape-resize"></div>`;
+        } else if (isBox) {
+            el.style.width = "160px";
+            el.style.height = "90px";
+            el.style.backgroundColor = defFill;
+            el.style.border = `${defSw}px ${defStyle} ${defStroke}`;
+            el.innerHTML = `<div class="ulh-shape-text" contenteditable="true"></div><div class="ulh-shape-resize"></div>`;
+        } else {
+            el.style.width = (type === "hline" || type === "harrow" || type === "block-arrow-right") ? "180px" : (type === "block-arrow-down" ? "64px" : "120px");
+            el.style.height = (type === "hline" || type === "harrow") ? "24px" : (type === "block-arrow-right" ? "64px" : (type === "block-arrow-down" ? "140px" : "110px"));
+            el.innerHTML = buildSvgMarkup(type, defFill, defStroke, defSw, defStyle) + `<div class="ulh-shape-resize"></div>`;
+        }
+
+        host.appendChild(el);
+        selectShape(el);
+
+        if (type === "textbox") {
+            const txt = el.querySelector(".ulh-shape-text");
+            if (txt) {
+                txt.focus();
+                document.execCommand("selectAll", false, null);
+            }
+        }
+
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    };
+
+    window.updateSelectedShapeStyle = function(prop, val) {
+        if (!selectedShape) return;
+        if (prop === "fill") selectedShape.dataset.fill = val;
+        if (prop === "stroke") selectedShape.dataset.stroke = val;
+        if (prop === "width") selectedShape.dataset.sw = val;
+        if (prop === "style") selectedShape.dataset.sstyle = val;
+
+        const fill = selectedShape.dataset.fill || "transparent";
+        const stroke = selectedShape.dataset.stroke || "#0284C7";
+        const sw = selectedShape.dataset.sw || "2";
+        const st = selectedShape.dataset.sstyle || "solid";
+        const type = selectedShape.dataset.shape;
+
+        if (["textbox", "rect", "round-rect", "oval"].includes(type)) {
+            selectedShape.style.backgroundColor = fill;
+            selectedShape.style.border = sw === "0" ? "none" : `${sw}px ${st} ${stroke}`;
+        } else {
+            const geom = selectedShape.querySelector(".sh-geom");
+            if (geom) {
+                if (geom.tagName.toLowerCase() !== "line") geom.setAttribute("fill", fill);
+                geom.setAttribute("stroke", sw === "0" ? "none" : stroke);
+                geom.setAttribute("stroke-width", sw);
+                geom.setAttribute("stroke-dasharray", getDashArray(st, sw));
+            }
+            selectedShape.querySelectorAll(".sh-arrow-head").forEach(h => h.setAttribute("fill", stroke));
+        }
+
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    };
+
+    window.deleteSelectedShape = function() {
+        if (!selectedShape) return;
+        selectedShape.remove();
+        selectShape(null);
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    };
+
+    // Выбор, перетаскивание и изменение размера фигур
+    let dragMode = null, startX = 0, startY = 0, origL = 0, origT = 0, origW = 0, origH = 0;
+
+    document.addEventListener("mousedown", (e) => {
+        if (e.target.closest("#shapeFormatBar")) return;
+
+        const resizeHandle = e.target.closest(".ulh-shape-resize");
+        if (resizeHandle) {
+            const sh = resizeHandle.closest(".ulh-shape");
+            if (!sh) return;
+            e.preventDefault(); e.stopPropagation();
+            selectShape(sh);
+            dragMode = "resize";
+            startX = e.clientX; startY = e.clientY;
+            origW = sh.offsetWidth; origH = sh.offsetHeight;
+            return;
+        }
+
+        const shape = e.target.closest(".ulh-shape");
+        if (shape) {
+            selectShape(shape);
+            // Если кликнули по тексту внутри Надписи — даём спокойно печатать, не перетаскиваем
+            if (e.target.closest(".ulh-shape-text") && shape.dataset.shape === "textbox") return;
+            e.preventDefault();
+            dragMode = "move";
+            startX = e.clientX; startY = e.clientY;
+            origL = shape.offsetLeft; origT = shape.offsetTop;
+            return;
+        }
+
+        selectShape(null);
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (!dragMode || !selectedShape) return;
+        const z = (typeof officeZoom === "number" && officeZoom > 0) ? officeZoom : 1;
+        const dx = (e.clientX - startX) / z;
+        const dy = (e.clientY - startY) / z;
+
+        if (dragMode === "move") {
+            selectedShape.style.left = Math.max(0, Math.round(origL + dx)) + "px";
+            selectedShape.style.top = Math.max(0, Math.round(origT + dy)) + "px";
+        } else if (dragMode === "resize") {
+            selectedShape.style.width = Math.max(30, Math.round(origW + dx)) + "px";
+            if (selectedShape.dataset.shape !== "textbox") {
+                selectedShape.style.height = Math.max(18, Math.round(origH + dy)) + "px";
+            }
+        }
+        positionFormatBar(selectedShape);
+    });
+
+    document.addEventListener("mouseup", () => {
+        if (!dragMode) return;
+        dragMode = null;
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    });
+
+    // Авто-обновление позиции панели при вводе текста в Надпись и сохранение
+    document.addEventListener("input", (e) => {
+        const sh = e.target.closest?.(".ulh-shape");
+        if (sh) {
+            positionFormatBar(sh);
+            if (officeMode === "word") syncWordPagesFromDom();
+            saveCurrentOfficeDoc();
+        }
+    });
+
+    // Удаление выбранной фигуры клавишей Delete (если курсор не в тексте)
+    document.addEventListener("keydown", (e) => {
+        if (!selectedShape) return;
+        if (e.key === "Delete" && !e.target.closest(".ulh-shape-text")) {
+            e.preventDefault();
+            window.deleteSelectedShape();
+        }
+    });
+
+    window.addEventListener("scroll", () => { if (selectedShape) positionFormatBar(selectedShape); }, true);
+})();
