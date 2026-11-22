@@ -137,10 +137,25 @@
                 <option value="Courier New">Courier New</option>
             </select>
             <select id="officeFontSize" class="rb-select small" onchange="applyOfficeFontSize(this.value)" title="Ölçam">
-                <option value="10">10</option><option value="12">12</option><option value="14" selected>14</option>
-                <option value="16">16</option><option value="18">18</option><option value="22">22</option>
-                <option value="28">28</option><option value="36">36</option>
-            </select>
+    <option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option>
+    <option value="12">12</option><option value="14" selected>14</option><option value="16">16</option><option value="18">18</option>
+    <option value="20">20</option><option value="22">22</option><option value="24">24</option><option value="26">26</option>
+    <option value="28">28</option><option value="32">32</option><option value="36">36</option><option value="48">48</option><option value="64">64</option><option value="72">72</option>
+                <option value="80">80</option><option value="96">96</option>
+</select>
+            <div class="office-dropdown-wrap" id="textCaseWrap">
+    <button type="button" class="rb-case-btn" onmousedown="event.preventDefault()" onclick="toggleSimpleDrop('textCaseWrap', event)" title="Registrni özgertiriş (Aa)">
+        <span>Aa</span>
+        <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M6 9l6 6l6 -6"/></svg>
+    </button>
+    <div class="office-dropdown-menu text-case-menu">
+        <button type="button" onmousedown="event.preventDefault()" onclick="applyTextCase('sentence')">Gaplardagi kabi.</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="applyTextCase('lower')">barçasi kiçik</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="applyTextCase('upper')">BARÇASI KATTA</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="applyTextCase('title')">Har Bir Söz Katta</button>
+        <button type="button" onmousedown="event.preventDefault()" onclick="applyTextCase('toggle')">rEGISTRNI ÖZGARTIRIŞ</button>
+    </div>
+</div>
         </div>
         <div class="ribbon-row">
             <button type="button" class="rb-btn" onmousedown="event.preventDefault()" onclick="execOfficeFormat('bold')" title="Qalin"><svg class="ti" viewBox="0 0 24 24"><path d="M7 5h6a3.5 3.5 0 0 1 0 7h-6z"/><path d="M13 12h1a3.5 3.5 0 0 1 0 7h-7v-7"/></svg></button>
