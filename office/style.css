@@ -1405,3 +1405,123 @@ body.dark-mode .rb-case-btn:hover {
     background: rgba(56, 189, 248, 0.14);
     color: #38BDF8;
 }
+
+/* === ПОИСК И ЗАМЕНА СЛОВ (DROPDOWN + ПОДСВЕТКА) === */
+.find-replace-menu {
+    left: auto !important;
+    right: 0 !important;
+    width: 285px;
+    padding: 12px !important;
+    gap: 8px !important;
+}
+
+.fr-section-lbl {
+    font-size: 11px;
+    font-weight: 800;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.fr-search-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.fr-input {
+    width: 100%;
+    box-sizing: border-box;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid #CBD5E1;
+    background: #F8FAFC;
+    color: #0F172A;
+    font-size: 12.5px;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.fr-input:focus {
+    border-color: #0284C7;
+    background: #FFFFFF;
+}
+
+.fr-nav-btn {
+    width: 28px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    border: 1px solid #CBD5E1 !important;
+    background: #F8FAFC !important;
+    color: #475569 !important;
+    border-radius: 8px !important;
+    font-size: 10px !important;
+    justify-content: center !important;
+    flex-shrink: 0;
+}
+.fr-nav-btn:hover {
+    border-color: #0284C7 !important;
+    color: #0284C7 !important;
+}
+
+.fr-counter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0284C7;
+}
+
+.fr-clear-btn {
+    padding: 2px 6px !important;
+    font-size: 11px !important;
+    color: #64748B !important;
+    width: auto !important;
+}
+
+.fr-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.fr-status {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #10B981;
+}
+
+/* Подсветка найденных слов в документе */
+mark.ulh-find-hl {
+    background: #FEF08A;
+    color: #0F172A;
+    border-radius: 3px;
+    padding: 0 1px;
+}
+mark.ulh-find-hl.active-match {
+    background: #F97316;
+    color: #FFFFFF;
+}
+
+/* Тёмная тема */
+body.dark-mode .fr-input {
+    background: #1E293B;
+    border-color: #334155;
+    color: #F8FAFC;
+}
+body.dark-mode .fr-input:focus {
+    border-color: #38BDF8;
+    background: #0F172A;
+}
+body.dark-mode .fr-nav-btn {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+    color: #CBD5E1 !important;
+}
+body.dark-mode .fr-counter-row {
+    color: #38BDF8;
+}
