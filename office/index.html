@@ -449,6 +449,13 @@
     <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M10 11h-4a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1h3a1 1 0 0 1 1 1v6c0 2.667 -1.333 4.333 -4 5"/><path d="M19 11h-4a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1h3a1 1 0 0 1 1 1v6c0 2.667 -1.333 4.333 -4 5"/></svg>
     <small>Iqtibos</small>
 </button>
+
+<!-- Научные источники (VAK) -->
+<button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="openOfficeVakModal()" title="Ilmiy manbalar menejeri (VAK formati)">
+    <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6l0 13"/><path d="M12 6l0 13"/><path d="M21 6l0 13"/></svg>
+    <small>Manbalar</small>
+</button>
+        
         <!-- Уравнения -->
         <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="openEquationModal()" title="Tenglama / Formula qöşiş">
             <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M19 5h-7l-4 14l-3 -6h-2"/><path d="M14 13l6 6"/><path d="M14 19l6 -6"/></svg>
@@ -1077,6 +1084,49 @@
         <button type="button" class="copy-hist-clear-btn" onclick="clearOfficeCopyHistory()">Tarixni tozalaş</button>
     </div>
 </aside>
+
+<!-- Модалка: Ilmiy manbalar menejeri (VAK formati) -->
+<div id="officeVakModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="weather-modal-card vak-modal-card">
+        <div class="vak-modal-head">
+            <h3>Ilmiy manbalar menejeri (VAK formati)</h3>
+            <button type="button" class="vak-close-btn" onclick="document.getElementById('officeVakModal').classList.remove('open')" title="Yopiş">×</button>
+        </div>
+
+        <div class="vak-modal-body">
+            <!-- Левая колонка: форма добавления -->
+            <div class="vak-form-panel">
+                <div class="vak-panel-title">Yangi manba qöşiş</div>
+                <select id="vakLang" class="vak-input">
+                    <option value="uz" selected>Özbek</option>
+                    <option value="ru">Rus</option>
+                    <option value="en">Ingliz</option>
+                </select>
+                <input type="text" id="vakAuthor" class="vak-input" placeholder="Muallif (Masalan: Vaxobov Z.)">
+                <input type="text" id="vakTitle" class="vak-input" placeholder="Maqola nomi (masalan: Raqamli media...)">
+                <input type="text" id="vakSource" class="vak-input" placeholder="Jurnal / Naşriyot / Sayt (https://...)">
+                <div class="vak-row-2">
+                    <input type="text" id="vakYear" class="vak-input" placeholder="Yil (masalan: 2026)">
+                    <input type="text" id="vakPages" class="vak-input" placeholder="Sahifalar (15-22)">
+                </div>
+                <textarea id="vakNote" class="vak-input vak-textarea" rows="4" placeholder="Muhim iqtibos yoki öz fikringizni saqlab qöying..."></textarea>
+                <button type="button" class="vak-save-btn" onclick="addOfficeVakSource()">+ Manbani saqlaş</button>
+            </div>
+
+            <!-- Правая колонка: сохранённые источники -->
+            <div class="vak-list-panel">
+                <div class="vak-list-head">
+                    <span class="vak-list-count" id="vakSavedCount">Saqlangan manbalar (0)</span>
+                    <div class="vak-head-actions">
+                        <button type="button" class="vak-insert-all-btn" onclick="insertAllVakToDoc()" title="Butun röyxatni hujjatga joylaş">Hujjatga joylaş</button>
+                        <button type="button" class="vak-copy-all-btn" id="vakCopyAllBtn" onclick="copyAllVakSources()">Röyxatni VAK formatida nusxalaş</button>
+                    </div>
+                </div>
+                <div id="vakSourcesList" class="vak-sources-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
     
     <script src="../scripts.js"></script>
     <script src="./scripts.js"></script>
