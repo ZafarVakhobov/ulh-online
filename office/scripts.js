@@ -4408,3 +4408,127 @@ window.applyTextCase = function(mode) {
         saveCurrentOfficeDoc();
     };
 })();
+
+
+// ==========================================
+// === КНОПКА АВТОРА (ДИНАМИЧЕСКИЙ ГОД) + ЗАКАЗ РЕКЛАМЫ (WORKER) ===
+// ==========================================
+(function initAuthorAndAdOrder() {
+    const AD_WORKER_URL = "https://ulh-tg-sender.lanigirodesigner.workers.dev/";
+
+    const START_YEAR = 2026;
+    const currentYear = new Date().getFullYear();
+    const yearLabel = currentYear > START_YEAR ? `${START_YEAR}-${currentYear}` : `${START_YEAR}`;
+
+    const DEFAULT_BTN_HTML =
+        '<svg class="ti ti-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4"/></svg><span>Sörovni yuboriş</span>';
+
+    function updateAuthorYearLabel() {
+        const btn = document.getElementById("officeAuthorBtn");
+        if (btn) btn.textContent = `© ${yearLabel} - Zafar Vakhobov Softwares`;
+    }
+
+    window.openOfficeAuthorModal = function() {
+        document.getElementById("officeAuthorModal")?.classList.add("open");
+    };
+
+    window.openOfficeAdModal = function() {
+        document.getElementById("officeAuthorModal")?.classList.remove("open");
+        const status = document.getElementById("adFormStatus");
+        if (status) status.textContent = "";
+        document.getElementById("officeAdModal")?.classList.add("open");
+    };
+
+    window.onOfficeAdBannerSelect = function(e) {
+        const file = e.target.files?.[0];
+        const lbl = document.getElementById("adBannerTitle");
+        if (lbl) lbl.textContent = file ? `Fayl: ${file.name}` : "Banner rasmini yuklang (PNG, JPG, GIF)";
+    };
+
+    window.submitOfficeAdOrder = function(e) {
+        e.preventDefault();
+        const fileInput = document.getElementById("adBannerFile");
+        const file = fileInput && fileInput.files[0];
+        const submitBtn = document.getElementById("adSubmitBtn");
+        const status = document.getElementById("adFormStatus");
+
+        if (!file) {
+            alert("Iltimos, banner rasmini yuklang!");
+            return;
+        }
+
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        img.onload = async function() {
+            URL.revokeObjectURL(img.src);
+            if (img.width !== 2560 || img.height !== 844) {
+                alert(`Xatolik! Rasm ölçami aynan 2560x844 px bölişi kerak.\nSiz yuklagan rasm: ${img.width}x${img.height} px`);
+                return;
+            }
+
+            if (submitBtn) {
+                submitBtn.innerHTML = "<span>Yuborilmoqda... Kuting</span>";
+                submitBtn.style.opacity = "0.7";
+                submitBtn.disabled = true;
+            }
+            if (status) status.textContent = "";
+
+            const formData = new FormData();
+            formData.append("name", (document.getElementById("adFullName")?.value || "").trim());
+            formData.append("phone", (document.getElementById("adPhone")?.value || "").trim());
+            formData.append("org", (document.getElementById("adOrgName")?.value || "").trim());
+            formData.append("url", (document.getElementById("adLink")?.value || "").trim());
+            formData.append("tariff", document.getElementById("adTariff")?.value || "");
+            formData.append("file", file);
+
+            try {
+                const response = await fetch(AD_WORKER_URL, { method: "POST", body: formData });
+                if (!response.ok) {
+                    let errMsg = "Server xatosi";
+                    try {
+                        const errData = await response.json();
+                        if (errData?.error) errMsg = errData.error;
+                    } catch (_) {}
+                    throw new Error(errMsg);
+                }
+
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Muvaffaqiyatli yuborildi!</span>';
+                    submitBtn.style.background = "#10B981";
+                    submitBtn.style.opacity = "1";
+                }
+
+                setTimeout(() => {
+                    document.getElementById("officeAdForm")?.reset();
+                    const lbl = document.getElementById("adBannerTitle");
+                    if (lbl) lbl.textContent = "Banner rasmini yuklang (PNG, JPG, GIF)";
+                    document.getElementById("officeAdModal")?.classList.remove("open");
+                    if (submitBtn) {
+                        submitBtn.innerHTML = DEFAULT_BTN_HTML;
+                        submitBtn.style.background = "#0284C7";
+                        submitBtn.style.opacity = "1";
+                        submitBtn.disabled = false;
+                    }
+                }, 2500);
+            } catch (error) {
+                console.error("Yuborişda xatolik:", error);
+                alert("Xatolik yuz berdi. Iltimos qaytadan urinib köring.\nSabab: " + error.message);
+                if (submitBtn) {
+                    submitBtn.innerHTML = DEFAULT_BTN_HTML;
+                    submitBtn.style.opacity = "1";
+                    submitBtn.disabled = false;
+                }
+            }
+        };
+        img.onerror = function() {
+            URL.revokeObjectURL(img.src);
+            alert("Yuklangan faylni rasm sifatida öqib bölmadi.");
+        };
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", updateAuthorYearLabel);
+    } else {
+        updateAuthorYearLabel();
+    }
+})();
