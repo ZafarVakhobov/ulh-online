@@ -663,6 +663,11 @@
         <span id="officeLiveChars">0 belgi</span>
     </button>
 </div>
+
+<!-- Кнопка автора по центру нижней панели -->
+<button type="button" id="officeAuthorBtn" class="office-author-btn" onclick="openOfficeAuthorModal()" title="Loyiha muallifi haqida">
+    © 2026 - Zafar Vakhobov Softwares
+</button>
         
         <div class="office-zoom-pill">
             <button type="button" onclick="adjustOfficeZoom(-0.1)" title="Kiçraytiriş">
@@ -1323,6 +1328,114 @@
         <div class="sbg-footer">
             <button type="button" class="office-btn primary" onclick="applySlideBackground()">Qöllaş</button>
             <button type="button" class="office-btn" onclick="document.getElementById('slideBgModal').classList.remove('open')">Yopiş</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка 1: Карточка автора -->
+<div id="officeAuthorModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="weather-modal-card author-modal-card" onclick="event.stopPropagation()">
+        <div class="author-head">
+            <div class="author-avatar-ring">
+                <!-- Укажи путь к своей аватарке с главного сайта -->
+                <img src="https://ulh-online.uz/avatar.png" alt="Zafar Vakhobov" onerror="this.style.display='none'">
+            </div>
+            <div class="author-meta">
+                <div class="author-name-row">
+                    <span>Zafar Vakhobov</span>
+                    <svg class="author-verified" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.39 1.67 2.91-.15 1.19 2.66 2.66 1.19-.15 2.91L22.67 12 21 14.39l.15 2.91-2.66 1.19-1.19 2.66-2.91-.15L12 22.67 9.61 21l-2.91.15-1.19-2.66-2.66-1.19.15-2.91L1.33 12 3 9.61l-.15-2.91 2.66-1.19 1.19-2.66 2.91.15L12 2zm-1.2 13.4l5.2-5.2-1.4-1.4-3.8 3.8-1.8-1.8-1.4 1.4 3.2 3.2z"/></svg>
+                </div>
+                <div class="author-role">Developer, Admin</div>
+            </div>
+        </div>
+
+        <button type="button" class="author-ad-cta" onclick="openOfficeAdModal()">
+            <svg class="ti ti-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20l1.3 -3.9a9 8 0 1 1 3.4 2.9l-4.7 1"/></svg>
+            <span>Reklama buyurtma qiliş</span>
+        </button>
+
+        <div class="author-socials">
+            <!-- Замени href="#" на свои реальные ссылки -->
+            <a href="https://t.me/lanigiromusic" target="_blank" rel="noopener" class="author-soc-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4" /></svg>
+                <span>Telegram</span>
+            </a>
+            <a href="https://instagram.com/lanigiromusic" target="_blank" rel="noopener" class="author-soc-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4l0 -10" /><path d="M8.5 12a3.5 3.5 0 1 0 7 0a3.5 3.5 0 0 0 -7 0" /><path d="M17 7v.01" /></svg>
+                <span>Instagram</span>
+            </a>
+            <a href="https://threads.com/lanigiromusic" target="_blank" rel="noopener" class="author-soc-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7.5c-1.333 -3 -3.667 -4.5 -7 -4.5c-5 0 -8 2.5 -8 9s3.5 9 8 9s7 -3 7 -5s-1 -5 -7 -5c-2.5 0 -3 1.25 -3 2.5c0 1.5 1 2.5 2.5 2.5c2.5 0 3.5 -1.5 3.5 -5s-2 -4 -3 -4s-1.833 .333 -2.5 1" /></svg>
+                <span>Threads</span>
+            </a>
+            <a href="https://facebook.com/lanigiromusic" target="_blank" rel="noopener" class="author-soc-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3" /></svg>
+                <span>Facebook</span>
+            </a>
+            <a href="https://discordapp.com/users/lanigiromusic" target="_blank" rel="noopener" class="author-soc-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" /><path d="M14 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" /><path d="M15.5 17c0 1 1.5 3 2 3c1.5 0 2.833 -1.667 3.5 -3c.667 -1.667 .5 -5.833 -1.5 -11.5c-1.457 -1.015 -3 -1.34 -4.5 -1.5l-.972 1.923a11.913 11.913 0 0 0 -4.053 0l-.975 -1.923c-1.5 .16 -3.043 .485 -4.5 1.5c-2 5.667 -2.167 9.833 -1.5 11.5c.667 1.333 2 3 3.5 3c.5 0 2 -2 2 -3" /><path d="M7 16.5c3.5 1 6.5 1 10 0" /></svg>
+                <span>Discord</span>
+            </a>
+        </div>
+
+        <hr class="author-sep">
+        <div class="author-disclaimer">
+            Ma'lumotlardan nusxa oliş taqiqlanadi, har qanday masalalar böyiça loyiha muallifiga murojaat qiling.
+        </div>
+    </div>
+</div>
+
+<!-- Модалка 2: Заказ рекламы (отправка в Telegram-бот) -->
+<div id="officeAdModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="weather-modal-card ad-modal-card" onclick="event.stopPropagation()">
+        <div class="ad-banner-head">
+            <div class="ad-kicker">
+                <svg class="ti ti-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20l1.3 -3.9a9 8 0 1 1 3.4 2.9l-4.7 1"/></svg>
+                <span>REKLAMA BUYURTMA QILIŞ</span>
+            </div>
+            <h3>Reklama joyini band qiliş</h3>
+            <p>Ma'lumotlarni töldiring va banner rasmini yuklang. Biz siz bilan tez orada boğlanamiz.</p>
+        </div>
+
+        <form id="officeAdForm" class="ad-form" onsubmit="submitOfficeAdOrder(event)">
+            <input type="text" id="adFullName" class="ad-input" placeholder="Ism va Familiya" required>
+            <input type="tel" id="adPhone" class="ad-input" placeholder="Telefon raqamingiz (Telegram-akkaunti bölişi lozim)" required>
+            <select id="adTariff" class="ad-input" required>
+                <option value="" disabled selected>Tarifni tanlang</option>
+                <option value="1 kunlik">1 kunlik</option>
+                <option value="1 haftalik">1 haftalik</option>
+                <option value="1 oylik">1 oylik</option>
+                <option value="Maxsus kelishuv">Maxsus kelishuv</option>
+            </select>
+            <input type="text" id="adOrgName" class="ad-input" placeholder="Reklama qilinadigan taşkilot / mahsulot nomi" required>
+            <input type="url" id="adLink" class="ad-input" placeholder="Veb-sayt yoki tarmoqdagi havolasi (https://...)">
+
+            <label class="ad-upload-box">
+                <input type="file" id="adBannerFile" accept="image/png,image/jpeg,image/gif" style="display:none;" onchange="onOfficeAdBannerSelect(event)">
+                <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 9l5 -5l5 5"/><path d="M12 4l0 12"/></svg>
+                <b id="adBannerTitle">Banner rasmini yuklang (PNG, JPG, GIF)</b>
+                <small>Talab qilinadigan ölçam: 2560 × 844 px</small>
+            </label>
+
+            <label class="ad-check">
+                <input type="checkbox" id="adConsent1" required>
+                <span>Şaxsiy ma'lumotlarim qayta işlanişiga rozilik bildiraman.</span>
+            </label>
+            <label class="ad-check">
+                <input type="checkbox" id="adConsent2" required>
+                <span>Reklama qilinayotgan kontent uçun töliq javobgarlikni öz zimmamga olaman.</span>
+            </label>
+
+            <div id="adFormStatus" class="ad-form-status"></div>
+
+            <button type="submit" id="adSubmitBtn" class="ad-submit-btn">
+                <svg class="ti ti-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4"/></svg>
+                <span>Sörovni yuboriş</span>
+            </button>
+        </form>
+
+        <div class="ad-modal-foot">
+            <button type="button" class="ad-close-pill" onclick="document.getElementById('officeAdModal').classList.remove('open')">Yopiş</button>
         </div>
     </div>
 </div>
