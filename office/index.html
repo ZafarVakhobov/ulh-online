@@ -627,10 +627,10 @@
                             <div id="slideBodyBox" class="slide-body-box" contenteditable="true">Slayd matnini şu yerga kiriting...</div>
                         </div>
                         <div class="slide-canvas-tools">
-                            <label>Slayd foni: <input type="color" id="slideBgColor" value="#FFFFFF" onchange="updateSlideBg(this.value)"></label>
-                            <button type="button" class="office-btn small" onclick="duplicateCurrentSlide()">Nusxalaş</button>
-                            <button type="button" class="office-btn small danger" onclick="deleteCurrentSlide()">Öçiriş</button>
-                        </div>
+    <button type="button" class="office-btn small" onclick="openSlideBgModal()">Slayd foni</button>
+    <button type="button" class="office-btn small" onclick="duplicateCurrentSlide()">Nusxalaş</button>
+    <button type="button" class="office-btn small danger" onclick="deleteCurrentSlide()">Öçiriş</button>
+</div>
                     </div>
                 </div>
             </section>
@@ -1204,6 +1204,121 @@
             </div>
         </div>
         <div id="officeVideoStage" class="office-video-stage"></div>
+    </div>
+</div>
+
+<!-- Модалка: Настройка фона слайда (Цвет / Градиент / Изображение) -->
+<div id="slideBgModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="weather-modal-card slide-bg-modal-card">
+        <div class="sbg-head">
+            <b>Slayd foni</b>
+            <button type="button" class="pdf-studio-close" onclick="document.getElementById('slideBgModal').classList.remove('open')">×</button>
+        </div>
+
+        <!-- Вкладки: Цвет / Градиент / Изображение -->
+        <div class="sbg-tabs">
+            <button type="button" class="sbg-tab active" data-tab="color" onclick="switchSlideBgTab('color')">Rang</button>
+            <button type="button" class="sbg-tab" data-tab="gradient" onclick="switchSlideBgTab('gradient')">Gradient</button>
+            <button type="button" class="sbg-tab" data-tab="image" onclick="switchSlideBgTab('image')">Rasm</button>
+        </div>
+
+        <!-- Предпросмотр 16:9 (1920×1080) -->
+        <div id="sbgPreviewBox" class="sbg-preview-16-9">
+            <span class="sbg-preview-badge">1920 × 1080</span>
+        </div>
+
+        <!-- 1. Вкладка: Однотонный цвет -->
+        <div id="sbgPaneColor" class="sbg-pane active">
+            <div class="sbg-color-row">
+                <label class="sbg-color-pick">
+                    <input type="color" id="sbgSolidColor" class="office-round-color" value="#FFFFFF" oninput="updateSlideBgPreview()">
+                    <span id="sbgSolidHex">#FFFFFF</span>
+                </label>
+                <div class="sbg-swatches">
+                    <button type="button" style="background:#FFFFFF" onclick="pickSbgSolid('#FFFFFF')"></button>
+                    <button type="button" style="background:#F8FAFC" onclick="pickSbgSolid('#F8FAFC')"></button>
+                    <button type="button" style="background:#0F172A" onclick="pickSbgSolid('#0F172A')"></button>
+                    <button type="button" style="background:#0284C7" onclick="pickSbgSolid('#0284C7')"></button>
+                    <button type="button" style="background:#10B981" onclick="pickSbgSolid('#10B981')"></button>
+                    <button type="button" style="background:#6366F1" onclick="pickSbgSolid('#6366F1')"></button>
+                    <button type="button" style="background:#F59E0B" onclick="pickSbgSolid('#F59E0B')"></button>
+                    <button type="button" style="background:#EF4444" onclick="pickSbgSolid('#EF4444')"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Вкладка: Кастомный градиент -->
+        <div id="sbgPaneGradient" class="sbg-pane">
+            <div class="sbg-grad-grid">
+                <label class="sbg-color-pick">
+                    <input type="color" id="sbgGrad1" class="office-round-color" value="#0284C7" oninput="updateSlideBgPreview()">
+                    <span>1-rang</span>
+                </label>
+                <label class="sbg-color-pick">
+                    <input type="color" id="sbgGrad2" class="office-round-color" value="#6366F1" oninput="updateSlideBgPreview()">
+                    <span>2-rang</span>
+                </label>
+                <label class="sbg-angle-wrap">
+                    <span>Burçak: <b id="sbgGradAngleVal">135°</b></span>
+                    <input type="range" id="sbgGradAngle" min="0" max="360" value="135" oninput="updateSlideBgPreview()">
+                </label>
+            </div>
+            <div class="sbg-grad-presets">
+                <button type="button" style="background:linear-gradient(135deg,#0284C7,#6366F1)" onclick="pickSbgGrad('#0284C7','#6366F1',135)"></button>
+                <button type="button" style="background:linear-gradient(135deg,#10B981,#0284C7)" onclick="pickSbgGrad('#10B981','#0284C7',135)"></button>
+                <button type="button" style="background:linear-gradient(135deg,#F97316,#EC4899)" onclick="pickSbgGrad('#F97316','#EC4899',135)"></button>
+                <button type="button" style="background:linear-gradient(135deg,#0F172A,#334155)" onclick="pickSbgGrad('#0F172A','#334155',135)"></button>
+                <button type="button" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A)" onclick="pickSbgGrad('#FEF3C7','#FDE68A',135)"></button>
+            </div>
+        </div>
+
+        <!-- 3. Вкладка: Изображение (URL или с ПК + подгонка под 1920x1080) -->
+        <div id="sbgPaneImage" class="sbg-pane">
+            <input type="text" id="sbgImgUrl" class="bib-custom-input" placeholder="Havola (URL): https://..." oninput="onSbgImgUrlInput(this.value)">
+            <div class="sbg-or">yoki</div>
+            <label class="pdf-dropzone sbg-dropzone">
+                <input type="file" id="sbgImgFile" accept="image/*" style="display:none;" onchange="handleSbgLocalFile(event)">
+                <span>Kompyuterdan rasm tanlaş (PNG, JPG, WebP, SVG...)</span>
+            </label>
+
+            <!-- Панель управления изображением (открывается после загрузки/вставки картинки) -->
+            <div id="sbgImgControls" class="sbg-img-controls" style="display:none;">
+                <div class="sbg-fit-btns">
+                    <button type="button" class="sbg-fit-btn active" data-fit="cover" onclick="setSbgImgFit('cover')">Töldiriş (Cover)</button>
+                    <button type="button" class="sbg-fit-btn" data-fit="stretch" onclick="setSbgImgFit('stretch')">Çöziş 1920×1080</button>
+                    <button type="button" class="sbg-fit-btn" data-fit="contain" onclick="setSbgImgFit('contain')">Siğdiriş (Fit)</button>
+                    <button type="button" class="sbg-fit-btn" data-fit="custom" onclick="setSbgImgFit('custom')">Erkin ölçam</button>
+                </div>
+                <div class="sbg-sliders-grid">
+                    <label>Masştab (<span id="sbgScaleVal">100%</span>)
+                        <input type="range" id="sbgImgScale" min="50" max="200" value="100" oninput="onSbgImgSlider()">
+                    </label>
+                    <label>Gorizontal (<span id="sbgPosXVal">50%</span>)
+                        <input type="range" id="sbgImgPosX" min="0" max="100" value="50" oninput="onSbgImgSlider()">
+                    </label>
+                    <label>Vertikal (<span id="sbgPosYVal">50%</span>)
+                        <input type="range" id="sbgImgPosY" min="0" max="100" value="50" oninput="onSbgImgSlider()">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Выбор области применения -->
+        <div class="sbg-scope-row">
+            <label class="sbg-radio">
+                <input type="radio" name="sbgScope" value="current" checked>
+                <span>Faqat joriy slaydga</span>
+            </label>
+            <label class="sbg-radio">
+                <input type="radio" name="sbgScope" value="all">
+                <span>Barça slaydlarga (yangi slaydlar ham)</span>
+            </label>
+        </div>
+
+        <div class="sbg-footer">
+            <button type="button" class="office-btn primary" onclick="applySlideBackground()">Qöllaş</button>
+            <button type="button" class="office-btn" onclick="document.getElementById('slideBgModal').classList.remove('open')">Yopiş</button>
+        </div>
     </div>
 </div>
     
