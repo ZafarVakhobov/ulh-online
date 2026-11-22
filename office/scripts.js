@@ -3658,3 +3658,77 @@ window.setTableBorderColor = function(color) {
         }
     });
 })();
+
+
+// === ИЗМЕНЕНИЕ РЕГИСТРА ВЫДЕЛЕННОГО ТЕКСТА (КАК В MS WORD) ===
+window.applyTextCase = function(mode) {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || sel.isCollapsed) {
+        document.getElementById("textCaseWrap")?.classList.remove("open");
+        return;
+    }
+
+    const range = sel.getRangeAt(0);
+    if (!range.commonAncestorContainer.parentElement?.closest?.(".a4-sheet, .slide-canvas") &&
+        !range.commonAncestorContainer.closest?.(".a4-sheet, .slide-canvas")) {
+        return;
+    }
+
+    const transformString = (str, type) => {
+        if (type === "lower") return str.toLocaleLowerCase();
+        if (type === "upper") return str.toLocaleUpperCase();
+        if (type === "title") {
+            return str.toLocaleLowerCase().replace(/(^|[\s\-\(\[\«\"\'—])([\p{L}])/gu, (_, sep, ch) => sep + ch.toLocaleUpperCase());
+        }
+        if (type === "toggle") {
+            return [...str].map(ch => {
+                const up = ch.toLocaleUpperCase();
+                const lo = ch.toLocaleLowerCase();
+                return ch === up ? lo : up;
+            }).join("");
+        }
+        if (type === "sentence") {
+            const lower = str.toLocaleLowerCase();
+            return lower.replace(/(^|[.!?…]\s+)([\p{L}])/gu, (_, sep, ch) => sep + ch.toLocaleUpperCase());
+        }
+        return str;
+    };
+
+    // Собираем все текстовые узлы внутри выделения, чтобы не потерять стили (жирный, цвет, шрифт)
+    const root = range.commonAncestorContainer;
+    const textNodes = [];
+
+    if (root.nodeType === 3) {
+        textNodes.push(root);
+    } else {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        let n;
+        while ((n = walker.nextNode())) {
+            if (range.intersectsNode(n)) textNodes.push(n);
+        }
+    }
+
+    textNodes.forEach(node => {
+        const start = (node === range.startContainer) ? range.startOffset : 0;
+        const end = (node === range.endContainer) ? range.endOffset : node.nodeValue.length;
+        if (start >= end) return;
+
+        const before = node.nodeValue.slice(0, start);
+        const middle = node.nodeValue.slice(start, end);
+        const after = node.nodeValue.slice(end);
+
+        node.nodeValue = before + transformString(middle, mode) + after;
+    });
+
+    document.getElementById("textCaseWrap")?.classList.remove("open");
+
+    if (officeMode === "word" && typeof syncWordPagesFromDom === "function") syncWordPagesFromDom();
+    if (typeof saveCurrentOfficeDoc === "function") saveCurrentOfficeDoc();
+};
+
+// Закрытие меню регистра при клике вне него
+document.addEventListener("click", (e) => {
+    if (!e.target.closest("#textCaseWrap")) {
+        document.getElementById("textCaseWrap")?.classList.remove("open");
+    }
+});
