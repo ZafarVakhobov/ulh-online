@@ -1361,3 +1361,31 @@ body.tbl-mode-erase .a4-sheet .word-table td,
 body.tbl-mode-erase .a4-sheet .word-table th {
     cursor: cell !important;
 }  
+
+/* === ВЫБОР ЦВЕТА ГРАНИЦ В МЕНЮ ТАБЛИЦЫ === */
+.tbl-border-color-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.15s;
+}
+.tbl-border-color-row:hover {
+    background: #F1F5F9;
+}
+.tbl-border-color-row .office-round-color {
+    width: 22px !important;
+    height: 22px !important;
+}
+body.dark-mode .tbl-border-color-row {
+    color: #F8FAFC;
+}
+body.dark-mode .tbl-border-color-row:hover {
+    background: #1E293B;
+}
