@@ -2897,3 +2897,23 @@ window.handleOfficeFileOpen = async function(e) {
         _origColor(cmd, color);
     };
 })();
+
+// === ГАРАНТИРОВАННЫЙ ПОКАЗ КНОПОК УДАЛЕНИЯ СТРОКИ/СТОЛБЦА В ПКМ ===
+document.addEventListener("contextmenu", (e) => {
+    const targetEl = e.target.nodeType === 3 ? e.target.parentElement : e.target;
+    let cell = targetEl?.closest?.(".a4-sheet table td, .a4-sheet table th");
+
+    if (!cell) {
+        const selNode = window.getSelection()?.anchorNode;
+        const selEl = selNode?.nodeType === 3 ? selNode.parentElement : selNode;
+        cell = selEl?.closest?.(".a4-sheet table td, .a4-sheet table th");
+    }
+
+    lastCtxTableCell = cell || null;
+    const show = !!lastCtxTableCell;
+
+    ["ctxTblSep", "ctxDelRowBtn", "ctxDelColBtn"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle("ctx-tbl-visible", show);
+    });
+}, true);
