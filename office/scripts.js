@@ -4800,51 +4800,62 @@ document.addEventListener("click", () => {
     fetchAllRegionsWeather();
 })();
 
-// --- 2. ВИДЖЕТ КУРСА ВАЛЮТ + КАЛЬКУЛЯТОР + ЧИСЛА ПРОПИСЬЮ + ИНФОРМЕР ---
+// --- 2. ВИДЖЕТ КУРСА ВАЛЮТ + КАЛЬКУЛЯТОР + ЧИСЛА ПРОПИСЬЮ (1 В 1 С ОСНОВНЫМ САЙТОМ) ---
 (function initOfficeCurrencyWidget() {
     const MAIN_CODES = ["USD", "EUR", "RUB", "CNY"];
-    const META = {
-        USD: { sym: "$", name: "AQŞ dollari" },
-        EUR: { sym: "€", name: "Yevro" },
-        RUB: { sym: "₽", name: "Rossiya rubli" },
-        CNY: { sym: "¥", name: "Xitoy yuani" },
-        UZS: { sym: "Söm", name: "Özbekiston sömi" }
-    };
+    const CURRENCY_META = [
+        { code: "UZS", symbol: "Söm", name: "Özbek sömi" },
+        { code: "USD", symbol: "$", name: "AQŞ dollari" },
+        { code: "EUR", symbol: "€", name: "Yevro" },
+        { code: "RUB", symbol: "₽", name: "Rossiya rubli" },
+        { code: "CNY", symbol: "¥", name: "Xitoy yuani" }
+    ];
 
     let rates = {
-        USD: { rate: 12850, diff: 12.5 },
-        EUR: { rate: 13900, diff: -18.2 },
-        RUB: { rate: 132.4, diff: 0.8 },
-        CNY: { rate: 1780.5, diff: 2.1 }
+        USD: { rate: 12100, diff: 0 },
+        EUR: { rate: 14200, diff: 0 },
+        RUB: { rate: 150, diff: 0 },
+        CNY: { rate: 1780, diff: 0 }
     };
     let rateDate = new Date().toLocaleDateString("ru-RU");
     let tickerIdx = 0;
     let baseCurr = "USD";
+    let wordsCurr = "uzs";
 
-    async function fetchCbuRates() {
+    function parseRateNum(raw) {
+        const v = parseFloat(String(raw || "").replace(/[^\d.,]/g, "").replace(",", "."));
+        return (!isNaN(v) && v > 0) ? v : null;
+    }
+
+    function formatUzPrice(num) {
+        const v = parseRateNum(num);
+        if (!v) return "0";
+        return Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    }
+
+    function formatCalcVal(val, code) {
+        if (!isFinite(val) || val === 0) return "0";
+        if (code === "UZS") return Math.round(val).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        if (val >= 100) return val.toFixed(2).replace(/\.00$/, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        return val.toFixed(2).replace(/\.00$/, "");
+    }
+
+    async function fetchRates() {
         try {
-            const res = await fetch("https://cbu.uz/uz/arkhiv-kursov-valyut/json/");
-            const data = await res.json();
-            if (Array.isArray(data)) {
-                data.forEach(item => {
+            const cbuRes = await fetch("https://cbu.uz/uz/arkhiv-kursov-valyut/json/");
+            if (cbuRes.ok) {
+                const cbuData = await cbuRes.json();
+                cbuData.forEach(item => {
                     if (MAIN_CODES.includes(item.Ccy)) {
-                        rates[item.Ccy] = {
-                            rate: parseFloat(item.Rate) || rates[item.Ccy].rate,
-                            diff: parseFloat(item.Diff) || 0
-                        };
+                        const num = parseRateNum(item.Rate);
+                        if (num) rates[item.Ccy] = { rate: num, diff: parseFloat(item.Diff) || 0 };
                         if (item.Date) rateDate = item.Date;
                     }
                 });
                 renderTickerStep();
-                if (document.getElementById("officeCurrencyModal")?.classList.contains("open")) {
-                    window.recalcOfficeCurrency();
-                }
+                if (document.getElementById("officeCurrencyModal")?.classList.contains("open")) window.recalcOfficeCurrency();
             }
         } catch (_) {}
-    }
-
-    function fmtNum(n, dec = 2) {
-        return Number(n || 0).toLocaleString("ru-RU", { minimumFractionDigits: dec, maximumFractionDigits: dec });
     }
 
     function renderTickerStep() {
@@ -4852,139 +4863,217 @@ document.addEventListener("click", () => {
         if (!el) return;
         const code = MAIN_CODES[tickerIdx % MAIN_CODES.length];
         const info = rates[code];
-        const m = META[code];
+        const m = CURRENCY_META.find(x => x.code === code);
         const diffCls = info.diff > 0 ? "up" : info.diff < 0 ? "down" : "flat";
         const diffStr = info.diff > 0 ? `+${info.diff}` : `${info.diff}`;
 
         el.classList.remove("slide-in");
         void el.offsetWidth;
         el.innerHTML = `
-            <span class="sb-curr-sym">${m.sym}</span>
+            <span class="sb-curr-sym">${m.symbol}</span>
             <span class="sb-code-badge">${code}</span>
-            <span class="sb-curr-val">${fmtNum(info.rate, 0)}</span>
+            <span class="sb-curr-val">${formatUzPrice(info.rate)}</span>
             <span class="sb-diff ${diffCls}">${diffStr}</span>
         `;
         el.classList.add("slide-in");
         tickerIdx++;
     }
 
-    window.setOcBaseCurr = function(code) {
-        baseCurr = code;
-        document.querySelectorAll("#ocCurrPills .oc-pill").forEach(b => b.classList.toggle("active", b.dataset.code === code));
-        const badge = document.getElementById("ocActiveBadge");
-        if (badge) badge.textContent = `${code} (${META[code].sym})`;
-        window.recalcOfficeCurrency();
+    window.toggleOcDropdown = function(wrapId, e) {
+        if (e) e.stopPropagation();
+        document.querySelectorAll(".oc-select-wrap.open").forEach(w => {
+            if (w.id !== wrapId) w.classList.remove("open");
+        });
+        document.getElementById(wrapId)?.classList.toggle("open");
     };
+
+    document.addEventListener("click", () => {
+        document.querySelectorAll(".oc-select-wrap.open").forEach(w => w.classList.remove("open"));
+    });
+
+    function renderQuickChips() {
+        const box = document.getElementById("ocQuickChips");
+        if (!box) return;
+        const presets = (baseCurr === "UZS")
+            ? [
+                { label: "100 ming", val: 100000 },
+                { label: "500 ming", val: 500000 },
+                { label: "1 mln", val: 1000000 },
+                { label: "5 mln", val: 5000000 },
+                { label: "10 mln", val: 10000000 }
+            ]
+            : [
+                { label: "10", val: 10 },
+                { label: "50", val: 50 },
+                { label: "100", val: 100 },
+                { label: "150", val: 150 },
+                { label: "500", val: 500 },
+                { label: "1 000", val: 1000 }
+            ];
+        box.innerHTML = presets.map(p => `<button type="button" class="calc-chip-btn" onclick="setOcQuickAmt(${p.val})">${p.label}</button>`).join("");
+    }
 
     window.setOcQuickAmt = function(val) {
         const inp = document.getElementById("ocAmountInput");
-        if (inp) inp.value = val;
+        if (inp) inp.value = val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        window.recalcOfficeCurrency();
+    };
+
+    window.setOcBaseCurr = function(code) {
+        baseCurr = code;
+        document.getElementById("ocBaseSelectWrap")?.classList.remove("open");
+        const m = CURRENCY_META.find(x => x.code === code) || CURRENCY_META[1];
+        const txt = document.getElementById("ocBaseSelectText");
+        if (txt) txt.textContent = `${m.code} (${m.symbol})`;
+
+        document.querySelectorAll("#ocCurrPills .calc-curr-tab").forEach(b => {
+            b.classList.toggle("active", b.dataset.code === code);
+        });
+
+        const inp = document.getElementById("ocAmountInput");
+        if (inp) {
+            const rawVal = parseRateNum(inp.value) || 0;
+            if (code === "UZS" && rawVal <= 1000) inp.value = "1 000 000";
+            else if (code !== "UZS" && rawVal >= 100000) inp.value = "100";
+        }
+        renderQuickChips();
         window.recalcOfficeCurrency();
     };
 
     window.recalcOfficeCurrency = function() {
-        const amt = parseFloat(document.getElementById("ocAmountInput")?.value) || 0;
-        const uzsVal = baseCurr === "UZS" ? amt : amt * (rates[baseCurr]?.rate || 1);
+        const inp = document.getElementById("ocAmountInput");
+        const grid = document.getElementById("ocResultsGrid");
+        if (!inp || !grid) return;
 
-        const uzsBox = document.getElementById("ocResultUzs");
-        if (uzsBox) {
-            const sub = baseCurr === "UZS" ? "Özbekiston sömi" : `1 ${baseCurr} = ${fmtNum(rates[baseCurr].rate, 0)} söm`;
-            uzsBox.dataset.copy = Math.round(uzsVal).toString();
-            uzsBox.innerHTML = `
-                <div>
-                    <div class="oc-res-code">UZS</div>
-                    <div class="oc-res-sub">${sub}</div>
-                </div>
-                <div class="oc-res-uzs-val">${fmtNum(uzsVal, 0)} söm</div>
-            `;
-        }
+        const amount = parseFloat(inp.value.replace(/\s+/g, "").replace(",", ".")) || 0;
+        const baseRate = baseCurr === "UZS" ? 1 : (rates[baseCurr]?.rate || 1);
+        const totalInUzs = amount * baseRate;
 
-        const grid = document.getElementById("ocResultGrid");
-        if (grid) {
-            grid.innerHTML = MAIN_CODES.map(code => {
-                const v = uzsVal / (rates[code]?.rate || 1);
-                const m = META[code];
-                return `
-                    <div class="oc-res-card" data-copy="${v.toFixed(2)}" onclick="copyOcElement(this)" title="Nusxalaş uçun bosing">
-                        <div>
-                            <div class="oc-res-code">${m.sym} ${code}</div>
-                            <div class="oc-res-sub">${m.name}</div>
-                        </div>
-                        <div class="oc-res-num">${fmtNum(v, 2)} ${m.sym}</div>
+        grid.innerHTML = "";
+        CURRENCY_META.forEach(item => {
+            const targetRate = item.code === "UZS" ? 1 : (rates[item.code]?.rate || 1);
+            const converted = totalInUzs / targetRate;
+            const formatted = formatCalcVal(converted, item.code);
+            const display = item.code === "UZS" ? `${formatted} söm` : `${formatted} ${item.symbol}`;
+            const subHint = item.code === "UZS"
+                ? `1 ${baseCurr} = ${formatUzPrice(baseRate)} söm`
+                : `${item.name} (1 ${item.code} = ${formatUzPrice(targetRate)} söm)`;
+
+            const card = document.createElement("div");
+            card.className = "calc-result-card" + (item.code === "UZS" ? " uzs-main-card" : "");
+            card.innerHTML = `
+                <div class="calc-result-left">
+                    <span class="calc-result-icon">${item.symbol}</span>
+                    <div class="calc-result-meta">
+                        <span class="calc-result-code">${item.code}</span>
+                        <span class="calc-result-name">${subHint}</span>
                     </div>
-                `;
-            }).join("");
-        }
+                </div>
+                <div class="calc-result-value">${display}</div>
+            `;
+            card.onclick = () => {
+                const valNode = card.querySelector(".calc-result-value");
+                navigator.clipboard?.writeText(formatted).then(() => {
+                    valNode.textContent = "Nusxalandi";
+                    valNode.style.color = "#10B981";
+                    setTimeout(() => { valNode.textContent = display; valNode.style.color = ""; }, 900);
+                }).catch(() => {});
+            };
+            grid.appendChild(card);
+        });
     };
 
-    window.copyOcElement = function(el) {
-        const txt = el?.dataset?.copy;
-        if (!txt) return;
-        navigator.clipboard?.writeText(txt).catch(() => {});
-        const origBorder = el.style.borderColor;
-        el.style.borderColor = "#10B981";
-        setTimeout(() => { el.style.borderColor = origBorder; }, 800);
-    };
-
-    function uzIntToWords(num) {
-        if (num === 0) return "nol";
-        const ones = ["", "bir", "ikki", "üç", "tört", "beş", "olti", "yetti", "sakkiz", "töqqiz"];
+    // --- Сумма прописью (1 в 1) ---
+    function convertIntToWordsUz(n) {
+        if (n === 0) return "nol";
+        const ones = ["", "bir", "ikki", "uç", "tört", "beş", "olti", "yetti", "sakkiz", "töqqiz"];
         const tens = ["", "ön", "yigirma", "öttiz", "qirq", "ellik", "oltmiş", "yetmiş", "sakson", "töqson"];
         const scales = ["", "ming", "million", "milliard", "trillion"];
-
-        function chunkToWords(n) {
-            const res = [];
-            if (n >= 100) { res.push(ones[Math.floor(n / 100)] + " yuz"); n %= 100; }
-            if (n >= 10) { res.push(tens[Math.floor(n / 10)]); n %= 10; }
-            if (n > 0) res.push(ones[n]);
-            return res.join(" ");
-        }
-
-        const parts = [];
-        let scaleIdx = 0;
-        while (num > 0 && scaleIdx < scales.length) {
-            const chunk = num % 1000;
+        let word = "", scaleIdx = 0;
+        while (n > 0 && scaleIdx < scales.length) {
+            const chunk = n % 1000;
             if (chunk > 0) {
-                parts.unshift(chunkToWords(chunk) + (scales[scaleIdx] ? " " + scales[scaleIdx] : ""));
+                let s = "";
+                const h = Math.floor(chunk / 100), rem = chunk % 100;
+                const t = Math.floor(rem / 10), u = rem % 10;
+                if (h > 0) s += ones[h] + " yuz ";
+                if (t > 0) s += tens[t] + " ";
+                if (u > 0) s += ones[u] + " ";
+                word = s + scales[scaleIdx] + " " + word;
             }
-            num = Math.floor(num / 1000);
+            n = Math.floor(n / 1000);
             scaleIdx++;
         }
-        return parts.join(" ");
+        return word.trim().replace(/\s+/g, " ");
     }
 
-    window.updateOcNumWords = function() {
-        const raw = (document.getElementById("ocNumWordsInput")?.value || "").replace(/\s+/g, "").replace(",", ".");
-        const out = document.getElementById("ocNumWordsOut");
-        if (!out) return;
-        const val = parseFloat(raw);
-        if (isNaN(val) || val < 0) {
-            out.textContent = "Natija bu yerda çiqadi...";
-            out.dataset.copy = "";
-            return;
-        }
-        const intPart = Math.floor(val);
-        const fracPart = Math.round((val - intPart) * 100);
-        let text = `${uzIntToWords(intPart)} söm`;
-        if (fracPart > 0) text += ` ${uzIntToWords(fracPart)} tiyin`;
-        out.textContent = text;
-        out.dataset.copy = text;
+    function getCurrWord(curr, isFrac) {
+        const map = {
+            uzs: isFrac ? "tiyin" : "söm",
+            usd: isFrac ? "sent" : "AQŞ dollari",
+            eur: isFrac ? "yevrosent" : "yevro",
+            rub: isFrac ? "kopeyka" : "rubl",
+            cny: isFrac ? "fin" : "yuan",
+            foiz: isFrac ? "" : "foiz",
+            none: ""
+        };
+        return map[curr] || "";
+    }
+
+    window.setOcWordsCurr = function(code, label) {
+        wordsCurr = code;
+        document.getElementById("ocWordsCurrWrap")?.classList.remove("open");
+        const t = document.getElementById("ocWordsCurrText");
+        if (t) t.textContent = label;
+        updateOcNumWords();
     };
 
+    window.formatAndTranslateOfficeNumber = function(inputEl) {
+        let val = inputEl.value.replace(/[^\d.,]/g, "").replace(/,/g, ".");
+        let parts = val.split(".");
+        if (parts.length > 2) parts = [parts[0], parts.slice(1).join("")];
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        inputEl.value = parts.join(".");
+        updateOcNumWords();
+    };
+
+    function updateOcNumWords() {
+        const raw = (document.getElementById("ocNumWordsInput")?.value || "").replace(/\s+/g, "").replace(/,/g, ".");
+        const box = document.getElementById("ocNumWordsResultBox");
+        const txt = document.getElementById("ocNumWordsResultText");
+        const hint = document.getElementById("ocNumWordsCopyHint");
+        if (!box || !txt) return;
+        if (!raw || isNaN(raw)) { box.style.display = "none"; return; }
+
+        const parts = raw.split(".");
+        const intPart = parseInt(parts[0], 10) || 0;
+        const fracPart = parseInt((parts[1] ? parts[1].substring(0, 2).padEnd(2, "0") : "00"), 10);
+
+        let res = convertIntToWordsUz(intPart);
+        if (wordsCurr !== "none") res += " " + getCurrWord(wordsCurr, false);
+        if (fracPart > 0 && wordsCurr !== "foiz" && wordsCurr !== "none") {
+            res += " " + convertIntToWordsUz(fracPart) + " " + getCurrWord(wordsCurr, true);
+        }
+        txt.textContent = res.trim();
+        if (hint) { hint.textContent = "Nusxa oliş uçun bosing"; hint.style.color = "#16A34A"; }
+        box.style.display = "block";
+    }
+
     window.copyOcWords = function() {
-        const out = document.getElementById("ocNumWordsOut");
-        if (!out?.dataset?.copy) return;
-        navigator.clipboard?.writeText(out.dataset.copy).catch(() => {});
-        const orig = out.textContent;
-        out.textContent = "Nusxalandi";
-        out.style.color = "#10B981";
-        setTimeout(() => {
-            out.textContent = orig;
-            out.style.color = "";
-        }, 1000);
+        const txt = document.getElementById("ocNumWordsResultText")?.textContent;
+        const hint = document.getElementById("ocNumWordsCopyHint");
+        if (!txt) return;
+        navigator.clipboard?.writeText(txt).then(() => {
+            if (hint) {
+                hint.textContent = "Nusxalandi";
+                hint.style.color = "#059669";
+                setTimeout(() => { hint.textContent = "Nusxa oliş uçun bosing"; hint.style.color = "#16A34A"; }, 1400);
+            }
+        }).catch(() => {});
     };
 
     window.openOfficeCurrencyModal = function() {
+        renderQuickChips();
         window.recalcOfficeCurrency();
         document.getElementById("officeCurrencyModal")?.classList.add("open");
     };
@@ -5018,7 +5107,7 @@ document.addEventListener("click", () => {
         MAIN_CODES.forEach((code, idx) => {
             const y = 240 + idx * 175;
             const info = rates[code];
-            const m = META[code];
+            const m = CURRENCY_META.find(x => x.code === code);
 
             ctx.fillStyle = cardBg;
             ctx.beginPath();
@@ -5027,7 +5116,7 @@ document.addEventListener("click", () => {
 
             ctx.fillStyle = "#0284C7";
             ctx.font = "900 46px Inter, Arial, sans-serif";
-            ctx.fillText(`${m.sym}  ${code}`, 110, y + 72);
+            ctx.fillText(`${m.symbol}  ${code}`, 110, y + 72);
 
             ctx.fillStyle = sub;
             ctx.font = "700 26px Inter, Arial, sans-serif";
@@ -5036,7 +5125,7 @@ document.addEventListener("click", () => {
             ctx.fillStyle = fg;
             ctx.font = "900 48px Inter, Arial, sans-serif";
             ctx.textAlign = "right";
-            ctx.fillText(`${fmtNum(info.rate, 2)} söm`, 968, y + 74);
+            ctx.fillText(`${Number(info.rate).toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} söm`, 968, y + 74);
 
             ctx.fillStyle = info.diff > 0 ? "#16A34A" : info.diff < 0 ? "#DC2626" : sub;
             ctx.font = "800 28px Inter, Arial, sans-serif";
@@ -5046,7 +5135,7 @@ document.addEventListener("click", () => {
 
         ctx.fillStyle = sub;
         ctx.font = "700 26px Inter, Arial, sans-serif";
-        ctx.fillText("Manba: NBU.uz • ulh-online.uz", 72, 1020);
+        ctx.fillText("Manba: CBU.uz • ulh-online.uz", 72, 1020);
 
         const a = document.createElement("a");
         a.download = `valyuta-kurslari-${theme}.png`;
@@ -5056,5 +5145,5 @@ document.addEventListener("click", () => {
 
     renderTickerStep();
     setInterval(renderTickerStep, 5000);
-    fetchCbuRates();
+    fetchRates();
 })();
