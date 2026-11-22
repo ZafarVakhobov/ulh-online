@@ -3396,6 +3396,8 @@ body.dark-mode .ad-close-pill { background: #1E293B; color: #CBD5E1; }
 .ow-modal-card {
     width: 440px !important;
     max-width: 94vw !important;
+    max-height: 94vh;
+    overflow-y: auto;
     padding: 18px !important;
     border-radius: 22px !important;
 }
@@ -3429,10 +3431,10 @@ body.dark-mode .ad-close-pill { background: #1E293B; color: #CBD5E1; }
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    max-height: 310px;
-    overflow-y: auto;
+    max-height: none;
+    overflow: visible;
     margin-bottom: 14px;
-    padding-right: 2px;
+    padding-right: 0;
 }
 .ow-reg-item {
     display: flex;
