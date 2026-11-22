@@ -4550,21 +4550,25 @@ document.addEventListener("click", () => {
 // --- 1. ВИДЖЕТ ПОГОДЫ (14 РЕГИОНОВ + TABLER SVG + ИНФОРМЕР НА 4 ДНЯ) ---
 (function initOfficeWeatherWidget() {
     const REGIONS = [
-        { id: "samarqand", name: "Samarqand", lat: 39.6542, lon: 66.9597 },
-        { id: "toshkent_sh", name: "Toşkent ş.", lat: 41.2995, lon: 69.2401 },
-        { id: "qoraqalpoq", name: "Qoraqalpoğiston", lat: 42.4619, lon: 59.6166 },
-        { id: "andijon", name: "Andijon", lat: 40.7821, lon: 72.3442 },
-        { id: "fargona", name: "Farğona", lat: 40.3842, lon: 71.7843 },
-        { id: "namangan", name: "Namangan", lat: 40.9983, lon: 71.6726 },
-        { id: "buxoro", name: "Buxoro", lat: 39.7747, lon: 64.4286 },
-        { id: "xorazm", name: "Xorazm", lat: 41.5500, lon: 60.6333 },
-        { id: "surxondaryo", name: "Surxondaryo", lat: 37.2242, lon: 67.2783 },
-        { id: "qashqadaryo", name: "Qaşqadaryo", lat: 38.8606, lon: 65.7891 },
-        { id: "jizzax", name: "Jizzax", lat: 40.1158, lon: 67.8422 },
-        { id: "sirdaryo", name: "Sirdaryo", lat: 40.4897, lon: 68.7842 },
-        { id: "toshkent_vil", name: "Toşkent viloyati", lat: 41.0333, lon: 69.3667 },
-        { id: "navoiy", name: "Navoiy", lat: 40.0844, lon: 65.3792 }
+        { id: "samarqand", name: "Samarqand", lat: 39.6542, lon: 66.9597, accuKey: "355776", accuSlug: "samarkand" },
+        { id: "toshkent_sh", name: "Toşkent ş.", lat: 41.2995, lon: 69.2401, accuKey: "351199", accuSlug: "tashkent" },
+        { id: "qoraqalpoq", name: "Qoraqalpoğiston", lat: 42.4619, lon: 59.6166, accuKey: "355666", accuSlug: "nukus" },
+        { id: "andijon", name: "Andijon", lat: 40.7821, lon: 72.3442, accuKey: "351828", accuSlug: "andijan" },
+        { id: "fargona", name: "Farğona", lat: 40.3842, lon: 71.7843, accuKey: "353238", accuSlug: "fergana" },
+        { id: "namangan", name: "Namangan", lat: 40.9983, lon: 71.6726, accuKey: "355095", accuSlug: "namangan" },
+        { id: "buxoro", name: "Buxoro", lat: 39.7747, lon: 64.4286, accuKey: "352479", accuSlug: "bukhara" },
+        { id: "xorazm", name: "Xorazm", lat: 41.5500, lon: 60.6333, accuKey: "356378", accuSlug: "urgench" },
+        { id: "surxondaryo", name: "Surxondaryo", lat: 37.2242, lon: 67.2783, accuKey: "356042", accuSlug: "termez" },
+        { id: "qashqadaryo", name: "Qaşqadaryo", lat: 38.8606, lon: 65.7891, accuKey: "350541", accuSlug: "karshi" },
+        { id: "jizzax", name: "Jizzax", lat: 40.1158, lon: 67.8422, accuKey: "348390", accuSlug: "jizzakh" },
+        { id: "sirdaryo", name: "Sirdaryo", lat: 40.4897, lon: 68.7842, accuKey: "355934", accuSlug: "gulistan" },
+        { id: "toshkent_vil", name: "Toşkent viloyati", lat: 41.0422, lon: 69.3567, accuKey: "351199", accuSlug: "tashkent" },
+        { id: "navoiy", name: "Navoiy", lat: 40.0844, lon: 65.3792, accuKey: "355115", accuSlug: "navoiy" }
     ];
+
+    function getAccuWeatherUrl(reg) {
+        return `https://www.accuweather.com/uz/uz/${reg.accuSlug}/${reg.accuKey}/weather-forecast/${reg.accuKey}`;
+    }
 
     const TABLER_WEATHER = {
         sun: {
@@ -4677,10 +4681,12 @@ document.addEventListener("click", () => {
         const selDesc = document.getElementById("owSelDesc");
         const selBg = document.getElementById("owSelBgIco");
         const selTemp = document.getElementById("owSelTemp");
+        const accuLink = document.getElementById("owAccuLink");
         if (selCity) selCity.textContent = reg.name;
         if (selDesc) selDesc.innerHTML = `${getTablerSvg(w.key, 17)}<span>${w.text}</span>`;
-        if (selBg) selBg.innerHTML = getTablerSvg(w.key, 74);
+        if (selBg) selBg.innerHTML = getTablerSvg(w.key, 110);
         if (selTemp) selTemp.textContent = info ? `${info.temp}°` : "--°";
+        if (accuLink) accuLink.href = getAccuWeatherUrl(reg);
 
         const grid = document.getElementById("owRegionsGrid");
         if (!grid) return;
