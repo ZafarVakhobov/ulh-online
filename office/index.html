@@ -315,6 +315,11 @@
             <button onmousedown="event.preventDefault()" onclick="applyTableBorders('all')"><svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 4h16v16h-16z"/><path d="M4 12h16"/><path d="M12 4v16"/></svg> Barça çegaralar</button>
             <button onmousedown="event.preventDefault()" onclick="applyTableBorders('outer')"><svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 4h16v16h-16z"/><path d="M12 8v.01M12 12v.01M12 16v.01M8 12v.01M16 12v.01"/></svg> Taşqi çegaralar</button>
             <button onmousedown="event.preventDefault()" onclick="applyTableBorders('inner')"><svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M12 4v16"/><path d="M4 4v.01M20 4v.01M4 20v.01M20 20v.01"/></svg> Içki çegaralar</button>
+        <hr class="tbl-menu-sep">
+<label class="tbl-border-color-row" onclick="event.stopPropagation()">
+    <span>Çegara rangi</span>
+    <input type="color" id="tblBorderColorInput" class="office-round-color" value="#334155" oninput="setTableBorderColor(this.value)" onchange="setTableBorderColor(this.value)">
+</label>
         </div>
     </div>
 </div>
