@@ -39,6 +39,36 @@
             </div>
 
             <div class="office-top-actions">
+<!-- Поиск и замена слов -->
+<div class="office-dropdown-wrap" id="findReplaceWrap">
+    <button type="button" class="office-btn" onclick="toggleFindReplaceMenu(event)" title="Qidiriş va almaştiriş (Ctrl+F)">
+        <svg class="ti" viewBox="0 0 24 24"><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/></svg>
+        <span>Qidiriş</span>
+    </button>
+    <div class="office-dropdown-menu find-replace-menu" id="findReplaceMenu" onclick="event.stopPropagation()">
+        <div class="fr-section-lbl">Hujjatdan qidiriş</div>
+        <div class="fr-search-row">
+            <input type="text" id="frSearchInput" class="fr-input" placeholder="Sözni kiriting..." oninput="runOfficeLiveSearch()">
+            <button type="button" class="fr-nav-btn" onclick="navFindMatch(-1)" title="Oldingi">▲</button>
+            <button type="button" class="fr-nav-btn" onclick="navFindMatch(1)" title="Keyingi">▼</button>
+        </div>
+        <div class="fr-counter-row">
+            <span id="frMatchCounter">Topildi: 0</span>
+            <button type="button" class="fr-clear-btn" onclick="clearOfficeSearch()">Tozalaş</button>
+        </div>
+
+        <hr class="tbl-menu-sep">
+
+        <div class="fr-section-lbl">Sözni almaştiriş</div>
+        <input type="text" id="frSourceInput" class="fr-input" placeholder="Asl söz (qaysi sözni)...">
+        <input type="text" id="frTargetInput" class="fr-input" placeholder="Yangi söz (nimaga almaştiriş)..." onkeydown="if(event.key==='Enter') executeOfficeReplace()">
+        <div class="fr-actions-row">
+            <span id="frReplaceStatus" class="fr-status"></span>
+            <button type="button" class="office-btn primary small" onclick="executeOfficeReplace()">OK</button>
+        </div>
+    </div>
+</div>
+                
                 <button type="button" class="office-btn accent" onclick="transliterateWholeDocument()" title="Butun hujjatni yangi özbek alifbosiga ögiriş">
                     <svg class="ti" viewBox="0 0 24 24"><path d="M4 5h7"/><path d="M9 3v2c0 4.418 -2.239 8 -5 8"/><path d="M5 9c0 2.144 2.952 3.908 6.7 4"/><path d="M12 20l4 -9l4 9"/><path d="M19.1 18h-6.2"/></svg>
                     <span>ÖĞŞÇ</span>
