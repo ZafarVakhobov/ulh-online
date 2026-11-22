@@ -1389,3 +1389,45 @@ body.dark-mode .tbl-border-color-row {
 body.dark-mode .tbl-border-color-row:hover {
     background: #1E293B;
 }
+
+/* === ПОДСВЕТКА АКТИВНЫХ СТИЛЕЙ В ПАНЕЛИ ИНСТРУМЕНТОВ === */
+.office-topbar .rb-active,
+.office-topbar button.rb-active {
+    background: #E0F2FE !important;
+    color: #0284C7 !important;
+    box-shadow: inset 0 0 0 1.5px #0284C7;
+    border-radius: 7px;
+}
+
+/* Активная карточка стиля (Oddiy / Sarlavha 1) */
+.office-topbar .rb-style-card.rb-active,
+.office-topbar [onclick*="formatBlock"].rb-active {
+    background: #E0F2FE !important;
+    border-color: #0284C7 !important;
+    color: #0284C7 !important;
+    box-shadow: 0 0 0 1.5px #0284C7;
+}
+
+/* Активный тип маркера в выпадающем списке буллетов */
+.office-dropdown-menu button.rb-active {
+    background: #E0F2FE !important;
+    color: #0284C7 !important;
+    font-weight: 700;
+}
+
+/* Тёмная тема */
+body.dark-mode .office-topbar .rb-active,
+body.dark-mode .office-topbar button.rb-active,
+body.dark-mode .office-dropdown-menu button.rb-active {
+    background: rgba(56, 189, 248, 0.18) !important;
+    color: #38BDF8 !important;
+    box-shadow: inset 0 0 0 1.5px #38BDF8;
+}
+
+body.dark-mode .office-topbar .rb-style-card.rb-active,
+body.dark-mode .office-topbar [onclick*="formatBlock"].rb-active {
+    background: rgba(56, 189, 248, 0.18) !important;
+    border-color: #38BDF8 !important;
+    color: #38BDF8 !important;
+    box-shadow: 0 0 0 1.5px #38BDF8;
+}
