@@ -1985,3 +1985,275 @@ body.dark-mode .sf-rot-ico:hover {
 body.dark-mode .sf-rot-input {
     color: #F8FAFC;
 }
+
+
+/* === ILMIY MANBALAR MENEJERI (VAK FORMATI) === */
+.vak-modal-card {
+    width: 940px !important;
+    max-width: 94vw !important;
+    padding: 22px 24px !important;
+    border-radius: 20px !important;
+}
+
+.vak-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+.vak-modal-head h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #0F172A;
+}
+.vak-close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #F1F5F9;
+    color: #64748B;
+    font-size: 19px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.vak-close-btn:hover { background: #E2E8F0; color: #0F172A; }
+
+.vak-modal-body {
+    display: grid;
+    grid-template-columns: 310px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+@media (max-width: 780px) {
+    .vak-modal-body { grid-template-columns: 1fr; }
+}
+
+.vak-form-panel {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.vak-panel-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #1E293B;
+    margin-bottom: 2px;
+}
+.vak-input {
+    width: 100%;
+    box-sizing: border-box;
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid #CBD5E1;
+    background: #FFFFFF;
+    color: #0F172A;
+    font-size: 13px;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.vak-input:focus { border-color: #2563EB; }
+.vak-textarea {
+    height: auto;
+    padding: 10px 12px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.45;
+}
+.vak-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.vak-save-btn {
+    height: 40px;
+    border: none;
+    border-radius: 11px;
+    background: #2563EB;
+    color: #FFFFFF;
+    font-size: 13.5px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-top: 2px;
+}
+.vak-save-btn:hover { background: #1D4ED8; }
+
+.vak-list-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+.vak-list-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.vak-list-count {
+    font-size: 14px;
+    font-weight: 800;
+    color: #1E293B;
+}
+.vak-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.vak-insert-all-btn {
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 9px;
+    border: 1px solid #0284C7;
+    background: #E0F2FE;
+    color: #0284C7;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.vak-insert-all-btn:hover { background: #0284C7; color: #FFFFFF; }
+
+.vak-copy-all-btn {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 9px;
+    border: none;
+    background: #10B981;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.vak-copy-all-btn:hover { background: #059669; }
+
+.vak-sources-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 410px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.vak-source-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.vak-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+.vak-citation-text {
+    font-size: 13.5px;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #0F172A;
+    word-break: break-word;
+}
+.vak-card-btns {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.vak-mini-insert {
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 7px;
+    border: 1px solid #BAE6FD;
+    background: #F0F9FF;
+    color: #0284C7;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.vak-mini-insert:hover { background: #0284C7; color: #FFFFFF; border-color: #0284C7; }
+
+.vak-del-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    border: none;
+    background: #FEE2E2;
+    color: #EF4444;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.vak-del-btn:hover { background: #FECACA; color: #DC2626; }
+
+.vak-note-box {
+    background: #F1F5F9;
+    border-left: 3px solid #2563EB;
+    padding: 8px 12px;
+    border-radius: 0 8px 8px 0;
+    font-size: 12.5px;
+    font-style: italic;
+    color: #475569;
+    line-height: 1.45;
+}
+.vak-empty-state {
+    text-align: center;
+    padding: 40px 16px;
+    color: #94A3B8;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px dashed #CBD5E1;
+    border-radius: 14px;
+}
+
+/* Тёмная тема */
+body.dark-mode .vak-modal-head h3,
+body.dark-mode .vak-panel-title,
+body.dark-mode .vak-list-count,
+body.dark-mode .vak-citation-text { color: #F8FAFC; }
+body.dark-mode .vak-close-btn { background: #1E293B; color: #94A3B8; }
+body.dark-mode .vak-form-panel,
+body.dark-mode .vak-source-card {
+    background: #0F172A;
+    border-color: #334155;
+}
+body.dark-mode .vak-input {
+    background: #1E293B;
+    border-color: #334155;
+    color: #F8FAFC;
+}
+body.dark-mode .vak-note-box {
+    background: #1E293B;
+    color: #CBD5E1;
+}
+body.dark-mode .vak-insert-all-btn,
+body.dark-mode .vak-mini-insert {
+    background: rgba(56, 189, 248, 0.16);
+    border-color: rgba(56, 189, 248, 0.35);
+    color: #38BDF8;
+}
+body.dark-mode .vak-del-btn {
+    background: rgba(239, 68, 68, 0.18);
+    color: #F87171;
+}
