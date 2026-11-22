@@ -1501,46 +1501,83 @@
     </div>
 </div>
 
-<!-- Модалка: Курс валют + Калькулятор + Число прописью + Информер -->
+<!-- Модалка: Курс валют + Калькулятор + Сумма прописью (1 в 1 с основным сайтом) -->
 <div id="officeCurrencyModal" class="weather-modal-backdrop" onclick="if(event.target===this) this.classList.remove('open')">
-    <div class="weather-modal-card oc-modal-card" onclick="event.stopPropagation()">
-        <div class="oc-calc-box">
-           <div class="oc-kicker">
-                <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M4 3m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M8 7m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v1a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z"/><path d="M8 14l0 .01"/><path d="M12 14l0 .01"/><path d="M16 14l0 .01"/><path d="M8 17l0 .01"/><path d="M12 17l0 .01"/><path d="M16 17l0 .01"/></svg>
-                <span>VALYUTA KALKULYATORI (NBU / MB)</span>
+    <div class="weather-modal-card" onclick="event.stopPropagation()">
+        <!-- Верхний блок ввода суммы и выбора валюты -->
+        <div class="calc-input-banner">
+            <div class="calc-banner-top">
+                <div class="weather-selected-tag">
+                    <svg class="ti ti-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M8 7m0 1a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v1a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z"/><path d="M8 14l0 .01"/><path d="M12 14l0 .01"/><path d="M16 14l0 .01"/><path d="M8 17l0 .01"/><path d="M12 17l0 .01"/><path d="M16 17l0 .01"/></svg>
+                    <span>VALYUTA KALKULYATORI (NBU)</span>
+                </div>
             </div>
-            <div class="oc-input-wrap">
-                <input type="number" id="ocAmountInput" class="oc-amount-input" value="100" min="0" step="any" oninput="recalcOfficeCurrency()">
-                <span id="ocActiveBadge" class="oc-active-badge">USD ($)</span>
+
+            <!-- Поле ввода суммы + кастомный выпадающий список валюты -->
+            <div class="calc-input-row">
+                <input type="text" id="ocAmountInput" class="calc-amount-input" value="100" inputmode="decimal" placeholder="0" oninput="recalcOfficeCurrency()" aria-label="Miqdorni kiriting">
+                <div class="oc-select-wrap" id="ocBaseSelectWrap">
+                    <button type="button" class="calc-currency-select oc-select-trigger" onclick="toggleOcDropdown('ocBaseSelectWrap', event)">
+                        <span id="ocBaseSelectText">USD ($)</span>
+                    </button>
+                    <div class="oc-select-menu">
+                        <button type="button" class="oc-select-opt" onclick="setOcBaseCurr('USD')">USD ($)</button>
+                        <button type="button" class="oc-select-opt" onclick="setOcBaseCurr('UZS')">UZS (Söm)</button>
+                        <button type="button" class="oc-select-opt" onclick="setOcBaseCurr('EUR')">EUR (€)</button>
+                        <button type="button" class="oc-select-opt" onclick="setOcBaseCurr('RUB')">RUB (₽)</button>
+                        <button type="button" class="oc-select-opt" onclick="setOcBaseCurr('CNY')">CNY (¥)</button>
+                    </div>
+                </div>
             </div>
-            <div class="oc-curr-pills" id="ocCurrPills">
-                <button type="button" class="oc-pill active" data-code="USD" onclick="setOcBaseCurr('USD')">$ USD</button>
-                <button type="button" class="oc-pill" data-code="UZS" onclick="setOcBaseCurr('UZS')">Söm UZS</button>
-                <button type="button" class="oc-pill" data-code="EUR" onclick="setOcBaseCurr('EUR')">€ EUR</button>
-                <button type="button" class="oc-pill" data-code="RUB" onclick="setOcBaseCurr('RUB')">₽ RUB</button>
-                <button type="button" class="oc-pill" data-code="CNY" onclick="setOcBaseCurr('CNY')">¥ CNY</button>
+
+            <!-- Быстрые кнопки выбора валюты -->
+            <div class="calc-curr-tabs" id="ocCurrPills">
+                <button type="button" class="calc-curr-tab active" data-code="USD" onclick="setOcBaseCurr('USD')">$ USD</button>
+                <button type="button" class="calc-curr-tab" data-code="UZS" onclick="setOcBaseCurr('UZS')">Söm UZS</button>
+                <button type="button" class="calc-curr-tab" data-code="EUR" onclick="setOcBaseCurr('EUR')">€ EUR</button>
+                <button type="button" class="calc-curr-tab" data-code="RUB" onclick="setOcBaseCurr('RUB')">₽ RUB</button>
+                <button type="button" class="calc-curr-tab" data-code="CNY" onclick="setOcBaseCurr('CNY')">¥ CNY</button>
             </div>
-            <div class="oc-quick-amts">
-                <button type="button" onclick="setOcQuickAmt(10)">10</button>
-                <button type="button" onclick="setOcQuickAmt(50)">50</button>
-                <button type="button" onclick="setOcQuickAmt(100)">100</button>
-                <button type="button" onclick="setOcQuickAmt(150)">150</button>
-                <button type="button" onclick="setOcQuickAmt(500)">500</button>
-                <button type="button" onclick="setOcQuickAmt(1000)">1 000</button>
+
+            <!-- Быстрые суммы (меняются динамически для валюты и сумов) -->
+            <div class="calc-quick-chips" id="ocQuickChips"></div>
+        </div>
+
+        <div class="weather-other-title">KONVERTATSIYA NATIJASI (NUSXA OLIŞ UÇUN BOSING)</div>
+
+        <!-- Сетка пересчитанных результатов -->
+        <div class="calc-results-grid" id="ocResultsGrid"></div>
+
+        <!-- Блок: Сумма прописью -->
+        <hr class="currency-Block-divider" style="margin: 18px 0 14px;">
+        <div class="weather-other-title" style="margin: 0 4px 8px;">SONNI SÖZ BILAN YOZIŞ (HUJJATLAR UÇUN)</div>
+
+        <div class="oc-words-row">
+            <input type="text" id="ocNumWordsInput" class="oc-words-clean-input" placeholder="Masalan: 1 485 000" oninput="formatAndTranslateOfficeNumber(this)">
+            <div class="oc-select-wrap drop-up" id="ocWordsCurrWrap">
+                <button type="button" class="num-words-select oc-select-trigger" onclick="toggleOcDropdown('ocWordsCurrWrap', event)">
+                    <span id="ocWordsCurrText">söm</span>
+                </button>
+                <div class="oc-select-menu">
+                    <button type="button" class="oc-select-opt" onclick="setOcWordsCurr('uzs', 'söm')">söm</button>
+                    <button type="button" class="oc-select-opt" onclick="setOcWordsCurr('usd', 'AQŞ dollari')">AQŞ dollari</button>
+                    <button type="button" class="oc-select-opt" onclick="setOcWordsCurr('eur', 'yevro')">yevro</button>
+                    <button type="button" class="oc-select-opt" onclick="setOcWordsCurr('rub', 'rubl')">rubl</button>
+                    <button type="button" class="oc-select-opt" onclick="setOcWordsCurr('cny', 'yuan')">yuan</button>
+                    <button type="button" class="oc-select-opt" onclick="setOcWordsCurr('foiz', 'foiz (%)')">foiz (%)</button>
+                    <button type="button" class="oc-select-opt" onclick="setOcWordsCurr('none', 'valyutasiz')">valyutasiz</button>
+                </div>
             </div>
         </div>
 
-        <div class="ow-section-lbl">KONVERTATSIYA NATIJASI (NUSXA OLIŞ UÇUN BOSING)</div>
-        <div id="ocResultUzs" class="oc-res-uzs" onclick="copyOcElement(this)" title="Nusxalaş uçun bosing"></div>
-        <div id="ocResultGrid" class="oc-res-grid"></div>
+        <!-- Зелёная карточка с результатом (появляется только при вводе цифр) -->
+        <div class="oc-words-result-box" id="ocNumWordsResultBox" style="display:none;" onclick="copyOcWords()">
+            <span id="ocNumWordsResultText" class="oc-words-result-text"></span>
+            <div id="ocNumWordsCopyHint" class="oc-words-copy-hint">Nusxa oliş uçun bosing</div>
+        </div>
 
-        <hr class="oc-sep">
-
-        <div class="ow-section-lbl">SONNI SÖZ BILAN YOZIŞ (NUSXA OLIŞ UÇUN BOSING)</div>
-        <input type="text" id="ocNumWordsInput" class="oc-words-input" placeholder="Masalan: 1 450 000.50" oninput="updateOcNumWords()">
-        <div id="ocNumWordsOut" class="oc-words-out" onclick="copyOcWords()" title="Nusxalaş uçun bosing">Natija bu yerda çiqadi...</div>
-
-        <div class="ow-modal-foot">
+        <!-- Футер -->
+        <div class="weather-modal-footer">
             <a href="https://nbu.uz/uz/exchange-rates/" target="_blank" rel="noopener" class="ow-foot-btn">
                 <span>Manba: NBU</span>
                 <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/></svg>
