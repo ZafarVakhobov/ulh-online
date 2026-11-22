@@ -1250,3 +1250,114 @@ window.ctxDeleteTableCol = function() {
 body.dark-mode .vruler-margin-shade.bottom {
     background: rgba(15, 23, 42, 0.55);
 }     
+
+/* === ПРЕМИАЛЬНАЯ ВЫДВИЖНАЯ ПАНЕЛЬ ИНСТРУМЕНТОВ ТАБЛИЦЫ === */
+.table-ctx-tools {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateX(-10px) scale(0.95);
+    pointer-events: none;
+    margin-left: 0;
+    padding-left: 0;
+    border-left: 1px solid transparent;
+    transition:
+        max-width 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.24s ease,
+        transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        margin-left 0.3s ease,
+        padding-left 0.3s ease,
+        border-color 0.25s ease;
+}
+
+.table-ctx-tools.visible {
+    max-width: 280px;
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    pointer-events: auto;
+    margin-left: 6px;
+    padding-left: 8px;
+    border-left-color: #CBD5E1;
+}
+
+.table-ctx-tools.allow-overflow {
+    overflow: visible;
+}
+
+body.dark-mode .table-ctx-tools.visible {
+    border-left-color: #334155;
+}
+
+/* Активные состояния для "Рисование" и "Ластик" */
+.table-ctx-tools .rb-big-btn.tool-active {
+    background: #E0F2FE !important;
+    color: #0284C7 !important;
+    box-shadow: inset 0 0 0 1.5px #0284C7;
+}
+.table-ctx-tools #tblEraseBtn.tool-active {
+    background: #FEE2E2 !important;
+    color: #DC2626 !important;
+    box-shadow: inset 0 0 0 1.5px #EF4444;
+}
+body.dark-mode .table-ctx-tools .rb-big-btn.tool-active {
+    background: rgba(56, 189, 248, 0.18) !important;
+    color: #38BDF8 !important;
+    box-shadow: inset 0 0 0 1.5px #38BDF8;
+}
+body.dark-mode .table-ctx-tools #tblEraseBtn.tool-active {
+    background: rgba(239, 68, 68, 0.18) !important;
+    color: #F87171 !important;
+    box-shadow: inset 0 0 0 1.5px #F87171;
+}
+
+/* Круглая кнопка заливки ячеек */
+.tbl-fill-label {
+    position: relative;
+    cursor: pointer;
+}
+.tbl-fill-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1.5px rgba(15, 23, 42, 0.16);
+    margin: 2px 0;
+    transition: transform 0.15s;
+}
+.tbl-fill-label:hover .tbl-fill-dot { transform: scale(1.1); }
+.tbl-fill-label input[type="color"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+
+/* Меню границ таблицы */
+.tbl-borders-menu {
+    min-width: 175px !important;
+}
+.tbl-borders-menu button {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+}
+.tbl-menu-sep {
+    border: 0;
+    border-top: 1px solid #E2E8F0;
+    margin: 4px 6px;
+}
+body.dark-mode .tbl-menu-sep { border-color: #334155; }
+
+/* Курсоры при активном рисовании / ластике */
+body.tbl-mode-draw .a4-sheet .word-table td,
+body.tbl-mode-draw .a4-sheet .word-table th {
+    cursor: crosshair !important;
+}
+body.tbl-mode-erase .a4-sheet .word-table td,
+body.tbl-mode-erase .a4-sheet .word-table th {
+    cursor: cell !important;
+}  
