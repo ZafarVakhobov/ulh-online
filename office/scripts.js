@@ -3759,3 +3759,78 @@ window.applyTextCase = function(mode) {
         bootAudioPlayer();
     }
 })();
+
+
+// ==========================================
+// === МОДАЛЬНОЕ ВИДЕО В ПЛЕЕРЕ + РЕЖИМ «ОТКЛЮЧЕНИЯ СВЕТА» ===
+// ==========================================
+(function initOfficeVideoModalPlayer() {
+    let lightsOff = false;
+
+    function syncVideoButtonVisibility() {
+        const btn = document.getElementById("omWatchVideoBtn");
+        if (!btn) return;
+        const hasVideo = Boolean(document.getElementById("officeYtPlayerHost")?.querySelector("iframe"));
+        btn.style.display = hasVideo ? "inline-flex" : "none";
+    }
+
+    window.openOfficeVideoModal = function() {
+        const modal = document.getElementById("officeVideoModal");
+        const stage = document.getElementById("officeVideoStage");
+        const host = document.getElementById("officeYtPlayerHost");
+        const iframe = host?.querySelector("iframe");
+        if (!modal || !stage || !iframe) return;
+
+        document.getElementById("officeMusicWrap")?.classList.remove("open");
+
+        const title = document.getElementById("omTrackTitle")?.textContent || "YouTube Video";
+        const titleEl = document.getElementById("officeVideoTitle");
+        if (titleEl) titleEl.textContent = title;
+
+        stage.innerHTML = "";
+        stage.appendChild(iframe);
+        modal.classList.add("open");
+    };
+
+    window.closeOfficeVideoModal = function() {
+        const modal = document.getElementById("officeVideoModal");
+        const stage = document.getElementById("officeVideoStage");
+        const host = document.getElementById("officeYtPlayerHost");
+        const iframe = stage?.querySelector("iframe");
+
+        if (iframe && host) {
+            host.innerHTML = "";
+            host.appendChild(iframe);
+        }
+
+        lightsOff = false;
+        modal?.classList.remove("open", "lights-off");
+        document.getElementById("officeLightsBtn")?.classList.remove("active");
+        const lbl = document.getElementById("officeLightsLabel");
+        if (lbl) lbl.textContent = "Çiroqni öçiriş";
+        syncVideoButtonVisibility();
+    };
+
+    window.toggleOfficeVideoLights = function() {
+        lightsOff = !lightsOff;
+        const modal = document.getElementById("officeVideoModal");
+        const btn = document.getElementById("officeLightsBtn");
+        const lbl = document.getElementById("officeLightsLabel");
+        modal?.classList.toggle("lights-off", lightsOff);
+        btn?.classList.toggle("active", lightsOff);
+        if (lbl) lbl.textContent = lightsOff ? "Çiroqni yoqiş" : "Çiroqni öçiriş";
+    };
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && document.getElementById("officeVideoModal")?.classList.contains("open")) {
+            window.closeOfficeVideoModal();
+        }
+    });
+
+    const host = document.getElementById("officeYtPlayerHost");
+    if (host && window.MutationObserver) {
+        new MutationObserver(syncVideoButtonVisibility).observe(host, { childList: true, subtree: true });
+    }
+    document.addEventListener("click", () => setTimeout(syncVideoButtonVisibility, 250));
+    setTimeout(syncVideoButtonVisibility, 500);
+})();
