@@ -3165,3 +3165,82 @@ window.applyTextCase = function(mode) {
         }
     });
 })();
+
+// === ЗЕРКАЛЬНОЕ ОТРАЖЕНИЕ И ПОВОРОТ ФИГУР ===
+(function initShapeTransformTools() {
+    function getActiveShape() {
+        return document.querySelector(".ulh-shape.selected");
+    }
+
+    function syncTransformUI(shape) {
+        if (!shape) return;
+        const rot = parseFloat(shape.dataset.rot || "0") || 0;
+        const flipX = shape.dataset.flipX === "-1";
+        const flipY = shape.dataset.flipY === "-1";
+
+        const rotInp = document.getElementById("sfRotateInput");
+        if (rotInp && document.activeElement !== rotInp) rotInp.value = rot;
+        document.getElementById("sfFlipHBtn")?.classList.toggle("active", flipX);
+        document.getElementById("sfFlipVBtn")?.classList.toggle("active", flipY);
+
+        // Чтобы расширенная панель не уходила за правый край экрана
+        const bar = document.getElementById("shapeFormatBar");
+        if (bar && bar.classList.contains("active")) {
+            const maxLeft = Math.max(12, window.innerWidth - bar.offsetWidth - 16);
+            if (parseFloat(bar.style.left) > maxLeft) {
+                bar.style.left = maxLeft + "px";
+            }
+        }
+    }
+
+    function applyShapeTransform(shape) {
+        if (!shape) return;
+        const rot = parseFloat(shape.dataset.rot || "0") || 0;
+        const fx = shape.dataset.flipX === "-1" ? -1 : 1;
+        const fy = shape.dataset.flipY === "-1" ? -1 : 1;
+
+        shape.style.transformOrigin = "center center";
+        shape.style.transform = `rotate(${rot}deg) scale(${fx}, ${fy})`;
+        syncTransformUI(shape);
+
+        if (officeMode === "word" && typeof syncWordPagesFromDom === "function") syncWordPagesFromDom();
+        if (typeof saveCurrentOfficeDoc === "function") saveCurrentOfficeDoc();
+    }
+
+    window.toggleSelectedShapeFlip = function(axis) {
+        const sh = getActiveShape();
+        if (!sh) return;
+        if (axis === "h") {
+            sh.dataset.flipX = sh.dataset.flipX === "-1" ? "1" : "-1";
+        } else {
+            sh.dataset.flipY = sh.dataset.flipY === "-1" ? "1" : "-1";
+        }
+        applyShapeTransform(sh);
+    };
+
+    window.updateSelectedShapeRotation = function(deg) {
+        const sh = getActiveShape();
+        if (!sh) return;
+        const num = parseFloat(deg);
+        sh.dataset.rot = isNaN(num) ? "0" : String(num);
+        applyShapeTransform(sh);
+    };
+
+    window.quickRotateSelectedShape = function(step = 90) {
+        const sh = getActiveShape();
+        if (!sh) return;
+        const cur = parseFloat(sh.dataset.rot || "0") || 0;
+        const next = ((cur + step) % 360 + 360) % 360;
+        sh.dataset.rot = String(next);
+        const rotInp = document.getElementById("sfRotateInput");
+        if (rotInp) rotInp.value = next;
+        applyShapeTransform(sh);
+    };
+
+    // Синхронизируем значения в панели при выборе любой фигуры
+    document.addEventListener("mousedown", (e) => {
+        if (e.target.closest(".ulh-shape")) {
+            setTimeout(() => syncTransformUI(getActiveShape()), 0);
+        }
+    });
+})();
