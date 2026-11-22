@@ -1192,3 +1192,18 @@ window.ctxDeleteTableCol = function() {
     saveCurrentOfficeDoc();
     if (typeof updateOfficeLiveStats === "function") updateOfficeLiveStats();
 };
+
+/* === ПРИНУДИТЕЛЬНЫЙ ПОКАЗ КНОПОК ТАБЛИЦЫ В ПКМ === */
+#officeContextMenu #ctxTblSep.ctx-tbl-visible {
+    display: inline-block !important;
+}
+
+#officeContextMenu #ctxDelRowBtn.ctx-tbl-visible,
+#officeContextMenu #ctxDelColBtn.ctx-tbl-visible {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    width: auto !important;
+    padding: 0 10px !important;
+}
