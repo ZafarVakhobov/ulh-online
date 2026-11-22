@@ -3416,8 +3416,31 @@ body.dark-mode .ad-close-pill { background: #1E293B; color: #CBD5E1; }
 .ow-sel-kicker { font-size: 10.5px; font-weight: 800; color: #0284C7; letter-spacing: 0.4px; }
 .ow-sel-city { font-size: 22px; font-weight: 800; color: #0F172A; margin: 4px 0; }
 .ow-sel-desc { font-size: 13px; font-weight: 600; color: #475569; }
-.ow-sel-right { position: relative; display: flex; align-items: center; justify-content: center; min-width: 78px; }
-.ow-sel-bg-ico { font-size: 56px; opacity: 0.28; position: absolute; }
+
+.ow-sel-right {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 110px;
+    height: 76px;
+}
+.ow-sel-bg-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.34;
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+.ow-sel-bg-ico svg {
+    width: 110px;
+    height: 110px;
+}
+
 .ow-sel-temp { font-size: 36px; font-weight: 900; color: #0F172A; position: relative; z-index: 1; }
 
 .ow-section-lbl {
