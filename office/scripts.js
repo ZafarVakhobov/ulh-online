@@ -4143,3 +4143,267 @@ window.applyTextCase = function(mode) {
     // Применяем сохранённый фон при старте
     setTimeout(loadActiveSlideToCanvas, 120);
 })();
+
+
+// ==========================================
+// === СВОБОДНОЕ ПЕРЕМЕЩЕНИЕ КАРТИНОК + ЧЁТКАЯ ОБРЕЗКА (HD CROP) ===
+// ==========================================
+(function initFreeImageDragAndHdCrop() {
+    let draggingImg = null;
+    let dragMode = null; // 'absolute' | 'flow'
+    let startX = 0, startY = 0, origL = 0, origT = 0;
+    let hasMoved = false;
+
+    function syncImgFloatBox(img) {
+        const box = document.getElementById("imgFloatControls");
+        if (!box || !img) return;
+        const r = img.getBoundingClientRect();
+        box.style.left = r.left + "px";
+        box.style.top = r.top + "px";
+        box.style.width = r.width + "px";
+        box.style.height = r.height + "px";
+        box.classList.add("active");
+    }
+
+    // Сохраняем выбранный режим обтекания в data-wrap
+    const _prevApplyImgWrap = window.applyImgWrap;
+    window.applyImgWrap = function(mode) {
+        if (!selectedImgEl) return;
+        selectedImgEl.dataset.wrap = mode;
+
+        if (mode === "behind" || mode === "front") {
+            const host = selectedImgEl.closest(".a4-sheet, #slideCanvas");
+            if (host) {
+                if (getComputedStyle(host).position === "static") host.style.position = "relative";
+                const hr = host.getBoundingClientRect();
+                const ir = selectedImgEl.getBoundingClientRect();
+                const z = (typeof officeZoom === "number" && officeZoom > 0) ? officeZoom : 1;
+                selectedImgEl.style.float = "none";
+                selectedImgEl.style.display = "block";
+                selectedImgEl.style.margin = "0";
+                selectedImgEl.style.position = "absolute";
+                selectedImgEl.style.left = Math.max(0, Math.round((ir.left - hr.left) / z)) + "px";
+                selectedImgEl.style.top = Math.max(0, Math.round((ir.top - hr.top) / z)) + "px";
+                selectedImgEl.style.zIndex = mode === "behind" ? "1" : "30";
+            }
+            document.getElementById("imgWrapMenu")?.classList.remove("open");
+            syncImgFloatBox(selectedImgEl);
+            if (officeMode === "word") syncWordPagesFromDom();
+            saveCurrentOfficeDoc();
+            return;
+        }
+
+        // Для режимов обтекания возвращаем в поток документа
+        selectedImgEl.style.position = "static";
+        selectedImgEl.style.left = "";
+        selectedImgEl.style.top = "";
+        selectedImgEl.style.zIndex = "";
+        if (typeof _prevApplyImgWrap === "function") _prevApplyImgWrap(mode);
+        setTimeout(() => syncImgFloatBox(selectedImgEl), 10);
+    };
+
+    // Отключаем стандартное браузерное перетаскивание картинок
+    document.addEventListener("dragstart", (e) => {
+        if (e.target.closest?.(".a4-sheet img, #slideCanvas img")) {
+            e.preventDefault();
+        }
+    });
+
+    // Старт перетаскивания картинки
+    document.addEventListener("mousedown", (e) => {
+        if (e.button !== 0 || e.target.closest("#imgFloatControls")) return;
+        const img = e.target.closest?.(".a4-sheet img, #slideCanvas img");
+        if (!img) return;
+
+        e.preventDefault();
+        selectedImgEl = img;
+        draggingImg = img;
+        hasMoved = false;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const wrap = img.dataset.wrap || "inline";
+        const isSlide = !!img.closest("#slideCanvas");
+
+        if (wrap === "front" || wrap === "behind" || img.style.position === "absolute" || (isSlide && wrap === "inline")) {
+            dragMode = "absolute";
+            const host = img.closest(".a4-sheet, #slideCanvas");
+            if (host && getComputedStyle(host).position === "static") host.style.position = "relative";
+            if (img.style.position !== "absolute" && host) {
+                const hr = host.getBoundingClientRect();
+                const ir = img.getBoundingClientRect();
+                const z = (typeof officeZoom === "number" && officeZoom > 0) ? officeZoom : 1;
+                img.style.position = "absolute";
+                img.style.margin = "0";
+                img.style.left = Math.max(0, Math.round((ir.left - hr.left) / z)) + "px";
+                img.style.top = Math.max(0, Math.round((ir.top - hr.top) / z)) + "px";
+                img.style.zIndex = wrap === "behind" ? "1" : "30";
+            }
+            origL = parseFloat(img.style.left) || img.offsetLeft || 0;
+            origT = parseFloat(img.style.top) || img.offsetTop || 0;
+        } else {
+            dragMode = "flow";
+        }
+
+        syncImgFloatBox(img);
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (!draggingImg) return;
+        if (Math.abs(e.clientX - startX) > 3 || Math.abs(e.clientY - startY) > 3) {
+            hasMoved = true;
+            draggingImg.classList.add("img-dragging");
+        }
+        if (!hasMoved) return;
+
+        if (dragMode === "absolute") {
+            const z = (typeof officeZoom === "number" && officeZoom > 0) ? officeZoom : 1;
+            const dx = (e.clientX - startX) / z;
+            const dy = (e.clientY - startY) / z;
+            draggingImg.style.left = Math.max(0, Math.round(origL + dx)) + "px";
+            draggingImg.style.top = Math.max(0, Math.round(origT + dy)) + "px";
+            syncImgFloatBox(draggingImg);
+        } else if (dragMode === "flow") {
+            // Перемещение с сохранением обтекания текстом (float / inline / topbottom)
+            draggingImg.style.pointerEvents = "none";
+            const under = document.elementFromPoint(e.clientX, e.clientY);
+            draggingImg.style.pointerEvents = "";
+
+            const sheet = under?.closest?.(".a4-sheet");
+            if (!sheet) return;
+
+            let range = null;
+            if (document.caretRangeFromPoint) {
+                range = document.caretRangeFromPoint(e.clientX, e.clientY);
+            } else if (document.caretPositionFromPoint) {
+                const pos = document.caretPositionFromPoint(e.clientX, e.clientY);
+                if (pos) {
+                    range = document.createRange();
+                    range.setStart(pos.offsetNode, pos.offset);
+                    range.collapse(true);
+                }
+            }
+
+            if (range && sheet.contains(range.startContainer) && !draggingImg.contains(range.startContainer)) {
+                const block = (range.startContainer.nodeType === 3 ? range.startContainer.parentElement : range.startContainer)
+                    ?.closest("p, div, h1, h2, h3, li");
+                const wrap = draggingImg.dataset.wrap || "inline";
+
+                if (block && block !== sheet && (wrap === "left" || wrap === "right")) {
+                    // Вставляем в начало абзаца под курсором, чтобы текст красиво обтекал сбоку
+                    if (block.firstChild !== draggingImg) {
+                        block.insertBefore(draggingImg, block.firstChild);
+                    }
+                } else if (block && block !== sheet && wrap === "topbottom") {
+                    const br = block.getBoundingClientRect();
+                    if (e.clientY < br.top + br.height / 2) block.parentNode.insertBefore(draggingImg, block);
+                    else block.parentNode.insertBefore(draggingImg, block.nextSibling);
+                } else {
+                    range.insertNode(draggingImg);
+                }
+                syncImgFloatBox(draggingImg);
+            }
+        }
+    });
+
+    document.addEventListener("mouseup", () => {
+        if (!draggingImg) return;
+        draggingImg.classList.remove("img-dragging");
+        if (hasMoved) {
+            syncImgFloatBox(draggingImg);
+            if (officeMode === "word") syncWordPagesFromDom();
+            else if (officeMode === "slides") slidesData[activeSlideIdx].body = document.getElementById("slideBodyBox").innerHTML;
+            saveCurrentOfficeDoc();
+        }
+        draggingImg = null;
+        dragMode = null;
+        hasMoved = false;
+    });
+
+    window.addEventListener("scroll", () => {
+        if (selectedImgEl && document.getElementById("imgFloatControls")?.classList.contains("active")) {
+            syncImgFloatBox(selectedImgEl);
+        }
+    }, true);
+
+    // === ЧЁТКАЯ ОБРЕЗКА (HD CROP БЕЗ ПОТЕРИ КАЧЕСТВА) ===
+    let hdCropImg = null;
+
+    window.openImgCropModal = function() {
+        if (!selectedImgEl) return;
+        hdCropImg = selectedImgEl;
+        document.getElementById("imgFloatControls")?.classList.remove("active");
+        document.getElementById("imgWrapMenu")?.classList.remove("open");
+        ["cropTop", "cropBottom", "cropLeft", "cropRight"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = 0;
+        });
+        document.getElementById("imgCropModal").classList.add("open");
+        window.updateCropPreview();
+    };
+
+    function renderHdCropToCanvas(canvas, img, isExport) {
+        const nw = img.naturalWidth || img.width || 600;
+        const nh = img.naturalHeight || img.height || 400;
+        const tPct = +document.getElementById("cropTop").value || 0;
+        const bPct = +document.getElementById("cropBottom").value || 0;
+        const lPct = +document.getElementById("cropLeft").value || 0;
+        const rPct = +document.getElementById("cropRight").value || 0;
+
+        const t = (tPct / 100) * nh;
+        const b = (bPct / 100) * nh;
+        const l = (lPct / 100) * nw;
+        const r = (rPct / 100) * nw;
+        const cw = Math.max(10, nw - l - r);
+        const ch = Math.max(10, nh - t - b);
+
+        // Для экспорта повышаем плотность пикселей, если исходник небольшой или SVG
+        let scale = 1;
+        if (isExport) {
+            const maxDim = Math.max(cw, ch);
+            if (maxDim < 1200) scale = Math.min(4, Math.max(2, Math.ceil(1600 / maxDim)));
+        }
+
+        canvas.width = Math.round(cw * scale);
+        canvas.height = Math.round(ch * scale);
+        const ctx = canvas.getContext("2d");
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, l, t, cw, ch, 0, 0, canvas.width, canvas.height);
+        return { lPct, rPct };
+    }
+
+    window.updateCropPreview = function() {
+        if (!hdCropImg) return;
+        const canvas = document.getElementById("imgCropPreview");
+        if (!canvas) return;
+        renderHdCropToCanvas(canvas, hdCropImg, false);
+    };
+
+    window.applyImgCrop = function() {
+        if (!hdCropImg) return;
+        const oldW = hdCropImg.offsetWidth;
+        const offCanvas = document.createElement("canvas");
+        try {
+            const { lPct, rPct } = renderHdCropToCanvas(offCanvas, hdCropImg, true);
+            hdCropImg.src = offCanvas.toDataURL("image/png");
+            // Пропорционально уменьшаем ширину, чтобы обрезанная картинка не растягивалась
+            if (oldW > 0) {
+                const remainRatio = Math.max(0.1, (100 - lPct - rPct) / 100);
+                hdCropImg.style.width = Math.round(oldW * remainRatio) + "px";
+            }
+            hdCropImg.style.height = "auto";
+        } catch (_) {
+            const t = document.getElementById("cropTop").value;
+            const r = document.getElementById("cropRight").value;
+            const b = document.getElementById("cropBottom").value;
+            const l = document.getElementById("cropLeft").value;
+            hdCropImg.style.clipPath = `inset(${t}% ${r}% ${b}% ${l}%)`;
+        }
+        hdCropImg = null;
+        document.getElementById("imgCropModal").classList.remove("open");
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    };
+})();
