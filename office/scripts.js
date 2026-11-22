@@ -1721,11 +1721,32 @@ window.adjustOfficeZoom = function(d) {
 };
 document.addEventListener("wheel", (e) => { if (e.ctrlKey) { e.preventDefault(); adjustOfficeZoom(e.deltaY < 0 ? 0.1 : -0.1); } }, { passive: false });
 
+const OFFICE_UZ_APOS = "['`\u00B4\u02B9\u02BB\u02BC\u02BD\u2018\u2019\u2032]";
+const OFFICE_OG_REGEX = new RegExp(`([OoGg])${OFFICE_UZ_APOS}`, "g");
+const OFFICE_APOS_START_REGEX = new RegExp(`^${OFFICE_UZ_APOS}`);
+
+function officeFixOgApostrophes(str) {
+    return String(str || "").replace(OFFICE_OG_REGEX, (_, ch) => {
+        if (ch === "O") return "Ö";
+        if (ch === "o") return "ö";
+        if (ch === "G") return "Ğ";
+        return "ğ";
+    });
+}
+
+function officeConvertText(str) {
+    let res = officeFixOgApostrophes(str);
+    if (typeof applyReplacements === "function") {
+        res = applyReplacements(res);
+    }
+    return officeFixOgApostrophes(res);
+}
+
 function handleSmartUzbekPaste(e) {
     const txt = (e.clipboardData || window.clipboardData).getData("text/plain");
     if (!txt || txt.length < 3) return;
     const hasUzCyr = /[ўқғҳЎҚҒҲ]/.test(txt);
-    const hasUzOld = /(o['‘’`ʻʼ]|g['‘’`ʻʼ]|\b(va|uchun|bilan|shahar|o'zbek)\b)/i.test(txt);
+    const hasUzOld = new RegExp(`([og]${OFFICE_UZ_APOS}|\\b(va|uchun|bilan|shahar|o'zbek)\\b)`, "i").test(txt);
     const isRu = /[а-яё]/i.test(txt) && !hasUzCyr && /\b(что|это|как|для|или|быть)\b/i.test(txt);
     const isEn = /\b(the|and|with|from|that|this)\b/i.test(txt) && !hasUzOld;
     if (!isRu && !isEn && (hasUzCyr || hasUzOld)) {
@@ -1733,6 +1754,7 @@ function handleSmartUzbekPaste(e) {
         document.getElementById("smartPasteToast")?.classList.add("show");
     }
 }
+
 window.confirmSmartPaste = function(ok) {
     document.getElementById("smartPasteToast")?.classList.remove("show");
     if (ok && pendingPasteNode) {
@@ -1742,22 +1764,60 @@ window.confirmSmartPaste = function(ok) {
     }
     pendingPasteNode = null;
 };
+
 function transliterateElementNodes(root) {
-    if (!root || typeof applyReplacements !== "function") return;
+    if (!root) return;
+    // Склеиваем соседние текстовые узлы
+    root.normalize();
+
     const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
-    let n; while ((n = w.nextNode())) { if (n.nodeValue.trim()) n.nodeValue = applyReplacements(n.nodeValue); }
+    const nodes = [];
+    let n;
+    while ((n = w.nextNode())) {
+        if (n.parentElement?.closest(".a4-page-num")) continue;
+        nodes.push(n);
+    }
+
+    // 1. Ловим пары O/o/G/g + апостроф, разорванные разными HTML-тегами (<span>O</span><span>‘</span>)
+    for (let i = 0; i < nodes.length - 1; i++) {
+        const cur = nodes[i];
+        const next = nodes[i + 1];
+        if (!cur.nodeValue || !next.nodeValue) continue;
+        if (/[OoGg]$/.test(cur.nodeValue) && OFFICE_APOS_START_REGEX.test(next.nodeValue)) {
+            const lastChar = cur.nodeValue.slice(-1);
+            const map = { O: "Ö", o: "ö", G: "Ğ", g: "ğ" };
+            cur.nodeValue = cur.nodeValue.slice(0, -1) + map[lastChar];
+            next.nodeValue = next.nodeValue.slice(1);
+        }
+    }
+
+    // 2. Конвертируем содержимое каждого текстового узла
+    nodes.forEach(node => {
+        if (node.nodeValue && node.nodeValue.trim()) {
+            node.nodeValue = officeConvertText(node.nodeValue);
+        }
+    });
 }
+
 window.transliterateWholeDocument = function() {
     if (officeMode === "word") {
-        document.querySelectorAll(".a4-sheet").forEach((p, i) => { transliterateElementNodes(p); wordPages[i] = p.innerHTML; });
+        document.querySelectorAll(".a4-sheet").forEach((p, i) => {
+            transliterateElementNodes(p);
+            wordPages[i] = p.innerHTML;
+        });
     } else if (officeMode === "slides") {
         slidesData.forEach(s => {
             const t = document.createElement("div"); t.innerHTML = s.title; transliterateElementNodes(t); s.title = t.innerHTML;
             const b = document.createElement("div"); b.innerHTML = s.body; transliterateElementNodes(b); s.body = b.innerHTML;
         });
-        loadActiveSlideToCanvas(); renderSlidesSidebar();
+        loadActiveSlideToCanvas();
+        renderSlidesSidebar();
     } else {
-        Object.keys(tableData.cells).forEach(k => { if (!String(tableData.cells[k]).startsWith("=")) tableData.cells[k] = applyReplacements(tableData.cells[k]); });
+        Object.keys(tableData.cells).forEach(k => {
+            if (!String(tableData.cells[k]).startsWith("=")) {
+                tableData.cells[k] = officeConvertText(tableData.cells[k]);
+            }
+        });
         renderSpreadsheet();
     }
     saveCurrentOfficeDoc();
