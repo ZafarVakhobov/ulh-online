@@ -1038,6 +1038,24 @@
         <option value="dashed">- - -</option>
         <option value="dotted">· · ·</option>
     </select>
+
+    <span class="sf-sep"></span>
+    <button type="button" id="sfFlipHBtn" class="sf-btn" onclick="toggleSelectedShapeFlip('h')" title="Gorizontal aks ettiriş (Отразить по горизонтали)">
+        <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M12 3l0 18"/><path d="M16 7l0 10l5 0z"/><path d="M8 7l0 10l-5 0z"/></svg>
+    </button>
+    <button type="button" id="sfFlipVBtn" class="sf-btn" onclick="toggleSelectedShapeFlip('v')" title="Vertikal aks ettiriş (Отразить по вертикали)">
+        <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M3 12l18 0"/><path d="M7 16l10 0l0 5z"/><path d="M7 8l10 0l0 -5z"/></svg>
+    </button>
+    <div class="sf-rot-wrap" title="Buriliş burçagi (gradus)">
+        <button type="button" class="sf-rot-ico" onclick="quickRotateSelectedShape(90)" title="+90° buriş">
+            <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M19.95 11a8 8 0 1 0 -.5 4m.5 5v-5h-5"/></svg>
+        </button>
+        <input type="number" id="sfRotateInput" class="sf-rot-input" value="0" min="-360" max="360" step="1"
+            oninput="updateSelectedShapeRotation(this.value)"
+            onkeydown="event.stopPropagation()">
+        <span class="sf-deg">°</span>
+    </div>
+    
     <span class="sf-sep"></span>
     <button type="button" class="sf-btn danger" onclick="deleteSelectedShape()" title="Öçiriş (Delete)">
         <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg>
