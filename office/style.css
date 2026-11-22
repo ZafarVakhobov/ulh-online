@@ -2257,3 +2257,368 @@ body.dark-mode .vak-del-btn {
     background: rgba(239, 68, 68, 0.18);
     color: #F87171;
 }
+
+
+/* === АУДИОПЛЕЕР В ШАПКЕ ULH OFFICE === */
+.office-music-btn {
+    position: relative;
+}
+.office-music-btn .music-playing-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10B981;
+    display: none;
+    box-shadow: 0 0 0 2px #FFFFFF;
+}
+.office-music-btn.is-playing .music-playing-dot {
+    display: block;
+    animation: omPulse 1.4s infinite;
+}
+.office-music-btn.is-playing {
+    color: #0284C7;
+    border-color: #BAE6FD;
+    background: #F0F9FF;
+}
+@keyframes omPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.35); opacity: 0.65; }
+}
+
+.office-music-popover {
+    left: auto !important;
+    right: 0 !important;
+    width: 345px;
+    max-width: 92vw;
+    padding: 16px !important;
+    border-radius: 20px !important;
+    gap: 12px !important;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18) !important;
+}
+
+.om-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.om-play-btn {
+    width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+    border-radius: 13px !important;
+    background: linear-gradient(135deg, #38BDF8, #0284C7) !important;
+    color: #FFFFFF !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center !important;
+    flex-shrink: 0;
+    box-shadow: 0 6px 16px rgba(2, 132, 199, 0.32);
+    transition: transform 0.15s;
+}
+.om-play-btn:hover {
+    transform: scale(1.05);
+    color: #FFFFFF !important;
+}
+.om-track-info {
+    min-width: 0;
+    flex: 1;
+}
+.om-track-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #0F172A;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.om-track-sub {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748B;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Зелёный ползунок громкости */
+.om-vol-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.om-vol-ico {
+    color: #64748B;
+    flex-shrink: 0;
+}
+.om-vol-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 16px;
+    border-radius: 999px;
+    background: linear-gradient(to right, #10B981 0%, #10B981 70%, #ECFDF5 70%, #ECFDF5 100%);
+    outline: none;
+    cursor: pointer;
+}
+.om-vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #10B981;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.4);
+}
+.om-vol-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background: #10B981;
+    cursor: pointer;
+}
+
+/* Поле ввода YouTube */
+.om-yt-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.om-yt-input {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 11px;
+    border: 1px solid #CBD5E1;
+    background: #F8FAFC;
+    color: #0F172A;
+    font-size: 12.5px;
+    font-weight: 600;
+    outline: none;
+}
+.om-yt-input:focus {
+    border-color: #10B981;
+    background: #FFFFFF;
+}
+.om-yt-ok {
+    width: 48px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border-radius: 11px !important;
+    background: #10B981 !important;
+    color: #FFFFFF !important;
+    font-size: 12.5px !important;
+    font-weight: 800 !important;
+    justify-content: center !important;
+    flex-shrink: 0;
+}
+.om-yt-ok:hover {
+    background: #059669 !important;
+    color: #FFFFFF !important;
+}
+
+/* 4 кнопки режимов эмбиента */
+.om-modes-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+.om-mode-btn {
+    height: 38px !important;
+    padding: 0 !important;
+    border-radius: 11px !important;
+    border: 1px solid #E2E8F0 !important;
+    background: #F8FAFC !important;
+    color: #475569 !important;
+    justify-content: center !important;
+    transition: all 0.15s;
+}
+.om-mode-btn:hover {
+    border-color: #7DD3FC !important;
+    color: #0284C7 !important;
+}
+.om-mode-btn.active {
+    background: #0284C7 !important;
+    border-color: #0284C7 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 6px 14px rgba(2, 132, 199, 0.25);
+}
+
+.om-dashed-sep {
+    border: 0;
+    border-top: 1px dashed #CBD5E1;
+    margin: 2px 0;
+}
+
+/* Шапка плейлиста */
+.om-pl-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.om-pl-title {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #64748B;
+    letter-spacing: 0.4px;
+}
+.om-pl-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.om-add-track-btn {
+    height: 28px !important;
+    padding: 0 10px !important;
+    border-radius: 8px !important;
+    background: #ECFDF5 !important;
+    color: #059669 !important;
+    font-size: 11.5px !important;
+    font-weight: 800 !important;
+}
+.om-add-track-btn:hover {
+    background: #D1FAE5 !important;
+    color: #047857 !important;
+}
+.om-clear-pl-btn {
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    color: #94A3B8 !important;
+    justify-content: center !important;
+}
+.om-clear-pl-btn:hover {
+    background: #FEE2E2 !important;
+    color: #EF4444 !important;
+}
+
+/* Список треков */
+.om-pl-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 3px;
+}
+.om-pl-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    transition: border-color 0.15s, background 0.15s;
+}
+.om-pl-item.playing {
+    border-color: #7DD3FC;
+    background: #F0F9FF;
+}
+.om-pl-drag {
+    color: #CBD5E1;
+    cursor: grab;
+    font-size: 13px;
+    user-select: none;
+    flex-shrink: 0;
+}
+.om-pl-play {
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    background: #E2E8F0 !important;
+    color: #475569 !important;
+    justify-content: center !important;
+    flex-shrink: 0;
+}
+.om-pl-item.playing .om-pl-play {
+    background: #0284C7 !important;
+    color: #FFFFFF !important;
+}
+.om-pl-meta {
+    min-width: 0;
+    flex: 1;
+    cursor: pointer;
+}
+.om-pl-name {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #0F172A;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.om-pl-author {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748B;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.om-pl-del {
+    width: 24px !important;
+    height: 24px !important;
+    padding: 0 !important;
+    border-radius: 6px !important;
+    color: #94A3B8 !important;
+    justify-content: center !important;
+    font-size: 15px !important;
+    flex-shrink: 0;
+}
+.om-pl-del:hover {
+    background: #FEE2E2 !important;
+    color: #EF4444 !important;
+}
+.om-pl-empty {
+    text-align: center;
+    padding: 18px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #94A3B8;
+}
+
+/* Тёмная тема */
+body.dark-mode .office-music-btn.is-playing {
+    background: rgba(56, 189, 248, 0.16);
+    border-color: rgba(56, 189, 248, 0.35);
+    color: #38BDF8;
+}
+body.dark-mode .office-music-btn .music-playing-dot { box-shadow: 0 0 0 2px #0F172A; }
+body.dark-mode .om-track-title,
+body.dark-mode .om-pl-name { color: #F8FAFC; }
+body.dark-mode .om-yt-input {
+    background: #1E293B;
+    border-color: #334155;
+    color: #F8FAFC;
+}
+body.dark-mode .om-mode-btn {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+    color: #CBD5E1 !important;
+}
+body.dark-mode .om-dashed-sep { border-color: #334155; }
+body.dark-mode .om-pl-item {
+    background: #1E293B;
+    border-color: #334155;
+}
+body.dark-mode .om-pl-item.playing {
+    background: rgba(56, 189, 248, 0.14);
+    border-color: #38BDF8;
+}
+body.dark-mode .om-pl-play {
+    background: #334155 !important;
+    color: #E2E8F0 !important;
+}
+body.dark-mode .om-add-track-btn {
+    background: rgba(16, 185, 129, 0.18) !important;
+    color: #34D399 !important;
+}
