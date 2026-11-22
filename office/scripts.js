@@ -3417,7 +3417,12 @@ let rulerMarginBottom = 20; // mm
     };
 
     // 2. Управление границами (все 8 режимов как в MS Word)
-    const SOLID_BORDER = "1.5px solid #334155";
+    let tableBorderColor = "#334155";
+const getSolidBorder = () => `1.5px solid ${tableBorderColor}`;
+
+window.setTableBorderColor = function(color) {
+    tableBorderColor = color || "#334155";
+};
     const NO_BORDER = "none";
 
     window.applyTableBorders = function(type) {
@@ -3441,22 +3446,22 @@ let rulerMarginBottom = 20; // mm
             const r = rows.indexOf(cell.parentElement);
             const c = cell.cellIndex;
 
-            if (type === "bottom") cell.style.borderBottom = SOLID_BORDER;
-            else if (type === "top") cell.style.borderTop = SOLID_BORDER;
-            else if (type === "left") cell.style.borderLeft = SOLID_BORDER;
-            else if (type === "right") cell.style.borderRight = SOLID_BORDER;
+            if (type === "bottom") cell.style.borderBottom = getSolidBorder();
+            else if (type === "top") cell.style.borderTop = getSolidBorder();
+            else if (type === "left") cell.style.borderLeft = getSolidBorder();
+            else if (type === "right") cell.style.borderRight = getSolidBorder();
             else if (type === "none") cell.style.border = NO_BORDER;
-            else if (type === "all") cell.style.border = SOLID_BORDER;
+            else if (type === "all") cell.style.border = getSolidBorder();
             else if (type === "outer") {
-                if (r === rMin) cell.style.borderTop = SOLID_BORDER;
-                if (r === rMax) cell.style.borderBottom = SOLID_BORDER;
-                if (c === cMin) cell.style.borderLeft = SOLID_BORDER;
-                if (c === cMax) cell.style.borderRight = SOLID_BORDER;
+                if (r === rMin) cell.style.borderTop = getSolidBorder();
+                if (r === rMax) cell.style.borderBottom = getSolidBorder();
+                if (c === cMin) cell.style.borderLeft = getSolidBorder();
+                if (c === cMax) cell.style.borderRight = getSolidBorder();
             } else if (type === "inner") {
-                if (r > rMin) cell.style.borderTop = SOLID_BORDER;
-                if (r < rMax) cell.style.borderBottom = SOLID_BORDER;
-                if (c > cMin) cell.style.borderLeft = SOLID_BORDER;
-                if (c < cMax) cell.style.borderRight = SOLID_BORDER;
+                if (r > rMin) cell.style.borderTop = getSolidBorder();
+                if (r < rMax) cell.style.borderBottom = getSolidBorder();
+                if (c > cMin) cell.style.borderLeft = getSolidBorder();
+                if (c < cMax) cell.style.borderRight = getSolidBorder();
             }
         });
 
@@ -3491,7 +3496,7 @@ let rulerMarginBottom = 20; // mm
         const rows = [...tbl.rows];
         const r = rows.indexOf(cell.parentElement);
         const c = cell.cellIndex;
-        const val = activeTableTool === "draw" ? SOLID_BORDER : NO_BORDER;
+        const val = activeTableTool === "draw" ? getSolidBorder() : NO_BORDER;
 
         // Меняем границу и у текущей ячейки, и у смежной (чтобы при ластике линия исчезала полностью)
         if (min === dTop) {
