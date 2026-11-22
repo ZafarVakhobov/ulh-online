@@ -1218,3 +1218,35 @@ window.ctxDeleteTableCol = function() {
     user-select: none !important;
     -webkit-user-select: none !important;
 }
+
+   /* === НИЖНИЙ БЕГУНОК И ПОЛЕ ПОДВАЛА НА ВЕРТИКАЛЬНОЙ ЛИНЕЙКЕ === */
+.vruler-margin-shade.bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(148, 163, 184, 0.28);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.vruler-handle.bottom-margin {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: #0284C7;
+    cursor: ns-resize;
+    z-index: 5;
+    transform: translateY(50%);
+    border-radius: 2px;
+    transition: background 0.15s;
+}
+
+.vruler-handle.bottom-margin:hover {
+    background: #0369A1;
+}
+
+body.dark-mode .vruler-margin-shade.bottom {
+    background: rgba(15, 23, 42, 0.55);
+}     
