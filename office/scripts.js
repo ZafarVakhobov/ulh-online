@@ -2852,7 +2852,7 @@ window.applyTextCase = function(mode) {
         const st = shape.dataset.sstyle || "solid";
 
         if (fill !== "transparent") document.getElementById("sfFillColor").value = fill;
-        document.getElementById("sfStrokeColor").value = stroke;
+        if (stroke !== "transparent") document.getElementById("sfStrokeColor").value = stroke;
         document.getElementById("sfStrokeWidth").value = sw;
         document.getElementById("sfStrokeStyle").value = st;
     }
@@ -2939,18 +2939,19 @@ window.applyTextCase = function(mode) {
         const st = selectedShape.dataset.sstyle || "solid";
         const type = selectedShape.dataset.shape;
 
+        const noStroke = sw === "0" || stroke === "transparent";
         if (["textbox", "rect", "round-rect", "oval"].includes(type)) {
             selectedShape.style.backgroundColor = fill;
-            selectedShape.style.border = sw === "0" ? "none" : `${sw}px ${st} ${stroke}`;
+            selectedShape.style.border = noStroke ? "none" : `${sw}px ${st} ${stroke}`;
         } else {
             const geom = selectedShape.querySelector(".sh-geom");
             if (geom) {
                 if (geom.tagName.toLowerCase() !== "line") geom.setAttribute("fill", fill);
-                geom.setAttribute("stroke", sw === "0" ? "none" : stroke);
+                geom.setAttribute("stroke", noStroke ? "none" : stroke);
                 geom.setAttribute("stroke-width", sw);
                 geom.setAttribute("stroke-dasharray", getDashArray(st, sw));
             }
-            selectedShape.querySelectorAll(".sh-arrow-head").forEach(h => h.setAttribute("fill", stroke));
+            selectedShape.querySelectorAll(".sh-arrow-head").forEach(h => h.setAttribute("fill", noStroke ? "none" : stroke));
         }
 
         if (officeMode === "word") syncWordPagesFromDom();
