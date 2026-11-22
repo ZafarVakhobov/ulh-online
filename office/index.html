@@ -373,6 +373,66 @@
             <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/></svg>
             <small>Rasm</small>
         </button>
+
+<!-- Фигуры (Şakllar) -->
+<div class="office-dropdown-wrap" id="shapesMenuWrap">
+    <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="toggleSimpleDrop('shapesMenuWrap', event)" title="Şakllar va çiziqlar">
+        <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M12 3l-4 7h8z"/><path d="M17 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M4 14m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/></svg>
+        <small>Şakllar ▾</small>
+    </button>
+    <div class="office-dropdown-menu shapes-drop-menu" onclick="event.stopPropagation()">
+        <div class="shapes-cat-title">Matn va çiziqlar</div>
+        <div class="shapes-icon-grid">
+            <button type="button" onclick="insertOfficeShape('textbox')" title="Yozuv (Nadpis)">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M4 4h16v16h-16z" stroke-dasharray="3 2"/><path d="M9 15l3 -8l3 8"/><path d="M10 13h4"/></svg>
+            </button>
+            <button type="button" onclick="insertOfficeShape('line')" title="Çiziq">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M4 20l16 -16"/></svg>
+            </button>
+            <button type="button" onclick="insertOfficeShape('arrow')" title="Öq (Strelka)">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M5 19l14 -14"/><path d="M13 5h6v6"/></svg>
+            </button>
+            <button type="button" onclick="insertOfficeShape('double-arrow')" title="Ikki tomonlama öq">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M5 19l14 -14"/><path d="M13 5h6v6"/><path d="M11 19h-6v-6"/></svg>
+            </button>
+            <button type="button" onclick="insertOfficeShape('hline')" title="Gorizontal çiziq">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M3 12h18"/></svg>
+            </button>
+            <button type="button" onclick="insertOfficeShape('harrow')" title="Gorizontal öq">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M16 7l5 5l-5 5"/></svg>
+            </button>
+        </div>
+
+        <div class="shapes-cat-title">Asosiy şakllar</div>
+        <div class="shapes-icon-grid">
+            <button type="button" onclick="insertOfficeShape('rect')" title="Törtburçak">
+                <svg class="ti" viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12"/></svg>
+            </button>
+            <button type="button" onclick="insertOfficeShape('round-rect')" title="Yumaloq törtburçak">
+                <svg class="ti" viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="4"/></svg>
+            </button>
+            <button type="button" onclick="insertOfficeShape('oval')" title="Doira / Oval">
+                <svg class="ti" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="8" ry="6"/></svg>
+            </button>
+            <button type="button" onclick="insertOfficeShape('triangle')" title="Uçburçak">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M12 4l9 16h-18z"/></svg>
+            </button>
+            <button type="button" onclick="insertOfficeShape('diamond')" title="Romb">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M12 3l9 9l-9 9l-9 -9z"/></svg>
+            </button>
+            <button type="button" onclick="insertOfficeShape('star')" title="Yulduz">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M12 3l2.9 6.26l6.6 .92l-4.8 4.6l1.15 6.52l-5.85 -3.12l-5.85 3.12l1.15 -6.52l-4.8 -4.6l6.6 -.92z"/></svg>
+            </button>
+            <button type="button" onclick="insertOfficeShape('block-arrow-right')" title="Öngga öq">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M3 9h10v-4l8 7l-8 7v-4h-10z"/></svg>
+            </button>
+            <button type="button" onclick="insertOfficeShape('block-arrow-down')" title="Pastga öq">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M9 3v10h-4l7 8l7 -8h-4v-10z"/></svg>
+            </button>
+        </div>
+    </div>
+</div>
+        
         <button type="button" class="rb-big-btn" onmousedown="event.preventDefault()" onclick="openOfficeChartModal()" title="Grafik qöşiş">
             <svg class="ti ti-lg" viewBox="0 0 24 24"><path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"/><path d="M4 20h14"/></svg>
             <small>Grafik</small>
@@ -948,6 +1008,36 @@
             <button type="button" class="weather-modal-close" onclick="document.getElementById('officeStatsModal').classList.remove('open')">Yopiş</button>
         </div>
     </div>
+</div>
+
+<!-- Плавающая панель форматирования выбранной фигуры -->
+<div id="shapeFormatBar" class="shape-format-bar" onmousedown="event.stopPropagation()">
+    <label class="sf-ctrl" title="Fon rangi (Zalivka)">
+        <span class="sf-lbl">Fon</span>
+        <input type="color" id="sfFillColor" class="office-round-color sf-dot" value="#E0F2FE" oninput="updateSelectedShapeStyle('fill', this.value)">
+    </label>
+    <button type="button" class="sf-btn" onclick="updateSelectedShapeStyle('fill', 'transparent')" title="Fonsiz (Şaffof)">⊘</button>
+    <span class="sf-sep"></span>
+    <label class="sf-ctrl" title="Çegara / Çiziq rangi">
+        <span class="sf-lbl">Çegara</span>
+        <input type="color" id="sfStrokeColor" class="office-round-color sf-dot" value="#0284C7" oninput="updateSelectedShapeStyle('stroke', this.value)">
+    </label>
+    <select id="sfStrokeWidth" class="sf-select" onchange="updateSelectedShapeStyle('width', this.value)" title="Qalinlik">
+        <option value="0">0px</option>
+        <option value="1">1px</option>
+        <option value="2" selected>2px</option>
+        <option value="3">3px</option>
+        <option value="5">5px</option>
+    </select>
+    <select id="sfStrokeStyle" class="sf-select" onchange="updateSelectedShapeStyle('style', this.value)" title="Çiziq turi">
+        <option value="solid">───</option>
+        <option value="dashed">- - -</option>
+        <option value="dotted">· · ·</option>
+    </select>
+    <span class="sf-sep"></span>
+    <button type="button" class="sf-btn danger" onclick="deleteSelectedShape()" title="Öçiriş (Delete)">
+        <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg>
+    </button>
 </div>
     
     <script src="../scripts.js"></script>
