@@ -3482,7 +3482,7 @@ window.applyTextCase = function(mode) {
             videoId: pendingYtId || "",
             playerVars: {
                 autoplay: 0,
-                controls: 0,
+                controls: 1,
                 rel: 0,
                 playsinline: 1,
                 origin: window.location.origin
@@ -3675,6 +3675,49 @@ window.applyTextCase = function(mode) {
         }
         updatePlayerUI();
     };
+
+    function formatSec(s) {
+        const sec = Math.max(0, Math.floor(s || 0));
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const r = sec % 60;
+        if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}`;
+        return `${m}:${String(r).padStart(2, "0")}`;
+    }
+
+    function paintSeekBar(slider, pct) {
+        const trackBg = document.body.classList.contains("dark-mode") ? "#334155" : "#E2E8F0";
+        slider.style.background = `linear-gradient(to right, #10B981 0%, #10B981 ${pct}%, ${trackBg} ${pct}%, ${trackBg} 100%)`;
+    }
+
+    window.seekOfficeMusic = function(pct) {
+        const slider = document.getElementById("omSeekRange");
+        const lbl = document.getElementById("omTimeLabel");
+        const val = Math.max(0, Math.min(100, parseFloat(pct) || 0));
+        if (slider) paintSeekBar(slider, val);
+
+        if (!ytReady || !ytPlayer || typeof ytPlayer.getDuration !== "function") return;
+        const dur = ytPlayer.getDuration() || 0;
+        if (dur > 0) {
+            const targetSec = (val / 100) * dur;
+            ytPlayer.seekTo(targetSec, true);
+            if (lbl) lbl.textContent = `${formatSec(targetSec)} / ${formatSec(dur)}`;
+        }
+    };
+
+    setInterval(() => {
+        const slider = document.getElementById("omSeekRange");
+        const lbl = document.getElementById("omTimeLabel");
+        if (!slider || !lbl || !ytReady || !ytPlayer || typeof ytPlayer.getCurrentTime !== "function") return;
+
+        const cur = ytPlayer.getCurrentTime() || 0;
+        const dur = ytPlayer.getDuration() || 0;
+        const pct = dur > 0 ? Math.min(100, (cur / dur) * 100) : 0;
+
+        if (document.activeElement !== slider) slider.value = pct;
+        paintSeekBar(slider, pct);
+        lbl.textContent = `${formatSec(cur)} / ${formatSec(dur)}`;
+    }, 500);
 
     function addTrackToPlaylist(url, autoPlay) {
         const id = extractYtId(url);
