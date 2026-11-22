@@ -89,6 +89,71 @@
                     <svg class="ti ti-moon" viewBox="0 0 24 24"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/></svg>
                     <svg class="ti ti-sun" viewBox="0 0 24 24"><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/></svg>
                 </button>
+
+<!-- Аудиоплеер (Konsentratsiya musiqasi + YouTube) -->
+<div class="office-dropdown-wrap" id="officeMusicWrap">
+    <button type="button" id="officeMusicToggleBtn" class="office-icon-btn office-music-btn" onclick="toggleOfficeMusicMenu(event)" title="Konsentratsiya musiqasi">
+        <svg class="ti" viewBox="0 0 24 24"><path d="M3 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M13 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M9 17v-13h10v13"/><path d="M9 8h10"/></svg>
+        <span class="music-playing-dot"></span>
+    </button>
+
+    <div class="office-dropdown-menu office-music-popover" id="officeMusicPopover" onclick="event.stopPropagation()">
+        <!-- Шапка плеера -->
+        <div class="om-header">
+            <button type="button" id="omPlayBtn" class="om-play-btn" onclick="toggleOfficeMusicPlay()" title="Oynatiş / Pauza">
+                <svg id="omPlayIco" class="ti" viewBox="0 0 24 24"><path d="M7 4v16l13 -8z" fill="currentColor" stroke="none"/></svg>
+                <svg id="omPauseIco" class="ti" style="display:none;" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"/></svg>
+            </button>
+            <div class="om-track-info">
+                <div id="omTrackTitle" class="om-track-title">Konsentratsiya musiqasi</div>
+                <div id="omTrackSub" class="om-track-sub">AI Generated Ambient</div>
+            </div>
+        </div>
+
+        <!-- Громкость -->
+        <div class="om-vol-row">
+            <svg class="ti ti-sm om-vol-ico" viewBox="0 0 24 24"><path d="M15 8a5 5 0 0 1 0 8"/><path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"/></svg>
+            <input type="range" id="omVolumeRange" class="om-vol-slider" min="0" max="100" value="70" oninput="setOfficeMusicVolume(this.value)">
+        </div>
+
+        <!-- Ввод YouTube-ссылки -->
+        <div class="om-yt-row">
+            <input type="text" id="omYtInput" class="om-yt-input" placeholder="YouTube havolasini kiriting..." onkeydown="if(event.key==='Enter') playOfficeYtFromInput()">
+            <button type="button" class="om-yt-ok" onclick="playOfficeYtFromInput()">OK</button>
+        </div>
+
+        <!-- 4 режима эмбиента -->
+        <div class="om-modes-grid">
+            <button type="button" class="om-mode-btn active" data-amb="ambient" onclick="selectOfficeAmbient('ambient')" title="AI Ambient">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M4 12v.01"/><path d="M8 9v6"/><path d="M12 6v12"/><path d="M16 9v6"/><path d="M20 12v.01"/></svg>
+            </button>
+            <button type="button" class="om-mode-btn" data-amb="rain" onclick="selectOfficeAmbient('rain')" title="Yomğir ovozi">
+                <svg class="ti" viewBox="0 0 24 24"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7"/><path d="M11 13v2m0 3v2m4 -5v2m0 3v2"/></svg>
+            </button>
+            <button type="button" class="om-mode-btn" data-amb="binaural" onclick="selectOfficeAmbient('binaural')" title="Fokus tölqinlari">
+                <svg class="ti" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14a4 4 0 0 1 8 0"/></svg>
+            </button>
+            <button type="button" class="om-mode-btn" data-amb="brown" onclick="selectOfficeAmbient('brown')" title="Tınç şovqin (Brown Noise)">
+                <svg class="ti" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 12l4 4"/></svg>
+            </button>
+        </div>
+
+        <hr class="om-dashed-sep">
+
+        <!-- Плейлист -->
+        <div class="om-pl-head">
+            <span class="om-pl-title">PLEYLIST</span>
+            <div class="om-pl-actions">
+                <button type="button" class="om-add-track-btn" onclick="addOfficeTrackPrompt()">+ Yangi trek qöşiş</button>
+                <button type="button" class="om-clear-pl-btn" onclick="clearOfficePlaylist()" title="Pleylistni tozalaş">
+                    <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg>
+                </button>
+            </div>
+        </div>
+        <div id="omPlaylistList" class="om-pl-list"></div>
+    </div>
+</div>
+                
                 <button type="button" class="office-btn minimize" onclick="minimizeOfficeToMain()" title="Asosiy sahifaga qaytiş">
                     <svg class="ti" viewBox="0 0 24 24"><path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/></svg>
                     <span>Asosiy sahifaga qaytiş</span>
@@ -1127,6 +1192,8 @@
         </div>
     </div>
 </div>
+
+<div id="officeYtPlayerHost" style="position:fixed; left:-9999px; top:-9999px; width:1px; height:1px; pointer-events:none; opacity:0;"></div>
     
     <script src="../scripts.js"></script>
     <script src="./scripts.js"></script>
