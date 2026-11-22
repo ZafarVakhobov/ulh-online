@@ -2751,3 +2751,50 @@ body.dark-mode .om-add-track-btn {
     border: 0;
     display: block;
 }
+
+/* === БЕГУНОК ПЕРЕМОТКИ ВРЕМЕНИ В ПЛЕЕРЕ === */
+.om-seek-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.om-seek-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 6px;
+    border-radius: 999px;
+    background: #E2E8F0;
+    outline: none;
+    cursor: pointer;
+}
+.om-seek-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #10B981;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.45);
+}
+.om-seek-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: none;
+    border-radius: 50%;
+    background: #10B981;
+    cursor: pointer;
+}
+.om-time-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #64748B;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+body.dark-mode .om-seek-slider {
+    background: #334155;
+}
+body.dark-mode .om-time-label {
+    color: #94A3B8;
+}
