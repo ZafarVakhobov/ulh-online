@@ -483,6 +483,16 @@
     <button type="button" id="ctxSynonymBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxAiAction('synonym')"><svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z"/></svg><span>Sinonim</span></button>
     <button type="button" id="ctxIzohBtn" class="ctx-pill-tag" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxIzohAction()"><svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12z"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/></svg><span>Izoh</span></button>
     <span class="ctx-sep"></span>
+    <span id="ctxTblSep" class="ctx-sep" style="display:none;"></span>
+<button type="button" id="ctxDelRowBtn" class="ctx-pill-tag danger" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxDeleteTableRow()" title="Qatorni öçiriş">
+    <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M20 6v4a1 1 0 0 1 -1 1h-14a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h14a1 1 0 0 1 1 1z"/><path d="M10 16l4 4"/><path d="M10 20l4 -4"/></svg>
+    <span>Qator</span>
+</button>
+<button type="button" id="ctxDelColBtn" class="ctx-pill-tag danger" style="display:none;" onmousedown="event.preventDefault()" onclick="ctxDeleteTableCol()" title="Ustunni öçiriş">
+    <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M6 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-14a1 1 0 0 1 1 -1z"/><path d="M16 10l4 4"/><path d="M16 14l4 -4"/></svg>
+    <span>Ustun</span>
+</button>
+        <span class="ctx-sep"></span>
     <button type="button" onclick="closeOfficeContextMenu()" title="Yopiş"><svg class="ti" viewBox="0 0 24 24"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></svg></button>
 </div>
 
