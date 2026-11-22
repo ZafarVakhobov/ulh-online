@@ -3413,27 +3413,14 @@ window.applyTextCase = function(mode) {
 })();
 
 // ==========================================
-// === АУДИОПЛЕЕР (AMBIENT + YOUTUBE + PLAYLIST) ===
+// === АУДИОПЛЕЕР (YOUTUBE + PLAYLIST) ===
 // ==========================================
 (function initOfficeAudioPlayer() {
     const PL_KEY = "ulh_office_music_playlist_v1";
-    const AMBIENT_META = {
-        ambient:  { title: "Konsentratsiya musiqasi", sub: "AI Generated Ambient" },
-        rain:     { title: "Yomğir ovozi",            sub: "Tınçlantiruvçi tabiat" },
-        binaural: { title: "Fokus tölqinlari",        sub: "Alpha 10Hz Binaural" },
-        brown:    { title: "Tınç şovqin",             sub: "Deep Brown Noise" }
-    };
 
     let isPlaying = false;
-    let sourceType = "ambient"; // 'ambient' | 'youtube'
-    let activeAmbient = "ambient";
     let activeYtId = null;
     let volumeVal = parseInt(localStorage.getItem("ulh_office_music_vol") || "70", 10);
-
-    // Web Audio API (эмбиент без внешних файлов)
-    let audioCtx = null;
-    let masterGain = null;
-    let activeNodes = [];
 
     // YouTube IFrame API
     let ytPlayer = null;
@@ -3441,7 +3428,6 @@ window.applyTextCase = function(mode) {
     let pendingYtId = null;
 
     function loadPlaylist() {
-        // Подхватываем плейлист с главного сайта, если он уже сохранён в localStorage
         const altKey = ["ulhMusicPlaylist", "musicPlaylist", "ytPlaylist", "ulh_yt_playlist"].find(k => localStorage.getItem(k));
         const key = localStorage.getItem(PL_KEY) ? PL_KEY : (altKey || PL_KEY);
         const arr = safeJsonParse(key, []);
@@ -3454,7 +3440,7 @@ window.applyTextCase = function(mode) {
 
     function extractYtId(url) {
         const str = String(url || "").trim();
-        const m = str.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{11})/);
+        const m = str.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|shorts\/|live\/)|[?&]v=)([A-Za-z0-9_-]{11})/);
         if (m) return m[1];
         if (/^[A-Za-z0-9_-]{11}$/.test(str)) return str;
         return null;
@@ -3479,13 +3465,28 @@ window.applyTextCase = function(mode) {
     }
 
     function createYtPlayer() {
-        const host = document.getElementById("officeYtPlayerHost");
-        if (!host || ytPlayer) return;
+        let host = document.getElementById("officeYtPlayerHost");
+        if (!host) {
+            host = document.createElement("div");
+            host.id = "officeYtPlayerHost";
+            document.body.appendChild(host);
+        }
+        if (ytPlayer) return;
+
+        // Браузеры блокируют звук в 1x1px за экраном — задаём корректный размер
+        host.style.cssText = "position:fixed; right:0; bottom:0; width:200px; height:200px; pointer-events:none; opacity:0.001; z-index:-1;";
+
         ytPlayer = new YT.Player("officeYtPlayerHost", {
-            height: "1",
-            width: "1",
+            height: "200",
+            width: "200",
             videoId: pendingYtId || "",
-            playerVars: { autoplay: 0, controls: 0, rel: 0 },
+            playerVars: {
+                autoplay: 0,
+                controls: 0,
+                rel: 0,
+                playsinline: 1,
+                origin: window.location.origin
+            },
             events: {
                 onReady: () => {
                     ytReady = true;
@@ -3493,102 +3494,32 @@ window.applyTextCase = function(mode) {
                     if (pendingYtId) {
                         const id = pendingYtId;
                         pendingYtId = null;
+                        ytPlayer.unMute();
                         ytPlayer.loadVideoById(id);
                         ytPlayer.playVideo();
                     }
                 },
                 onStateChange: (ev) => {
-                    if (ev.data === YT.PlayerState.ENDED && sourceType === "youtube") {
+                    if (ev.data === YT.PlayerState.PLAYING) {
+                        isPlaying = true;
+                        updatePlayerUI();
+                    } else if (ev.data === YT.PlayerState.PAUSED) {
+                        isPlaying = false;
+                        updatePlayerUI();
+                    } else if (ev.data === YT.PlayerState.ENDED) {
                         playNextPlaylistTrack();
                     }
+                },
+                onError: (ev) => {
+                    isPlaying = false;
+                    const msg = (ev.data === 101 || ev.data === 150)
+                        ? "Muallif bu videoni saytda oynatişni taqiqlagan"
+                        : "Video yuklanmadi (xatolik: " + ev.data + ")";
+                    setTrackHeader(document.getElementById("omTrackTitle")?.textContent || "Xatolik", msg);
+                    updatePlayerUI();
                 }
             }
         });
-    }
-
-    function stopAmbientEngine() {
-        activeNodes.forEach(n => {
-            try { if (typeof n.stop === "function") n.stop(); } catch (_) {}
-            try { n.disconnect(); } catch (_) {}
-        });
-        activeNodes = [];
-    }
-
-    function startAmbientEngine(mode) {
-        stopAmbientEngine();
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (!Ctx) return;
-        if (!audioCtx) {
-            audioCtx = new Ctx();
-            masterGain = audioCtx.createGain();
-            masterGain.connect(audioCtx.destination);
-        }
-        if (audioCtx.state === "suspended") audioCtx.resume();
-        masterGain.gain.setTargetAtTime((volumeVal / 100) * 0.28, audioCtx.currentTime, 0.08);
-
-        if (mode === "ambient") {
-            // Тёплый гармонический пэд (до-мажор септаккорд)
-            const freqs = [130.81, 196.0, 246.94, 329.63];
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = "lowpass";
-            filter.frequency.value = 520;
-            filter.connect(masterGain);
-            activeNodes.push(filter);
-
-            freqs.forEach((f, idx) => {
-                const osc = audioCtx.createOscillator();
-                const g = audioCtx.createGain();
-                osc.type = idx % 2 === 0 ? "sine" : "triangle";
-                osc.frequency.value = f;
-                g.gain.value = 0.22 / freqs.length;
-                osc.connect(g);
-                g.connect(filter);
-                osc.start();
-                activeNodes.push(osc, g);
-            });
-        } else if (mode === "binaural") {
-            // Мягкие альфа-волны 200 Гц + 210 Гц
-            [200, 210].forEach((f, i) => {
-                const osc = audioCtx.createOscillator();
-                const g = audioCtx.createGain();
-                osc.type = "sine";
-                osc.frequency.value = f;
-                g.gain.value = 0.22;
-                osc.connect(g);
-                g.connect(masterGain);
-                osc.start();
-                activeNodes.push(osc, g);
-            });
-        } else {
-            // Шум: дождь (rain) или мягкий коричневый шум (brown)
-            const bufSize = audioCtx.sampleRate * 3;
-            const buffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
-            let lastOut = 0;
-            for (let i = 0; i < bufSize; i++) {
-                const white = Math.random() * 2 - 1;
-                if (mode === "brown") {
-                    data[i] = (lastOut + 0.02 * white) / 1.02;
-                    lastOut = data[i];
-                    data[i] *= 3.2;
-                } else {
-                    data[i] = white * 0.45;
-                }
-            }
-            const src = audioCtx.createBufferSource();
-            src.buffer = buffer;
-            src.loop = true;
-
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = mode === "rain" ? "bandpass" : "lowpass";
-            filter.frequency.value = mode === "rain" ? 950 : 340;
-            filter.Q.value = mode === "rain" ? 0.6 : 1;
-
-            src.connect(filter);
-            filter.connect(masterGain);
-            src.start();
-            activeNodes.push(src, filter);
-        }
     }
 
     function updatePlayerUI() {
@@ -3598,10 +3529,6 @@ window.applyTextCase = function(mode) {
         if (playIco) playIco.style.display = isPlaying ? "none" : "inline-block";
         if (pauseIco) pauseIco.style.display = isPlaying ? "inline-block" : "none";
         topBtn?.classList.toggle("is-playing", isPlaying);
-
-        document.querySelectorAll(".om-mode-btn").forEach(btn => {
-            btn.classList.toggle("active", sourceType === "ambient" && btn.dataset.amb === activeAmbient);
-        });
 
         const slider = document.getElementById("omVolumeRange");
         if (slider) {
@@ -3615,8 +3542,8 @@ window.applyTextCase = function(mode) {
     function setTrackHeader(title, sub) {
         const t = document.getElementById("omTrackTitle");
         const s = document.getElementById("omTrackSub");
-        if (t) t.textContent = title || "Konsentratsiya musiqasi";
-        if (s) s.textContent = sub || "AI Generated Ambient";
+        if (t) t.textContent = title || "ULH Musiqa";
+        if (s) s.textContent = sub || "YouTube havolasini kiriting";
     }
 
     async function fetchYtMeta(id) {
@@ -3633,14 +3560,13 @@ window.applyTextCase = function(mode) {
     }
 
     function playYouTubeById(id, title, author) {
-        stopAmbientEngine();
-        sourceType = "youtube";
         activeYtId = id;
         isPlaying = true;
-        setTrackHeader(title || "YouTube yuklanmoqda...", author || "YouTube");
+        setTrackHeader(title || "Yuklanmoqda...", author || "YouTube");
 
         ensureYouTubeApi();
         if (ytReady && ytPlayer && typeof ytPlayer.loadVideoById === "function") {
+            ytPlayer.unMute();
             ytPlayer.setVolume(volumeVal);
             ytPlayer.loadVideoById(id);
             ytPlayer.playVideo();
@@ -3652,7 +3578,11 @@ window.applyTextCase = function(mode) {
 
     function playNextPlaylistTrack() {
         const pl = loadPlaylist();
-        if (!pl.length) return;
+        if (!pl.length) {
+            isPlaying = false;
+            updatePlayerUI();
+            return;
+        }
         const idx = pl.findIndex(t => t.id === activeYtId);
         const next = pl[(idx + 1) % pl.length];
         if (next) playYouTubeById(next.id, next.title, next.author);
@@ -3668,7 +3598,7 @@ window.applyTextCase = function(mode) {
         }
         const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         box.innerHTML = list.map((tr, i) => {
-            const isCur = sourceType === "youtube" && activeYtId === tr.id;
+            const isCur = activeYtId === tr.id;
             return `
                 <div class="om-pl-item ${isCur ? "playing" : ""}" draggable="true" data-idx="${i}">
                     <span class="om-pl-drag" title="Tartibni özgartiriş">≡</span>
@@ -3684,7 +3614,6 @@ window.applyTextCase = function(mode) {
             `;
         }).join("");
 
-        // Drag-and-drop сортировка треков в плейлисте
         let dragIdx = null;
         box.querySelectorAll(".om-pl-item").forEach(item => {
             item.addEventListener("dragstart", () => { dragIdx = +item.dataset.idx; });
@@ -3709,79 +3638,78 @@ window.applyTextCase = function(mode) {
         const willOpen = !wrap.classList.contains("open");
         if (typeof closeAllOfficeMenus === "function") closeAllOfficeMenus("officeMusicWrap");
         wrap.classList.toggle("open", willOpen);
-        if (willOpen) updatePlayerUI();
+        if (willOpen) {
+            ensureYouTubeApi();
+            updatePlayerUI();
+        }
     };
 
     window.toggleOfficeMusicPlay = function() {
+        if (!activeYtId) {
+            const pl = loadPlaylist();
+            if (pl.length) playYouTubeById(pl[0].id, pl[0].title, pl[0].author);
+            return;
+        }
         if (isPlaying) {
             isPlaying = false;
-            stopAmbientEngine();
             if (ytReady && ytPlayer && typeof ytPlayer.pauseVideo === "function") ytPlayer.pauseVideo();
         } else {
             isPlaying = true;
-            if (sourceType === "youtube" && activeYtId) {
-                if (ytReady && ytPlayer && typeof ytPlayer.playVideo === "function") ytPlayer.playVideo();
-                else playYouTubeById(activeYtId, document.getElementById("omTrackTitle")?.textContent, document.getElementById("omTrackSub")?.textContent);
+            if (ytReady && ytPlayer && typeof ytPlayer.playVideo === "function") {
+                ytPlayer.unMute();
+                ytPlayer.setVolume(volumeVal);
+                ytPlayer.playVideo();
             } else {
-                const m = AMBIENT_META[activeAmbient] || AMBIENT_META.ambient;
-                setTrackHeader(m.title, m.sub);
-                startAmbientEngine(activeAmbient);
+                playYouTubeById(activeYtId, document.getElementById("omTrackTitle")?.textContent, document.getElementById("omTrackSub")?.textContent);
             }
         }
-        updatePlayerUI();
-    };
-
-    window.selectOfficeAmbient = function(mode) {
-        if (ytReady && ytPlayer && typeof ytPlayer.pauseVideo === "function") ytPlayer.pauseVideo();
-        sourceType = "ambient";
-        activeAmbient = mode;
-        activeYtId = null;
-        isPlaying = true;
-        const m = AMBIENT_META[mode] || AMBIENT_META.ambient;
-        setTrackHeader(m.title, m.sub);
-        startAmbientEngine(mode);
         updatePlayerUI();
     };
 
     window.setOfficeMusicVolume = function(val) {
         volumeVal = Math.max(0, Math.min(100, parseInt(val, 10) || 0));
         localStorage.setItem("ulh_office_music_vol", String(volumeVal));
-        if (masterGain && audioCtx) {
-            masterGain.gain.setTargetAtTime((volumeVal / 100) * 0.28, audioCtx.currentTime, 0.05);
-        }
         if (ytReady && ytPlayer && typeof ytPlayer.setVolume === "function") {
+            ytPlayer.unMute();
             ytPlayer.setVolume(volumeVal);
         }
         updatePlayerUI();
     };
 
-    async function addTrackToPlaylist(url, autoPlay) {
+    function addTrackToPlaylist(url, autoPlay) {
         const id = extractYtId(url);
         if (!id) return alert("Töğri YouTube havolasini kiriting.");
-        const meta = await fetchYtMeta(id);
-        const pl = loadPlaylist();
-        if (!pl.some(t => t.id === id)) {
-            pl.unshift({ id, title: meta.title, author: meta.author });
-            savePlaylist(pl);
-        }
-        if (autoPlay) playYouTubeById(id, meta.title, meta.author);
-        else renderPlaylist();
+
+        // Запускаем видео сразу по клику, не дожидаясь fetch
+        if (autoPlay) playYouTubeById(id, "Yuklanmoqda...", "YouTube");
+
+        fetchYtMeta(id).then(meta => {
+            const pl = loadPlaylist();
+            if (!pl.some(t => t.id === id)) {
+                pl.unshift({ id, title: meta.title, author: meta.author });
+                savePlaylist(pl);
+            }
+            if (activeYtId === id) {
+                setTrackHeader(meta.title, meta.author);
+            }
+            renderPlaylist();
+        });
     }
 
-    window.playOfficeYtFromInput = async function() {
+    window.playOfficeYtFromInput = function() {
         const inp = document.getElementById("omYtInput");
         const url = (inp?.value || "").trim();
         if (!url) return;
-        await addTrackToPlaylist(url, true);
+        addTrackToPlaylist(url, true);
         if (inp) inp.value = "";
     };
 
-    window.addOfficeTrackPrompt = async function() {
+    window.addOfficeTrackPrompt = function() {
         const inp = document.getElementById("omYtInput");
         const curVal = (inp?.value || "").trim();
         const url = curVal || prompt("YouTube havolasini kiriting:");
         if (!url) return;
-        await addTrackToPlaylist(url, false);
+        addTrackToPlaylist(url, false);
         if (inp && curVal) inp.value = "";
     };
 
@@ -3789,7 +3717,7 @@ window.applyTextCase = function(mode) {
         const pl = loadPlaylist();
         const tr = pl[idx];
         if (!tr) return;
-        if (sourceType === "youtube" && activeYtId === tr.id && isPlaying) {
+        if (activeYtId === tr.id && isPlaying) {
             window.toggleOfficeMusicPlay();
             return;
         }
@@ -3798,8 +3726,11 @@ window.applyTextCase = function(mode) {
 
     window.removeOfficePlaylistTrack = function(idx) {
         const pl = loadPlaylist();
-        pl.splice(idx, 1);
+        const removed = pl.splice(idx, 1)[0];
         savePlaylist(pl);
+        if (removed && removed.id === activeYtId && isPlaying) {
+            window.toggleOfficeMusicPlay();
+        }
         renderPlaylist();
     };
 
@@ -3808,14 +3739,23 @@ window.applyTextCase = function(mode) {
         renderPlaylist();
     };
 
-    // Закрытие окна плеера при клике вне него (музыка продолжает играть)
     document.addEventListener("click", (e) => {
         if (!e.target.closest("#officeMusicWrap")) {
             document.getElementById("officeMusicWrap")?.classList.remove("open");
         }
     });
 
-    document.addEventListener("DOMContentLoaded", () => {
+    function bootAudioPlayer() {
+        const modesGrid = document.querySelector(".om-modes-grid");
+        if (modesGrid) modesGrid.style.display = "none";
+        if (!activeYtId) setTrackHeader("ULH Musiqa", "YouTube havolasini kiriting");
+        ensureYouTubeApi();
         updatePlayerUI();
-    });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", bootAudioPlayer);
+    } else {
+        bootAudioPlayer();
+    }
 })();
