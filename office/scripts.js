@@ -3244,3 +3244,170 @@ window.applyTextCase = function(mode) {
         }
     });
 })();
+
+
+// ==========================================
+// === ILMIY MANBALAR MENEJERI (VAK FORMATI) ===
+// ==========================================
+(function initOfficeVakManager() {
+    const STORAGE_KEY = "ulh_vak_sources_v1";
+
+    function loadSources() {
+        // Подхватываем сохранённые источники с главного сайта, если они там уже есть
+        const altKey = ["bibSources", "ulh_bib_sources", "vakSources", "scientificSources"].find(k => localStorage.getItem(k));
+        const key = localStorage.getItem(STORAGE_KEY) ? STORAGE_KEY : (altKey || STORAGE_KEY);
+        const arr = safeJsonParse(key, []);
+        return Array.isArray(arr) ? arr : [];
+    }
+
+    function saveSources(arr) {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+        } catch (_) {}
+    }
+
+    function formatTodayDate() {
+        const d = new Date();
+        return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+    }
+
+    function formatVakCitation(item) {
+        const lang = item.lang || "uz";
+        const author = (item.author || "").trim();
+        const title = (item.title || "").trim();
+        const source = (item.source || "").trim();
+        const year = (item.year || "").trim();
+        const pages = (item.pages || "").trim();
+        const accessDate = item.accessDate || formatTodayDate();
+
+        const isUrl = /^https?:\/\//i.test(source);
+        let res = "";
+
+        if (author) res += author + " ";
+        if (title) res += title;
+        if (source) res += (res ? " // " : "") + source + (isUrl ? "." : ".");
+
+        if (isUrl) {
+            const accessLabel = lang === "ru" ? "дата обращения" : lang === "en" ? "accessed" : "murojaat sanasi";
+            res += ` – (${accessLabel}: ${accessDate}).`;
+        } else {
+            if (year) res += ` – ${year}.`;
+            if (pages) {
+                const pPrefix = lang === "ru" ? "Стр." : lang === "en" ? "P." : "B.";
+                res += ` – ${pPrefix} ${pages}.`;
+            }
+        }
+        return res.trim();
+    }
+
+    function renderVakSources() {
+        const list = loadSources();
+        const countEl = document.getElementById("vakSavedCount");
+        const box = document.getElementById("vakSourcesList");
+        if (countEl) countEl.textContent = `Saqlangan manbalar (${list.length})`;
+        if (!box) return;
+
+        if (!list.length) {
+            box.innerHTML = `<div class="vak-empty-state">Hali ilmiy manbalar qöşilmagan</div>`;
+            return;
+        }
+
+        const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        box.innerHTML = list.map((item, idx) => {
+            const citation = item.formatted || formatVakCitation(item);
+            const note = (item.note || "").trim();
+            return `
+                <div class="vak-source-card">
+                    <div class="vak-card-top">
+                        <div class="vak-citation-text">${esc(citation)}</div>
+                        <div class="vak-card-btns">
+                            <button type="button" class="vak-mini-insert" onclick="insertSingleVakToDoc(${idx})" title="Hujjatga joylaş">+ Joylaş</button>
+                            <button type="button" class="vak-del-btn" onclick="deleteOfficeVakSource(${idx})" title="Öçiriş">×</button>
+                        </div>
+                    </div>
+                    ${note ? `<div class="vak-note-box">«${esc(note)}»</div>` : ""}
+                </div>
+            `;
+        }).join("");
+    }
+
+    window.openOfficeVakModal = function() {
+        renderVakSources();
+        document.getElementById("officeVakModal")?.classList.add("open");
+    };
+
+    window.addOfficeVakSource = function() {
+        const lang = document.getElementById("vakLang")?.value || "uz";
+        const author = (document.getElementById("vakAuthor")?.value || "").trim();
+        const title = (document.getElementById("vakTitle")?.value || "").trim();
+        const source = (document.getElementById("vakSource")?.value || "").trim();
+        const year = (document.getElementById("vakYear")?.value || "").trim();
+        const pages = (document.getElementById("vakPages")?.value || "").trim();
+        const note = (document.getElementById("vakNote")?.value || "").trim();
+
+        if (!author && !title && !source) return;
+
+        const item = { lang, author, title, source, year, pages, note, accessDate: formatTodayDate() };
+        item.formatted = formatVakCitation(item);
+
+        const list = loadSources();
+        list.unshift(item);
+        saveSources(list);
+
+        ["vakAuthor", "vakTitle", "vakSource", "vakYear", "vakPages", "vakNote"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
+        });
+        renderVakSources();
+    };
+
+    window.deleteOfficeVakSource = function(idx) {
+        const list = loadSources();
+        list.splice(idx, 1);
+        saveSources(list);
+        renderVakSources();
+    };
+
+    window.copyAllVakSources = function() {
+        const list = loadSources();
+        if (!list.length) return;
+        const text = list.map((it, i) => `${i + 1}. ${it.formatted || formatVakCitation(it)}`).join("\n");
+        navigator.clipboard?.writeText(text).then(() => {
+            const btn = document.getElementById("vakCopyAllBtn");
+            if (btn) {
+                const orig = btn.textContent;
+                btn.textContent = "Nusxalandi ✓";
+                setTimeout(() => { btn.textContent = orig; }, 1600);
+            }
+        }).catch(() => {});
+    };
+
+    window.insertSingleVakToDoc = function(idx) {
+        const list = loadSources();
+        const item = list[idx];
+        if (!item) return;
+        const citation = item.formatted || formatVakCitation(item);
+        const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        document.getElementById("officeVakModal")?.classList.remove("open");
+        if (officeMode === "tables") {
+            tableData.cells[activeCellKey] = citation;
+            renderSpreadsheet(); saveCurrentOfficeDoc(); updateOfficeLiveStats();
+        } else {
+            insertHtmlAtCursor(`<p>${esc(citation)}</p>`);
+        }
+    };
+
+    window.insertAllVakToDoc = function() {
+        const list = loadSources();
+        if (!list.length) return;
+        const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const html = `<ol>${list.map(it => `<li>${esc(it.formatted || formatVakCitation(it))}</li>`).join("")}</ol><p><br></p>`;
+        document.getElementById("officeVakModal")?.classList.remove("open");
+        if (officeMode === "tables") {
+            list.forEach((it, i) => { tableData.cells[`A${i + 1}`] = it.formatted || formatVakCitation(it); });
+            renderSpreadsheet(); saveCurrentOfficeDoc(); updateOfficeLiveStats();
+        } else {
+            insertHtmlAtCursor(html);
+        }
+    };
+})();
