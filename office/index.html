@@ -73,6 +73,10 @@
                     <svg class="ti" viewBox="0 0 24 24"><path d="M4 5h7"/><path d="M9 3v2c0 4.418 -2.239 8 -5 8"/><path d="M5 9c0 2.144 2.952 3.908 6.7 4"/><path d="M12 20l4 -9l4 9"/><path d="M19.1 18h-6.2"/></svg>
                     <span>ÖĞŞÇ</span>
                 </button>
+                <button type="button" class="office-btn" onclick="toggleOfficeCopyHistory()" title="Nusxalar tarixi">
+    <svg class="ti" viewBox="0 0 24 24"><path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"/><path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"/></svg>
+    <span>Nusxalar</span>
+</button>
                 <button type="button" class="office-btn" onclick="openOfficeHistoryModal()" title="Matn tarixi">
                     <svg class="ti" viewBox="0 0 24 24"><path d="M12 8l0 4l2 2"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/></svg>
                     <span>Tarix</span>
@@ -1039,6 +1043,22 @@
         <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg>
     </button>
 </div>
+
+<!-- Выдвижная панель: Nusxalar tarixi -->
+<div id="officeCopyHistBackdrop" class="copy-hist-backdrop" onclick="toggleOfficeCopyHistory(false)"></div>
+<aside id="officeCopyHistDrawer" class="copy-hist-drawer">
+    <div class="copy-hist-head">
+        <div class="copy-hist-title">
+            <svg class="ti" style="color:#0284C7;" viewBox="0 0 24 24"><path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z"/><path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"/></svg>
+            <span>Nusxalar tarixi</span>
+        </div>
+        <button type="button" class="copy-hist-close" onclick="toggleOfficeCopyHistory(false)" title="Yopiş">×</button>
+    </div>
+    <div id="officeCopyHistList" class="copy-hist-list"></div>
+    <div class="copy-hist-foot">
+        <button type="button" class="copy-hist-clear-btn" onclick="clearOfficeCopyHistory()">Tarixni tozalaş</button>
+    </div>
+</aside>
     
     <script src="../scripts.js"></script>
     <script src="./scripts.js"></script>
