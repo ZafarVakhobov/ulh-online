@@ -5207,3 +5207,185 @@ document.addEventListener("click", () => {
     setInterval(renderTickerStep, 5000);
     fetchRates();
 })();
+
+// ==========================================
+// === СВЯЗНЫЙ ДВИЖОК СТРАНИЦ A4 (PUSH DOWN + PULL UP REFLOW) ===
+// ==========================================
+(function initLinkedWordPagination() {
+    let reflowTimer = null;
+    let isReflowing = false;
+
+    function getContentChildren(pageEl) {
+        return [...pageEl.childNodes].filter(node => {
+            if (node.nodeType === 1 && node.classList.contains("a4-page-num")) return false;
+            if (node.nodeType === 3 && !node.nodeValue.trim()) return false;
+            return true;
+        });
+    }
+
+    function insertBeforePageNum(pageEl, node) {
+        const pageNum = pageEl.querySelector(":scope > .a4-page-num");
+        if (pageNum) pageEl.insertBefore(node, pageNum);
+        else pageEl.appendChild(node);
+    }
+
+    function isPageEmpty(pageEl) {
+        const kids = getContentChildren(pageEl);
+        if (!kids.length) return true;
+        return kids.every(n => {
+            if (n.nodeType === 3) return !n.nodeValue.trim();
+            if (n.nodeType === 1) {
+                if (n.querySelector("img, table, svg, hr, .ulh-shape")) return false;
+                return n.innerText.trim() === "";
+            }
+            return true;
+        });
+    }
+
+    // Гарантирует, что все голые текстовые узлы на листе обёрнуты в <p>
+    function normalizePageBlocks(pageEl) {
+        [...pageEl.childNodes].forEach(node => {
+            if (node.nodeType === 3 && node.nodeValue.trim()) {
+                const p = document.createElement("p");
+                p.textContent = node.nodeValue;
+                pageEl.replaceChild(p, node);
+            }
+        });
+    }
+
+    // Полный пересчёт всех страниц: перенос вниз (overflow) + подтягивание вверх (underflow)
+    window.paginateAllWordPages = function() {
+        if (officeMode !== "word" || isReflowing) return;
+        isReflowing = true;
+
+        try {
+            const container = document.getElementById("wordPagesContainer");
+            if (!container) return;
+
+            let safety = 0;
+            let changed = true;
+
+            while (changed && safety < 120) {
+                changed = false;
+                safety++;
+
+                let sheets = [...container.querySelectorAll(".a4-sheet")];
+
+                // 1. PUSH DOWN: если страница переполнена — переносим нижние блоки на следующую
+                for (let i = 0; i < sheets.length; i++) {
+                    const page = sheets[i];
+                    normalizePageBlocks(page);
+
+                    let kids = getContentChildren(page);
+                    if (page.scrollHeight > page.clientHeight + 2 && kids.length > 1) {
+                        let nextPage = sheets[i + 1];
+                        if (!nextPage) {
+                            // Создаём новую страницу в DOM
+                            wordPages.push("");
+                            const newPage = document.createElement("div");
+                            newPage.className = "a4-sheet";
+                            if (pageOrientations[i + 1] === "landscape") newPage.classList.add("landscape");
+                            newPage.contentEditable = "true";
+                            newPage.spellcheck = false;
+                            newPage.dataset.pageIndex = i + 1;
+                            newPage.style.paddingLeft = rulerMarginLeft + "mm";
+                            newPage.style.paddingRight = rulerMarginRight + "mm";
+                            newPage.style.paddingTop = rulerMarginTop + "mm";
+                            newPage.style.paddingBottom = rulerMarginBottom + "mm";
+                            newPage.style.textIndent = rulerFirstLine + "mm";
+                            container.appendChild(newPage);
+                            nextPage = newPage;
+                            sheets.push(newPage);
+                        }
+
+                        while (page.scrollHeight > page.clientHeight + 2) {
+                            kids = getContentChildren(page);
+                            if (kids.length <= 1) break;
+                            const lastNode = kids[kids.length - 1];
+                            nextPage.insertBefore(lastNode, nextPage.firstChild);
+                            changed = true;
+                        }
+                    }
+                }
+
+                // 2. PULL UP: если на странице освободилось место — подтягиваем блоки со следующей
+                sheets = [...container.querySelectorAll(".a4-sheet")];
+                for (let i = 0; i < sheets.length - 1; i++) {
+                    const curPage = sheets[i];
+                    const nextPage = sheets[i + 1];
+                    normalizePageBlocks(nextPage);
+
+                    while (true) {
+                        const nextKids = getContentChildren(nextPage);
+                        if (!nextKids.length) break;
+
+                        const candidate = nextKids[0];
+                        insertBeforePageNum(curPage, candidate);
+
+                        if (curPage.scrollHeight <= curPage.clientHeight + 2) {
+                            changed = true;
+                        } else {
+                            // Не поместился — возвращаем обратно в начало следующей страницы
+                            nextPage.insertBefore(candidate, nextPage.firstChild);
+                            break;
+                        }
+                    }
+
+                    // Если следующая страница полностью опустела — удаляем её
+                    if (isPageEmpty(nextPage) && sheets.length > 1) {
+                        nextPage.remove();
+                        sheets.splice(i + 1, 1);
+                        changed = true;
+                        i--; // Проверяем текущую страницу ещё раз с новой следующей
+                    }
+                }
+            }
+
+            // Синхронизируем массив wordPages и перевешиваем события, если число страниц изменилось
+            const finalSheets = [...container.querySelectorAll(".a4-sheet")];
+            const prevCount = wordPages.length;
+            wordPages = finalSheets.map(p => {
+                const clone = p.cloneNode(true);
+                clone.querySelectorAll(".a4-page-num").forEach(n => n.remove());
+                return clone.innerHTML || "<p><br></p>";
+            });
+
+            if (finalSheets.length !== prevCount) {
+                renderWordPages();
+            } else {
+                applyPageNumbersToSheets();
+            }
+
+            updatePageCounter();
+            updateOfficeLiveStats();
+            saveCurrentOfficeDoc();
+        } finally {
+            isReflowing = false;
+        }
+    };
+
+    // Переопределяем checkPageOverflow, чтобы при наборе/удалении срабатывал мягкий reflow
+    window.checkPageOverflow = function() {
+        clearTimeout(reflowTimer);
+        reflowTimer = setTimeout(() => {
+            window.paginateAllWordPages();
+        }, 280);
+    };
+
+    // Отслеживаем Backspace / Delete / Cut / Paste для мгновенного подтягивания хвоста
+    document.addEventListener("input", (e) => {
+        if (officeMode === "word" && e.target.closest?.(".a4-sheet")) {
+            clearTimeout(reflowTimer);
+            reflowTimer = setTimeout(() => {
+                window.paginateAllWordPages();
+            }, 320);
+        }
+    });
+
+    // Запускаем пересчёт при старте, если уже открыт длинный документ
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(() => {
+            if (officeMode === "word") window.paginateAllWordPages();
+        }, 250);
+    });
+})();
