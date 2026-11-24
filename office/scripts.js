@@ -6008,3 +6008,385 @@ document.addEventListener("click", () => {
         applyGridUI();
     }
 })();
+
+
+// ==========================================
+// === КОНТЕКСТНАЯ ПАНЕЛЬ ИЗОБРАЖЕНИЙ + W×H ДЛЯ ФИГУР ===
+// ==========================================
+(function initImageFormatBarAndShapeDims() {
+    const GRID_STEP_PX = (5 * 96) / 25.4; // 5 мм
+    let gridMoveDragging = null;
+    let gmStartX = 0, gmStartY = 0;
+
+    function snap5mm(px) {
+        return Math.max(0, Math.round(px / GRID_STEP_PX) * GRID_STEP_PX);
+    }
+
+    function getImgRatio(img) {
+        if (!img) return 1;
+        if (img.naturalWidth > 0 && img.naturalHeight > 0) return img.naturalWidth / img.naturalHeight;
+        const w = img.offsetWidth || 1;
+        const h = img.offsetHeight || 1;
+        return w / h;
+    }
+
+    function syncImgFloatAndBar(img) {
+        const bar = document.getElementById("imgFormatBar");
+        const box = document.getElementById("imgFloatControls");
+        if (!img || !bar) {
+            bar?.classList.remove("active");
+            document.getElementById("ifWrapDrop")?.classList.remove("open");
+            return;
+        }
+
+        const r = img.getBoundingClientRect();
+        if (box) {
+            box.style.left = r.left + "px";
+            box.style.top = r.top + "px";
+            box.style.width = r.width + "px";
+            box.style.height = r.height + "px";
+            box.classList.add("active");
+        }
+
+        bar.classList.add("active");
+        const barW = bar.offsetWidth || 540;
+        bar.style.left = Math.max(12, Math.min(r.left, window.innerWidth - barW - 14)) + "px";
+        bar.style.top = Math.max(12, r.top - 48) + "px";
+
+        // Заполняем W и H
+        const wInp = document.getElementById("ifWidthInput");
+        const hInp = document.getElementById("ifHeightInput");
+        if (wInp && document.activeElement !== wInp) wInp.value = Math.round(img.offsetWidth);
+        if (hInp && document.activeElement !== hInp) hInp.value = Math.round(img.offsetHeight);
+
+        // Заполняем границы
+        const stroke = img.dataset.stroke || "#0284C7";
+        const sw = img.dataset.sw || "0";
+        const st = img.dataset.sstyle || "solid";
+        if (stroke !== "transparent") {
+            const sc = document.getElementById("ifStrokeColor");
+            if (sc) sc.value = stroke;
+        }
+        const swEl = document.getElementById("ifStrokeWidth");
+        const stEl = document.getElementById("ifStrokeStyle");
+        if (swEl) swEl.value = sw;
+        if (stEl) stEl.value = st;
+
+        // Заполняем отражение, поворот и режим перемещения по сетке
+        const rot = parseFloat(img.dataset.rot || "0") || 0;
+        const rotInp = document.getElementById("ifRotateInput");
+        if (rotInp && document.activeElement !== rotInp) rotInp.value = rot;
+        document.getElementById("ifFlipHBtn")?.classList.toggle("active", img.dataset.flipX === "-1");
+        document.getElementById("ifFlipVBtn")?.classList.toggle("active", img.dataset.flipY === "-1");
+        document.getElementById("ifGridMoveBtn")?.classList.toggle("active", img.dataset.gridMove === "1");
+
+        // Подсвечиваем активный режим обтекания
+        const wrapMode = img.dataset.wrap || "inline";
+        document.querySelectorAll("#ifWrapMenu button").forEach(btn => {
+            btn.classList.toggle("active-wrap", btn.getAttribute("onclick")?.includes(`'${wrapMode}'`));
+        });
+    }
+
+    // Показ / скрытие панели при клике
+    document.addEventListener("click", (e) => {
+        if (e.target.closest("#imgFormatBar, #imgFloatControls")) return;
+        const img = e.target.closest?.(".a4-sheet img, #slideCanvas img");
+        if (img) {
+            selectedImgEl = img;
+            syncImgFloatAndBar(img);
+        } else {
+            document.getElementById("imgFormatBar")?.classList.remove("active");
+            document.getElementById("ifWrapDrop")?.classList.remove("open");
+        }
+    });
+
+    // Обновление панели при перемещении / ресайзе картинки
+    document.addEventListener("mousemove", (e) => {
+        if (e.buttons === 1 && selectedImgEl && document.getElementById("imgFormatBar")?.classList.contains("active")) {
+            syncImgFloatAndBar(selectedImgEl);
+        }
+    });
+
+    window.addEventListener("scroll", () => {
+        if (selectedImgEl && document.getElementById("imgFormatBar")?.classList.contains("active")) {
+            syncImgFloatAndBar(selectedImgEl);
+        }
+    }, true);
+
+    // Выпадающее меню обтекания
+    window.toggleImgFormatWrapMenu = function(e) {
+        if (e) e.stopPropagation();
+        document.getElementById("ifWrapDrop")?.classList.toggle("open");
+    };
+
+    window.selectImgFormatWrap = function(mode) {
+        if (!selectedImgEl) return;
+        if (mode !== "left" && mode !== "right") {
+            selectedImgEl.dataset.gridMove = "0";
+        }
+        if (typeof window.applyImgWrap === "function") {
+            window.applyImgWrap(mode);
+        }
+        document.getElementById("ifWrapDrop")?.classList.remove("open");
+        setTimeout(() => syncImgFloatAndBar(selectedImgEl), 20);
+    };
+
+    // Взаимосвязанные поля ширины и высоты изображения
+    window.onImgDimInput = function(axis, rawVal) {
+        if (!selectedImgEl) return;
+        const val = parseFloat(rawVal);
+        if (isNaN(val) || val < 20) return;
+
+        const ratio = getImgRatio(selectedImgEl);
+        const maxW = (selectedImgEl.closest(".a4-sheet, #slideCanvas")?.clientWidth || 720) - 20;
+
+        let newW, newH;
+        if (axis === "w") {
+            newW = Math.min(maxW, Math.round(val));
+            newH = Math.max(20, Math.round(newW / ratio));
+            const hInp = document.getElementById("ifHeightInput");
+            if (hInp) hInp.value = newH;
+        } else {
+            newH = Math.max(20, Math.round(val));
+            newW = Math.min(maxW, Math.max(20, Math.round(newH * ratio)));
+            const wInp = document.getElementById("ifWidthInput");
+            if (wInp) wInp.value = newW;
+        }
+
+        selectedImgEl.style.width = newW + "px";
+        selectedImgEl.style.height = newH + "px";
+        syncImgFloatAndBar(selectedImgEl);
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    };
+
+    // Граница изображения
+    window.updateSelectedImgStyle = function(prop, val) {
+        if (!selectedImgEl) return;
+        if (prop === "stroke") selectedImgEl.dataset.stroke = val;
+        if (prop === "width") selectedImgEl.dataset.sw = val;
+        if (prop === "style") selectedImgEl.dataset.sstyle = val;
+
+        const stroke = selectedImgEl.dataset.stroke || "#0284C7";
+        let sw = selectedImgEl.dataset.sw || "0";
+        const st = selectedImgEl.dataset.sstyle || "solid";
+
+        // Если выбрали цвет границы, а толщина была 0px — автоматически ставим 2px
+        if (prop === "stroke" && val !== "transparent" && sw === "0") {
+            sw = "2";
+            selectedImgEl.dataset.sw = "2";
+            const swEl = document.getElementById("ifStrokeWidth");
+            if (swEl) swEl.value = "2";
+        }
+
+        const noStroke = sw === "0" || stroke === "transparent";
+        selectedImgEl.style.border = noStroke ? "none" : `${sw}px ${st} ${stroke}`;
+        selectedImgEl.style.boxSizing = "border-box";
+
+        syncImgFloatAndBar(selectedImgEl);
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    };
+
+    // Отражение и поворот изображения
+    function applyImgTransform(img) {
+        if (!img) return;
+        const rot = parseFloat(img.dataset.rot || "0") || 0;
+        const fx = img.dataset.flipX === "-1" ? -1 : 1;
+        const fy = img.dataset.flipY === "-1" ? -1 : 1;
+        img.style.transformOrigin = "center center";
+        img.style.transform = `rotate(${rot}deg) scale(${fx}, ${fy})`;
+        syncImgFloatAndBar(img);
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    }
+
+    window.toggleSelectedImgFlip = function(axis) {
+        if (!selectedImgEl) return;
+        if (axis === "h") selectedImgEl.dataset.flipX = selectedImgEl.dataset.flipX === "-1" ? "1" : "-1";
+        else selectedImgEl.dataset.flipY = selectedImgEl.dataset.flipY === "-1" ? "1" : "-1";
+        applyImgTransform(selectedImgEl);
+    };
+
+    window.updateSelectedImgRotation = function(deg) {
+        if (!selectedImgEl) return;
+        const num = parseFloat(deg);
+        selectedImgEl.dataset.rot = isNaN(num) ? "0" : String(num);
+        applyImgTransform(selectedImgEl);
+    };
+
+    window.quickRotateSelectedImg = function(step = 90) {
+        if (!selectedImgEl) return;
+        const cur = parseFloat(selectedImgEl.dataset.rot || "0") || 0;
+        const next = ((cur + step) % 360 + 360) % 360;
+        selectedImgEl.dataset.rot = String(next);
+        const inp = document.getElementById("ifRotateInput");
+        if (inp) inp.value = next;
+        applyImgTransform(selectedImgEl);
+    };
+
+    window.deleteSelectedImg = function() {
+        if (!selectedImgEl) return;
+        selectedImgEl.remove();
+        selectedImgEl = null;
+        document.getElementById("imgFormatBar")?.classList.remove("active");
+        document.getElementById("imgFloatControls")?.classList.remove("active");
+        if (officeMode === "word") {
+            syncWordPagesFromDom();
+            if (typeof window.paginateAllWordPages === "function") window.paginateAllWordPages();
+        }
+        saveCurrentOfficeDoc();
+    };
+
+    // === КНОПКА СВОБОДНОГО ПЕРЕМЕЩЕНИЯ ПО СЕТКЕ (С АВТО-КВАДРАТОМ) ===
+    window.toggleImgGridMove = function() {
+        if (!selectedImgEl) return;
+        const willEnable = selectedImgEl.dataset.gridMove !== "1";
+        selectedImgEl.dataset.gridMove = willEnable ? "1" : "0";
+
+        if (willEnable) {
+            // Автоматически активируем обтекание по квадрату
+            const curWrap = selectedImgEl.dataset.wrap;
+            if (curWrap !== "left" && curWrap !== "right") {
+                if (typeof window.applyImgWrap === "function") window.applyImgWrap("left");
+            }
+        }
+        syncImgFloatAndBar(selectedImgEl);
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    };
+
+    // Перехват перетаскивания изображения в режиме сетки (строго по шагу 5 мм по X и Y + квадратное обтекание)
+    document.addEventListener("mousedown", (e) => {
+        if (e.button !== 0 || !document.body.classList.contains("office-grid-on")) return;
+        const img = e.target.closest?.(".a4-sheet img");
+        if (!img || img.dataset.gridMove !== "1") return;
+
+        gridMoveDragging = img;
+        gmStartX = e.clientX;
+        gmStartY = e.clientY;
+    }, true);
+
+    document.addEventListener("mousemove", (e) => {
+        if (!gridMoveDragging || e.buttons !== 1) return;
+        if (!document.body.classList.contains("office-grid-on")) return;
+
+        const sheet = gridMoveDragging.closest(".a4-sheet");
+        if (!sheet) return;
+
+        const z = (typeof officeZoom === "number" && officeZoom > 0) ? officeZoom : 1;
+        const sr = sheet.getBoundingClientRect();
+        const cs = getComputedStyle(sheet);
+        const padL = parseFloat(cs.paddingLeft) || 0;
+        const padR = parseFloat(cs.paddingRight) || 0;
+        const innerW = (sr.width / z) - padL - padR;
+
+        // Вычисляем X относительно рабочей области листа и магнитим к сетке 5 мм
+        const relX = (e.clientX - sr.left) / z - padL - (gridMoveDragging.offsetWidth / 2);
+        const maxShift = Math.max(0, innerW - gridMoveDragging.offsetWidth);
+        const snappedX = Math.min(maxShift, snap5mm(relX));
+
+        // Выбираем сторону обтекания по квадрату (левая/правая половина листа)
+        if (snappedX > maxShift / 2) {
+            gridMoveDragging.dataset.wrap = "right";
+            gridMoveDragging.style.float = "right";
+            const rightGap = Math.max(0, snap5mm(maxShift - snappedX));
+            gridMoveDragging.style.marginLeft = "14px";
+            gridMoveDragging.style.marginRight = rightGap + "px";
+        } else {
+            gridMoveDragging.dataset.wrap = "left";
+            gridMoveDragging.style.float = "left";
+            gridMoveDragging.style.marginLeft = snappedX + "px";
+            gridMoveDragging.style.marginRight = "14px";
+        }
+
+        // По оси Y магнитим верхний отступ к 5 мм в пределах текущего абзаца
+        const block = gridMoveDragging.parentElement;
+        if (block && block !== sheet) {
+            const br = block.getBoundingClientRect();
+            const relY = (e.clientY - br.top) / z - (gridMoveDragging.offsetHeight / 2);
+            gridMoveDragging.style.marginTop = Math.min(160, snap5mm(relY)) + "px";
+            gridMoveDragging.style.marginBottom = "8px";
+        }
+
+        syncImgFloatAndBar(gridMoveDragging);
+    });
+
+    document.addEventListener("mouseup", () => {
+        if (!gridMoveDragging) return;
+        syncImgFloatAndBar(gridMoveDragging);
+        gridMoveDragging = null;
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    });
+
+    // === 2. ПОЛЯ W × H ДЛЯ ГРАФИЧЕСКИХ ЭЛЕМЕНТОВ (#shapeFormatBar) ===
+    function syncShapeDimInputs() {
+        const sh = document.querySelector(".ulh-shape.selected");
+        if (!sh) return;
+        const w = Math.round(sh.offsetWidth);
+        const h = Math.round(sh.offsetHeight);
+        if (w > 0 && h > 0 && !sh.dataset.aspect) {
+            sh.dataset.aspect = (w / h).toFixed(4);
+        }
+        const wInp = document.getElementById("sfWidthInput");
+        const hInp = document.getElementById("sfHeightInput");
+        if (wInp && document.activeElement !== wInp) wInp.value = w;
+        if (hInp && document.activeElement !== hInp) hInp.value = h;
+    }
+
+    window.onShapeDimInput = function(axis, rawVal) {
+        const sh = document.querySelector(".ulh-shape.selected");
+        if (!sh) return;
+        const val = parseFloat(rawVal);
+        if (isNaN(val) || val < 18) return;
+
+        const ratio = parseFloat(sh.dataset.aspect) || ((sh.offsetWidth || 100) / (sh.offsetHeight || 100));
+        let newW, newH;
+
+        if (axis === "w") {
+            newW = Math.max(24, Math.min(1200, Math.round(val)));
+            newH = Math.max(18, Math.round(newW / ratio));
+            const hInp = document.getElementById("sfHeightInput");
+            if (hInp) hInp.value = newH;
+        } else {
+            newH = Math.max(18, Math.min(1200, Math.round(val)));
+            newW = Math.max(24, Math.round(newH * ratio));
+            const wInp = document.getElementById("sfWidthInput");
+            if (wInp) wInp.value = newW;
+        }
+
+        sh.style.width = newW + "px";
+        if (sh.dataset.shape !== "textbox") {
+            sh.style.height = newH + "px";
+        }
+        if (officeMode === "word") syncWordPagesFromDom();
+        saveCurrentOfficeDoc();
+    };
+
+    document.addEventListener("mousedown", (e) => {
+        if (e.target.closest(".ulh-shape")) {
+            setTimeout(syncShapeDimInputs, 10);
+        }
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (e.buttons === 1) {
+            const sh = document.querySelector(".ulh-shape.selected");
+            if (sh) {
+                const w = Math.round(sh.offsetWidth);
+                const h = Math.round(sh.offsetHeight);
+                if (w > 0 && h > 0) sh.dataset.aspect = (w / h).toFixed(4);
+                syncShapeDimInputs();
+            }
+        }
+    });
+
+    // Закрытие панели изображений по Escape
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            document.getElementById("imgFormatBar")?.classList.remove("active");
+            document.getElementById("ifWrapDrop")?.classList.remove("open");
+        }
+    });
+})();
