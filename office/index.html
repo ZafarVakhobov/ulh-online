@@ -994,22 +994,98 @@
     </div>
 </div>
 
-<!-- 5. Плавающая рамка ресайза и обтекания картинок -->
+<!-- 5. Плавающая рамка ресайза картинок -->
 <div id="imgFloatControls" class="img-float-controls">
-    <button type="button" class="img-wrap-trigger" onclick="toggleImgWrapMenu(event)" title="Matn bilan örab oliş">
-        <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M4 18l16 0"/><path d="M4 12h4"/><path d="M16 12h4"/><path d="M10 9h4v6h-4z"/></svg>
-    </button>
-    <div id="imgWrapMenu" class="img-wrap-menu">
-        <button onclick="applyImgWrap('inline')">Matn içida</button>
-        <button onclick="applyImgWrap('left')">Kvadrat (Çapda)</button>
-        <button onclick="applyImgWrap('right')">Kvadrat (Öngda)</button>
-        <button onclick="applyImgWrap('topbottom')">Yuqori va pastdan</button>
-        <button onclick="applyImgWrap('behind')">Matn orqasida</button>
-        <button onclick="applyImgWrap('front')">Matn oldida</button>
-        <hr style="border:0;border-top:1px solid #E2E8F0;margin:3px 0;">
-<button onclick="openImgCropModal()">Qirqiş (Crop)</button>
-    </div>
     <div class="img-resize-corner" id="imgResizeCorner" title="Ölçamni özgartiriş"></div>
+</div>
+
+<!-- Плавающая панель форматирования выбранного изображения -->
+<div id="imgFormatBar" class="shape-format-bar img-format-bar" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()">
+    <!-- Обтекание текстом (выпадающее меню) -->
+    <div class="if-wrap-drop" id="ifWrapDrop">
+        <button type="button" class="sf-btn" onclick="toggleImgFormatWrapMenu(event)" title="Matn bilan örab oliş">
+            <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 6l16 0"/><path d="M4 18l16 0"/><path d="M4 12h4"/><path d="M16 12h4"/><path d="M10 9h4v6h-4z"/></svg>
+        </button>
+        <div id="ifWrapMenu" class="if-wrap-menu">
+            <button type="button" onclick="selectImgFormatWrap('inline')">Matn içida</button>
+            <button type="button" onclick="selectImgFormatWrap('left')">Kvadrat (Çapda)</button>
+            <button type="button" onclick="selectImgFormatWrap('right')">Kvadrat (Öngda)</button>
+            <button type="button" onclick="selectImgFormatWrap('topbottom')">Yuqori va pastdan</button>
+            <button type="button" onclick="selectImgFormatWrap('behind')">Matn orqasida</button>
+            <button type="button" onclick="selectImgFormatWrap('front')">Matn oldida</button>
+        </div>
+    </div>
+
+    <!-- Отдельная кнопка обрезки (Crop) -->
+    <button type="button" class="sf-btn" onclick="openImgCropModal()" title="Rasmni qirqiş (Crop)">
+        <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M8 5v10a1 1 0 0 0 1 1h10"/><path d="M5 8h10a1 1 0 0 1 1 1v10"/></svg>
+    </button>
+
+    <!-- Свободное перемещение по сетке (видна только при включённой сетке) -->
+    <button type="button" id="ifGridMoveBtn" class="sf-btn if-grid-move-btn" onclick="toggleImgGridMove()" title="Setka böyiça erkin suriş (Kvadrat örab oliş)">
+        <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M18 9l3 3l-3 3"/><path d="M15 12h6"/><path d="M6 9l-3 3l3 3"/><path d="M3 12h6"/><path d="M9 18l3 3l3 -3"/><path d="M12 15v6"/><path d="M15 6l-3 -3l-3 3"/><path d="M12 3v6"/></svg>
+    </button>
+
+    <span class="sf-sep"></span>
+
+    <!-- Ширина и высота (взаимосвязаны по пропорциям) -->
+    <div class="sf-size-wrap" title="Eni va böyi (px, nisbat saqlanadi)">
+        <span class="sf-size-lbl">W</span>
+        <input type="number" id="ifWidthInput" class="sf-size-input" min="20" max="2000" step="1"
+            oninput="onImgDimInput('w', this.value)" onkeydown="event.stopPropagation()">
+        <span class="sf-size-x">×</span>
+        <span class="sf-size-lbl">H</span>
+        <input type="number" id="ifHeightInput" class="sf-size-input" min="20" max="2000" step="1"
+            oninput="onImgDimInput('h', this.value)" onkeydown="event.stopPropagation()">
+    </div>
+
+    <span class="sf-sep"></span>
+
+    <!-- Граница изображения -->
+    <label class="sf-ctrl" title="Çegara rangi">
+        <span class="sf-lbl">Çegara</span>
+        <input type="color" id="ifStrokeColor" class="office-round-color sf-dot" value="#0284C7" oninput="updateSelectedImgStyle('stroke', this.value)">
+    </label>
+    <button type="button" class="sf-btn" onclick="updateSelectedImgStyle('stroke', 'transparent')" title="Çegarasiz (Şaffof)">
+        <svg class="ti ti-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-4m-4 0h-2a2 2 0 0 1 -2 -2v-2"/><path d="M19 6h1a2 2 0 0 1 2 2a5 5 0 0 1 -5 5m-4 0h-1v2"/><path d="M10 16a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -4"/><path d="M3 3l18 18"/></svg>
+    </button>
+    <select id="ifStrokeWidth" class="sf-select" onchange="updateSelectedImgStyle('width', this.value)" title="Çegara qalinligi">
+        <option value="0" selected>0px</option>
+        <option value="1">1px</option>
+        <option value="2">2px</option>
+        <option value="3">3px</option>
+        <option value="5">5px</option>
+    </select>
+    <select id="ifStrokeStyle" class="sf-select" onchange="updateSelectedImgStyle('style', this.value)" title="Çegara turi">
+        <option value="solid">───</option>
+        <option value="dashed">- - -</option>
+        <option value="dotted">· · ·</option>
+    </select>
+
+    <span class="sf-sep"></span>
+
+    <!-- Отражение и поворот -->
+    <button type="button" id="ifFlipHBtn" class="sf-btn" onclick="toggleSelectedImgFlip('h')" title="Gorizontal aks ettiriş">
+        <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M12 3l0 18"/><path d="M16 7l0 10l5 0z"/><path d="M8 7l0 10l-5 0z"/></svg>
+    </button>
+    <button type="button" id="ifFlipVBtn" class="sf-btn" onclick="toggleSelectedImgFlip('v')" title="Vertikal aks ettiriş">
+        <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M3 12l18 0"/><path d="M7 16l10 0l0 5z"/><path d="M7 8l10 0l0 -5z"/></svg>
+    </button>
+    <div class="sf-rot-wrap" title="Buriliş burçagi (gradus)">
+        <button type="button" class="sf-rot-ico" onclick="quickRotateSelectedImg(90)" title="+90° buriş">
+            <svg class="ti ti-xs" viewBox="0 0 24 24"><path d="M19.95 11a8 8 0 1 0 -.5 4m.5 5v-5h-5"/></svg>
+        </button>
+        <input type="number" id="ifRotateInput" class="sf-rot-input" value="0" min="-360" max="360" step="1"
+            oninput="updateSelectedImgRotation(this.value)" onkeydown="event.stopPropagation()">
+        <span class="sf-deg">°</span>
+    </div>
+
+    <span class="sf-sep"></span>
+
+    <!-- Удалить изображение -->
+    <button type="button" class="sf-btn danger" onclick="deleteSelectedImg()" title="Rasmni öçiriş">
+        <svg class="ti ti-sm" viewBox="0 0 24 24"><path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg>
+    </button>
 </div>
 
 <!-- Круглые кнопки + для добавления строки/столбца в Word-таблицу -->
@@ -1176,6 +1252,17 @@
             oninput="updateSelectedShapeRotation(this.value)"
             onkeydown="event.stopPropagation()">
         <span class="sf-deg">°</span>
+    </div>
+
+<span class="sf-sep"></span>
+    <div class="sf-size-wrap" title="Eni va böyi (px, nisbat saqlanadi)">
+        <span class="sf-size-lbl">W</span>
+        <input type="number" id="sfWidthInput" class="sf-size-input" min="20" max="2000" step="1"
+            oninput="onShapeDimInput('w', this.value)" onkeydown="event.stopPropagation()">
+        <span class="sf-size-x">×</span>
+        <span class="sf-size-lbl">H</span>
+        <input type="number" id="sfHeightInput" class="sf-size-input" min="18" max="2000" step="1"
+            oninput="onShapeDimInput('h', this.value)" onkeydown="event.stopPropagation()">
     </div>
     
     <span class="sf-sep"></span>
