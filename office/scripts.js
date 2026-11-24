@@ -5713,3 +5713,214 @@ document.addEventListener("click", () => {
         setTimeout(bindParagraphRulerDrag, 150);
     }
 })();
+
+
+// ==========================================
+// === СКВОЗНОЕ ВЫДЕЛЕНИЕ И РЕДАКТИРОВАНИЕ МЕЖДУ СТРАНИЦАМИ A4 ===
+// ==========================================
+(function initCrossPageSelection() {
+    let isPointerDown = false;
+    let isCrossPageActive = false;
+    let anchorPoint = null; // { node, offset, sheet }
+
+    function getCaretPointFromMouse(x, y) {
+        if (document.caretRangeFromPoint) {
+            const r = document.caretRangeFromPoint(x, y);
+            if (r) return { node: r.startContainer, offset: r.startOffset };
+        } else if (document.caretPositionFromPoint) {
+            const p = document.caretPositionFromPoint(x, y);
+            if (p) return { node: p.offsetNode, offset: p.offset };
+        }
+        return null;
+    }
+
+    function setAllSheetsEditable(state) {
+        document.querySelectorAll(".a4-sheet").forEach(sheet => {
+            sheet.contentEditable = state ? "true" : "false";
+        });
+    }
+
+    function exitCrossPageMode() {
+        if (!isCrossPageActive) return;
+        isCrossPageActive = false;
+        setAllSheetsEditable(true);
+    }
+
+    function getSelectionRange() {
+        const sel = window.getSelection();
+        return (sel && sel.rangeCount > 0) ? sel.getRangeAt(0) : null;
+    }
+
+    // Безопасное удаление выделения поперёк нескольких страниц (не ломает сами листы .a4-sheet)
+    function deleteCrossPageSelection() {
+        const range = getSelectionRange();
+        if (!range || range.collapsed) {
+            exitCrossPageMode();
+            return null;
+        }
+
+        const sheets = [...document.querySelectorAll(".a4-sheet")];
+        const startEl = range.startContainer.nodeType === 3 ? range.startContainer.parentElement : range.startContainer;
+        const endEl = range.endContainer.nodeType === 3 ? range.endContainer.parentElement : range.endContainer;
+        const startSheet = startEl?.closest?.(".a4-sheet");
+        const endSheet = endEl?.closest?.(".a4-sheet");
+
+        if (!startSheet || !endSheet) {
+            exitCrossPageMode();
+            return null;
+        }
+
+        const startIdx = sheets.indexOf(startSheet);
+        const endIdx = sheets.indexOf(endSheet);
+
+        let caretTargetNode = range.startContainer;
+        let caretTargetOffset = range.startOffset;
+
+        for (let i = startIdx; i <= endIdx; i++) {
+            const sheet = sheets[i];
+            const pageNum = sheet.querySelector(":scope > .a4-page-num");
+
+            if (i === startIdx && i === endIdx) {
+                range.deleteContents();
+            } else if (i === startIdx) {
+                const sub = document.createRange();
+                sub.setStart(range.startContainer, range.startOffset);
+                if (pageNum) sub.setEndBefore(pageNum);
+                else sub.setEnd(sheet, sheet.childNodes.length);
+                sub.deleteContents();
+            } else if (i === endIdx) {
+                const sub = document.createRange();
+                sub.setStart(sheet, 0);
+                sub.setEnd(range.endContainer, range.endOffset);
+                sub.deleteContents();
+            } else {
+                // Промежуточные страницы полностью очищаем от контента
+                [...sheet.childNodes].forEach(n => {
+                    if (!(n.nodeType === 1 && n.classList.contains("a4-page-num"))) {
+                        n.remove();
+                    }
+                });
+            }
+        }
+
+        exitCrossPageMode();
+        startSheet.focus();
+
+        // Ставим курсор в точку удаления
+        try {
+            const sel = window.getSelection();
+            const newRange = document.createRange();
+            if (startSheet.contains(caretTargetNode)) {
+                const maxOff = caretTargetNode.nodeType === 3
+                    ? caretTargetNode.nodeValue.length
+                    : caretTargetNode.childNodes.length;
+                newRange.setStart(caretTargetNode, Math.min(caretTargetOffset, maxOff));
+            } else {
+                newRange.selectNodeContents(startSheet);
+                newRange.collapse(false);
+            }
+            newRange.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+        } catch (_) {}
+
+        if (typeof syncWordPagesFromDom === "function") syncWordPagesFromDom();
+        if (typeof window.paginateAllWordPages === "function") window.paginateAllWordPages();
+        if (typeof saveCurrentOfficeDoc === "function") saveCurrentOfficeDoc();
+
+        return startSheet;
+    }
+
+    // 1. Начало выделения
+    document.addEventListener("mousedown", (e) => {
+        if (officeMode !== "word" || e.button !== 0) return;
+        if (e.target.closest(".office-topbar, .office-pill-ctx, .ulh-shape, #imgFloatControls")) return;
+
+        const sheet = e.target.closest?.(".a4-sheet");
+        if (!sheet) {
+            exitCrossPageMode();
+            return;
+        }
+
+        // Если до этого было сквозное выделение — возвращаем обычный режим редактирования
+        if (isCrossPageActive) exitCrossPageMode();
+
+        const pt = getCaretPointFromMouse(e.clientX, e.clientY);
+        if (!pt) return;
+
+        isPointerDown = true;
+        anchorPoint = { node: pt.node, offset: pt.offset, sheet };
+    });
+
+    // 2. Перетаскивание курсора между страницами
+    document.addEventListener("mousemove", (e) => {
+        if (!isPointerDown || !anchorPoint || officeMode !== "word") return;
+
+        const hoveredSheet = document.elementFromPoint(e.clientX, e.clientY)?.closest?.(".a4-sheet");
+        if (!hoveredSheet) return;
+
+        // Как только курсор перешёл на другой лист — снимаем блокировку contenteditable
+        if (hoveredSheet !== anchorPoint.sheet && !isCrossPageActive) {
+            isCrossPageActive = true;
+            setAllSheetsEditable(false);
+        }
+
+        if (isCrossPageActive) {
+            const pt = getCaretPointFromMouse(e.clientX, e.clientY);
+            if (!pt) return;
+            const targetEl = pt.node.nodeType === 3 ? pt.node.parentElement : pt.node;
+            if (!targetEl?.closest?.(".a4-sheet") || targetEl.closest(".a4-page-num")) return;
+
+            try {
+                const sel = window.getSelection();
+                sel.setBaseAndExtent(anchorPoint.node, anchorPoint.offset, pt.node, pt.offset);
+            } catch (_) {}
+        }
+    });
+
+    document.addEventListener("mouseup", () => {
+        isPointerDown = false;
+        anchorPoint = null;
+    });
+
+    // 3. Обработка Delete, Backspace, Ctrl+X и ввода текста при сквозном выделении
+    document.addEventListener("keydown", (e) => {
+        if (!isCrossPageActive || officeMode !== "word") return;
+
+        if (e.key === "Escape") {
+            window.getSelection()?.removeAllRanges();
+            exitCrossPageMode();
+            return;
+        }
+
+        // Ctrl+C работает нативно, не мешаем
+        if ((e.ctrlKey || e.metaKey) && e.code === "KeyC") return;
+
+        // Ctrl+X: копируем выделенное и удаляем поперёк страниц
+        if ((e.ctrlKey || e.metaKey) && e.code === "KeyX") {
+            e.preventDefault();
+            const txt = window.getSelection()?.toString() || "";
+            if (txt) navigator.clipboard?.writeText(txt).catch(() => {});
+            deleteCrossPageSelection();
+            return;
+        }
+
+        // Backspace / Delete
+        if (e.key === "Backspace" || e.key === "Delete") {
+            e.preventDefault();
+            deleteCrossPageSelection();
+            return;
+        }
+
+        // Набор символа поверх сквозного выделения
+        if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1) {
+            e.preventDefault();
+            const ch = e.key;
+            deleteCrossPageSelection();
+            document.execCommand("insertText", false, ch);
+            if (typeof syncWordPagesFromDom === "function") syncWordPagesFromDom();
+            if (typeof window.paginateAllWordPages === "function") window.paginateAllWordPages();
+            if (typeof saveCurrentOfficeDoc === "function") saveCurrentOfficeDoc();
+        }
+    }, true);
+})();
