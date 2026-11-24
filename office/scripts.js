@@ -5924,3 +5924,87 @@ document.addEventListener("click", () => {
         }
     }, true);
 })();
+
+// ==========================================
+// === РЕЖИМ МИЛЛИМЕТРОВОЙ СЕТКИ (GRID + SNAP TO X/Y) ===
+// ==========================================
+(function initOfficeGridSnap() {
+    const GRID_STORAGE_KEY = "ulh_office_grid_on";
+    const GRID_STEP_PX = (5 * 96) / 25.4; // Ровно 5 мм в CSS-пикселях (~18.8976 px)
+    let isGridOn = localStorage.getItem(GRID_STORAGE_KEY) === "1";
+
+    function snapPx(val) {
+        return Math.max(0, Math.round(val / GRID_STEP_PX) * GRID_STEP_PX);
+    }
+
+    function applyGridUI() {
+        document.body.classList.toggle("office-grid-on", isGridOn);
+        document.getElementById("officeGridToggleBtn")?.classList.toggle("grid-active", isGridOn);
+    }
+
+    window.toggleOfficeGrid = function() {
+        isGridOn = !isGridOn;
+        localStorage.setItem(GRID_STORAGE_KEY, isGridOn ? "1" : "0");
+        applyGridUI();
+    };
+
+    window.snapToOfficeGrid = function(px) {
+        return isGridOn ? snapPx(px) : px;
+    };
+
+    // Примагничивание фигур, картинок и таблиц в реальном времени при перетаскивании
+    document.addEventListener("mousemove", (e) => {
+        if (!isGridOn || e.buttons !== 1) return;
+
+        // 1. Примагничивание выбранной фигуры (перемещение и изменение размера)
+        const activeShape = document.querySelector(".ulh-shape.selected");
+        if (activeShape) {
+            const curL = parseFloat(activeShape.style.left);
+            const curT = parseFloat(activeShape.style.top);
+            if (!isNaN(curL)) activeShape.style.left = Math.round(snapPx(curL)) + "px";
+            if (!isNaN(curT)) activeShape.style.top = Math.round(snapPx(curT)) + "px";
+
+            const curW = parseFloat(activeShape.style.width);
+            const curH = parseFloat(activeShape.style.height);
+            if (!isNaN(curW) && curW > 0) activeShape.style.width = Math.max(Math.round(GRID_STEP_PX * 2), Math.round(snapPx(curW))) + "px";
+            if (!isNaN(curH) && curH > 0 && activeShape.dataset.shape !== "textbox") {
+                activeShape.style.height = Math.max(Math.round(GRID_STEP_PX), Math.round(snapPx(curH))) + "px";
+            }
+        }
+
+        // 2. Примагничивание перетаскиваемого изображения (в свободном режиме)
+        const dragImg = document.querySelector(".a4-sheet img.img-dragging, #slideCanvas img.img-dragging");
+        if (dragImg && dragImg.style.position === "absolute") {
+            const imgL = parseFloat(dragImg.style.left);
+            const imgT = parseFloat(dragImg.style.top);
+            if (!isNaN(imgL)) dragImg.style.left = Math.round(snapPx(imgL)) + "px";
+            if (!isNaN(imgT)) dragImg.style.top = Math.round(snapPx(imgT)) + "px";
+
+            const box = document.getElementById("imgFloatControls");
+            if (box && box.classList.contains("active")) {
+                const r = dragImg.getBoundingClientRect();
+                box.style.left = r.left + "px";
+                box.style.top = r.top + "px";
+            }
+        }
+
+        // 3. Примагничивание направляющей при изменении ширины столбцов таблиц
+        if (document.body.classList.contains("col-resizing")) {
+            const guide = document.querySelector(".tbl-col-guide");
+            const tbl = hoveredWordTable || document.querySelector(".a4-sheet .word-table");
+            if (guide && tbl) {
+                const tr = tbl.getBoundingClientRect();
+                const z = (typeof officeZoom === "number" && officeZoom > 0) ? officeZoom : 1;
+                const relX = (parseFloat(guide.style.left) - tr.left) / z;
+                const snappedX = snapPx(relX);
+                guide.style.left = (tr.left + snappedX * z) + "px";
+            }
+        }
+    });
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", applyGridUI);
+    } else {
+        applyGridUI();
+    }
+})();
