@@ -4065,3 +4065,19 @@ body.dark-mode .oc-words-result-box { background: rgba(22, 163, 74, 0.1); border
 body.dark-mode .oc-words-result-text { color: #4ADE80; }
 body.dark-mode #officeCurrencyModal .currency-Block-divider,
 body.dark-mode #officeCurrencyModal .weather-modal-footer { border-color: #1E293B; }
+
+
+/* === ФИКСИРОВАННАЯ ВЫСОТА A4 ДЛЯ СВЯЗНОГО ПЕРЕТЕКАНИЯ СТРАНИЦ === */
+.a4-sheet {
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+.a4-sheet.landscape {
+    width: 297mm !important;
+    height: 210mm !important;
+    min-height: 210mm !important;
+    max-height: 210mm !important;
+}
