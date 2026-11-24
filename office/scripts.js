@@ -6154,7 +6154,7 @@ document.addEventListener("click", () => {
         }
 
         selectedImgEl.style.width = newW + "px";
-        selectedImgEl.style.height = newH + "px";
+        selectedImgEl.style.height = "auto";
         syncImgFloatAndBar(selectedImgEl);
         if (officeMode === "word") syncWordPagesFromDom();
         saveCurrentOfficeDoc();
