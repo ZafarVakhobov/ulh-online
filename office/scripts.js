@@ -5209,17 +5209,22 @@ document.addEventListener("click", () => {
 })();
 
 // ==========================================
-// === СВЯЗНЫЙ ДВИЖОК СТРАНИЦ A4 (PUSH DOWN + PULL UP REFLOW) ===
+// === ТОЧНЫЙ ДВИЖОК СТРАНИЦ A4 (КАК В MS WORD: РАЗРЫВ ПО СТРОКАМ И СКЛЕЙКА) ===
 // ==========================================
-(function initLinkedWordPagination() {
+(function initWordExactReflow() {
     let reflowTimer = null;
     let isReflowing = false;
 
-    function getContentChildren(pageEl) {
+    const SPLITTABLE_TAGS = new Set(["P", "DIV", "H1", "H2", "H3", "H4", "H5", "H6", "BLOCKQUOTE"]);
+
+    function getFlowChildren(pageEl) {
         return [...pageEl.childNodes].filter(node => {
-            if (node.nodeType === 1 && node.classList.contains("a4-page-num")) return false;
-            if (node.nodeType === 3 && !node.nodeValue.trim()) return false;
-            return true;
+            if (node.nodeType === 1) {
+                if (node.classList.contains("a4-page-num") || node.classList.contains("ulh-shape")) return false;
+                return true;
+            }
+            if (node.nodeType === 3) return node.nodeValue.trim().length > 0;
+            return false;
         });
     }
 
@@ -5229,8 +5234,35 @@ document.addEventListener("click", () => {
         else pageEl.appendChild(node);
     }
 
+    function normalizePageNodes(pageEl) {
+        [...pageEl.childNodes].forEach(node => {
+            if (node.nodeType === 3 && node.nodeValue.trim()) {
+                const p = document.createElement("p");
+                p.textContent = node.nodeValue;
+                pageEl.replaceChild(p, node);
+            }
+        });
+    }
+
+    // Точная проверка выхода за нижнее поле (padding-bottom) с учётом масштаба (zoom)
+    function isPageOverflowing(pageEl) {
+        const kids = getFlowChildren(pageEl);
+        if (!kids.length) return false;
+
+        const z = (typeof officeZoom === "number" && officeZoom > 0) ? officeZoom : 1;
+        const padBottom = (parseFloat(getComputedStyle(pageEl).paddingBottom) || 0) * z;
+        const pageRect = pageEl.getBoundingClientRect();
+        const maxBottom = pageRect.bottom - padBottom + 1.5;
+
+        const lastEl = kids[kids.length - 1];
+        if (lastEl.nodeType === 1) {
+            return lastEl.getBoundingClientRect().bottom > maxBottom;
+        }
+        return pageEl.scrollHeight > pageEl.clientHeight + 2;
+    }
+
     function isPageEmpty(pageEl) {
-        const kids = getContentChildren(pageEl);
+        const kids = getFlowChildren(pageEl);
         if (!kids.length) return true;
         return kids.every(n => {
             if (n.nodeType === 3) return !n.nodeValue.trim();
@@ -5242,21 +5274,102 @@ document.addEventListener("click", () => {
         });
     }
 
-    // Гарантирует, что все голые текстовые узлы на листе обёрнуты в <p>
-    function normalizePageBlocks(pageEl) {
-        [...pageEl.childNodes].forEach(node => {
-            if (node.nodeType === 3 && node.nodeValue.trim()) {
-                const p = document.createElement("p");
-                p.textContent = node.nodeValue;
-                pageEl.replaceChild(p, node);
-            }
-        });
+    // Создание новой пустой страницы A4 в DOM
+    function createSheetElement(idx) {
+        const page = document.createElement("div");
+        page.className = "a4-sheet";
+        if (pageOrientations[idx] === "landscape") page.classList.add("landscape");
+        page.contentEditable = "true";
+        page.spellcheck = false;
+        page.dataset.pageIndex = idx;
+        page.style.paddingLeft = rulerMarginLeft + "mm";
+        page.style.paddingRight = rulerMarginRight + "mm";
+        page.style.paddingTop = rulerMarginTop + "mm";
+        page.style.paddingBottom = rulerMarginBottom + "mm";
+        page.style.textIndent = rulerFirstLine + "mm";
+        return page;
     }
 
-    // Полный пересчёт всех страниц: перенос вниз (overflow) + подтягивание вверх (underflow)
+    // Разрезаем абзац по словам ровно по нижней границе листа (бинарный поиск)
+    function splitBlockToFitPage(pageEl, blockEl) {
+        if (!blockEl || blockEl.nodeType !== 1 || !SPLITTABLE_TAGS.has(blockEl.tagName)) return null;
+        if (blockEl.querySelector("img, table, svg")) return null;
+
+        const fullText = blockEl.innerText || "";
+        const tokens = fullText.match(/\S+\s*/g);
+        if (!tokens || tokens.length < 2) return null;
+
+        const origHtml = blockEl.innerHTML;
+        let lo = 1;
+        let hi = tokens.length - 1;
+        let best = 0;
+
+        while (lo <= hi) {
+            const mid = (lo + hi) >> 1;
+            blockEl.textContent = tokens.slice(0, mid).join("").trimEnd();
+            if (!isPageOverflowing(pageEl)) {
+                best = mid;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+
+        if (best === 0) {
+            blockEl.innerHTML = origHtml;
+            return null; // Даже первое слово не помещается — переносим блок целиком
+        }
+
+        const headText = tokens.slice(0, best).join("").trimEnd();
+        const tailText = tokens.slice(best).join("").trimStart();
+        if (!tailText) {
+            blockEl.innerHTML = origHtml;
+            return null;
+        }
+
+        blockEl.textContent = headText;
+
+        const tailEl = blockEl.cloneNode(false);
+        tailEl.textContent = tailText;
+        tailEl.dataset.splitCont = "1";
+        tailEl.style.textIndent = "0"; // У продолжения абзаца нет красной строки
+        return tailEl;
+    }
+
+    // Сохранение и восстановление курсора через скрытый маркер
+    function saveCaretMarker() {
+        const sel = window.getSelection();
+        if (!sel || !sel.rangeCount) return false;
+        const range = sel.getRangeAt(0);
+        const node = range.startContainer.nodeType === 3 ? range.startContainer.parentElement : range.startContainer;
+        if (!node?.closest?.(".a4-sheet")) return false;
+
+        document.getElementById("__ulh_caret_marker")?.remove();
+        const marker = document.createElement("span");
+        marker.id = "__ulh_caret_marker";
+        marker.style.display = "none";
+        range.insertNode(marker);
+        return true;
+    }
+
+    function restoreCaretMarker() {
+        const marker = document.getElementById("__ulh_caret_marker");
+        if (!marker) return;
+        const range = document.createRange();
+        range.setStartAfter(marker);
+        range.collapse(true);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        marker.remove();
+    }
+
+    // Главная функция пересчёта всего документа
     window.paginateAllWordPages = function() {
         if (officeMode !== "word" || isReflowing) return;
         isReflowing = true;
+
+        const hasCaret = saveCaretMarker();
 
         try {
             const container = document.getElementById("wordPagesContainer");
@@ -5265,88 +5378,119 @@ document.addEventListener("click", () => {
             let safety = 0;
             let changed = true;
 
-            while (changed && safety < 120) {
+            while (changed && safety < 150) {
                 changed = false;
                 safety++;
 
                 let sheets = [...container.querySelectorAll(".a4-sheet")];
 
-                // 1. PUSH DOWN: если страница переполнена — переносим нижние блоки на следующую
-                for (let i = 0; i < sheets.length; i++) {
-                    const page = sheets[i];
-                    normalizePageBlocks(page);
-
-                    let kids = getContentChildren(page);
-                    if (page.scrollHeight > page.clientHeight + 2 && kids.length > 1) {
-                        let nextPage = sheets[i + 1];
-                        if (!nextPage) {
-                            // Создаём новую страницу в DOM
-                            wordPages.push("");
-                            const newPage = document.createElement("div");
-                            newPage.className = "a4-sheet";
-                            if (pageOrientations[i + 1] === "landscape") newPage.classList.add("landscape");
-                            newPage.contentEditable = "true";
-                            newPage.spellcheck = false;
-                            newPage.dataset.pageIndex = i + 1;
-                            newPage.style.paddingLeft = rulerMarginLeft + "mm";
-                            newPage.style.paddingRight = rulerMarginRight + "mm";
-                            newPage.style.paddingTop = rulerMarginTop + "mm";
-                            newPage.style.paddingBottom = rulerMarginBottom + "mm";
-                            newPage.style.textIndent = rulerFirstLine + "mm";
-                            container.appendChild(newPage);
-                            nextPage = newPage;
-                            sheets.push(newPage);
-                        }
-
-                        while (page.scrollHeight > page.clientHeight + 2) {
-                            kids = getContentChildren(page);
-                            if (kids.length <= 1) break;
-                            const lastNode = kids[kids.length - 1];
-                            nextPage.insertBefore(lastNode, nextPage.firstChild);
-                            changed = true;
-                        }
-                    }
-                }
-
-                // 2. PULL UP: если на странице освободилось место — подтягиваем блоки со следующей
-                sheets = [...container.querySelectorAll(".a4-sheet")];
+                // ШАГ 1. PULL UP (Подтягиваем текст снизу вверх и склеиваем разорванные абзацы)
                 for (let i = 0; i < sheets.length - 1; i++) {
                     const curPage = sheets[i];
                     const nextPage = sheets[i + 1];
-                    normalizePageBlocks(nextPage);
+                    normalizePageNodes(curPage);
+                    normalizePageNodes(nextPage);
 
-                    while (true) {
-                        const nextKids = getContentChildren(nextPage);
+                    while (!isPageOverflowing(curPage)) {
+                        const nextKids = getFlowChildren(nextPage);
                         if (!nextKids.length) break;
 
-                        const candidate = nextKids[0];
-                        insertBeforePageNum(curPage, candidate);
+                        const firstNext = nextKids[0];
+                        const curKids = getFlowChildren(curPage);
+                        const lastCur = curKids[curKids.length - 1];
 
-                        if (curPage.scrollHeight <= curPage.clientHeight + 2) {
+                        // Если первый абзац следующей страницы — продолжение последнего абзаца текущей, склеиваем их
+                        if (
+                            firstNext.nodeType === 1 &&
+                            firstNext.dataset.splitCont === "1" &&
+                            lastCur && lastCur.nodeType === 1 &&
+                            lastCur.tagName === firstNext.tagName
+                        ) {
+                            const sep = (lastCur.textContent && !lastCur.textContent.endsWith(" ")) ? " " : "";
+                            lastCur.textContent = lastCur.textContent + sep + firstNext.textContent;
+                            firstNext.remove();
+                            changed = true;
+                            // Если после склейки абзац снова вылез за край — Шаг 2 разрежет его точно по новой границе
+                            if (isPageOverflowing(curPage)) break;
+                            continue;
+                        }
+
+                        // Иначе пробуем подтянуть весь следующий блок целиком
+                        insertBeforePageNum(curPage, firstNext);
+                        if (!isPageOverflowing(curPage)) {
                             changed = true;
                         } else {
-                            // Не поместился — возвращаем обратно в начало следующей страницы
-                            nextPage.insertBefore(candidate, nextPage.firstChild);
+                            // Блок целиком не влез — пробуем разрезать его, чтобы заполнить пустое место
+                            const tail = splitBlockToFitPage(curPage, firstNext);
+                            if (tail) {
+                                nextPage.insertBefore(tail, nextPage.firstChild);
+                                changed = true;
+                            } else {
+                                // Не режется (картинка/таблица/1 слово не влезло) — возвращаем обратно
+                                nextPage.insertBefore(firstNext, nextPage.firstChild);
+                            }
                             break;
                         }
                     }
 
-                    // Если следующая страница полностью опустела — удаляем её
+                    // Удаляем опустевшую страницу
                     if (isPageEmpty(nextPage) && sheets.length > 1) {
                         nextPage.remove();
                         sheets.splice(i + 1, 1);
                         changed = true;
-                        i--; // Проверяем текущую страницу ещё раз с новой следующей
+                        i--;
+                    }
+                }
+
+                // ШАГ 2. PUSH DOWN (Переносим всё, что вылезло за нижнее поле, на следующую страницу)
+                sheets = [...container.querySelectorAll(".a4-sheet")];
+                for (let i = 0; i < sheets.length; i++) {
+                    const page = sheets[i];
+                    normalizePageNodes(page);
+
+                    if (!isPageOverflowing(page)) continue;
+
+                    let nextPage = sheets[i + 1];
+                    if (!nextPage) {
+                        nextPage = createSheetElement(i + 1);
+                        container.appendChild(nextPage);
+                        sheets.push(nextPage);
+                    }
+
+                    let guard = 0;
+                    while (isPageOverflowing(page) && guard < 200) {
+                        guard++;
+                        const kids = getFlowChildren(page);
+                        if (!kids.length) break;
+
+                        const lastNode = kids[kids.length - 1];
+
+                        // Сначала пытаемся разрезать последний абзац по словам
+                        const tail = splitBlockToFitPage(page, lastNode);
+                        if (tail) {
+                            nextPage.insertBefore(tail, nextPage.firstChild);
+                            changed = true;
+                            break;
+                        }
+
+                        // Если на странице больше 1 блока и последний нельзя разрезать — переносим его целиком
+                        if (kids.length > 1) {
+                            nextPage.insertBefore(lastNode, nextPage.firstChild);
+                            changed = true;
+                        } else {
+                            // Единственный неделимый блок (например, огромная картинка) — выходим, чтобы не зациклиться
+                            break;
+                        }
                     }
                 }
             }
 
-            // Синхронизируем массив wordPages и перевешиваем события, если число страниц изменилось
+            // Сохраняем результат в wordPages и обновляем DOM-события только если изменилось число страниц
             const finalSheets = [...container.querySelectorAll(".a4-sheet")];
             const prevCount = wordPages.length;
             wordPages = finalSheets.map(p => {
                 const clone = p.cloneNode(true);
-                clone.querySelectorAll(".a4-page-num").forEach(n => n.remove());
+                clone.querySelectorAll(".a4-page-num, #__ulh_caret_marker").forEach(n => n.remove());
                 return clone.innerHTML || "<p><br></p>";
             });
 
@@ -5360,32 +5504,212 @@ document.addEventListener("click", () => {
             updateOfficeLiveStats();
             saveCurrentOfficeDoc();
         } finally {
+            if (hasCaret) restoreCaretMarker();
             isReflowing = false;
         }
     };
 
-    // Переопределяем checkPageOverflow, чтобы при наборе/удалении срабатывал мягкий reflow
     window.checkPageOverflow = function() {
         clearTimeout(reflowTimer);
         reflowTimer = setTimeout(() => {
             window.paginateAllWordPages();
-        }, 280);
+        }, 220);
     };
 
-    // Отслеживаем Backspace / Delete / Cut / Paste для мгновенного подтягивания хвоста
     document.addEventListener("input", (e) => {
         if (officeMode === "word" && e.target.closest?.(".a4-sheet")) {
             clearTimeout(reflowTimer);
             reflowTimer = setTimeout(() => {
                 window.paginateAllWordPages();
-            }, 320);
+            }, 250);
         }
     });
 
-    // Запускаем пересчёт при старте, если уже открыт длинный документ
     document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => {
             if (officeMode === "word") window.paginateAllWordPages();
         }, 250);
     });
+})();
+
+
+// ==========================================
+// === ЛИНЕЙКА ДЛЯ ВЫДЕЛЕННЫХ АБЗАЦЕВ (КАК В WORD) ===
+// ==========================================
+(function initParagraphRulerHandles() {
+    const PX_PER_MM = 96 / 25.4;
+
+    function cssToMm(val) {
+        if (!val) return 0;
+        const num = parseFloat(val);
+        if (isNaN(num)) return 0;
+        if (String(val).endsWith("mm")) return num;
+        if (String(val).endsWith("pt")) return num * 0.352778;
+        if (String(val).endsWith("px")) return num / PX_PER_MM;
+        return num;
+    }
+
+    function getActiveRangeInWord() {
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+            const r = sel.getRangeAt(0);
+            const node = r.commonAncestorContainer.nodeType === 3 ? r.commonAncestorContainer.parentElement : r.commonAncestorContainer;
+            if (node?.closest?.(".a4-sheet")) return r;
+        }
+        if (savedRange) {
+            const node = savedRange.commonAncestorContainer.nodeType === 3 ? savedRange.commonAncestorContainer.parentElement : savedRange.commonAncestorContainer;
+            if (node?.closest?.(".a4-sheet")) return savedRange;
+        }
+        return null;
+    }
+
+    function getTargetParagraphs() {
+        const range = getActiveRangeInWord();
+        if (!range) return [];
+
+        const blockSel = "p, h1, h2, h3, h4, h5, h6, li, blockquote, div";
+        if (range.collapsed) {
+            const el = range.startContainer.nodeType === 3 ? range.startContainer.parentElement : range.startContainer;
+            const blk = el?.closest?.(blockSel);
+            if (blk && !blk.classList.contains("a4-sheet") && !blk.classList.contains("a4-page-num")) {
+                return [blk];
+            }
+            return [];
+        }
+
+        const sheets = [...document.querySelectorAll(".a4-sheet")];
+        const result = [];
+        sheets.forEach(sheet => {
+            if (!range.intersectsNode(sheet)) return;
+            [...sheet.children].forEach(child => {
+                if (child.classList.contains("a4-page-num") || child.classList.contains("ulh-shape")) return;
+                if (child.tagName === "UL" || child.tagName === "OL") {
+                    [...child.querySelectorAll("li")].forEach(li => {
+                        if (range.intersectsNode(li)) result.push(li);
+                    });
+                } else if (range.intersectsNode(child)) {
+                    result.push(child);
+                }
+            });
+        });
+
+        if (!result.length) {
+            const el = range.startContainer.nodeType === 3 ? range.startContainer.parentElement : range.startContainer;
+            const blk = el?.closest?.(blockSel);
+            if (blk && !blk.classList.contains("a4-sheet")) result.push(blk);
+        }
+        return result;
+    }
+
+    function paintHandlesForIndents(pLeftMm, pFirstMm, pRightMm) {
+        const hFirst = document.getElementById("rulerFirstLineHandle");
+        const hHang = document.getElementById("rulerHangingHandle");
+        const hBoth = document.getElementById("rulerBothHandle");
+        const hRight = document.getElementById("rulerRightHandle");
+
+        const totalLeft = rulerMarginLeft + pLeftMm;
+        const totalFirst = totalLeft + pFirstMm;
+        const totalRight = rulerMarginRight + pRightMm;
+
+        if (hFirst) hFirst.style.left = ((totalFirst / currentDocWidthMm) * 100) + "%";
+        if (hHang) hHang.style.left = ((totalLeft / currentDocWidthMm) * 100) + "%";
+        if (hBoth) hBoth.style.left = ((totalLeft / currentDocWidthMm) * 100) + "%";
+        if (hRight) hRight.style.left = (100 - (totalRight / currentDocWidthMm) * 100) + "%";
+    }
+
+    function syncRulerToCurrentParagraph() {
+        if (officeMode !== "word") return;
+        const targets = getTargetParagraphs();
+        if (!targets.length) {
+            paintHandlesForIndents(0, rulerFirstLine, 0);
+            return;
+        }
+        const first = targets[0];
+        const pLeft = cssToMm(first.style.marginLeft);
+        const pRight = cssToMm(first.style.marginRight);
+        const pFirst = cssToMm(first.style.textIndent);
+        paintHandlesForIndents(pLeft, pFirst, pRight);
+    }
+
+    function bindParagraphRulerDrag() {
+        const wrap = document.getElementById("wordRulerWrap");
+        if (!wrap) return;
+
+        const attach = (elId, mode) => {
+            const el = document.getElementById(elId);
+            if (!el) return;
+
+            el.onmousedown = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const targets = getTargetParagraphs();
+                const hasTargets = targets.length > 0;
+                const baseLeft = hasTargets ? cssToMm(targets[0].style.marginLeft) : 0;
+                const baseRight = hasTargets ? cssToMm(targets[0].style.marginRight) : 0;
+                const baseFirst = hasTargets ? cssToMm(targets[0].style.textIndent) : rulerFirstLine;
+
+                let curLeft = baseLeft, curRight = baseRight, curFirst = baseFirst;
+
+                const onMove = (ev) => {
+                    const rect = wrap.getBoundingClientRect();
+                    const mm = Math.round(((ev.clientX - rect.left) / rect.width) * currentDocWidthMm);
+
+                    if (!hasTargets) {
+                        // Если курсор не в тексте — двигаем общие поля документа
+                        if (mode === "first") rulerFirstLine = Math.max(-15, Math.min(45, mm - rulerMarginLeft));
+                        else if (mode === "hang" || mode === "both") rulerMarginLeft = Math.max(8, Math.min(80, mm));
+                        else if (mode === "right") rulerMarginRight = Math.max(8, Math.min(80, currentDocWidthMm - mm));
+                        syncAllRulerHandles();
+                        return;
+                    }
+
+                    const maxInner = currentDocWidthMm - rulerMarginLeft - rulerMarginRight - 20;
+
+                    if (mode === "first") {
+                        curFirst = Math.max(-curLeft, Math.min(60, mm - (rulerMarginLeft + curLeft)));
+                        targets.forEach(p => { p.style.textIndent = curFirst + "mm"; });
+                    } else if (mode === "hang" || mode === "both") {
+                        curLeft = Math.max(0, Math.min(maxInner - curRight, mm - rulerMarginLeft));
+                        targets.forEach(p => { p.style.marginLeft = curLeft + "mm"; });
+                    } else if (mode === "right") {
+                        curRight = Math.max(0, Math.min(maxInner - curLeft, (currentDocWidthMm - mm) - rulerMarginRight));
+                        targets.forEach(p => { p.style.marginRight = curRight + "mm"; });
+                    }
+
+                    paintHandlesForIndents(curLeft, curFirst, curRight);
+                };
+
+                const onUp = () => {
+                    document.removeEventListener("mousemove", onMove);
+                    document.removeEventListener("mouseup", onUp);
+                    if (hasTargets) {
+                        syncWordPagesFromDom();
+                        saveCurrentOfficeDoc();
+                        if (typeof window.paginateAllWordPages === "function") {
+                            window.paginateAllWordPages();
+                        }
+                    }
+                };
+
+                document.addEventListener("mousemove", onMove);
+                document.addEventListener("mouseup", onUp);
+            };
+        };
+
+        attach("rulerFirstLineHandle", "first");
+        attach("rulerHangingHandle", "hang");
+        attach("rulerBothHandle", "both");
+        attach("rulerRightHandle", "right");
+    }
+
+    document.addEventListener("selectionchange", syncRulerToCurrentParagraph);
+    document.addEventListener("mouseup", syncRulerToCurrentParagraph);
+    document.addEventListener("keyup", syncRulerToCurrentParagraph);
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => setTimeout(bindParagraphRulerDrag, 150));
+    } else {
+        setTimeout(bindParagraphRulerDrag, 150);
+    }
 })();
