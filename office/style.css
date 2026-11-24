@@ -4127,3 +4127,131 @@ body.office-grid-on #slideCanvas::before {
         display: none !important;
     }
 }
+
+
+/* === КОНТЕКСТНАЯ ПАНЕЛЬ ИЗОБРАЖЕНИЙ + ПОЛЯ W×H ДЛЯ ФИГУР === */
+.img-format-bar {
+    z-index: 9500;
+}
+
+.sf-size-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    height: 28px;
+    padding: 0 7px;
+    border: 1px solid #E2E8F0;
+    border-radius: 9px;
+    background: #F8FAFC;
+}
+.sf-size-lbl {
+    font-size: 10.5px;
+    font-weight: 800;
+    color: #64748B;
+}
+.sf-size-x {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94A3B8;
+    margin: 0 1px;
+}
+.sf-size-input {
+    width: 44px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    color: #0F172A;
+    text-align: center;
+    padding: 0;
+    -moz-appearance: textfield;
+}
+.sf-size-input::-webkit-inner-spin-button,
+.sf-size-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Выпадающее меню обтекания внутри панели изображения */
+.if-wrap-drop {
+    position: relative;
+    display: inline-flex;
+}
+.if-wrap-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 170px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 5px;
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.16);
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 9600;
+}
+.if-wrap-drop.open .if-wrap-menu {
+    display: flex;
+}
+.if-wrap-menu button {
+    border: none;
+    background: transparent;
+    padding: 7px 10px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #1E293B;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.if-wrap-menu button:hover {
+    background: #F1F5F9;
+    color: #0284C7;
+}
+.if-wrap-menu button.active-wrap {
+    background: #E0F2FE;
+    color: #0284C7;
+}
+
+/* Кнопка свободного перемещения по сетке видна ТОЛЬКО при включённой сетке */
+.if-grid-move-btn {
+    display: none !important;
+}
+body.office-grid-on .if-grid-move-btn {
+    display: inline-flex !important;
+}
+.if-grid-move-btn.active {
+    background: #E0F2FE !important;
+    color: #0284C7 !important;
+    border-color: #7DD3FC !important;
+}
+
+/* Тёмная тема */
+body.dark-mode .sf-size-wrap {
+    background: #1E293B;
+    border-color: #334155;
+}
+body.dark-mode .sf-size-input {
+    color: #F8FAFC;
+}
+body.dark-mode .if-wrap-menu {
+    background: #0F172A;
+    border-color: #334155;
+}
+body.dark-mode .if-wrap-menu button {
+    color: #E2E8F0;
+}
+body.dark-mode .if-wrap-menu button:hover {
+    background: #1E293B;
+    color: #38BDF8;
+}
+body.dark-mode .if-wrap-menu button.active-wrap,
+body.dark-mode .if-grid-move-btn.active {
+    background: rgba(56, 189, 248, 0.2) !important;
+    color: #38BDF8 !important;
+}
