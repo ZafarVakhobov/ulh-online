@@ -6390,3 +6390,427 @@ document.addEventListener("click", () => {
         }
     });
 })();
+
+
+// ==========================================
+// === НАСТОЯЩИЙ ЭКСПОРТ В ВАЛИДНЫЙ .DOCX (OPENXML / JSZIP) ===
+// ==========================================
+(function initRealDocxExport() {
+    const _prevExportOfficeFile = window.exportOfficeFile;
+
+    function xmlEsc(str) {
+        return String(str || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&apos;");
+    }
+
+    function cssColorToHex(colorStr) {
+        if (!colorStr || colorStr === "transparent" || colorStr === "rgba(0, 0, 0, 0)") return null;
+        const s = String(colorStr).trim();
+        if (/^#[0-9A-Fa-f]{6}$/.test(s)) return s.slice(1).toUpperCase();
+        if (/^#[0-9A-Fa-f]{3}$/.test(s)) {
+            return (s[1] + s[1] + s[2] + s[2] + s[3] + s[3]).toUpperCase();
+        }
+        const m = s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+        if (m) {
+            return [m[1], m[2], m[3]]
+                .map(n => Math.max(0, Math.min(255, parseInt(n, 10))).toString(16).padStart(2, "0"))
+                .join("")
+                .toUpperCase();
+        }
+        return null;
+    }
+
+    function cssSizeToHalfPt(sizeStr) {
+        if (!sizeStr) return null;
+        const num = parseFloat(sizeStr);
+        if (isNaN(num) || num <= 0) return null;
+        const pt = String(sizeStr).includes("pt") ? num : num * 0.75; // px -> pt
+        return Math.max(12, Math.min(144, Math.round(pt * 2)));
+    }
+
+    function cssToTwips(valStr) {
+        if (!valStr) return 0;
+        const num = parseFloat(valStr);
+        if (isNaN(num)) return 0;
+        const s = String(valStr);
+        if (s.endsWith("mm")) return Math.round(num * 56.6929);
+        if (s.endsWith("pt")) return Math.round(num * 20);
+        if (s.endsWith("px")) return Math.round(num * 15);
+        return Math.round(num * 20);
+    }
+
+    // Конвертируем любое изображение (dataURL, SVG, URL) в чистый PNG base64 для word/media/
+    function imgElToPngBase64(imgEl) {
+        return new Promise((resolve) => {
+            try {
+                const w = Math.max(20, Math.round(imgEl.naturalWidth || imgEl.offsetWidth || 300));
+                const h = Math.max(20, Math.round(imgEl.naturalHeight || imgEl.offsetHeight || 200));
+                const canvas = document.createElement("canvas");
+                canvas.width = Math.min(1800, w);
+                canvas.height = Math.round((canvas.width / w) * h);
+                const ctx = canvas.getContext("2d");
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const tmp = new Image();
+                tmp.crossOrigin = "anonymous";
+                tmp.onload = () => {
+                    try {
+                        ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
+                        const dataUrl = canvas.toDataURL("image/png");
+                        resolve({
+                            base64: dataUrl.split(",")[1],
+                            wPx: Math.round(imgEl.offsetWidth || Math.min(540, w)),
+                            hPx: Math.round(imgEl.offsetHeight || Math.min(400, h))
+                        });
+                    } catch (_) {
+                        resolve(null);
+                    }
+                };
+                tmp.onerror = () => resolve(null);
+                tmp.src = imgEl.src;
+            } catch (_) {
+                resolve(null);
+            }
+        });
+    }
+
+    function buildRunPrXml(fmt) {
+        // Строгий порядок тегов по схеме OpenXML (CT_RPr), чтобы Word не выдавал ошибок
+        let xml = "";
+        if (fmt.font) {
+            const f = xmlEsc(fmt.font);
+            xml += `<w:rFonts w:ascii="${f}" w:hAnsi="${f}" w:cs="${f}"/>`;
+        }
+        if (fmt.bold) xml += `<w:b/>`;
+        if (fmt.italic) xml += `<w:i/>`;
+        if (fmt.strike) xml += `<w:strike/>`;
+        if (fmt.color) xml += `<w:color w:val="${fmt.color}"/>`;
+        if (fmt.sz) xml += `<w:sz w:val="${fmt.sz}"/><w:szCs w:val="${fmt.sz}"/>`;
+        if (fmt.underline) xml += `<w:u w:val="single"/>`;
+        if (fmt.bg) xml += `<w:shd w:val="clear" w:color="auto" w:fill="${fmt.bg}"/>`;
+        if (fmt.vertAlign) xml += `<w:vertAlign w:val="${fmt.vertAlign}"/>`;
+        return xml ? `<w:rPr>${xml}</w:rPr>` : "";
+    }
+
+    async function buildDocxBlobFromWordSheets() {
+        if (typeof syncWordPagesFromDom === "function") syncWordPagesFromDom();
+
+        const zip = new JSZip();
+        const rels = [];
+        const mediaFiles = [];
+        let relCounter = 1;
+        let docPrCounter = 1;
+
+        const sheets = [...document.querySelectorAll(".a4-sheet")];
+        const bodyParts = [];
+
+        async function collectInlineXml(node, inheritedFmt) {
+            let out = "";
+            if (node.nodeType === 3) {
+                const text = node.nodeValue || "";
+                if (!text) return "";
+                const rPr = buildRunPrXml(inheritedFmt);
+                return `<w:r>${rPr}<w:t xml:space="preserve">${xmlEsc(text)}</w:t></w:r>`;
+            }
+            if (node.nodeType !== 1) return "";
+
+            const tag = node.tagName.toUpperCase();
+            if (node.classList.contains("a4-page-num") || node.id === "__ulh_caret_marker") return "";
+            if (tag === "BR") return `<w:r><w:br/></w:r>`;
+
+            // Картинка
+            if (tag === "IMG") {
+                const imgData = await imgElToPngBase64(node);
+                if (!imgData || !imgData.base64) return "";
+                const rId = `rId${relCounter++}`;
+                const fileName = `image${mediaFiles.length + 1}.png`;
+                mediaFiles.push({ name: fileName, base64: imgData.base64 });
+                rels.push({
+                    id: rId,
+                    type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
+                    target: `media/${fileName}`
+                });
+
+                const cx = Math.max(95250, Math.min(6000000, Math.round(imgData.wPx * 9525)));
+                const cy = Math.max(95250, Math.min(8000000, Math.round(imgData.hPx * 9525)));
+                const idNum = docPrCounter++;
+
+                return `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">` +
+                    `<wp:extent cx="${cx}" cy="${cy}"/>` +
+                    `<wp:docPr id="${idNum}" name="Picture ${idNum}"/>` +
+                    `<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">` +
+                    `<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+                    `<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+                    `<pic:nvPicPr><pic:cNvPr id="${idNum}" name="${fileName}"/><pic:cNvPicPr/></pic:nvPicPr>` +
+                    `<pic:blipFill><a:blip r:embed="${rId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
+                    `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
+                    `</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`;
+            }
+
+            // Наследуем и обновляем форматирование текста
+            const fmt = { ...inheritedFmt };
+            if (tag === "B" || tag === "STRONG") fmt.bold = true;
+            if (tag === "I" || tag === "EM") fmt.italic = true;
+            if (tag === "U") fmt.underline = true;
+            if (tag === "S" || tag === "STRIKE" || tag === "DEL") fmt.strike = true;
+            if (tag === "SUP") fmt.vertAlign = "superscript";
+            if (tag === "SUB") fmt.vertAlign = "subscript";
+
+            const st = node.style;
+            if (st) {
+                if (st.fontWeight && (st.fontWeight === "bold" || parseInt(st.fontWeight, 10) >= 600)) fmt.bold = true;
+                if (st.fontStyle === "italic") fmt.italic = true;
+                if (st.textDecoration && st.textDecoration.includes("underline")) fmt.underline = true;
+                if (st.textDecoration && st.textDecoration.includes("line-through")) fmt.strike = true;
+                if (st.color) { const c = cssColorToHex(st.color); if (c) fmt.color = c; }
+                if (st.backgroundColor) { const bg = cssColorToHex(st.backgroundColor); if (bg && bg !== "FFFFFF") fmt.bg = bg; }
+                if (st.fontSize) { const sz = cssSizeToHalfPt(st.fontSize); if (sz) fmt.sz = sz; }
+                if (st.fontFamily) fmt.font = st.fontFamily.split(",")[0].replace(/['"]/g, "").trim();
+            }
+
+            // Ссылка
+            if (tag === "A" && node.getAttribute("href")) {
+                const href = node.getAttribute("href");
+                if (/^https?:\/\//i.test(href)) {
+                    const rId = `rId${relCounter++}`;
+                    rels.push({
+                        id: rId,
+                        type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+                        target: href,
+                        external: true
+                    });
+                    fmt.color = fmt.color || "0284C7";
+                    fmt.underline = true;
+                    let innerLink = "";
+                    for (const ch of node.childNodes) innerLink += await collectInlineXml(ch, fmt);
+                    return `<w:hyperlink r:id="${rId}">${innerLink}</w:hyperlink>`;
+                }
+            }
+
+            for (const ch of node.childNodes) {
+                out += await collectInlineXml(ch, fmt);
+            }
+            return out;
+        }
+
+        async function buildParagraphXml(el, defaultFmt, listPrefix = "") {
+            const tag = el.tagName ? el.tagName.toUpperCase() : "P";
+            const st = el.style || {};
+            const pPrParts = [];
+
+            if (tag === "BLOCKQUOTE") {
+                pPrParts.push(`<w:pBdr><w:left w:val="single" w:sz="18" w:space="8" w:color="0284C7"/></w:pBdr>`);
+            }
+
+            const lh = parseFloat(st.lineHeight);
+            if (!isNaN(lh) && lh > 0 && lh <= 4) {
+                pPrParts.push(`<w:spacing w:after="120" w:line="${Math.round(lh * 240)}" w:lineRule="auto"/>`);
+            } else {
+                pPrParts.push(`<w:spacing w:after="120"/>`);
+            }
+
+            const indAttrs = [];
+            const ml = cssToTwips(st.marginLeft) + (tag === "BLOCKQUOTE" ? 360 : 0);
+            const mr = cssToTwips(st.marginRight);
+            const ti = cssToTwips(st.textIndent);
+            if (ml > 0) indAttrs.push(`w:left="${ml}"`);
+            if (mr > 0) indAttrs.push(`w:right="${mr}"`);
+            if (ti > 0) indAttrs.push(`w:firstLine="${ti}"`);
+            if (indAttrs.length) pPrParts.push(`<w:ind ${indAttrs.join(" ")}/>`);
+
+            const align = st.textAlign || "";
+            if (align === "center") pPrParts.push(`<w:jc w:val="center"/>`);
+            else if (align === "right") pPrParts.push(`<w:jc w:val="right"/>`);
+            else if (align === "justify") pPrParts.push(`<w:jc w:val="both"/>`);
+
+            const baseFmt = { ...defaultFmt };
+            if (tag === "H1") { baseFmt.bold = true; baseFmt.sz = 44; }
+            else if (tag === "H2") { baseFmt.bold = true; baseFmt.sz = 34; }
+            else if (tag === "H3") { baseFmt.bold = true; baseFmt.sz = 28; }
+
+            let runsXml = "";
+            if (listPrefix) {
+                runsXml += `<w:r>${buildRunPrXml(baseFmt)}<w:t xml:space="preserve">${xmlEsc(listPrefix)}</w:t></w:r>`;
+            }
+            for (const ch of el.childNodes) {
+                runsXml += await collectInlineXml(ch, baseFmt);
+            }
+
+            return `<w:p><w:pPr>${pPrParts.join("")}</w:pPr>${runsXml}</w:p>`;
+        }
+
+        async function buildTableXml(tblEl, defaultFmt) {
+            let rowsXml = "";
+            const rows = [...tblEl.rows];
+            for (const tr of rows) {
+                let cellsXml = "";
+                for (const cell of tr.cells) {
+                    const bg = cssColorToHex(cell.style.backgroundColor || tr.style.backgroundColor);
+                    const cellFmt = { ...defaultFmt };
+                    if (cell.tagName === "TH") cellFmt.bold = true;
+                    const txtColor = cssColorToHex(cell.style.color || tr.style.color);
+                    if (txtColor) cellFmt.color = txtColor;
+
+                    let tcPr = `<w:tcBorders>` +
+                        `<w:top w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>` +
+                        `<w:left w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>` +
+                        `<w:bottom w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>` +
+                        `<w:right w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>` +
+                        `</w:tcBorders>`;
+                    if (bg) tcPr += `<w:shd w:val="clear" w:color="auto" w:fill="${bg}"/>`;
+
+                    const pXml = await buildParagraphXml(cell, cellFmt);
+                    cellsXml += `<w:tc><w:tcPr>${tcPr}</w:tcPr>${pXml || "<w:p/>"}</w:tc>`;
+                }
+                rowsXml += `<w:tr>${cellsXml}</w:tr>`;
+            }
+            return `<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/><w:tblBorders>` +
+                `<w:top w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>` +
+                `<w:left w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>` +
+                `<w:bottom w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>` +
+                `<w:right w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>` +
+                `<w:insideH w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>` +
+                `<w:insideV w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>` +
+                `</w:tblBorders></w:tblPr>${rowsXml}</w:tbl>`;
+        }
+
+        for (let sIdx = 0; sIdx < sheets.length; sIdx++) {
+            const sheet = sheets[sIdx];
+            const sheetFont = (sheet.style.fontFamily || "Manrope").split(",")[0].replace(/['"]/g, "").trim() || "Manrope";
+            const sheetSz = cssSizeToHalfPt(sheet.style.fontSize) || 22;
+            const defaultFmt = { font: sheetFont, sz: sheetSz };
+
+            if (sIdx > 0) {
+                bodyParts.push(`<w:p><w:r><w:br w:type="page"/></w:r></w:p>`);
+            }
+
+            for (const node of sheet.childNodes) {
+                if (node.nodeType === 3) {
+                    const txt = node.nodeValue.trim();
+                    if (txt) bodyParts.push(`<w:p><w:r>${buildRunPrXml(defaultFmt)}<w:t xml:space="preserve">${xmlEsc(txt)}</w:t></w:r></w:p>`);
+                    continue;
+                }
+                if (node.nodeType !== 1) continue;
+                if (node.classList.contains("a4-page-num") || node.classList.contains("ulh-shape")) continue;
+
+                const tag = node.tagName.toUpperCase();
+                if (tag === "TABLE") {
+                    bodyParts.push(await buildTableXml(node, defaultFmt));
+                } else if (tag === "UL" || tag === "OL") {
+                    const lis = [...node.querySelectorAll(":scope > li")];
+                    for (let liIdx = 0; liIdx < lis.length; liIdx++) {
+                        const prefix = tag === "OL" ? `${liIdx + 1}. ` : "• ";
+                        bodyParts.push(await buildParagraphXml(lis[liIdx], defaultFmt, prefix));
+                    }
+                } else {
+                    bodyParts.push(await buildParagraphXml(node, defaultFmt));
+                }
+            }
+        }
+
+        if (!bodyParts.length) bodyParts.push(`<w:p/>`);
+
+        const isLand = pageOrientations[0] === "landscape";
+        const pgW = isLand ? 16838 : 11906;
+        const pgH = isLand ? 11906 : 16838;
+        const orientAttr = isLand ? ` w:orient="landscape"` : "";
+        const mTop = Math.round((rulerMarginTop || 20) * 56.6929);
+        const mBot = Math.round((rulerMarginBottom || 20) * 56.6929);
+        const mLeft = Math.round((rulerMarginLeft || 20) * 56.6929);
+        const mRight = Math.round((rulerMarginRight || 20) * 56.6929);
+
+        const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+  <w:body>
+    ${bodyParts.join("\n    ")}
+    <w:sectPr>
+      <w:pgSz w:w="${pgW}" w:h="${pgH}"${orientAttr}/>
+      <w:pgMar w:top="${mTop}" w:right="${mRight}" w:bottom="${mBot}" w:left="${mLeft}" w:header="708" w:footer="708" w:gutter="0"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+
+        const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Default Extension="png" ContentType="image/png"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+
+        const rootRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+        const docRelsItems = rels.map(r =>
+            `<Relationship Id="${r.id}" Type="${r.type}" Target="${xmlEsc(r.target)}"${r.external ? ' TargetMode="External"' : ""}/>`
+        ).join("\n  ");
+
+        const docRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  ${docRelsItems}
+</Relationships>`;
+
+        zip.file("[Content_Types].xml", contentTypesXml);
+        zip.file("_rels/.rels", rootRelsXml);
+        zip.file("word/document.xml", documentXml);
+        zip.file("word/_rels/document.xml.rels", docRelsXml);
+        mediaFiles.forEach(m => zip.file(`word/media/${m.name}`, m.base64, { base64: true }));
+
+        return await zip.generateAsync({
+            type: "blob",
+            mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            compression: "DEFLATE"
+        });
+    }
+
+    window.exportOfficeFile = async function(ext) {
+        if (officeMode === "word" && ext === "docx" && window.JSZip) {
+            document.getElementById("officeSaveWrap")?.classList.remove("open");
+            const name = (document.getElementById("officeDocTitle")?.value || "ulh_hujjat").replace(/[^\w\-ÖĞŞÇöğşç ]/g, "_");
+            try {
+                const blob = await buildDocxBlobFromWordSheets();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${name}.docx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1500);
+            } catch (err) {
+                console.error("DOCX export error:", err);
+                alert("DOCX saqlaşda xatolik yuz berdi.");
+            }
+            return;
+        }
+
+        if (officeMode === "word" && ext === "doc") {
+            document.getElementById("officeSaveWrap")?.classList.remove("open");
+            if (typeof syncWordPagesFromDom === "function") syncWordPagesFromDom();
+            const name = (document.getElementById("officeDocTitle")?.value || "ulh_hujjat").replace(/[^\w\-ÖĞŞÇöğşç ]/g, "_");
+            const htmlBody = wordPages.join('<br clear="all" style="page-break-before:always;">');
+            const docHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${xmlEsc(name)}</title></head><body>${htmlBody}</body></html>`;
+            const blob = new Blob(["\ufeff", docHtml], { type: "application/msword;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${name}.doc`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+            return;
+        }
+
+        if (typeof _prevExportOfficeFile === "function") {
+            return _prevExportOfficeFile(ext);
+        }
+    };
+})();
