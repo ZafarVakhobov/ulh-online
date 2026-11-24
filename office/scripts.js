@@ -6814,3 +6814,223 @@ document.addEventListener("click", () => {
         }
     };
 })();
+
+
+// ==========================================
+// === ВЕКТОРНЫЙ ЭКСПОРТ В PDF (ВЫДЕЛЯЕМЫЙ ТЕКСТ, БЕЗ ПОТЕРИ КАЧЕСТВА) ===
+// ==========================================
+(function initVectorPdfExport() {
+    const _prevExportOfficeFile = window.exportOfficeFile;
+
+    function buildVectorPdfHtml(docTitle) {
+        let pageCss = `@page { size: A4 portrait; margin: 0; }`;
+        let bodyHtml = "";
+
+        if (officeMode === "word") {
+            if (typeof syncWordPagesFromDom === "function") syncWordPagesFromDom();
+            const isLand = pageOrientations[0] === "landscape";
+            pageCss = `@page { size: A4 ${isLand ? "landscape" : "portrait"}; margin: 0; }`;
+
+            const sheets = [...document.querySelectorAll(".a4-sheet")];
+            bodyHtml = sheets.map((sheet, idx) => {
+                const clone = sheet.cloneNode(true);
+                clone.removeAttribute("contenteditable");
+                clone.classList.remove("all-doc-selected");
+                clone.querySelectorAll("#__ulh_caret_marker, .ulh-shape-resize, .ulh-find-hl").forEach(el => {
+                    if (el.classList?.contains("ulh-find-hl")) {
+                        el.replaceWith(document.createTextNode(el.textContent));
+                    } else {
+                        el.remove();
+                    }
+                });
+                clone.querySelectorAll(".ulh-shape.selected").forEach(s => s.classList.remove("selected"));
+                clone.querySelectorAll(".ulh-cell-selected").forEach(c => c.classList.remove("ulh-cell-selected"));
+
+                const breakCss = idx < sheets.length - 1 ? "page-break-after: always; break-after: page;" : "";
+                return `<div class="pdf-a4-page ${sheet.classList.contains("landscape") ? "landscape" : ""}" style="${sheet.getAttribute("style") || ""}; ${breakCss}">${clone.innerHTML}</div>`;
+            }).join("");
+        } else if (officeMode === "slides") {
+            pageCss = `@page { size: 297mm 167mm; margin: 0; }`;
+            bodyHtml = slidesData.map((s, idx) => {
+                const breakCss = idx < slidesData.length - 1 ? "page-break-after: always; break-after: page;" : "";
+                let bgStyle = `background: ${s.bg || "#FFFFFF"};`;
+                if (s.bgConfig) {
+                    const cfg = s.bgConfig;
+                    if (cfg.type === "color") bgStyle = `background-color: ${cfg.color || "#FFFFFF"};`;
+                    else if (cfg.type === "gradient") bgStyle = `background: linear-gradient(${cfg.gradAngle || 135}deg, ${cfg.grad1 || "#0284C7"}, ${cfg.grad2 || "#6366F1"});`;
+                    else if (cfg.type === "image" && cfg.imgUrl) {
+                        const sz = cfg.imgFit === "stretch" ? "100% 100%" : cfg.imgFit === "contain" ? "contain" : cfg.imgFit === "custom" ? `${cfg.imgScale || 100}% auto` : "cover";
+                        bgStyle = `background-color:#0F172A; background-image:url('${cfg.imgUrl}'); background-repeat:no-repeat; background-position:${cfg.imgPosX ?? 50}% ${cfg.imgPosY ?? 50}%; background-size:${sz};`;
+                    }
+                }
+                return `<div class="pdf-slide-page" style="${bgStyle} ${breakCss}">
+                    <div class="pdf-slide-title">${s.title || ""}</div>
+                    <div class="pdf-slide-body">${s.body || ""}</div>
+                </div>`;
+            }).join("");
+        } else {
+            pageCss = `@page { size: A4 landscape; margin: 12mm; }`;
+            const tbl = document.getElementById("ulhSpreadsheet");
+            const clone = tbl ? tbl.cloneNode(true) : null;
+            if (clone) {
+                clone.querySelectorAll("td").forEach(td => {
+                    td.removeAttribute("contenteditable");
+                    td.classList.remove("active-cell");
+                });
+            }
+            const charts = document.getElementById("tablesChartsShelf")?.innerHTML || "";
+            bodyHtml = `<div class="pdf-table-wrap">${clone ? clone.outerHTML : ""}${charts}</div>`;
+        }
+
+        const safeTitle = String(docTitle || "ULH_Hujjat").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+        return `<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<title>${safeTitle}</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    ${pageCss}
+    * {
+        box-sizing: border-box;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: #FFFFFF;
+        color: #0F172A;
+        font-family: 'Manrope', Arial, sans-serif;
+    }
+    .pdf-a4-page {
+        position: relative;
+        width: 210mm;
+        height: 297mm;
+        overflow: hidden;
+        background: #FFFFFF;
+        font-size: 14px;
+        line-height: 1.55;
+    }
+    .pdf-a4-page.landscape {
+        width: 297mm;
+        height: 210mm;
+    }
+    .pdf-a4-page p { margin: 0 0 8px; }
+    .pdf-a4-page h1, .pdf-a4-page h2, .pdf-a4-page h3 { margin: 0 0 10px; line-height: 1.25; }
+    .pdf-a4-page img { max-width: 100%; }
+    .pdf-a4-page a { color: #0284C7; text-decoration: underline; }
+
+    /* Таблицы Word */
+    .word-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0 12px;
+        table-layout: fixed;
+    }
+    .word-table th, .word-table td {
+        border: 1px solid #CBD5E1;
+        padding: 6px 8px;
+        vertical-align: top;
+        word-wrap: break-word;
+    }
+    .word-table.zebra tbody tr:nth-child(even) { background: #F8FAFC; }
+
+    /* Списки, цитаты, формулы, номера страниц, фигуры */
+    ul.ul-dash { list-style: none; padding-left: 18px; }
+    ul.ul-dash li::before { content: "— "; margin-left: -14px; }
+    .office-quote-block {
+        margin: 12px 0;
+        padding: 12px 16px;
+        border-left: 4px solid #0284C7;
+        background: #F8FAFC;
+        border-radius: 0 10px 10px 0;
+    }
+    .office-quote-text { margin: 0; font-style: italic; }
+    .office-quote-author { display: block; margin-top: 6px; font-size: 12px; font-weight: 700; color: #64748B; font-style: normal; }
+    .office-eq-box { display: inline-block; padding: 2px 6px; background: #F8FAFC; border-radius: 4px; font-family: Georgia, serif; }
+    .math-frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; font-size: 0.9em; line-height: 1.1; }
+    .math-num { border-bottom: 1px solid currentColor; padding: 0 3px; }
+    .math-den { padding: 0 3px; }
+    .a4-page-num { position: absolute; font-size: 12px; color: #64748B; font-weight: 700; }
+    .a4-page-num.top { top: 8mm; }
+    .a4-page-num.bottom { bottom: 8mm; }
+    .a4-page-num.left { left: 20mm; }
+    .a4-page-num.center { left: 50%; transform: translateX(-50%); }
+    .a4-page-num.right { right: 20mm; }
+    .ulh-shape { position: absolute; box-sizing: border-box; }
+    .ulh-shape[data-shape="round-rect"] { border-radius: 12px; }
+    .ulh-shape[data-shape="oval"] { border-radius: 50%; }
+    .ulh-shape-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+    .ulh-shape-text { width: 100%; height: 100%; padding: 6px 8px; }
+
+    /* Слайды */
+    .pdf-slide-page {
+        position: relative;
+        width: 297mm;
+        height: 167mm;
+        padding: 18mm 20mm;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 10mm;
+    }
+    .pdf-slide-title { font-size: 32pt; font-weight: 800; line-height: 1.2; }
+    .pdf-slide-body { font-size: 16pt; line-height: 1.55; }
+
+    /* Таблицы (Excel) */
+    .pdf-table-wrap table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .pdf-table-wrap th, .pdf-table-wrap td { border: 1px solid #CBD5E1; padding: 5px 7px; }
+    .pdf-table-wrap th { background: #F1F5F9; font-weight: 800; }
+</style>
+</head>
+<body>${bodyHtml}</body>
+</html>`;
+    }
+
+    window.exportOfficeFile = async function(ext) {
+        if (ext === "pdf") {
+            document.getElementById("officeSaveWrap")?.classList.remove("open");
+            const rawName = (document.getElementById("officeDocTitle")?.value || "Yangi hujjat").trim();
+            const cleanName = rawName.replace(/[\\/:*?"<>|]/g, "_") || "Yangi hujjat";
+
+            const iframe = document.createElement("iframe");
+            iframe.style.cssText = "position:fixed; right:0; bottom:0; width:0; height:0; border:0; opacity:0; pointer-events:none;";
+            document.body.appendChild(iframe);
+
+            const doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write(buildVectorPdfHtml(cleanName));
+            doc.close();
+
+            const prevTitle = document.title;
+            document.title = cleanName;
+
+            const triggerPrint = () => {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } finally {
+                    setTimeout(() => {
+                        document.title = prevTitle;
+                        iframe.remove();
+                    }, 1000);
+                }
+            };
+
+            iframe.onload = () => {
+                if (iframe.contentWindow.document.fonts?.ready) {
+                    iframe.contentWindow.document.fonts.ready.then(() => setTimeout(triggerPrint, 120));
+                } else {
+                    setTimeout(triggerPrint, 250);
+                }
+            };
+            return;
+        }
+
+        if (typeof _prevExportOfficeFile === "function") {
+            return _prevExportOfficeFile(ext);
+        }
+    };
+})();
