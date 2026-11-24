@@ -4081,3 +4081,49 @@ body.dark-mode #officeCurrencyModal .weather-modal-footer { border-color: #1E293
     min-height: 210mm !important;
     max-height: 210mm !important;
 }
+
+/* === РЕЖИМ МИЛЛИМЕТРОВОЙ СЕТКИ (GRID) === */
+#officeGridToggleBtn.grid-active {
+    background: #E0F2FE;
+    border-color: #7DD3FC;
+    color: #0284C7;
+}
+body.dark-mode #officeGridToggleBtn.grid-active {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #38BDF8;
+}
+
+/* Деликатная сетка 5 мм (мелкая) и 10 мм (сантиметровая) поверх листа Word и холста Slides */
+body.office-grid-on .a4-sheet,
+body.office-grid-on #slideCanvas {
+    position: relative;
+}
+
+body.office-grid-on .a4-sheet::before,
+body.office-grid-on #slideCanvas::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    background-image:
+        linear-gradient(to right, rgba(2, 132, 199, 0.11) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(2, 132, 199, 0.11) 1px, transparent 1px),
+        linear-gradient(to right, rgba(2, 132, 199, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(2, 132, 199, 0.05) 1px, transparent 1px);
+    background-size:
+        10mm 10mm,
+        10mm 10mm,
+        5mm 5mm,
+        5mm 5mm;
+    background-position: 0 0;
+}
+
+/* При печати сетка автоматически скрывается */
+@media print {
+    body.office-grid-on .a4-sheet::before,
+    body.office-grid-on #slideCanvas::before {
+        display: none !important;
+    }
+}
